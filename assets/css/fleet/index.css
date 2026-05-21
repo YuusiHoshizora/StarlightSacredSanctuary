@@ -1,0 +1,73 @@
+.fleet-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 60px;
+}
+
+.fleet-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.fleet-card {
+    flex: 1 1 300px;
+    max-width: 350px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    transition: 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    display: block;
+}
+
+.fleet-card:hover {
+    transform: translateY(-6px);
+}
+
+/* 科研与管理舰队 */
+.fleet-card--research:hover {
+    background: rgba(61, 174, 255, 0.10);
+    border-color: #3DAEFF;
+}
+
+/* 工业与收集舰队 */
+.fleet-card--industry:hover {
+    background: rgba(219, 164, 0, 0.10);
+    border-color: #DBA400;
+}
+
+/* 主防御舰队 */
+.fleet-card--defense:hover {
+    background: rgba(224, 84, 76, 0.10);
+    border-color: #E0544C;
+}
+
+.fleet-card h2 {
+    font-size: 22px;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+}
+
+.fleet-card .english {
+    font-size: 14px;
+    opacity: 0.6;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+.fleet-card .desc {
+    font-size: 14px;
+    opacity: 0.7;
+    line-height: 1.6;
+}

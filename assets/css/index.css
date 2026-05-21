@@ -1,0 +1,52 @@
+.hero{
+    height:100vh;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+}
+
+.sub{
+    letter-spacing:8px;
+    opacity:0.6;
+    margin-bottom:20px;
+}
+
+.hero h1{
+    font-size:72px;
+    margin-bottom:24px;
+}
+
+.desc{
+    opacity:0.75;
+    margin-bottom:40px;
+}
+
+.enter-btn{
+    padding:14px 42px;
+
+    border:none;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    color:white;
+
+    backdrop-filter:blur(8px);
+
+    border:
+        1px solid rgba(255,255,255,0.15);
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+.enter-btn:hover{
+    background:
+        rgba(255,215,0,0.15);
+
+    border-color:#FFD700;
+}
