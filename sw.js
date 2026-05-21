@@ -74,8 +74,5 @@ self.addEventListener('fetch', (event) => {
         });
       })
     );
-  } else {
-    // 非同源请求（例如外部字体CDN）正常通过网络获取
-    return;
   }
 });
