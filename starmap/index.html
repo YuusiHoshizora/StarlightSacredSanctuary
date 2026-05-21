@@ -6,7 +6,17 @@
     <title>星图·星光圣域</title>
 
     <link rel="stylesheet" href="../assets/css/globle.css">
-
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      console.log('SW registered: ', reg.scope);
+    }).catch((err) => {
+      console.log('SW registration failed: ', err);
+    });
+  });
+}
+</script>
 </head>
 
 <body>

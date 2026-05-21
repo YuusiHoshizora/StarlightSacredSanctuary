@@ -1,0 +1,27 @@
+# --- IDE / 编辑器 ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- 操作系统 ---
+.DS_Store
+Thumbs.db
+
+# --- 依赖 ---
+node_modules/
+
+# --- 构建输出 ---
+dist/
+build/
+
+# --- 日志 ---
+*.log
+
+# --- 临时文件 ---
+*.tmp
+*.bak
+
+# --- 环境文件 ---
+.env

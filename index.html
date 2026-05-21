@@ -9,6 +9,17 @@
     <link rel="stylesheet" href="assets/css/index.css">
 
     <script defer src="assets/js/main.js"></script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      console.log('SW registered: ', reg.scope);
+    }).catch((err) => {
+      console.log('SW registration failed: ', err);
+    });
+  });
+}
+</script>
 </head>
 
 <body>
