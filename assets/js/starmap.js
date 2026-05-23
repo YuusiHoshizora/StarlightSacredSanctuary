@@ -93,6 +93,98 @@ const ctx = canvas.getContext("2d");
 const infoContainer = document.getElementById("system-info");
 
 let selectedId = null;
+let hoveredId = null;
+
+// ── 过渡动画参数 ──
+const ANIM_SPEED = 0.1;   // 每帧插值步长（越大越快）
+
+// 为每个星系创建动画状态（初始默认态：半透明 #C0C0C0）
+const animState = {};
+STAR_SYSTEMS.forEach(sys => {
+  animState[sys.id] = {
+    glowAlpha: 0.05,          // 光晕不透明度
+    glowR: 192, glowG: 192, glowB: 192, // 默认冷灰 (#C0C0C0)
+    dotBrightness: 0.5,       // 星点透明度（0.5半透明）
+    nameBrightness: 0,        // 名称透明度（0=完全透明）
+  };
+});
+
+let animFrameId = null;
+
+// ── 获取目标状态 ──
+function getTargetState(sysId) {
+  if (selectedId === sysId) {
+    // 选中态：金色光晕 + 不透明金色星点
+    return {
+      glowAlpha: 0.35,
+      glowR: 255, glowG: 215, glowB: 0,  // #DDA520
+      dotBrightness: 1.0,        // 完全不透明
+      nameBrightness: 1,
+    };
+  } else if (hoveredId === sysId) {
+    // 悬停态：柔和金色光晕 + 较高透明度
+    return {
+      glowAlpha: 0.15,
+      glowR: 255, glowG: 215, glowB: 0,
+      dotBrightness: 0.8,        // 较明显
+      nameBrightness: 0.85,
+    };
+  } else {
+    // 默认态：极淡灰色光晕、半透明星点
+    return {
+      glowAlpha: 0.05,
+      glowR: 192, glowG: 192, glowB: 192,
+      dotBrightness: 0.5,
+      nameBrightness: 0,
+    };
+  }
+}
+
+// ── 更新动画状态（插值） ──
+function updateAnimState() {
+  let needsUpdate = false;
+  STAR_SYSTEMS.forEach(sys => {
+    const s = animState[sys.id];
+    const target = getTargetState(sys.id);
+
+    const lerp = (a, b) => a + (b - a) * ANIM_SPEED;
+    const nearEnough = (a, b) => Math.abs(a - b) < 0.001;
+
+    function updateField(name, targetVal) {
+      if (!nearEnough(s[name], targetVal)) {
+        s[name] = lerp(s[name], targetVal);
+        needsUpdate = true;
+      } else {
+        s[name] = targetVal;
+      }
+    }
+
+    updateField('glowAlpha', target.glowAlpha);
+    updateField('glowR', target.glowR);
+    updateField('glowG', target.glowG);
+    updateField('glowB', target.glowB);
+    updateField('dotBrightness', target.dotBrightness);
+    updateField('nameBrightness', target.nameBrightness);
+  });
+
+  if (needsUpdate) {
+    drawStarMap();
+    animFrameId = requestAnimationFrame(updateAnimState);
+  } else {
+    if (animFrameId) {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = null;
+    }
+  }
+}
+
+// ── 触发动画 ──
+function startAnimation() {
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId);
+  }
+  animFrameId = requestAnimationFrame(updateAnimState);
+}
 
 // ── 画布尺寸管理 ──
 function resizeCanvas() {
@@ -110,46 +202,54 @@ function getCanvasScale() {
   return { w: rect.width, h: rect.height };
 }
 
-// ── 绘制星图 ──
+// ── 绘制星图（使用动画插值） ──
 function drawStarMap() {
   const { w, h } = getCanvasScale();
   ctx.clearRect(0, 0, w, h);
 
-  // 绘制星系（白色原点，带淡淡光晕）
   for (const sys of STAR_SYSTEMS) {
+    const s = animState[sys.id];
     const px = sys.x * w;
     const py = sys.y * h;
-    const isSelected = selectedId === sys.id;
+    const isActive = (selectedId === sys.id || hoveredId === sys.id);
 
-    // 光晕
-    const gradient = ctx.createRadialGradient(px, py, 0, px, py, 16);
-    gradient.addColorStop(0, isSelected
-      ? "rgba(255,215,0,0.3)"
-      : "rgba(255,255,255,0.08)"
-    );
+    // ── 光晕 ──
+    const glowRadius = 16;
+    const glowColor = `rgba(${Math.round(s.glowR)},${Math.round(s.glowG)},${Math.round(s.glowB)},${s.glowAlpha})`;
+    const gradient = ctx.createRadialGradient(px, py, 0, px, py, glowRadius);
+    gradient.addColorStop(0, glowColor);
     gradient.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(px, py, 16, 0, Math.PI * 2);
+    ctx.arc(px, py, glowRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // 原点
+    // ── 星点 ──
+    // 颜色固定：默认 #C0C0C0 (192,192,192) / 激活 #DDA520 (255, 215, 0)
+    const dotR = isActive ? 255 : 192;
+    const dotG = isActive ? 215 : 192;
+    const dotB = isActive ? 32  : 192;
+    // 透明度由 dotBrightness 控制，0→全透明，1→不透明
     ctx.beginPath();
     ctx.arc(px, py, 4, 0, Math.PI * 2);
-    ctx.fillStyle = isSelected ? "#FFD700" : "#ffffff";
+    ctx.fillStyle = `rgba(${dotR},${dotG},${dotB},${s.dotBrightness})`;
     ctx.fill();
 
-    // 选中时外圈
-    if (isSelected) {
+    // ── 选中时外圈（颜色为 #DDA520） ──
+    if (selectedId === sys.id) {
       ctx.beginPath();
       ctx.arc(px, py, 8, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(255,215,0,0.5)";
+      ctx.strokeStyle = `rgba(255, 215, 0,${s.glowAlpha * 1.2})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
 
-    // 名称标签
-    ctx.fillStyle = isSelected ? "#FFD700" : "rgba(255,255,255,0.5)";
+    // ── 名称标签 ──
+    // 颜色同样固定，透明度用 nameBrightness 过渡
+    const nR = isActive ? 255 : 192;
+    const nG = isActive ? 215 : 192;
+    const nB = isActive ? 32  : 192;
+    ctx.fillStyle = `rgba(${nR},${nG},${nB},${s.nameBrightness})`;
     ctx.font = "14px 'Sarasa'";
     ctx.textAlign = "center";
     ctx.fillText(sys.name, px, py - 14);
@@ -169,7 +269,6 @@ function getSystemAt(clientX, clientY) {
     const dx = mx - px;
     const dy = my - py;
     if (dx * dx + dy * dy < 324) {
-      // 半径 18
       return sys;
     }
   }
@@ -188,7 +287,6 @@ function renderSystemInfo(system) {
     return;
   }
 
-  // 更新列表选中状态
   document.querySelectorAll(".system-list-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.id === system.id);
   });
@@ -222,10 +320,28 @@ function renderSystemInfo(system) {
 function selectSystem(system) {
   selectedId = system ? system.id : null;
   renderSystemInfo(system);
-  drawStarMap();
+  startAnimation();
 }
 
-// ── 事件绑定 ──
+// ── 鼠标悬停 ──
+function handleMouseMove(e) {
+  const sys = getSystemAt(e.clientX, e.clientY);
+  const newId = sys ? sys.id : null;
+  if (newId !== hoveredId) {
+    hoveredId = newId;
+    startAnimation();
+  }
+}
+
+function handleMouseLeave() {
+  if (hoveredId !== null) {
+    hoveredId = null;
+    startAnimation();
+  }
+}
+
+canvas.addEventListener("mousemove", handleMouseMove);
+canvas.addEventListener("mouseleave", handleMouseLeave);
 canvas.addEventListener("click", (e) => {
   const sys = getSystemAt(e.clientX, e.clientY);
   selectSystem(sys);
@@ -244,7 +360,6 @@ function init() {
   buildSystemList();
 }
 
-// 等 DOM 加载完成
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
