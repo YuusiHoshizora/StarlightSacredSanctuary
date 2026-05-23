@@ -6,6 +6,9 @@
     <title>星图·星光圣域</title>
 
     <link rel="stylesheet" href="../assets/css/globle.css">
+    <link rel="stylesheet" href="../assets/css/starmap/index.css">
+
+    <script defer src="../assets/js/starmap.js"></script>
     <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -38,4 +41,26 @@ if ('serviceWorker' in navigator) {
         </nav>
 
     </header>
+
+    <main>
+
+        <div class="starmap-layout">
+
+            <!-- 左侧：星图 -->
+            <div class="starmap-left">
+                <canvas id="starmap-canvas"></canvas>
+            </div>
+
+            <!-- 右侧：星系介绍 -->
+            <aside class="starmap-right">
+
+                <div id="system-info"></div>
+                <div id="system-list" class="system-list"></div>
+
+            </aside>
+
+        </div>
+
+    </main>
 </body>
+</html>
