@@ -21,13 +21,13 @@ let selectedId = null;
 let hoveredId = null;
 
 // ── 过渡动画参数 ──
-const ANIM_SPEED = 0.1;   // 每帧插值步长（越大越快）
+const ANIM_SPEED = 0.05;   // 每帧插值步长（越大越快）
 
 // 为每个星系创建动画状态（初始默认态：半透明 #C0C0C0）
 const animState = {};
 STARMAP_DATA.forEach(sys => {
   animState[sys.id] = {
-    glowAlpha: 0.05,          // 光晕不透明度
+    glowAlpha: 0,          // 光晕不透明度
     glowR: 192, glowG: 192, glowB: 192, // 默认冷灰 (#C0C0C0)
     dotBrightness: 0.5,       // 星点透明度（0.5半透明）
     nameBrightness: 0,        // 名称透明度（0=完全透明）
