@@ -1,5 +1,5 @@
 // sw.js - Service Worker for Starlight Sacred Sanctuary
-const CACHE_NAME = 'starlight-cache-v2';
+const CACHE_NAME = 'starlight-cache-v2.1';
 
 // 需要预缓存的关键资源（所有页面共用的 bg、字体、全局 CSS/JS）
 const PRECACHE_URLS = [
