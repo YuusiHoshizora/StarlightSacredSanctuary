@@ -1,91 +1,16 @@
 /**
  * 星图·星光圣域
- * 星系数据 + 星图渲染 + 右侧信息交互
+ * 星图渲染 + 右侧信息交互
+ *
+ * 依赖：starmap-data.js（提供 STARMAP_DATA）
  */
 
-// ── 星系数据 ──
-const STAR_SYSTEMS = [
-  {
-    id:"vespera",
-    name: "维斯佩拉",
-    nameEn: "Vespera",
-    starCount: 3,
-    planets: 12,
-    starType: "B、B、K",
-    developmentLevel: "完全",
-    description:
-      "星光圣域的名义首都所在星系，也是星光圣域舰队最常驻留的位置。目前，星光圣域已经实现了对此星系的完全开发，加上了完善的辅助设施，让维斯佩拉星系能够成为通常宇宙中极为繁华的星系之一。",
-    x: 0.25,
-    y: 0.35,
-  },
-  {
-    id:"p304",
-    name: "P-304脉冲星",
-    nameEn: "Pulsar P-304",
-    starCount: 1,
-    planets: 1,
-    starType: "脉冲星",
-    developmentLevel: "完全",
-    description:
-      "星光圣域科研中心所在地。借助脉冲星的脉冲电磁信号，星光圣域能够进行对时间的精细校准和通常宇宙内的导航。",
-    x: 0.26,
-    y: 0.4,
-  },
-  {
-    id: "nadiris",
-    name: "纳迪里斯",
-    nameEn: "Nadiris",
-    starCount: 2,
-    planets: 3,
-    starType: "G、G",
-    developmentLevel: "完全",
-    description:
-      "星光圣域的舰队处理星系，大多数不便移动的巨型船坞和绝大多数舰队驻地均位于此星系。同时，进入此星系需要星辰矩阵的通行证明，否则星光圣域有权直接击毁擅自进入纳迪里斯星系引力井的任何舰船。",
-    x: 0.21,
-    y: 0.33,
-  },
-  {
-    id: "delta",
-    name: "德尔塔",
-    nameEn: "Delta",
-    starCount: 1,
-    planets: 12,
-    starType: "主序星",
-    planetType: "类地行星 · 气态巨行星 · 矮行星",
-    developmentLevel: "完全",
-    description:
-      "庞大的行星系统，十二颗行星中有三颗处于宜居带。德尔塔是圣域人口最密集的星系，星际枢纽站「十字路口」每日吞吐数以万计的飞船。",
-    x: 0.85,
-    y: 0.6,
-  },
-  {
-    id: "astralis",
-    name: "阿斯特拉利斯",
-    nameEn: "Astralis",
-    starCount: 1,
-    planets: 3,
-    starType: "G",
-    developmentLevel: "完全",
-    description:
-      "星光圣域的通信枢纽之一，在索拉克分支矩阵“阿斯特拉利斯”的辅助下，阿斯特拉利斯成为全宇宙知名的服务器集群地之一，同时也是星域网的主服务器所在星系。",
-    x: 0.29,
-    y: 0.32,
-  },
-  {
-    id: "zeta",
-    name: "泽塔星系",
-    nameEn: "Zeta System",
-    starCount: 1,
-    planets: 6,
-    starType: "红矮星",
-    planetType: "气态巨行星 · 冰巨星",
-    developmentLevel: "完全",
-    description:
-      "一颗低温红矮星的家园。气态巨行星「深渊」上空的永久风暴中，采集者驾驶着耐压飞行器提取稀有气体。这里也是星云观测站所在地。",
-    x: 0.4,
-    y: 0.15,
-  },
-];
+// ── 依赖检查 ──
+if (typeof STARMAP_DATA === 'undefined') {
+  console.error(
+    'starmap.js: 缺少星系数据。请确保先加载 starmap-data.js'
+  );
+}
 
 // ── DOM 引用 ──
 const canvas = document.getElementById("starmap-canvas");
@@ -100,7 +25,7 @@ const ANIM_SPEED = 0.1;   // 每帧插值步长（越大越快）
 
 // 为每个星系创建动画状态（初始默认态：半透明 #C0C0C0）
 const animState = {};
-STAR_SYSTEMS.forEach(sys => {
+STARMAP_DATA.forEach(sys => {
   animState[sys.id] = {
     glowAlpha: 0.05,          // 光晕不透明度
     glowR: 192, glowG: 192, glowB: 192, // 默认冷灰 (#C0C0C0)
@@ -143,7 +68,7 @@ function getTargetState(sysId) {
 // ── 更新动画状态（插值） ──
 function updateAnimState() {
   let needsUpdate = false;
-  STAR_SYSTEMS.forEach(sys => {
+  STARMAP_DATA.forEach(sys => {
     const s = animState[sys.id];
     const target = getTargetState(sys.id);
 
@@ -207,7 +132,7 @@ function drawStarMap() {
   const { w, h } = getCanvasScale();
   ctx.clearRect(0, 0, w, h);
 
-  for (const sys of STAR_SYSTEMS) {
+  for (const sys of STARMAP_DATA) {
     const s = animState[sys.id];
     const px = sys.x * w;
     const py = sys.y * h;
@@ -263,7 +188,7 @@ function getSystemAt(clientX, clientY) {
   const my = clientY - rect.top;
   const { w, h } = getCanvasScale();
 
-  for (const sys of STAR_SYSTEMS) {
+  for (const sys of STARMAP_DATA) {
     const px = sys.x * w;
     const py = sys.y * h;
     const dx = mx - px;
@@ -280,7 +205,6 @@ function renderSystemInfo(system) {
   if (!system) {
     infoContainer.innerHTML = `
       <div class="empty-info">
-        <p>✦</p>
         <p>选择任一星系以查看详情</p>
       </div>
     `;
@@ -293,9 +217,11 @@ function renderSystemInfo(system) {
 
   infoContainer.innerHTML = `
     <h2 class="system-name">${system.name}</h2>
+    <p class="system-name-en">${system.nameEn}</p>
     <p class="system-description">${system.description}</p>
     <br>
-    <div class="system-info-grid">
+    <div class="system-info-details">
+      <div class="system-info-grid">
       <div class="info-item">
         <div class="label">恒星数量</div>
         <div class="value">${system.starCount}</div>
@@ -311,6 +237,7 @@ function renderSystemInfo(system) {
       <div class="info-item">
         <div class="label">开发程度</div>
         <div class="value">${system.developmentLevel}</div>
+      </div>
       </div>
     </div>
   `;
