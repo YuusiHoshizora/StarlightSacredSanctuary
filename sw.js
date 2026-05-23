@@ -5,10 +5,8 @@ const CACHE_NAME = 'starlight-cache-v2.1';
 const PRECACHE_URLS = [
   '/assets/img/bg.webp',
   '/assets/fonts/SarasaUiSC-Regular.woff2',
-  '/assets/css/globle.css',
-  '/assets/js/main.js',
   // 如果希望离线也能访问首页，可以添加首页 HTML 本身
-  '/index.html'
+  //'/index.html'
 ];
 
 // 安装阶段：预缓存所有关键资源
