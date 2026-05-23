@@ -61,6 +61,11 @@ if ('serviceWorker' in navigator) {
                 </p>
 
                 <button class="enter-btn">
+                    <script>
+                        document.querySelector('.enter-btn').addEventListener('click', (e) => {
+                            location.href = 'main/mainpage.html';
+                        });
+                    </script>
                     ENTER
                 </button>
 

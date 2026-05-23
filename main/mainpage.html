@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页面·星光圣域</title>
+
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      console.log('SW registered: ', reg.scope);
+    }).catch((err) => {
+      console.log('SW registration failed: ', err);
+    });
+  });
+}
+</script>
+</head>
+
+<body>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <header class="navbar">
+
+        <div class="logo">
+            星光圣域
+        </div>
+
+        <nav>
+            <a href="../index.html">首页</a>
+            <a href="../starmap/">星图</a>
+            <a href="../fleet/">舰队</a>
+            <a href="../archive/">档案</a>
+        </nav>
+
+    </header>
+</body>
