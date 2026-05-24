@@ -173,6 +173,12 @@
             '</div>' +
             '<div class="markdown-body">' + marked.parse(mdContent) + '</div>';
 
+        // 让所有 Markdown 渲染出的链接在新标签页打开
+        articleContent.querySelectorAll('.markdown-body a').forEach(function(link) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+        });
+
         // 滚动到顶部
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
