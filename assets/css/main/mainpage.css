@@ -15,12 +15,12 @@
 }
 
 .article-view.active {
-    animation: fadeInUp 0.35s ease;
+    animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     display: block;
 }
 
 .article-view.leaving {
-    animation: fadeOutDown 0.25s ease;
+    animation: fadeOutDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     display: block;
 }
 
