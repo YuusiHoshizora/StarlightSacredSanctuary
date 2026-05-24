@@ -3,36 +3,26 @@ name: Generate Post Index
 on:
   push:
     paths:
-      - 'assets/post/**'   # 只有 post 目录有变动时才触发
-  workflow_dispatch:        # 也允许手动触发
+      - 'assets/post/**'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # 需要写权限才能 push 回仓库
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
       - name: Generate assets/post/index.json
-        run: |
-          cd assets/post
-          # 列出所有 .md 文件，生成 JSON 数组
-          files=$(ls *.md 2>/dev/null | sort | python3 -c "
-          import sys, json
-          files = [line.strip() for line in sys.stdin if line.strip()]
-          print(json.dumps(files, ensure_ascii=False))
-          ")
-          echo "$files" > index.json
-          echo "Generated index.json: $files"
+        run: python3 .github/scripts/generate_post_index.py
 
       - name: Commit & Push index.json
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add assets/post/index.json
-          # 只有文件真的变化才 commit，避免空提交
           git diff --cached --quiet || git commit -m "chore: update post index [skip ci]"
           git push
