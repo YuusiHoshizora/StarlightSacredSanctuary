@@ -150,8 +150,7 @@ if ('serviceWorker' in navigator) {
 
         // 生成网格
         let html = '';
-        // 星期名称（中文）
-        const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+        const dayNames = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.'];
         for (let d = 0; d < 7; d++) {
             html += '<div class="day-name">' + dayNames[d] + '</div>';
         }
