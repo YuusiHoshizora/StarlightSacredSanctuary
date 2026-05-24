@@ -66,35 +66,7 @@
 
                 <div class="blog-list" id="blog-list">
 
-                    <article class="blog-card" data-md-src="../assets/post/beacon-47.md">
-                        <div class="blog-title"></div>
-                        <div class="blog-meta">
-                            <span class="blog-date"></span>
-                            <span class="sep">·</span>
-                            <span class="blog-tag"></span>
-                        </div>
-                        <div class="blog-excerpt"></div>
-                    </article>
 
-                    <article class="blog-card" data-md-src="../assets/post/warp-coolant-optimization.md">
-                        <div class="blog-title"></div>
-                        <div class="blog-meta">
-                            <span class="blog-date"></span>
-                            <span class="sep">·</span>
-                            <span class="blog-tag"></span>
-                        </div>
-                        <div class="blog-excerpt"></div>
-                    </article>
-
-                    <article class="blog-card" data-md-src="../assets/post/starmap-calibration.md">
-                        <div class="blog-title"></div>
-                        <div class="blog-meta">
-                            <span class="blog-date"></span>
-                            <span class="sep">·</span>
-                            <span class="blog-tag"></span>
-                        </div>
-                        <div class="blog-excerpt"></div>
-                    </article>
 
                 </div>
             </div>
@@ -347,6 +319,32 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
     if (subtitleEl) {
         subtitleEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
     }
+
+    // ===== 动态生成所有博客卡片 =====
+    (function() {
+        var postDir = '../assets/post/';
+        var files = [
+            'beacon-47.md',
+            'starmap-calibration.md',
+            'warp-coolant-optimization.md',
+            '测试文件.md'
+        ];
+        var listEl = document.getElementById('blog-list');
+        if (!listEl) return;
+        files.forEach(function(filename) {
+            var card = document.createElement('article');
+            card.className = 'blog-card';
+            card.setAttribute('data-md-src', postDir + filename);
+            card.innerHTML = '<div class="blog-title"></div>' +
+                             '<div class="blog-meta">' +
+                                 '<span class="blog-date"></span>' +
+                                 '<span class="sep">·</span>' +
+                                 '<span class="blog-tag"></span>' +
+                             '</div>' +
+                             '<div class="blog-excerpt"></div>';
+            listEl.appendChild(card);
+        });
+    })();
 
     // ===== Markdown 内容缓存 & 从文章自动提取简介 =====
     var mdCache = {};
