@@ -12,16 +12,26 @@
 /* ===== Markdown 文章视图 ===== */
 .article-view {
     display: none;
-    animation: fadeInUp 0.35s ease;
 }
 
 .article-view.active {
+    animation: fadeInUp 0.35s ease;
+    display: block;
+}
+
+.article-view.leaving {
+    animation: fadeOutDown 0.25s ease;
     display: block;
 }
 
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOutDown {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(12px); }
 }
 
 .blog-list-view {

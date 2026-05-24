@@ -177,11 +177,24 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function showList() {
+function showList() {
+    if (articleView.classList.contains('active')) {
+        // 先播放退出动画
+        articleView.classList.add('leaving');
+        // 动画结束后再切换显示
+        function onAnimationEnd() {
+            articleView.removeEventListener('animationend', onAnimationEnd);
+            articleView.classList.remove('active', 'leaving');
+            listView.classList.remove('hidden');
+            articleContent.innerHTML = '';
+        }
+        articleView.addEventListener('animationend', onAnimationEnd);
+    } else {
         articleView.classList.remove('active');
         listView.classList.remove('hidden');
         articleContent.innerHTML = '';
     }
+}
 
     backBtn.addEventListener('click', showList);
 
