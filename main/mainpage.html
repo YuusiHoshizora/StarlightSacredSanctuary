@@ -320,31 +320,62 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
         subtitleEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
     }
 
-    // ===== 动态生成所有博客卡片 =====
-    (function() {
-        var postDir = '../assets/post/';
-        var files = [
-            'beacon-47.md',
-            'starmap-calibration.md',
-            'warp-coolant-optimization.md',
-            '测试文件.md'
-        ];
-        var listEl = document.getElementById('blog-list');
-        if (!listEl) return;
-        files.forEach(function(filename) {
-            var card = document.createElement('article');
-            card.className = 'blog-card';
-            card.setAttribute('data-md-src', postDir + filename);
-            card.innerHTML = '<div class="blog-title"></div>' +
-                             '<div class="blog-meta">' +
-                                 '<span class="blog-date"></span>' +
-                                 '<span class="sep">·</span>' +
-                                 '<span class="blog-tag"></span>' +
-                             '</div>' +
-                             '<div class="blog-excerpt"></div>';
-            listEl.appendChild(card);
+// ===== 动态生成所有博客卡片（从 index.json 自动读取文件列表） =====
+(function () {
+    var postDir = '../assets/post/';
+    var listEl = document.getElementById('blog-list');
+    if (!listEl) return;
+
+    fetch(postDir + 'index.json')
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function (files) {
+            files.forEach(function (filename) {
+                var card = document.createElement('article');
+                card.className = 'blog-card';
+                card.setAttribute('data-md-src', postDir + filename);
+                card.innerHTML =
+                    '<div class="blog-title"></div>' +
+                    '<div class="blog-meta">' +
+                        '<span class="blog-date"></span>' +
+                        '<span class="sep">·</span>' +
+                        '<span class="blog-tag"></span>' +
+                    '</div>' +
+                    '<div class="blog-excerpt"></div>';
+
+                // 填充文件名作为初始标题
+                var titleEl = card.querySelector('.blog-title');
+                if (titleEl) titleEl.textContent = filenameToTitle(postDir + filename);
+
+                listEl.appendChild(card);
+
+                // 异步填充摘要、标签、日期
+                var excerptEl = card.querySelector('.blog-excerpt');
+                var dateEl    = card.querySelector('.blog-date');
+                var tagEl     = card.querySelector('.blog-tag');
+
+                fetchMdCached(postDir + filename)
+                    .then(function (text) {
+                        if (excerptEl) excerptEl.textContent = extractExcerpt(text);
+                        var tag = extractTag(text);
+                        if (tag) {
+                            card.dataset.tag = tag;
+                            if (tagEl) tagEl.textContent = tag;
+                        }
+                        var date = extractDate(text);
+                        if (date && dateEl) dateEl.textContent = date;
+                    })
+                    .catch(function (err) {
+                        console.warn('无法获取摘要:', filename, err);
+                    });
+            });
+        })
+        .catch(function (err) {
+            listEl.innerHTML = '<div class="md-loading">无法加载文章列表（' + err.message + '）</div>';
         });
-    })();
+})();
 
     // ===== Markdown 内容缓存 & 从文章自动提取简介 =====
     var mdCache = {};
