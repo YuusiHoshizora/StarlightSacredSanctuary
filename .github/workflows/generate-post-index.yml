@@ -17,7 +17,36 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Generate assets/post/index.json
-        run: python3 .github/scripts/generate_post_index.py
+        run: |
+          python3 -c "
+          import os, json, re
+          GITHUB_WORKSPACE = os.environ['GITHUB_WORKSPACE']
+          POST_DIR = os.path.normpath(os.path.join(GITHUB_WORKSPACE, 'assets', 'post'))
+          def extract_date(filepath):
+              try:
+                  with open(filepath, encoding='utf-8') as f:
+                      tag_found = False
+                      for line in f:
+                          line = line.strip()
+                          if not line or line.startswith('---'):
+                              continue
+                          if not tag_found and line.startswith('#') and not line.startswith('##'):
+                              tag_found = True
+                              continue
+                          if tag_found:
+                              return line
+              except Exception:
+                  pass
+              return ''
+          def normalize_date(date_str):
+              return re.sub(r'^\d+', lambda m: m.group().zfill(4), date_str)
+          files = [f for f in os.listdir(POST_DIR) if f.endswith('.md')]
+          files.sort(key=lambda f: normalize_date(extract_date(os.path.join(POST_DIR, f))), reverse=True)
+          index_path = os.path.join(POST_DIR, 'index.json')
+          with open(index_path, 'w', encoding='utf-8') as out:
+              json.dump(files, out, ensure_ascii=False)
+          print('Generated index.json:', files)
+          "
 
       - name: Commit & Push index.json
         run: |
