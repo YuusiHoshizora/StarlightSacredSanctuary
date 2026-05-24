@@ -39,6 +39,19 @@ const STARMAP_DATA = [
     y: 0.45,
   },
   {
+    id: "errol",
+    name: "埃罗尔",
+    nameEn: "Errol",
+    starCount: 1,
+    planets: 4,
+    starType: "F",
+    developmentLevel: "深入阶段",
+    description:
+      "埃罗尔星系位于星光圣域的边境，是星光圣域研究寂静领域的主要前哨站。",
+    x: 0.1,
+    y: 0.2,
+  },
+  {
     id: "nadiris",
     name: "纳迪里斯",
     nameEn: "Nadiris",
@@ -63,6 +76,19 @@ const STARMAP_DATA = [
       "星光圣域科研中心所在地。借助脉冲星的脉冲电磁信号，星光圣域能够进行对时间的精细校准和通常宇宙内的导航。",
     x: 0.26,
     y: 0.4,
+  },
+  {
+    id: "stalko",
+    name: "斯达尔科",
+    nameEn: "Stalko",
+    starCount: 1,
+    planets: 0,
+    starType: "K",
+    developmentLevel: "休整阶段",
+    description:
+      "斯达尔科星系为星光圣域的半边境星系，由于其战略价值较低，星光圣域并未优先开发此星系。",
+    x: 0.18,
+    y: 0.21,
   },
   {
     id: "vespera",
