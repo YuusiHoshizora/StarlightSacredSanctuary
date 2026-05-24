@@ -7,17 +7,20 @@
 
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/main/mainpage.css">
+
+    <!-- marked.js 用于 Markdown 渲染 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
     <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then((reg) => {
-      console.log('SW registered: ', reg.scope);
-    }).catch((err) => {
-      console.log('SW registration failed: ', err);
-    });
-  });
-}
-</script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then((reg) => {
+                    console.log('SW registered: ', reg.scope);
+                }).catch((err) => {
+                    console.log('SW registration failed: ', err);
+                });
+            });
+        }
+    </script>
 </head>
 
 <body>
@@ -42,53 +45,173 @@ if ('serviceWorker' in navigator) {
         <aside class="left-panel">
             <div class="nav-section-title">分类</div>
             <nav class="vertical-nav">
-                <a href="#">重要通知</a>
-                <a href="#">本地日志</a>
-                <a href="#">观测结果</a>
-                <a href="#">实验结果</a>
-                <a href="#">其它内容</a>
+                <a href="#" data-filter="all">全部</a>
+                <a href="#" data-filter="重要通知">重要通知</a>
+                <a href="#" data-filter="本地日志">本地日志</a>
+                <a href="#" data-filter="观测报告">观测报告</a>
+                <a href="#" data-filter="技术文档">技术文档</a>
+                <a href="#" data-filter="航行手记">航行手记</a>
             </nav>
         </aside>
 
-        <!-- 中间栏：博客文章列表 -->
+        <!-- 中间栏：博客文章列表 / Markdown 文章视图 -->
         <main class="center-panel">
-            <div class="blog-header">
-                <h1>事件列表</h1>
-                <div class="subtitle" id="subtitle-text">愿星光照亮我们的前程</div>
+
+            <!-- 列表视图 -->
+            <div class="blog-list-view" id="blog-list-view">
+                <div class="blog-header">
+                    <h1>事件列表</h1>
+                    <div class="subtitle" id="subtitle-text">愿星光照亮我们的前程</div>
+                </div>
+
+                <div class="blog-list" id="blog-list">
+
+                    <article class="blog-card" data-md-src="../posts/beacon-47.md" data-title="深空信标：第 47 号观测站报告" data-date="2025-07-12" data-tag="观测报告"
+                        data-md-inline="# 深空信标：第 47 号观测站报告
+
+**日期**：2025-07-12　**分类**：观测报告　**记录员**：Lena Vasquez
+
+---
+
+## 概述
+
+此次例行观测中，我们在银河系旋臂边缘捕获到一组异常的引力波信号。初步分析显示，信号源位于编号 GW-2025-0712 的未知天体附近。
+
+## 观测数据
+
+| 参数 | 数值 |
+|------|------|
+| 频率范围 | 10 Hz – 2 kHz |
+| 持续时长 | 约 3.2 秒 |
+| 信噪比 | 18.4 dB |
+| 估算距离 | 1.2 × 10⁸ 光年 |
+
+## 详细记录
+
+引力波信号呈现出**双峰结构**，与已知中子星并合特征高度吻合。然而，其频率漂移曲线存在明显异常，可能暗示第三质量天体的存在。
+
+> 注意：该区域在此前 72 小时内已出现两次弱γ射线暴，建议启动多波段联合观测协议。
+
+后续步骤：
+
+1. 申请使用深空望远镜阵列 DSA-II 进行定向追踪
+2. 向星域观测中心提交异常信号报告（表格 OBS-09）
+3. 评估是否需要派遣无人探测器前往目标区域
+
+## 附注
+
+本报告已加密备份至索拉克矩阵节点 `SLK-NODE-004`。如需原始数据流，请联系观测站数据管理员。
+">
+                        <div class="blog-title">深空信标：第 47 号观测站报告</div>
+                        <div class="blog-meta">
+                            <span>2025-07-12</span>
+                            <span>·</span>
+                            <span>观测报告</span>
+                        </div>
+                        <div class="blog-excerpt">此次例行观测中，我们在银河系旋臂边缘捕获到一组异常的引力波信号……</div>
+                    </article>
+
+                    <article class="blog-card" data-title="跃迁引擎冷却系统优化记录" data-date="2025-07-08" data-tag="技术文档"
+                        data-md-inline="# 跃迁引擎冷却系统优化记录
+
+**日期**：2025-07-08　**分类**：技术文档　**工程师**：Kai Onodera
+
+---
+
+## 背景
+
+第四代跃迁引擎（型号 JX-4000）在连续超光速巡航 48 小时后，核心温度异常攀升至 **4,200 K**，超出安全阈值 12%。
+
+## 测试方案
+
+在真空测试环境中进行了 72 小时连续负载模拟，对比三种冷却方案：
+
+- **方案 A**：液氦循环强制冷却
+- **方案 B**：热辐射翅片阵列（新型碳化钨材料）
+- **方案 C**：A + B 混合冷却
+
+## 结果对比
+
+```
+方案    峰值温度    稳定性    质量增加
+A       3,180 K    ★★★★☆   +340 kg
+B       3,650 K    ★★★☆☆   +85 kg
+C       2,990 K    ★★★★★   +390 kg
+```
+
+> 推荐采用方案 C，虽质量略有增加，但综合热稳定性最优，符合远程星际巡航需求。
+
+## 后续计划
+
+下一阶段将在 *深渊号* 实舰上进行为期 30 天的实际航行验证。预计报告将于 2025 年第三季度提交。
+">
+                        <div class="blog-title">跃迁引擎冷却系统优化记录</div>
+                        <div class="blog-meta">
+                            <span>2025-07-08</span>
+                            <span>·</span>
+                            <span>技术文档</span>
+                        </div>
+                        <div class="blog-excerpt">针对第四代跃迁引擎的过热问题，团队在真空测试环境中进行了 72 小时连续负载模拟……</div>
+                    </article>
+
+                    <article class="blog-card" data-title="星图校准：新发现的亚空间航道" data-date="2025-06-30" data-tag="航行手记"
+                        data-md-inline="# 星图校准：新发现的亚空间航道
+
+**日期**：2025-06-30　**分类**：航行手记　**航行官**：Seraphina Okafor
+
+---
+
+## 发现经过
+
+在编号 KX-774 的引力透镜区域背后，存在一条稳定的低辐射航道。此发现源于 *晨曦号* 侦察舰的偶然偏航——因导航系统短暂故障，意外穿越了该区域。
+
+## 航道参数
+
+- **起点坐标**：RA 14h 29m 43s / Dec −62° 40′ 46″
+- **终点坐标**：RA 14h 31m 02s / Dec −62° 38′ 11″
+- **全程距离**：约 0.8 光年（亚空间折叠后等效路程）
+- **辐射水平**：0.003 Sv/h（远低于安全上限 0.02 Sv/h）
+- **引力扰动**：轻微（±0.4 G 波动）
+
+## 战略价值
+
+> 该航道可将第七舰队从格兰汀基地到前沿哨站 Outpost-9 的标准飞行时间**缩短约 41%**。
+
+初步评估认为，此航道具有极高的战略价值，建议立即列为**机密**航道并纳入星域网加密数据库。
+
+## 注意事项
+
+1. 航道入口附近存在未标记的微型小行星群，需提前降低跃迁速度
+2. 每隔 27 天引力透镜会发生周期性偏移，届时航道窗口将关闭约 6 小时
+3. 强烈建议在通过该区域时保持无线电静默
+
+---
+
+*本报告已提交至星图局，等待官方纳入下一版星图修订（v4.7.2）。*
+">
+                        <div class="blog-title">星图校准：新发现的亚空间航道</div>
+                        <div class="blog-meta">
+                            <span>2025-06-30</span>
+                            <span>·</span>
+                            <span>航行手记</span>
+                        </div>
+                        <div class="blog-excerpt">在编号 KX-774 的引力透镜区域背后，存在一条稳定的低辐射航道……</div>
+                    </article>
+
+                </div>
             </div>
 
-            <div class="blog-list" id="blog-list">
-                <!-- 示例卡片（未来会被 Markdown 渲染替换） -->
-                <article class="blog-card">
-                    <div class="blog-title">深空信标：第 47 号观测站报告</div>
-                    <div class="blog-meta">
-                        <span>2025-07-12</span>
-                        <span>·</span>
-                        <span>观测报告</span>
-                    </div>
-                    <div class="blog-excerpt">此次例行观测中，我们在银河系旋臂边缘捕获到一组异常的引力波信号……</div>
-                </article>
-
-                <article class="blog-card">
-                    <div class="blog-title">跃迁引擎冷却系统优化记录</div>
-                    <div class="blog-meta">
-                        <span>2025-07-08</span>
-                        <span>·</span>
-                        <span>技术文档</span>
-                    </div>
-                    <div class="blog-excerpt">针对第四代跃迁引擎的过热问题，团队在真空测试环境中进行了 72 小时连续负载模拟……</div>
-                </article>
-
-                <article class="blog-card">
-                    <div class="blog-title">星图校准：新发现的亚空间航道</div>
-                    <div class="blog-meta">
-                        <span>2025-06-30</span>
-                        <span>·</span>
-                        <span>航行手记</span>
-                    </div>
-                    <div class="blog-excerpt">在编号 KX-774 的引力透镜区域背后，存在一条稳定的低辐射航道……</div>
-                </article>
+            <!-- 文章视图（Markdown 渲染后展示） -->
+            <div class="article-view" id="article-view">
+                <button class="back-btn" id="back-btn">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.5 3L5 8l4.5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    返回列表
+                </button>
+                <div id="article-content"></div>
             </div>
+
         </main>
 
         <!-- 右侧栏：日历 + 信息 -->
@@ -123,82 +246,176 @@ if ('serviceWorker' in navigator) {
 
 <script>
 (function() {
+
+    // ===== Markdown 渲染配置 =====
+    marked.setOptions({
+        breaks: true,        // 单换行视为 <br>
+        gfm: true,           // GitHub Flavored Markdown
+    });
+
+    // ===== 视图切换 =====
+    const listView    = document.getElementById('blog-list-view');
+    const articleView = document.getElementById('article-view');
+    const articleContent = document.getElementById('article-content');
+    const backBtn     = document.getElementById('back-btn');
+
+    /**
+     * 展示文章视图
+     * @param {string} mdContent - Markdown 字符串
+     * @param {string} title     - 文章标题
+     * @param {string} date      - 发布日期
+     * @param {string} tag       - 分类标签
+     */
+    function showArticle(mdContent, title, date, tag) {
+        listView.classList.add('hidden');
+        articleView.classList.add('active');
+
+        // 渲染文章头部 + Markdown 内容
+        articleContent.innerHTML =
+            '<div class="article-header">' +
+                '<h1>' + escapeHtml(title) + '</h1>' +
+                '<div class="article-meta">' +
+                    '<span>' + escapeHtml(date) + '</span>' +
+                    '<span>·</span>' +
+                    '<span>' + escapeHtml(tag) + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="markdown-body">' + marked.parse(mdContent) + '</div>';
+
+        // 滚动到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showList() {
+        articleView.classList.remove('active');
+        listView.classList.remove('hidden');
+        articleContent.innerHTML = '';
+    }
+
+    backBtn.addEventListener('click', showList);
+
+    // ===== 博客卡片点击事件 =====
+    document.getElementById('blog-list').addEventListener('click', function(e) {
+        const card = e.target.closest('.blog-card');
+        if (!card) return;
+
+        const title  = card.dataset.title  || '（无标题）';
+        const date   = card.dataset.date   || '';
+        const tag    = card.dataset.tag    || '';
+        const mdSrc  = card.dataset.mdSrc;           // 外部 .md 文件路径（可选）
+        const mdInline = card.dataset.mdInline || ''; // 内联 Markdown 内容
+
+        if (mdSrc) {
+            // 从外部文件加载
+            articleContent.innerHTML = '<div class="md-loading">正在加载……</div>';
+            listView.classList.add('hidden');
+            articleView.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            fetch(mdSrc)
+                .then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.text();
+                })
+                .then(function(text) {
+                    showArticle(text, title, date, tag);
+                })
+                .catch(function(err) {
+                    // 加载失败时降级使用内联内容，或显示错误
+                    if (mdInline) {
+                        showArticle(mdInline, title, date, tag);
+                    } else {
+                        articleContent.innerHTML =
+                            '<div class="md-loading">无法加载文章内容（' + err.message + '）</div>';
+                    }
+                });
+        } else if (mdInline) {
+            // 使用内联 Markdown
+            showArticle(mdInline, title, date, tag);
+        }
+    });
+
+    // ===== 左侧分类过滤 =====
+    document.querySelector('.vertical-nav').addEventListener('click', function(e) {
+        const link = e.target.closest('a[data-filter]');
+        if (!link) return;
+        e.preventDefault();
+
+        const filter = link.dataset.filter;
+        const cards = document.querySelectorAll('.blog-card');
+
+        cards.forEach(function(card) {
+            if (filter === 'all' || card.dataset.tag === filter) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // 如果在文章视图中，先返回列表
+        if (articleView.classList.contains('active')) {
+            showList();
+        }
+    });
+
+    // ===== 安全转义辅助 =====
+    function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     // ===== 日历渲染 =====
     const today = new Date();
-    let displayYear = today.getFullYear();
-    let displayMonth = today.getMonth(); // 0-11
+    let displayYear  = today.getFullYear();
+    let displayMonth = today.getMonth();
 
     const yearMonthEl = document.getElementById('cal-year-month');
-    const gridEl = document.getElementById('cal-grid');
-    const prevBtn = document.getElementById('cal-prev');
-    const nextBtn = document.getElementById('cal-next');
+    const gridEl      = document.getElementById('cal-grid');
+    const prevBtn     = document.getElementById('cal-prev');
+    const nextBtn     = document.getElementById('cal-next');
 
-    const monthNames = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+    const monthNames = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 
     function renderCalendar(year, month) {
-        // month: 0-11
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const startDayOfWeek = firstDay.getDay(); // 0=Sun
-        const daysInMonth = lastDay.getDate();
-
-        // 显示年月
-        yearMonthEl.textContent ="A.D. " + year + '-' + monthNames[month];
-
-        // 上个月最后几天的日期
+        const firstDay       = new Date(year, month, 1);
+        const lastDay        = new Date(year, month + 1, 0);
+        const startDayOfWeek = firstDay.getDay();
+        const daysInMonth    = lastDay.getDate();
         const prevMonthLastDay = new Date(year, month, 0).getDate();
 
-        // 生成网格
+        yearMonthEl.textContent = 'A.D. ' + year + '-' + monthNames[month];
+
         let html = '';
-        const dayNames = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.'];
+        const dayNames = ['Sun.','Mon.','Tues.','Wed.','Thur.','Fri.','Sat.'];
         for (let d = 0; d < 7; d++) {
             html += '<div class="day-name">' + dayNames[d] + '</div>';
         }
-
-        // 空白填充（上月日期）
         for (let i = 0; i < startDayOfWeek; i++) {
             const date = prevMonthLastDay - startDayOfWeek + 1 + i;
             html += '<div class="day-cell other-month">' + date + '</div>';
         }
-
-        // 当月日期
         for (let date = 1; date <= daysInMonth; date++) {
             const isToday = (year === today.getFullYear() && month === today.getMonth() && date === today.getDate());
             html += '<div class="day-cell' + (isToday ? ' today' : '') + '">' + date + '</div>';
         }
-
-        // 下月填充（补齐最后一行）
         const totalCells = startDayOfWeek + daysInMonth;
-        const remaining = (7 - (totalCells % 7)) % 7;
+        const remaining  = (7 - (totalCells % 7)) % 7;
         for (let i = 1; i <= remaining; i++) {
             html += '<div class="day-cell other-month">' + i + '</div>';
         }
-
         gridEl.innerHTML = html;
     }
 
-    function prevMonth() {
+    prevBtn.addEventListener('click', function() {
         displayMonth--;
-        if (displayMonth < 0) {
-            displayMonth = 11;
-            displayYear--;
-        }
+        if (displayMonth < 0) { displayMonth = 11; displayYear--; }
         renderCalendar(displayYear, displayMonth);
-    }
-
-    function nextMonth() {
+    });
+    nextBtn.addEventListener('click', function() {
         displayMonth++;
-        if (displayMonth > 11) {
-            displayMonth = 0;
-            displayYear++;
-        }
+        if (displayMonth > 11) { displayMonth = 0; displayYear++; }
         renderCalendar(displayYear, displayMonth);
-    }
+    });
 
-    prevBtn.addEventListener('click', prevMonth);
-    nextBtn.addEventListener('click', nextMonth);
-
-    // 初始渲染
     renderCalendar(displayYear, displayMonth);
 
     // ===== 随机副标题 =====
@@ -214,6 +431,7 @@ if ('serviceWorker' in navigator) {
     if (subtitleEl) {
         subtitleEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
     }
+
 })();
 </script>
 
