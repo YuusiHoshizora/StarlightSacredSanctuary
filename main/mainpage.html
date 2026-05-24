@@ -213,28 +213,38 @@
 
     backBtn.addEventListener('click', showList);
 
-    // ===== 左侧分类过滤 =====
-    document.querySelector('.vertical-nav').addEventListener('click', function(e) {
-        const link = e.target.closest('a[data-filter]');
-        if (!link) return;
-        e.preventDefault();
+// ===== 左侧分类过滤 =====
+document.querySelector('.vertical-nav').addEventListener('click', function(e) {
+    const link = e.target.closest('a[data-filter]');
+    if (!link) return;
+    e.preventDefault();
 
-        const filter = link.dataset.filter;
-        const cards = document.querySelectorAll('.blog-card');
+    // 移除所有分类链接的选中状态
+    this.querySelectorAll('a[data-filter]').forEach(function(a) {
+        a.classList.remove('active');
+    });
 
-        cards.forEach(function(card) {
-            if (filter === 'all' || card.dataset.tag === filter) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+    // 如果点击的不是"全部"，才添加选中状态
+    if (link.dataset.filter !== 'all') {
+        link.classList.add('active');
+    }
 
-        // 如果在文章视图中，先返回列表
-        if (articleView.classList.contains('active')) {
-            showList();
+    const filter = link.dataset.filter;
+    const cards = document.querySelectorAll('.blog-card');
+
+    cards.forEach(function(card) {
+        if (filter === 'all' || card.dataset.tag === filter) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
         }
     });
+
+    // 如果在文章视图中，先返回列表
+    if (articleView.classList.contains('active')) {
+        showList();
+    }
+});
 
     // ===== 安全转义辅助 =====
     function escapeHtml(str) {
