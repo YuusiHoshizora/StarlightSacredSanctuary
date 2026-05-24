@@ -4,6 +4,10 @@
     box-sizing:border-box;
 }
 
+:root{
+    color-scheme: dark;
+}
+
 ::selection {
     background-color: rgba(58, 48, 114, 0.25);
     color:#C0C0C0

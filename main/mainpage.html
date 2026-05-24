@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>主页面·星光圣域</title>
+    <title>主页面 · 星光圣域</title>
 
     <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/main/mainpage.css">
     <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -25,17 +26,196 @@ if ('serviceWorker' in navigator) {
     <div class="overlay"></div>
 
     <header class="navbar">
-
-        <div class="logo">
-            星光圣域
-        </div>
-
+        <div class="logo">星光圣域</div>
         <nav>
-            <a href="../index.html">首页</a>
+            <a href="..">首页</a>
             <a href="../starmap/">星图</a>
             <a href="../fleet/">舰队</a>
             <a href="../archive/">档案</a>
         </nav>
-
     </header>
+
+    <!-- ===== 三栏主布局 ===== -->
+    <div class="main-layout">
+
+        <!-- 左侧栏：导航分类 -->
+        <aside class="left-panel">
+            <div class="nav-section-title">分类</div>
+            <nav class="vertical-nav">
+                <a href="#">星域日志</a>
+                <a href="#">航行手记</a>
+                <a href="#">观测报告</a>
+                <a href="#">技术文档</a>
+            </nav>
+        </aside>
+
+        <!-- 中间栏：博客文章列表 -->
+        <main class="center-panel">
+            <div class="blog-header">
+                <h1>事件列表</h1>
+                <div class="subtitle" id="subtitle-text">愿星光照亮我们的前程</div>
+            </div>
+
+            <div class="blog-list" id="blog-list">
+                <!-- 示例卡片（未来会被 Markdown 渲染替换） -->
+                <article class="blog-card">
+                    <div class="blog-title">深空信标：第 47 号观测站报告</div>
+                    <div class="blog-meta">
+                        <span>2025-07-12</span>
+                        <span>·</span>
+                        <span>观测报告</span>
+                    </div>
+                    <div class="blog-excerpt">此次例行观测中，我们在银河系旋臂边缘捕获到一组异常的引力波信号……</div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-title">跃迁引擎冷却系统优化记录</div>
+                    <div class="blog-meta">
+                        <span>2025-07-08</span>
+                        <span>·</span>
+                        <span>技术文档</span>
+                    </div>
+                    <div class="blog-excerpt">针对第四代跃迁引擎的过热问题，团队在真空测试环境中进行了 72 小时连续负载模拟……</div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-title">星图校准：新发现的亚空间航道</div>
+                    <div class="blog-meta">
+                        <span>2025-06-30</span>
+                        <span>·</span>
+                        <span>航行手记</span>
+                    </div>
+                    <div class="blog-excerpt">在编号 KX-774 的引力透镜区域背后，存在一条稳定的低辐射航道……</div>
+                </article>
+            </div>
+        </main>
+
+        <!-- 右侧栏：日历 + 信息 -->
+        <aside class="right-panel">
+
+            <div class="calendar-widget">
+                <div class="calendar-header">
+                    <span class="year-month" id="cal-year-month">2025 年 7 月</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow" id="cal-prev" title="上月">‹</button>
+                        <button class="nav-arrow" id="cal-next" title="下月">›</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="cal-grid">
+                    <!-- 由 JavaScript 动态生成 -->
+                </div>
+            </div>
+
+            <div class="right-info">
+                <div class="info-item">
+                    <div class="label">当前所处势力范围</div>
+                    地球联合国 U.N.E.
+                </div>
+                <div class="info-item">
+                    <div class="label">当前所处星系</div>
+                    太阳（Sol）
+                </div>
+            </div>
+
+        </aside>
+    </div>
+
+<script>
+(function() {
+    // ===== 日历渲染 =====
+    const today = new Date();
+    let displayYear = today.getFullYear();
+    let displayMonth = today.getMonth(); // 0-11
+
+    const yearMonthEl = document.getElementById('cal-year-month');
+    const gridEl = document.getElementById('cal-grid');
+    const prevBtn = document.getElementById('cal-prev');
+    const nextBtn = document.getElementById('cal-next');
+
+    const monthNames = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+
+    function renderCalendar(year, month) {
+        // month: 0-11
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDayOfWeek = firstDay.getDay(); // 0=Sun
+        const daysInMonth = lastDay.getDate();
+
+        // 显示年月
+        yearMonthEl.textContent ="A.D. " + year + '-' + monthNames[month];
+
+        // 上个月最后几天的日期
+        const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+        // 生成网格
+        let html = '';
+        // 星期名称（中文）
+        const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+        for (let d = 0; d < 7; d++) {
+            html += '<div class="day-name">' + dayNames[d] + '</div>';
+        }
+
+        // 空白填充（上月日期）
+        for (let i = 0; i < startDayOfWeek; i++) {
+            const date = prevMonthLastDay - startDayOfWeek + 1 + i;
+            html += '<div class="day-cell other-month">' + date + '</div>';
+        }
+
+        // 当月日期
+        for (let date = 1; date <= daysInMonth; date++) {
+            const isToday = (year === today.getFullYear() && month === today.getMonth() && date === today.getDate());
+            html += '<div class="day-cell' + (isToday ? ' today' : '') + '">' + date + '</div>';
+        }
+
+        // 下月填充（补齐最后一行）
+        const totalCells = startDayOfWeek + daysInMonth;
+        const remaining = (7 - (totalCells % 7)) % 7;
+        for (let i = 1; i <= remaining; i++) {
+            html += '<div class="day-cell other-month">' + i + '</div>';
+        }
+
+        gridEl.innerHTML = html;
+    }
+
+    function prevMonth() {
+        displayMonth--;
+        if (displayMonth < 0) {
+            displayMonth = 11;
+            displayYear--;
+        }
+        renderCalendar(displayYear, displayMonth);
+    }
+
+    function nextMonth() {
+        displayMonth++;
+        if (displayMonth > 11) {
+            displayMonth = 0;
+            displayYear++;
+        }
+        renderCalendar(displayYear, displayMonth);
+    }
+
+    prevBtn.addEventListener('click', prevMonth);
+    nextBtn.addEventListener('click', nextMonth);
+
+    // 初始渲染
+    renderCalendar(displayYear, displayMonth);
+
+    // ===== 随机副标题 =====
+    const subtitles = [
+        "愿星光照亮我们的前程",
+        "警告：无法连接至星域网或索拉克矩阵",
+        "警告：无法连接至星光圣域主服务器",
+        "警告：Astra未正常运行",
+        "主页面加载完成",
+        "事件列表加载完成",
+    ];
+    const subtitleEl = document.getElementById('subtitle-text');
+    if (subtitleEl) {
+        subtitleEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
+    }
+})();
+</script>
+
 </body>
+</html>

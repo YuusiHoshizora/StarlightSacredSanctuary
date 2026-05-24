@@ -1,0 +1,275 @@
+/* ===== 主页面三栏布局 ===== */
+.main-layout {
+    display: flex;
+    gap: 0;
+    min-height: 100vh;
+    padding-top: 72px; /* navbar高度 */
+    max-width: 1600px;
+    margin: 0 auto;
+    background: transparent !important;
+}
+
+/* ===== 左侧栏 ===== */
+.left-panel {
+    flex: 0 0 220px;
+    position: sticky;
+    top: 72px;
+    height: calc(100vh - 72px);
+    overflow-y: auto;
+    padding: 40px 20px 30px 40px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.left-panel nav.vertical-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.left-panel nav.vertical-nav a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 15px;
+    transition: 0.3s;
+    padding: 4px 0;
+    letter-spacing: 1px;
+}
+
+.left-panel nav.vertical-nav a:hover {
+    color: #FFD700;
+    opacity: 1;
+    padding-left: 6px;
+}
+
+.left-panel .nav-section-title {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    pointer-events: none;
+}
+
+.left-panel .nav-section-title:first-child {
+    margin-top: 0;
+}
+
+/* ===== 中间栏 ===== */
+.center-panel {
+    flex: 1;
+    min-width: 0;
+    padding: 40px 36px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.blog-header {
+    margin-bottom: 32px;
+}
+
+.blog-header h1 {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.blog-header .subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+
+.blog-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.blog-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 24px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.blog-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 215, 0, 0.2);
+}
+
+.blog-card .blog-title {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.blog-card .blog-meta {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    gap: 16px;
+}
+
+.blog-card .blog-excerpt {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 12px;
+    line-height: 1.7;
+}
+
+/* ===== 右侧栏 ===== */
+.right-panel {
+    flex: 0 0 320px;
+    position: sticky;
+    top: 72px;
+    height: calc(100vh - 72px);
+    overflow-y: auto;
+    padding: 40px 30px 30px 24px;
+}
+
+/* ===== 日历组件 ===== */
+.calendar-widget {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.calendar-header .year-month {
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.calendar-header .nav-arrows {
+    display: flex;
+    gap: 8px;
+}
+
+.calendar-header .nav-arrow {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.calendar-header .nav-arrow:hover {
+    border-color: rgba(255, 215, 0, 0.4);
+    color: #FFD700;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-grid .day-name {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 6px 0;
+    letter-spacing: 1px;
+}
+
+.calendar-grid .day-cell {
+    text-align: center;
+    padding: 6px 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+    transition: 0.2s;
+    cursor: default;
+}
+
+.calendar-grid .day-cell:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.calendar-grid .day-cell.today {
+    background: rgba(255, 215, 0, 0.15);
+    color: #FFD700;
+    font-weight: 500;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.calendar-grid .day-cell.other-month {
+    color: rgba(255, 255, 255, 0.15);
+}
+
+.calendar-grid .day-cell.other-month:hover {
+    background: transparent;
+}
+
+/* ===== 右侧附加信息 ===== */
+.right-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-item {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.info-item .label {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 1024px) {
+    .left-panel {
+        display: none;
+    }
+    .right-panel {
+        flex: 0 0 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+        padding-top: 72px;
+    }
+    .center-panel {
+        padding: 24px 16px;
+        border-right: none;
+    }
+    .right-panel {
+        flex: none;
+        position: static;
+        height: auto;
+        padding: 0 16px 30px;
+    }
+    .blog-card {
+        padding: 16px;
+    }
+}
