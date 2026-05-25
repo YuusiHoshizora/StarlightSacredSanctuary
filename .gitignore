@@ -26,3 +26,4 @@ build/
 # --- 环境文件 ---
 .env
 .venv/
+/assets/post/.obsidian/
