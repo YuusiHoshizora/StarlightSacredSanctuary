@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 · 页面偏离星图坐标</title>
+
+    <link rel="stylesheet" href="/assets/css/global.css">
+    <style>
+        /* ---- 404 专用样式 ---- */
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 100px 24px 60px;
+        }
+
+        .error-code {
+            font-size: clamp(120px, 25vw, 200px);
+            font-weight: 700;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #FFD700, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.15);
+        }
+
+        .error-sub {
+            font-size: clamp(18px, 4vw, 28px);
+            color: #d4d4d4;
+            letter-spacing: 6px;
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+
+        .error-message {
+            max-width: 520px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #aaa;
+            margin-bottom: 40px;
+            padding: 0 16px;
+        }
+
+        .error-message span {
+            display: block;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        .btn-return {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 40px;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 6px;
+            background: rgba(255, 215, 0, 0.08);
+            color: #FFD700;
+            font-size: 16px;
+            font-family: inherit;
+            letter-spacing: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-return:hover {
+            background: rgba(255, 215, 0, 0.18);
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-return svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* 闪烁的 “信号丢失” 动画 */
+        .glitch-line {
+            display: inline-block;
+            margin-top: 32px;
+            padding: 6px 18px;
+            border: 1px solid rgba(255, 80, 80, 0.25);
+            border-radius: 4px;
+            background: rgba(255, 0, 0, 0.05);
+            color: #ff6b6b;
+            font-size: 13px;
+            letter-spacing: 2px;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <!-- ===== 导航栏（绝对路径） ===== -->
+    <header class="navbar">
+        <div class="logo">星光圣域</div>
+        <nav>
+            <a href="/">首页</a>
+            <a href="/starmap/">星图</a>
+            <a href="/fleet/">舰队</a>
+            <a href="/archive/">档案</a>
+            <a href="/main/mainpage/">主页面</a>
+        </nav>
+    </header>
+
+    <!-- ===== 404 内容 ===== -->
+    <main class="error-container">
+        <div class="error-code">404</div>
+        <div class="error-sub">SIGNAL LOST</div>
+        <div class="error-message">
+            你所寻找的页面已偏离星图坐标，
+            无法通过星域网获取其位置。
+            <span>可能的原因：链接已失效 · 输入地址错误 · 星际介质干扰</span>
+        </div>
+
+        <a href="/" class="btn-return">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.5 3L5 8l4.5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            返回星域首页
+        </a>
+
+        <div class="glitch-line">⚠ 通信链路中断 — 正在尝试重新连接…</div>
+    </main>
+
+    <!-- 可选：注册 Service Worker（不影响 404 显示） -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+    </script>
+
+</body>
+</html>
