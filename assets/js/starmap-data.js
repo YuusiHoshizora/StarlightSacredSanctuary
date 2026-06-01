@@ -99,9 +99,22 @@ const STARMAP_DATA = [
     starType: "M",
     developmentLevel: "次核心阶段",
     description:
-      "弗里吉杜斯是星光圣域用于补给的星系。",
+      "弗里吉杜斯是星光圣域用于补给的星系之一。",
     x: 0.5,
     y: 0.5,
+  },
+  {
+    id: "lansdeia",
+    name: "兰斯德亚",
+    nameEn: "Lansdeia",
+    starCount: 2,
+    planets: 1,
+    starType: "G、M",
+    developmentLevel: "深入阶段",
+    description:
+      "兰斯德亚是星光圣域用于补给的星系之一。",
+    x: 0.81,
+    y: 0.24,
   },
   {
     id: "n9",
@@ -130,6 +143,19 @@ const STARMAP_DATA = [
     y: 0.33,
   },
   {
+    id: "p303",
+    name: "P-303脉冲星",
+    nameEn: "Pulsar P-303",
+    starCount: 1,
+    planets: 0,
+    starType: "脉冲星",
+    developmentLevel: "次核心阶段",
+    description:
+      "P-303脉冲星位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团的通信中心。",
+    x: 0.23,
+    y: 0.75,
+  },
+  {
     id: "p304",
     name: "P-304脉冲星",
     nameEn: "Pulsar P-304",
@@ -141,6 +167,32 @@ const STARMAP_DATA = [
       "星光圣域科研中心所在地。借助脉冲星的脉冲电磁信号，星光圣域能够进行对时间的精细校准和通常宇宙内的导航。",
     x: 0.26,
     y: 0.4,
+  },
+  {
+    id: "ridien",
+    name: "瑞狄恩",
+    nameEn: "Ridien",
+    starCount: 2,
+    planets: 5,
+    starType: "B",
+    developmentLevel: "休整阶段",
+    description:
+      "瑞狄恩是星光圣域用于补给的星系之一。",
+    x: 0.41,
+    y: 0.58,
+  },
+  {
+    id: "skymirror",
+    name: "天镜",
+    nameEn: "Sky Mirror",
+    starCount: 1,
+    planets: 8,
+    starType: "K",
+    developmentLevel: "次核心阶段",
+    description:
+      "天镜是在第一次远距离探索时发现的星系，因该星系与太阳相似而得名，特别是第三行星“仿地星”，其环境与地球别无二致，成为大部分无法前往地球旅行人的代替选择。",
+    x: 0.78,
+    y: 0.17,
   },
   {
     id: "stalko",
@@ -190,8 +242,21 @@ const STARMAP_DATA = [
     starType: "O、G",
     developmentLevel: "深入阶段",
     description:
-      "亚斯科洛莱雅星系位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
+      "亚斯科洛莱雅位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
     x: 0.45,
     y: 0.78,
+  },
+  {
+    id: "yurien",
+    name: "尤利恩",
+    nameEn: "Yurien",
+    starCount: 3,
+    planets: 5,
+    starType: "O、K、K",
+    developmentLevel: "休整阶段",
+    description:
+      "尤利恩位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团进攻的堡垒之一。",
+    x: 0.19,
+    y: 0.74,
   },
 ];
