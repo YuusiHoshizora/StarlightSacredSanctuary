@@ -60,22 +60,9 @@ const STARMAP_DATA = [
     starType: "K、M",
     developmentLevel: "次核心阶段",
     description:
-      "残阳星系中的行星BSα-1（又称“星海星”）是闻名宇宙的度假行星，也是星光圣域用于正式外交的星系之一。",
+      "残阳中的行星BSα-1（又称“星海星”）是闻名宇宙的度假行星，也是星光圣域用于正式外交的地点之一。",
     x: 0.43,
     y: 0.41,
-    },
-  {
-    id: "errol",
-    name: "埃罗尔",
-    nameEn: "Errol",
-    starCount: 1,
-    planets: 4,
-    starType: "F",
-    developmentLevel: "深入阶段",
-    description:
-      "埃罗尔星系位于星光圣域的边境，是星光圣域研究寂静领域的主要前哨站。",
-    x: 0.1,
-    y: 0.2,
   },
   {
     id: "caelus",
@@ -89,6 +76,45 @@ const STARMAP_DATA = [
       "星光圣域的工业星系，星光圣域大部分半永久性生产线都位于此星系。同时，这里也是进入维斯佩拉星系的检查站之一，重点为计划与星光圣域进行贸易的商业舰船进行检查。",
     x: 0.3,
     y: 0.37,
+  },
+  {
+    id: "errol",
+    name: "埃罗尔",
+    nameEn: "Errol",
+    starCount: 1,
+    planets: 4,
+    starType: "F",
+    developmentLevel: "深入阶段",
+    description:
+      "埃罗尔位于星光圣域的边境，是星光圣域研究寂静领域的主要前哨站。",
+    x: 0.1,
+    y: 0.2,
+  },
+  {
+    id: "frigidus",
+    name: "弗里吉杜斯",
+    nameEn: "Frigidus",
+    starCount: 1,
+    planets: 2,
+    starType: "M",
+    developmentLevel: "次核心阶段",
+    description:
+      "弗里吉杜斯是星光圣域用于补给的星系。",
+    x: 0.5,
+    y: 0.5,
+  },
+  {
+    id: "n9",
+    name: "N-9中子星",
+    nameEn: "Neutron Star N-9",
+    starCount: 1,
+    planets: 0,
+    starType: "中子星",
+    developmentLevel: "休整阶段",
+    description:
+      "N-9中子星位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团进攻的主要前哨。",
+    x: 0.2,
+    y: 0.81,
   },
   {
     id: "nadiris",
@@ -125,9 +151,22 @@ const STARMAP_DATA = [
     starType: "K",
     developmentLevel: "休整阶段",
     description:
-      "斯达尔科星系为星光圣域的半边境星系，由于其战略价值较低，星光圣域并未优先开发此星系。",
+      "斯达尔科为星光圣域的半边境星系，由于其战略价值较低，星光圣域并未优先开发此星系。",
     x: 0.18,
     y: 0.21,
+  },
+  {
+    id: "tel",
+    name: "特尔",
+    nameEn: "Tel",
+    starCount: 1,
+    planets: 13,
+    starType: "K",
+    developmentLevel: "休整阶段",
+    description:
+      "特尔位于伊谢尔伦回廊入口与罗素费亚回廊入口连线的中点附近，是星光圣域用于监测大空洞的主要星系之一，也是星光圣域边境防护指挥中心所在星系。",
+    x: 0.6,
+    y: 0.6,
   },
   {
     id: "vespera",
@@ -141,5 +180,18 @@ const STARMAP_DATA = [
       "星光圣域的名义首都所在星系，也是星光圣域舰队最常驻留的位置。目前，星光圣域已经实现了对此星系的完全开发，加上了完善的辅助设施，让维斯佩拉星系能够成为通常宇宙中极为繁华的星系之一。",
     x: 0.25,
     y: 0.35,
+  },
+  {
+    id: "yaskololaya",
+    name: "亚斯科洛莱雅",
+    nameEn: "Yaskololaya",
+    starCount: 2,
+    planets: 8,
+    starType: "O、G",
+    developmentLevel: "深入阶段",
+    description:
+      "亚斯科洛莱雅星系位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
+    x: 0.45,
+    y: 0.78,
   },
 ];
