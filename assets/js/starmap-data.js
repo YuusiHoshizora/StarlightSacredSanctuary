@@ -28,7 +28,7 @@ const STARMAP_DATA = [
   {
     id: "b970",
     name: "B-970 黑洞",
-    nameEn: "Blackhole B-970",
+    nameEn: "Black Hole B-970",
     starCount: 1,
     planets: 1,
     starType: "黑洞",
@@ -38,6 +38,32 @@ const STARMAP_DATA = [
     x: 0.8,
     y: 0.45,
   },
+  {
+    id: "b1206",
+    name: "B-1206 黑洞",
+    nameEn: "Black Hole B-1206",
+    starCount: "1",
+    planets: "0",
+    starType: "黑洞",
+    developmentLevel: "完全",
+    description:
+      "B-1206黑洞位于维斯佩拉和P-304脉冲星附近，是研究重力、时空、视界等方向的绝佳场所。",
+    x: 0.23,
+    y: 0.38,
+  },
+  {
+    id: "brokensun",
+    name: "残阳",
+    nameEn: "Broken Sun",
+    starCount: "2",
+    planets: "6",
+    starType: "K、M",
+    developmentLevel: "次核心阶段",
+    description:
+      "残阳星系中的行星BSα-1（又称“星海星”）是闻名宇宙的度假行星，也是星光圣域用于正式外交的星系之一。",
+    x: 0.43,
+    y: 0.41,
+    },
   {
     id: "errol",
     name: "埃罗尔",
@@ -50,6 +76,19 @@ const STARMAP_DATA = [
       "埃罗尔星系位于星光圣域的边境，是星光圣域研究寂静领域的主要前哨站。",
     x: 0.1,
     y: 0.2,
+  },
+  {
+    id: "caelus",
+    name: "凯卢斯",
+    nameEn: "Caelus",
+    starCount: 2,
+    planets: 6,
+    starType: "K、M",
+    developmentLevel: "完全",
+    description:
+      "星光圣域的工业星系，星光圣域大部分半永久性生产线都位于此星系。同时，这里也是进入维斯佩拉星系的检查站之一，重点为计划与星光圣域进行贸易的商业舰船进行检查。",
+    x: 0.3,
+    y: 0.37,
   },
   {
     id: "nadiris",
