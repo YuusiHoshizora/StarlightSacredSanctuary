@@ -20,7 +20,7 @@ const STARMAP_DATA = [
     planets: 3,
     starType: "G",
     developmentLevel: "完全",
-    description:
+      description:
       "星光圣域的通信枢纽之一，在索拉克分支矩阵“阿斯特拉利斯”的辅助下，阿斯特拉利斯成为全宇宙知名的服务器集群地之一，同时也是星域网的主服务器所在星系。",
     x: 0.29,
     y: 0.32,

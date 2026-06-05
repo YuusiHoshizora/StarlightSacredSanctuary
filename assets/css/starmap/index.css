@@ -59,6 +59,18 @@
   flex-direction: column;
 }
 
+#system-info-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#system-info-body.fading {
+  opacity: 0;
+  transform: translate(6px);
+}
+
 /* 详情网格贴底 */
 .system-info-details {
   margin-top: auto;
@@ -78,9 +90,15 @@
   font-size: 16px;
   letter-spacing: 4px;
   color: rgba(255, 215, 0, 0.5);
+  margin-bottom: 0;
+}
+
+/* 星系名称分割线 */
+.system-info-divider{
+  border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+  margin-top: 2px;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 /* 星系基础数据网格 */
@@ -107,6 +125,11 @@
 .info-item .value {
   font-size: 16px;
   letter-spacing: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.info-item .value.fading {
+  opacity: 0;
 }
 
 /* 星系描述 */

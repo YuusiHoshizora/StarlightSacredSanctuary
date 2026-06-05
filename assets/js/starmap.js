@@ -19,6 +19,7 @@ const infoContainer = document.getElementById("system-info");
 
 let selectedId = null;
 let hoveredId = null;
+let fadeTimer = null;
 
 // ── 过渡动画参数 ──
 const ANIM_SPEED = 0.05;   // 每帧插值步长（越大越快）
@@ -203,9 +204,12 @@ function getSystemAt(clientX, clientY) {
 // ── 更新右侧信息 ──
 function renderSystemInfo(system) {
   if (!system) {
+    clearTimeout(fadeTimer);
     infoContainer.innerHTML = `
       <div class="empty-info">
-        <p>选择任一星系以查看详情</p>
+        <p>当前星图系统运行异常</p>
+        <p>无法访问星图系统主数据库</p>
+        <p>部分星系信息可能缺失</p>
       </div>
     `;
     return;
@@ -215,37 +219,74 @@ function renderSystemInfo(system) {
     btn.classList.toggle("active", btn.dataset.id === system.id);
   });
 
-  infoContainer.innerHTML = `
-    <h2 class="system-name">${system.name}</h2>
-    <p class="system-name-en">${system.nameEn}</p>
-    <p class="system-description">${system.description}</p>
-    <br>
-    <div class="system-info-details">
-      <div class="system-info-grid">
-      <div class="info-item">
-        <div class="label">恒星数量</div>
-        <div class="value">${system.starCount}</div>
+  const body = document.getElementById('system-info-body');
+
+  if (!body) {
+    // 首次进入星系：渲染完整结构
+    infoContainer.innerHTML = `
+      <div id="system-info-body">
+        <h2 class="system-name">${system.name}</h2>
+        <p class="system-name-en">${system.nameEn}</p>
+        <div class="system-info-divider"></div>
+        <p class="system-description">${system.description}</p>
       </div>
-      <div class="info-item">
-        <div class="label">行星数量</div>
-        <div class="value">${system.planets}</div>
+      <br>
+      <div class="system-info-details">
+        <div class="system-info-grid">
+          <div class="info-item">
+            <div class="label">恒星数量</div>
+            <div class="value">${system.starCount}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">行星数量</div>
+            <div class="value">${system.planets}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">恒星类型</div>
+            <div class="value">${system.starType}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">开发程度</div>
+            <div class="value">${system.developmentLevel}</div>
+          </div>
+        </div>
       </div>
-      <div class="info-item">
-        <div class="label">恒星类型</div>
-        <div class="value">${system.starType}</div>
-      </div>
-      <div class="info-item">
-        <div class="label">开发程度</div>
-        <div class="value">${system.developmentLevel}</div>
-      </div>
-      </div>
-    </div>
-  `;
+    `;
+  } else {
+    // 切换星系：正文 + value 同步淡出，换内容，淡入
+    clearTimeout(fadeTimer);
+    const values = infoContainer.querySelectorAll('.info-item .value');
+
+    body.classList.add('fading');
+    values.forEach(v => v.classList.add('fading'));
+
+    fadeTimer = setTimeout(() => {
+      // 更新正文
+      body.querySelector('.system-name').textContent = system.name;
+      body.querySelector('.system-name-en').textContent = system.nameEn;
+      body.querySelector('.system-description').textContent = system.description;
+
+      // 更新四个 value（按顺序对应）
+      const [starCount, planets, starType, developmentLevel] = values;
+      starCount.textContent      = system.starCount;
+      planets.textContent        = system.planets;
+      starType.textContent       = system.starType;
+      developmentLevel.textContent = system.developmentLevel;
+
+      body.classList.remove('fading');
+      values.forEach(v => v.classList.remove('fading'));
+    }, 200);
+  }
 }
 
 // ── 选中星系 ──
 function selectSystem(system) {
-  selectedId = system ? system.id : null;
+  const newId = system ? system.id : null;
+
+  // 前后都是空选中，不需要更新信息面板
+  if (newId === selectedId) return;   // ← 同一星系重复点击也顺手过滤掉了
+
+  selectedId = newId;
   renderSystemInfo(system);
   startAnimation();
 }
