@@ -57,18 +57,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  transition: opacity 0.1s ease;
 }
 
 #system-info-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-#system-info-body.fading {
-  opacity: 0;
-  transform: translate(6px);
 }
 
 /* 详情网格贴底 */
@@ -83,6 +78,7 @@
   font-weight: normal;
   color: #FFD700;
   margin-bottom: 4px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 /* 星系英文名称 */
@@ -91,6 +87,7 @@
   letter-spacing: 4px;
   color: rgba(255, 215, 0, 0.5);
   margin-bottom: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 /* 星系名称分割线 */
@@ -137,6 +134,14 @@
   line-height: 1.8;
   opacity: 0.8;
   font-size: 15px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.system-name.fading,
+.system-name-en.fading,
+.system-description.fading {
+  opacity: 0;
+  transform: translateX(6px);
 }
 
 /* 列表按钮 */

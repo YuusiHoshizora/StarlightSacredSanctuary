@@ -202,82 +202,156 @@ function getSystemAt(clientX, clientY) {
 }
 
 // ── 更新右侧信息 ──
-function renderSystemInfo(system) {
-  if (!system) {
-    clearTimeout(fadeTimer);
-    infoContainer.innerHTML = `
-      <div class="empty-info">
-        <p>当前星图系统运行异常</p>
-        <p>无法访问星图系统主数据库</p>
-        <p>部分星系信息可能缺失</p>
-      </div>
-    `;
+function renderSystemInfo(system, isInitial = false) {
+  clearTimeout(fadeTimer);
+
+  if (isInitial) {
+    // ── 首次加载：直接渲染 ──
+    document.querySelectorAll('.system-list-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.id === system?.id);
+    });
+
+    if (!system) {
+      infoContainer.innerHTML = `
+        <div class="empty-info">
+          <p>当前星图系统运行异常</p>
+          <p>无法访问星图系统主数据库</p>
+          <p>部分星系信息可能缺失</p>
+        </div>
+      `;
+    } else {
+      infoContainer.innerHTML = `
+        <div id="system-info-body">
+          <h2 class="system-name">${system.name}</h2>
+          <p class="system-name-en">${system.nameEn}</p>
+          <div class="system-info-divider"></div>
+          <p class="system-description">${system.description}</p>
+        </div>
+        <br>
+        <div class="system-info-details">
+          <div class="system-info-grid">
+            <div class="info-item">
+              <div class="label">恒星数量</div>
+              <div class="value">${system.starCount}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">行星数量</div>
+              <div class="value">${system.planets}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">恒星类型</div>
+              <div class="value">${system.starType}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">开发程度</div>
+              <div class="value">${system.developmentLevel}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    infoContainer.style.opacity = '1';
     return;
   }
 
-  document.querySelectorAll(".system-list-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.id === system.id);
-  });
-
+  // ── 非首次 ──
   const body = document.getElementById('system-info-body');
 
+  if (!system) {
+    // 场景1：选中 → 未选中（整体淡出淡入）
+    if (!body) return; // 已经是空状态，跳过
+
+    infoContainer.style.opacity = '0';
+    fadeTimer = setTimeout(() => {
+      document.querySelectorAll('.system-list-btn').forEach((btn) => {
+        btn.classList.remove('active');
+      });
+      infoContainer.innerHTML = `
+        <div class="empty-info">
+          <p>当前星图系统运行异常</p>
+          <p>无法访问星图系统主数据库</p>
+          <p>部分星系信息可能缺失</p>
+        </div>
+      `;
+      infoContainer.style.opacity = '1';
+    }, 100);
+    return;
+  }
+
   if (!body) {
-    // 首次进入星系：渲染完整结构
-    infoContainer.innerHTML = `
-      <div id="system-info-body">
-        <h2 class="system-name">${system.name}</h2>
-        <p class="system-name-en">${system.nameEn}</p>
-        <div class="system-info-divider"></div>
-        <p class="system-description">${system.description}</p>
-      </div>
-      <br>
-      <div class="system-info-details">
-        <div class="system-info-grid">
-          <div class="info-item">
-            <div class="label">恒星数量</div>
-            <div class="value">${system.starCount}</div>
-          </div>
-          <div class="info-item">
-            <div class="label">行星数量</div>
-            <div class="value">${system.planets}</div>
-          </div>
-          <div class="info-item">
-            <div class="label">恒星类型</div>
-            <div class="value">${system.starType}</div>
-          </div>
-          <div class="info-item">
-            <div class="label">开发程度</div>
-            <div class="value">${system.developmentLevel}</div>
+    // 场景2：未选中 → 选中（整体淡出淡入）
+    infoContainer.style.opacity = '0';
+    fadeTimer = setTimeout(() => {
+      document.querySelectorAll('.system-list-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.id === system.id);
+      });
+      infoContainer.innerHTML = `
+        <div id="system-info-body">
+          <h2 class="system-name">${system.name}</h2>
+          <p class="system-name-en">${system.nameEn}</p>
+          <div class="system-info-divider"></div>
+          <p class="system-description">${system.description}</p>
+        </div>
+        <br>
+        <div class="system-info-details">
+          <div class="system-info-grid">
+            <div class="info-item">
+              <div class="label">恒星数量</div>
+              <div class="value">${system.starCount}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">行星数量</div>
+              <div class="value">${system.planets}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">恒星类型</div>
+              <div class="value">${system.starType}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">开发程度</div>
+              <div class="value">${system.developmentLevel}</div>
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  } else {
-    // 切换星系：正文 + value 同步淡出，换内容，淡入
-    clearTimeout(fadeTimer);
-    const values = infoContainer.querySelectorAll('.info-item .value');
-
-    body.classList.add('fading');
-    values.forEach(v => v.classList.add('fading'));
-
-    fadeTimer = setTimeout(() => {
-      // 更新正文
-      body.querySelector('.system-name').textContent = system.name;
-      body.querySelector('.system-name-en').textContent = system.nameEn;
-      body.querySelector('.system-description').textContent = system.description;
-
-      // 更新四个 value（按顺序对应）
-      const [starCount, planets, starType, developmentLevel] = values;
-      starCount.textContent      = system.starCount;
-      planets.textContent        = system.planets;
-      starType.textContent       = system.starType;
-      developmentLevel.textContent = system.developmentLevel;
-
-      body.classList.remove('fading');
-      values.forEach(v => v.classList.remove('fading'));
-    }, 200);
+      `;
+      infoContainer.style.opacity = '1';
+    }, 250);
+    return;
   }
+
+  // 场景3：选中A → 选中B（文字级 fading，保持原有行为）
+  document.querySelectorAll('.system-list-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.id === system.id);
+  });
+
+  const name = body.querySelector('.system-name');
+  const nameEn = body.querySelector('.system-name-en');
+  const description = body.querySelector('.system-description');
+  const values = infoContainer.querySelectorAll('.info-item .value');
+
+  name.classList.add('fading');
+  nameEn.classList.add('fading');
+  description.classList.add('fading');
+  values.forEach(v => v.classList.add('fading'));
+
+  fadeTimer = setTimeout(() => {
+    name.textContent = system.name;
+    nameEn.textContent = system.nameEn;
+    description.textContent = system.description;
+
+    const [starCount, planets, starType, developmentLevel] = values;
+    starCount.textContent      = system.starCount;
+    planets.textContent        = system.planets;
+    starType.textContent       = system.starType;
+    developmentLevel.textContent = system.developmentLevel;
+
+    name.classList.remove('fading');
+    nameEn.classList.remove('fading');
+    description.classList.remove('fading');
+    values.forEach(v => v.classList.remove('fading'));
+  }, 200);
 }
+
 
 // ── 选中星系 ──
 function selectSystem(system) {
@@ -324,7 +398,7 @@ window.addEventListener("resize", () => {
 function init() {
   resizeCanvas();
   drawStarMap();
-  renderSystemInfo(null);
+  renderSystemInfo(null, true);
   buildSystemList();
 }
 
