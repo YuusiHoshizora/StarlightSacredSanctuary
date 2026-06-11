@@ -1,0 +1,90 @@
+.archive-section {
+    position: relative;
+    z-index: 1;
+    padding: 120px 60px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 32px;
+}
+
+.archive-card {
+    position: relative;
+    display: block;
+    color: white;
+    text-decoration: none;
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 32px 28px;
+    backdrop-filter: blur(8px);
+    transition: all 0.35s ease;
+    overflow: hidden;
+}
+
+.archive-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.archive-card:hover {
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.archive-card:hover::before {
+    opacity: 1;
+}
+
+.archive-card h2 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.archive-card .english {
+    font-size: 13px;
+    opacity: 0.6;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+}
+
+.archive-card .desc {
+    font-size: 15px;
+    opacity: 0.8;
+    line-height: 1.7;
+}
+
+.archive-card .count {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 13px;
+    opacity: 0.5;
+    letter-spacing: 1px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .archive-section {
+        padding: 96px 24px 60px;
+    }
+
+    .archive-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .archive-card {
+        padding: 24px 20px;
+    }
+}
