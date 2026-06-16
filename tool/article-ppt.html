@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英美报刊导读 · 星光圣域</title>
+    <style>
+        @font-face {
+            font-family: "Sarasa";
+            src: url("../assets/fonts/SarasaUiSC-Regular.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;-ms-overflow-style:none;scrollbar-width:none}
+        *::-webkit-scrollbar{display:none}
+        :root{color-scheme:dark}
+        html,body{width:100%;height:100%;overflow:hidden}
+        body{font-family:"Sarasa","Georgia","Times New Roman",serif;color:white;background:black}
+        .background{
+            position:fixed;inset:0;
+            background-image:url("../assets/img/bg.webp");
+            background-size:cover;background-position:center;
+            transform:scale(1.05);z-index:-2
+        }
+        .overlay{
+            position:fixed;inset:0;
+            background:linear-gradient(to bottom,rgba(0,0,0,0.4),rgba(0,0,0,0.8));
+            z-index:-1
+        }
+        .navbar{
+            position:fixed;top:0;width:100%;height:72px;
+            display:flex;justify-content:space-between;align-items:center;
+            padding:0 60px;backdrop-filter:blur(12px);
+            background:rgba(10,10,30,0.35);
+            border-bottom:1px solid rgba(255,255,255,0.08);
+            z-index:100
+        }
+        .logo{font-size:24px;letter-spacing:4px;color:white}
+        nav{display:flex;gap:40px}
+        nav a{color:white;text-decoration:none;opacity:0.75;transition:0.3s}
+        nav a:hover{opacity:1;color:#FFD700}
+        .ppt-container{
+            position:relative;z-index:10;flex:1;
+            display:flex;flex-direction:column;
+            padding:92px 60px 20px;overflow:hidden;height:100vh
+        }
+        .slide-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .slide{display:none;flex:1;flex-direction:column;animation:fadeIn 0.5s ease}
+        .slide.active{display:flex}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .slide-title-page{justify-content:center;align-items:center;text-align:center}
+        .slide-title-page h1{
+            font-size:clamp(28px,4.2vw,56px);color:#FFFFFF;
+            line-height:1.3;text-shadow:0 0 40px rgba(212,175,55,0.15)
+        }
+        .slide-title-page .subtitle{
+            font-size:clamp(16px,1.8vw,24px);color:rgba(255,255,255,0.7);
+            margin-top:14px;font-style:italic
+        }
+        .slide-title-page .trans-title{
+            font-size:clamp(18px,2.2vw,32px);color:#FFD700;
+            margin-top:22px;letter-spacing:2px
+        }
+        .slide-title-page .source-link{
+            margin-top:30px;font-size:clamp(13px,1.2vw,16px);
+            background:rgba(255,255,255,0.05);padding:8px 20px;
+            border-radius:30px;border:1px solid rgba(255,255,255,0.15);
+            display:inline-block
+        }
+        .slide-title-page .source-link a{color:#9ab8ea;text-decoration:none;word-break:break-all}
+        .slide-title-page .source-link a:hover{text-decoration:underline;color:#FFD700}
+        .slide-title-page .page-num{margin-top:40px;font-size:14px;color:rgba(255,255,255,0.3)}
+        .content-grid{display:flex;flex:1;gap:32px;min-height:0}
+        .content-grid .col{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:6px 4px}
+        .content-grid .col h3{
+            font-size:14px;letter-spacing:2px;color:#FFD700;
+            margin-bottom:10px;text-transform:uppercase;
+            border-bottom:1px solid rgba(255,215,0,0.2);
+            padding-bottom:6px;flex-shrink:0;
+            font-family:"Sarasa",sans-serif
+        }
+        .content-grid .col .text{
+            font-size:clamp(14px,1.5vw,19px);line-height:1.75;
+            color:rgba(255,255,255,0.88);white-space:pre-wrap;word-break:break-word
+        }
+        .content-grid .col .text .vocab-highlight{
+            color:#FFD700;border-bottom:1px dashed rgba(255,215,0,0.5);cursor:help
+        }
+        .content-grid .col.en .text{font-family:"Sarasa","Georgia",serif}
+        .content-grid .col.zh .text{font-family:"Sarasa","Noto Serif SC",serif}
+        .content-grid .col::-webkit-scrollbar{width:4px}
+        .content-grid .col::-webkit-scrollbar-track{background:transparent}
+        .content-grid .col::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px}
+        .vocab-section{
+            flex-shrink:0;margin-top:18px;
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:8px;padding:16px 22px;
+            max-height:200px;overflow-y:auto
+        }
+        .vocab-section h4{
+            font-size:clamp(14px,1.5vw,19px);color:#FFD700;letter-spacing:2px;
+            margin-bottom:8px;font-family:"Sarasa",sans-serif
+        }
+        .vocab-section .vocab-list{display:flex;flex-wrap:wrap;gap:8px 18px}
+        .vocab-section .vocab-item{font-size:clamp(14px,1.5vw,19px);color:rgba(255,255,255,0.85)}
+        .vocab-section .vocab-item .en{color:#FFD700;margin-right:6px}
+        .vocab-section .vocab-item .cn{color:rgba(255,255,255,0.6)}
+        .bottom-nav{
+            flex-shrink:0;display:flex;align-items:center;
+            justify-content:space-between;padding:12px 0 0;
+            border-top:1px solid rgba(255,255,255,0.08);margin-top:12px
+        }
+        .bottom-nav .nav-btn{
+            background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.15);
+            color:white;padding:6px 22px;border-radius:20px;
+            cursor:pointer;font-size:15px;transition:all 0.3s;
+            font-family:"Sarasa",sans-serif
+        }
+        .bottom-nav .nav-btn:hover{
+            background:rgba(255,215,0,0.15);
+            border-color:#FFD700;color:#FFD700
+        }
+        .bottom-nav .nav-btn:disabled{
+            opacity:0.3;cursor:not-allowed;
+            border-color:transparent;background:transparent
+        }
+        .bottom-nav .page-indicator{font-size:14px;color:rgba(255,255,255,0.4);letter-spacing:1px}
+        @media(max-width:800px){
+            .navbar{padding:0 20px}
+            .navbar .logo{font-size:18px}
+            nav{gap:20px}
+            nav a{font-size:14px}
+            .ppt-container{padding:80px 16px 16px}
+            .content-grid{flex-direction:column;gap:12px}
+            .content-grid .col{max-height:none;overflow-y:visible}
+            .content-grid .col .text{font-size:15px}
+            .slide-title-page h1{font-size:28px}
+            .vocab-section{max-height:100px}
+        }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="overlay"></div>
+<header class="navbar">
+    <div class="logo">星光圣域</div>
+    <nav>
+        <a href="..">首页</a>
+        <a href="../starmap/">星图</a>
+        <a href="../fleet/">舰队</a>
+        <a href=".">工具</a>
+        <a href="../archive/">档案</a>
+    </nav>
+</header>
+<div class="ppt-container">
+    <div class="slide-area" id="slideArea"></div>
+    <div class="bottom-nav">
+        <button class="nav-btn" id="prevBtn">← 上一页</button>
+        <span class="page-indicator" id="pageIndicator">1 / 12</span>
+        <button class="nav-btn" id="nextBtn">下一页 →</button>
+    </div>
+</div>
+<script>
+//=====1.data=====
+const slidesData=[
+{type:'title',title:'Have astronomers spotted an exploding primordial star?',subtitle:'Puzzling JWST observation could instead be one of the universe\'s first galaxies — or something more mundane',transTitle:'天文学家是否发现了一颗正在爆炸的原恒星？',source:'https://www.science.org/content/article/have-astronomers-spotted-exploding-primordial-star'},
+{type:'content',en:`Since its launch more than 4 years ago, NASA's JWST space observatory has discovered an unexpected wealth of bright galaxies in the early universe. But one tiny red blob reported last year stands out as an extreme outlier: Its discoverers suggested it might be a galaxy shining less than 100 million years after the Big Bang, far earlier than theorists thought possible. Now, another team argues the object—dubbed Capotauro—may instead be something even more exotic: the long-sought explosion of a primordial, first-generation star.`,zh:`自四年前发射以来，美国宇航局的詹姆斯·韦伯太空望远镜（JWST）在早期宇宙中发现了一个意想不到的明亮星系群。但去年报告的一个微小红点却是一个极端特例：它的发现者认为它可能是一个在大爆炸后不到1亿年就闪耀的星系，这比理论家认为可能的时间要早得多。现在，另一组研究人员认为，这个被称为Capotauro的天体可能更异乎寻常：是一颗长期寻找的原始第一代恒星爆炸。`,vocab:[['observatory','天文台；观测站'],['wealth','丰富；大量'],['outlier','异常值；离群点'],['primordial','原始的；原初的'],['exotic','异乎寻常的；外来的'],['dubbed','被称为；被称作']]},
+{type:'content',en:`The team also notes a more mundane possibility: that observers have stumbled on an unusually cool brown dwarf—a failed star the size of Jupiter—glowing faintly in the infrared as it drifts through the Milky Way. Each explanation would be significant, says Andrea Ferrara of the Scuola Normale Superiore, lead author of the paper published last week in The Open Journal of Astrophysics. "It's a win-win situation."`,zh:`该团队还指出了一种更平凡的可能性：观测者可能偶然发现了一颗异常寒冷的棕矮星——一颗木星大小的失败恒星，当它漂移过银河系时，在红外波段微弱发光。每种解释都很重要，比萨高等师范学校的安德烈亚·费拉拉说，他是上周发表在《天体物理学开放期刊》上的论文的第一作者。"这是一个双赢的局面。"`,vocab:[['mundane','平凡的；世俗的'],['brown dwarf','棕矮星'],['infrared','红外线的'],['drift','漂流；漂移'],['lead author','第一作者'],['win-win','双赢的']]},
+{type:'content',en:`Although a galaxy so early in the universe's history would be revolutionary because the odds of JWST seeing it "should be zero," he says, a supernova could provide the clearest evidence yet for the nature of the universe's first stars. Even if it's a brown dwarf, it would be among the coldest yet detected and the farthest from Earth. Future observations could distinguish among the possibilities: Motion would favor a brown dwarf, fading brightness a supernova, and steady light a distant galaxy.`,zh:`尽管在宇宙历史如此早期出现一个星系将是革命性的，因为JWST看到它的几率"应该是零"，但超新星可能为宇宙第一批恒星的性质提供迄今为止最清晰的证据。即使它是一颗棕矮星，它也将是迄今探测到的最冷棕矮星之一，也是离地球最远的。未来的观测可以区分这些可能性：运动表明棕矮星，亮度变暗表明超新星，稳定的光表明遥远的星系。`,vocab:[['revolutionary','革命性的；突破性的'],['odds','几率；可能性'],['supernova','超新星'],['farthest','最远的'],['distinguish','区分；辨别'],['fading','变暗；消退']]},
+{type:'content',en:`Giovanni Gandolfi of the Astronomical Observatory of Rome led the team that first flagged Capotauro as a distant galaxy candidate. He named it after a mountain in his home region of Emilia-Romagna. Follow-up JWST observations to pin down its redshift—the stretching of light by cosmic expansion that reveals distance—weren't conclusive. Reported in a paper posted to arXiv in September 2025, they suggested it was either an extremely distant galaxy or a brown dwarf only a few hundred light-years from Earth that had cooled to almost room temperature over billions of years, "like a witness to the history of the Milky Way," Gandolfi says.`,zh:`罗马天文台的乔瓦尼·甘多尔菲领导了首次将Capotauro标记为遥远星系候选者的团队。他以自己家乡艾米利亚-罗马涅大区的一座山命名了它。后续JWST观测以确定其红移——宇宙膨胀导致的光波拉伸，可以揭示距离——并未得出定论。在2025年9月发布在arXiv上的一篇论文中，他们认为它要么是一个极遥远的星系，要么是一颗距离地球仅几百光年的棕矮星，经过数十亿年冷却到几乎室温，"就像银河系历史的见证者，"甘多尔菲说。`,vocab:[['flagged','标记；标示'],['candidate','候选者；候选天体'],['redshift','红移'],['cosmic expansion','宇宙膨胀'],['conclusive','决定性的；确凿的'],['witness','见证者；目击者']]},
+{type:'content',en:`But Ferrara noticed something odd about Capotauro. Between the first JWST image and the follow-up more than 2 years later, the source had brightened by 20%—behavior not expected from either a galaxy or a brown dwarf. Ferrara and his colleagues instead suggest it is a pair-instability supernova, a type of blast thought to occur only in very massive stars composed almost entirely of primordial hydrogen and helium, without the heavier elements that accumulate later in cosmic history. In such stars, energetic gamma rays inside the core can spontaneously transform into electron-positron pairs, robbing the star of radiation pressure to support its outer layers and triggering a collapse that leads to a runaway thermonuclear explosion.`,zh:`但费拉拉注意到了Capotauro的异常之处。在第一次JWST图像和两年多后的后续观测之间，这个光源变亮了20%——这种表现既不是星系也不是棕矮星所预期的。费拉拉和他的同事们反而认为它是一对不稳定性超新星，这是一种被认为只发生在几乎完全由原始氢和氦组成的超大质量恒星中的爆炸，这些恒星缺乏宇宙历史上后来积累的更重元素。在这样的恒星中，核心内的高能伽马射线可以自发地转化为电子-正电子对，使恒星失去支撑其外层所需的辐射压力，并引发坍缩，最终导致失控的热核爆炸。`,vocab:[['odd','奇怪的；异常的'],['brightened','变亮；增亮'],['pair-instability supernova','对不稳定性超新星'],['hydrogen','氢'],['helium','氦'],['gamma rays','伽马射线'],['electron-positron pairs','电子-正电子对'],['radiation pressure','辐射压力'],['runaway','失控的；逃逸的']]},
+{type:'content',en:`To support their case, the researchers took theorists' predictions of a pair-instability supernova's light curve—how its brightness should change over time—and compared them with the two data points for Capotauro. They match well, but to be truly convincing, the team needs a third data point in a year or more, when the brightness is predicted to drop off steeply. "If real, it could be truly something that is changing our views of the early universe," Ferrara says. "But we want to be sure."`,zh:`为了支持他们的观点，研究人员将理论家对不稳定性超新星光变曲线的预测——其亮度应如何随时间变化——与Capotauro的两个数据点进行了比较。它们匹配得很好，但要真正令人信服，团队需要一年或更长时间的第三个数据点，届时亮度预计会急剧下降。"如果这是真的，它可能真正改变我们对早期宇宙的看法，"费拉拉说。"但我们想确定。"`,vocab:[['light curve','光变曲线'],['data points','数据点'],['convincing','令人信服的；有说服力的'],['drop off','下降；减少'],['steeply','急剧地；陡峭地'],['view','看法；观点']]},
+{type:'content',en:`Finding a pair-instability supernova in the early universe would not only prove such blasts can occur, but it could also provide astronomers' first glimpse of a galaxy where giant first-generation stars are burning gas that came directly from the Big Bang. The best fitting light curve points to a star at least 250 times the mass of our Sun exploding less than 300 million years after the Big Bang, Ferrara and his colleagues say.`,zh:`在早期宇宙中发现一对不稳定性超新星不仅将证明此类爆炸确实可以发生，还可能为天文学家提供第一次瞥见一个星系的机会，其中巨大的第一代恒星正在燃烧来自大爆炸直接产生的气体。费拉拉和他的同事们说，最匹配的光变曲线指向一颗质量至少是太阳250倍的恒星，在大爆炸后不到3亿年内爆炸。`,vocab:[['prove','证明；证实'],['glimpse','一瞥；瞥见'],['first-generation stars','第一代恒星'],['directly from the Big Bang','直接来自大爆炸'],['best fitting','最佳匹配的'],['at least','至少']]},
+{type:'content',en:`"It'd be great if it's true, and it might be," says Stan Woosley, a theorist at the University of California, Santa Cruz who has played a key role in developing models of pair-instability supernovae. Detecting even one such bright example corresponding to a star at the heavy end of the mass range would imply that many more primordial stars exist at lower masses, he says. And if the host galaxy is still visible after the supernova fades, he adds, its properties could be probed to learn about the size and brightness of primordial stars. But distinguishing such a supernova from other kinds of extra-bright explosions at these distances is "going to be hard," Woosley warns.`,zh:`"如果这是真的，那就太好了，而且有可能是真的，"加州大学圣克鲁兹分校的理论家斯坦·伍斯利说，他在发展不稳定性超新星模型方面发挥了关键作用。他说，探测到这样一个对应于高质量端恒星的明亮例子将意味着在较低质量下存在更多原恒星。如果超新星消退后宿主星系仍然可见，他补充说，可以探测其性质，以了解原恒星的大小和亮度。但伍斯利警告说，在这样的距离上将这种超新星与其他类型的超亮爆炸区分开来"将非常困难"。`,vocab:[['theorist','理论家；理论学者'],['models','模型'],['corresponding','相应的；对应的'],['heavy end','高质量端'],['imply','意味着；暗示'],['host galaxy','宿主星系'],['probe','探测；探查'],['distinguish','区分；辨别']]},
+{type:'content',en:`Other astronomers lean toward a brown dwarf that's not very distant at all. In April, Maruša Bradač of the University of Ljubljana and colleagues reported that two other extremely distant JWST galaxy candidates were actually brown dwarfs, after observing their positions shifting, they reported in a paper posted to arXiv.`,zh:`其他天文学家倾向于认为Capotauro是一颗并不遥远的棕矮星。今年4月，卢布尔雅那大学的Maruša Bradač及其同事报告说，另外两个被认为极其遥远的JWST星系候选者实际上是棕矮星，他们观察到它们的位置发生了移动，他们在发表在arXiv上的一篇论文中报告了这一发现。`,vocab:[['lean toward','倾向于；偏向于'],['candidates','候选者；候选天体'],['shifting','移动；位移'],['posted','发布；张贴']]},
+{type:'content',en:`But brown dwarfs are interesting in themselves, as they fill in the gap between planets and stars, Bradač adds. Because they're so small and dim, most brown dwarfs are detected in Earth's near neighborhood. JWST's surveys are turning up many brown dwarfs at greater distances, revealing where in the Milky Way they form and reside, and—from their temperatures—how they age.`,zh:`但棕矮星本身也很有趣，因为它们填补了行星和恒星之间的空白，Bradač补充说。由于它们又小又暗，大多数棕矮星是在地球附近探测到的。JWST的调查正在发现更多距离更远的棕矮星，揭示了它们在银河系中形成和存在的位置，并且根据它们的温度，可以了解它们如何老化。`,vocab:[['fill in the gap','填补空白；弥补差距'],['dim','暗淡的；昏暗的'],['near neighborhood','近邻区域；附近'],['surveys','巡天调查；观测普查'],['turn up','发现；出现'],['reside','存在；居住'],['age','老化；变老']]},
+{type:'content',en:`Like her two recent discoveries, Capotauro may also turn out to be a brown dwarf, Bradač says. "I think the jury is still out." Astronomers won't have long to wait: JWST may observe Capotauro again in the next few months. Its position could shift, its brightness could fade—or it could remain steady. Any of the results would excite Bradač. "I'm looking forward to those data coming."`,zh:`Bradač说，和她的两个最新发现一样，Capotauro也可能被证明是一颗棕矮星。"我认为尚无定论。"天文学家们不用等太久：JWST可能会在未来几个月再次观测Capotauro。它的位置可能会移动，亮度可能会减弱——或者保持稳定。任何结果都会让Bradač兴奋不已。"我期待着这些数据的到来。"`,vocab:[['turn out','结果证明是；原来是'],['jury is still out','尚无定论；悬而未决'],['shift','移动；改变'],['fade','变暗；消退'],['steady','稳定的；不变的'],['looking forward to','期待；盼望']]}
+];
+//=====2.render=====
+const slideArea=document.getElementById('slideArea'),prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn'),pageIndicator=document.getElementById('pageIndicator');
+let current=0;
+function highlightVocab(text,vocabList){
+    let r=text;
+    const sorted=[...vocabList].sort((a,b)=>b[0].length-a[0].length);
+    for(const[w]of sorted){const e=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),re=new RegExp('\\b'+e+'\\b','gi');r=r.replace(re,m=>`<span class="vocab-highlight" title="${w}">${m}</span>`)}
+    return r
+}
+function renderSlide(i){
+    const d=slidesData[i];
+    slideArea.innerHTML='';
+    const s=document.createElement('div');s.className='slide active';
+    if(d.type==='title'){
+        s.classList.add('slide-title-page');
+        s.innerHTML=`<h1>${d.title}</h1><div class="subtitle">${d.subtitle}</div><div class="trans-title">${d.transTitle}</div><div class="source-link">🔗 <a href="${d.source}" target="_blank" rel="noopener">${d.source}</a></div><div class="page-num">${i+1}/${slidesData.length}</div>`
+    }else{
+        const eh=highlightVocab(d.en,d.vocab);
+        s.innerHTML=`<div class="content-grid"><div class="col en"><h3>📖 ENGLISH</h3><div class="text">${eh}</div></div><div class="col zh"><h3>📝 中文翻译</h3><div class="text">${d.zh}</div></div></div><div class="vocab-section"><h4>📚 生词表 · Vocabulary</h4><div class="vocab-list">${d.vocab.map(([e,c])=>`<span class="vocab-item"><span class="en">${e}</span> <span class="cn">— ${c}</span></span>`).join('')}</div></div>`
+    }
+    slideArea.appendChild(s);
+    pageIndicator.textContent=`${i+1}/${slidesData.length}`;
+    prevBtn.disabled=i===0;nextBtn.disabled=i===slidesData.length-1
+}
+function goTo(i){if(i<0||i>=slidesData.length)return;current=i;renderSlide(current)}
+prevBtn.addEventListener('click',()=>goTo(current-1));
+nextBtn.addEventListener('click',()=>goTo(current+1));
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowUp')goTo(current-1);if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();goTo(current+1)}});
+renderSlide(0);
+</script>
+</body>
+</html>
