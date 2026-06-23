@@ -1,0 +1,21 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/error.html"
+  status = 404
+[[redirects]]
+  from = "/*"
+  to = "/error.html"
+  status = 500
+
+[[redirects]]
+  from = "/*"
+  to = "/error.html"
+  status = 502
+
+[[redirects]]
+  from = "/*"
+  to = "/error.html"
+  status = 503

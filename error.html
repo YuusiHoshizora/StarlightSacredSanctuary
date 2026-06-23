@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 · 页面偏离星图坐标</title>
+    <title>错误：无法访问该页面</title>
 
-    <link rel="stylesheet" href="/assets/css/global.css">
-    <link rel="stylesheet" href="assets/css/404.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/error.css">
 </head>
 <body>
 
     <div class="background"></div>
     <div class="overlay"></div>
 
-    <!-- ===== 导航栏（绝对路径） ===== -->
+    <!-- ===== 导航栏 ===== -->
     <header class="navbar">
         <div class="logo">星光圣域</div>
         <nav>
@@ -24,12 +24,12 @@
         </nav>
     </header>
 
-    <!-- ===== 404 内容 ===== -->
+    <!-- ===== 错误内容（统一页面） ===== -->
     <main class="error-container">
-        <div class="error-code">404</div>
+        <div class="error-code">ERROR</div>
         <div class="error-sub">SIGNAL LOST</div>
         <div class="error-message">
-            错误：无法访问该页面
+             错误：无法访问该页面
             <span>由于当前处于极端异常情况，星光圣域推荐您向最近的星光圣域永恒协议成员获取帮助</span>
         </div>
 
@@ -43,7 +43,7 @@
         <div class="glitch-line">⚠ 通信链路中断 — 正在尝试重新连接…</div>
     </main>
 
-    <!-- 可选：注册 Service Worker（不影响 404 显示） -->
+    <!-- Service Worker 注册 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
