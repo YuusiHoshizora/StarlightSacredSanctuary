@@ -27,3 +27,9 @@ build/
 .env
 .venv/
 /assets/post/.obsidian/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
