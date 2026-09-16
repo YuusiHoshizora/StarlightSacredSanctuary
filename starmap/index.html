@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,9 @@
 
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/starmap/index.css">
+    <!-- 星图页专用背景参数：必须排在 background.js 之前 -->
+    <script defer src="../assets/js/starmap-bg.js"></script>
+    <script defer src="../assets/js/background.js"></script>
 
     <script defer src="../assets/js/starmap-data.js"></script>
     <script defer src="../assets/js/starmap.js"></script>
@@ -51,6 +54,22 @@ if ('serviceWorker' in navigator) {
             <!-- 左侧：星图 -->
             <div class="starmap-left">
                 <canvas id="starmap-canvas"></canvas>
+
+                <!-- 比例尺控制：放大 / 缩小 / 回到默认 -->
+                <div class="map-zoom" role="group" aria-label="比例尺控制">
+                    <button type="button" id="zoom-in" class="map-zoom__btn" aria-label="放大" title="放大">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                    <button type="button" id="zoom-out" class="map-zoom__btn" aria-label="缩小" title="缩小">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+                    </button>
+                    <button type="button" id="zoom-reset" class="map-zoom__btn" aria-label="回到默认" title="回到默认">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="7.5"/>
+                            <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- 右侧：星系介绍 -->

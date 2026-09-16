@@ -113,19 +113,37 @@ function startAnimation() {
 }
 
 // ── 画布尺寸管理 ──
+// 画布是 position:absolute 铺满 .starmap-layout 的，所以按外层布局盒子定尺寸，
+// 而不是按 .starmap-left（它现在只用于承载右侧信息栏，宽度已经不代表画布）。
 function resizeCanvas() {
-  const rect = canvas.parentElement.getBoundingClientRect();
+  const host = canvas.parentElement.parentElement || canvas.parentElement;
+  const rect = host.getBoundingClientRect();
   canvas.width = rect.width * window.devicePixelRatio;
   canvas.height = rect.height * window.devicePixelRatio;
   canvas.style.width = rect.width + "px";
   canvas.style.height = rect.height + "px";
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
-
 // ── 画布坐标 → 逻辑坐标 ──
 function getCanvasScale() {
   const rect = canvas.getBoundingClientRect();
   return { w: rect.width, h: rect.height };
+}
+
+// ── 星系坐标 → 画布像素 ──
+// 背景是一张坐标纸（assets/js/starmap-bg.js 的 GRID_STYLE='coord'）。
+// 位置完全交给背景的同一个变换函数计算：
+//   · zoom = 1（最大比例尺，整张图铺满视口）时坐标吸附到格点，星系正好落在交点上
+//   · zoom 变小后视野更广、格距看起来更密，星系随之偏离格点（不那么"人工"）
+// canvas 左上角与视口左上角重合（画布铺满内容区），所以视口像素即画布像素。
+function systemPixel(sys, w, h) {
+  const C = window.SSS_COORD;
+  if (C) {
+    const p = C.snap(sys.x, sys.y);   // 与网格同一套缩放/平移/吸附
+    return { px: p[0], py: p[1] };
+  }
+  return { px: sys.x * w, py: sys.y * h };
 }
 
 // ── 绘制星图（使用动画插值） ──
@@ -135,8 +153,7 @@ function drawStarMap() {
 
   for (const sys of STARMAP_DATA) {
     const s = animState[sys.id];
-    const px = sys.x * w;
-    const py = sys.y * h;
+    const { px, py } = systemPixel(sys, w, h);
     const isActive = (selectedId === sys.id || hoveredId === sys.id);
 
     // ── 光晕 ──
@@ -190,8 +207,7 @@ function getSystemAt(clientX, clientY) {
   const { w, h } = getCanvasScale();
 
   for (const sys of STARMAP_DATA) {
-    const px = sys.x * w;
-    const py = sys.y * h;
+    const { px, py } = systemPixel(sys, w, h);
     const dx = mx - px;
     const dy = my - py;
     if (dx * dx + dy * dy < 324) {
@@ -385,6 +401,8 @@ function handleMouseLeave() {
 canvas.addEventListener("mousemove", handleMouseMove);
 canvas.addEventListener("mouseleave", handleMouseLeave);
 canvas.addEventListener("click", (e) => {
+  // 拖动过画布时不触发选中
+  if (dragMoved) { dragMoved = false; return; }
   const sys = getSystemAt(e.clientX, e.clientY);
   selectSystem(sys);
 });
@@ -394,12 +412,103 @@ window.addEventListener("resize", () => {
   drawStarMap();
 });
 
+// ── 缩放与平移 ──
+// 坐标纸与星系共用同一套变换，所以缩放时两者的相对位置始终对齐。
+// 缩放只通过三个按钮操作：放大 / 缩小 / 回到默认（默认比例尺既非最大也非最小）。
+let dragMoved = false;
+let dragFrom = null;
+
+const zoomInBtn = document.getElementById("zoom-in");
+const zoomOutBtn = document.getElementById("zoom-out");
+const zoomResetBtn = document.getElementById("zoom-reset");
+
+/* 按钮按下时的金色渐变反馈：pointerdown 点亮，pointerup / 离开后再淡出 */
+function bindZoomButton(btn, action) {
+  if (!btn) return;
+  const light = () => btn.classList.add("is-active");
+  const unlight = () => btn.classList.remove("is-active");
+  btn.addEventListener("pointerdown", light);
+  btn.addEventListener("pointerup", unlight);
+  btn.addEventListener("pointerleave", unlight);
+  btn.addEventListener("pointercancel", unlight);
+  btn.addEventListener("click", () => {
+    light();
+    clearTimeout(btn._flashTimer);
+    btn._flashTimer = setTimeout(unlight, 240);
+    action();
+  });
+}
+
+function syncZoomUI() {
+  const C = window.SSS_COORD;
+  if (!C) return;
+  if (zoomInBtn) zoomInBtn.disabled = !C.canZoomIn();
+  if (zoomOutBtn) zoomOutBtn.disabled = !C.canZoomOut();
+  /* 已回到默认比例尺与位置时，默认按钮也置灰 */
+  if (zoomResetBtn) {
+    const def = C.limits().def;
+    const pan = C.pan();
+    zoomResetBtn.disabled =
+      Math.abs(C.zoom() - def) < 1e-6 && Math.abs(pan[0]) < 0.5 && Math.abs(pan[1]) < 0.5;
+  }
+}
+
+bindZoomButton(zoomInBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomIn(); });
+bindZoomButton(zoomOutBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomOut(); });
+bindZoomButton(zoomResetBtn, () => { if (window.SSS_COORD) window.SSS_COORD.reset(); });
+
+canvas.addEventListener("pointerdown", (e) => {
+  if (!window.SSS_COORD) return;
+  dragFrom = { x: e.clientX, y: e.clientY };
+  dragMoved = false;
+  canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener("pointermove", (e) => {
+  const C = window.SSS_COORD;
+  if (!dragFrom || !C) return;
+  const dx = e.clientX - dragFrom.x;
+  const dy = e.clientY - dragFrom.y;
+  if (Math.abs(dx) + Math.abs(dy) < 2) return;
+  dragMoved = true;
+  dragFrom = { x: e.clientX, y: e.clientY };
+  C.panBy(dx, dy);
+  drawStarMap();
+});
+
+canvas.addEventListener("pointerup", (e) => {
+  dragFrom = null;
+  if (canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
+    canvas.releasePointerCapture(e.pointerId);
+  }
+});
+
+// 背景网格重绘后同步重画星图，并刷新按钮状态
+window.SSS_ON_ZOOM = function () {
+  if (canvas && canvas.width) drawStarMap();
+  syncZoomUI();
+};
+
 // ── 启动 ──
 function init() {
+  // 背景已在初始化时把视图复位到默认比例尺（既非最大也非最小）
   resizeCanvas();
   drawStarMap();
+  syncZoomUI();
   renderSystemInfo(null, true);
-  buildSystemList();
+  /* 注意：这里原先调用了 buildSystemList()，但全文件并无该函数定义，
+     会让 init() 在每次加载时抛 ReferenceError（星图与右侧信息都停在初始态）。
+     已移除该调用；若以后需要系统列表，请先补上函数定义。 */
+  /* 调试接口：返回每个星系实际绘制到的画布像素位置 */
+  window.SSS_STARMAP = {
+    positions: function () {
+      const size = getCanvasScale();
+      return STARMAP_DATA.map(function (sys) {
+        const p = systemPixel(sys, size.w, size.h);
+        return { id: sys.id, px: p.px, py: p.py };
+      });
+    }
+  };
 }
 
 if (document.readyState === "loading") {

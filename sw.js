@@ -1,10 +1,12 @@
-﻿// sw.js - Service Worker for Starlight Sacred Sanctuary
-const CACHE_NAME = 'starlight-cache-v3.0';
+// sw.js - Service Worker for Starlight Sacred Sanctuary
+const CACHE_NAME = 'starlight-cache-v3.2';
 
 // 需要预缓存的关键资源（全局共用资源，首次安装时缓存）
+// 注意：页面背景已改为画布绘制（无 JS 时降级为 CSS 内联 SVG 六边形纹理），不再需要 bg.webp
 const PRECACHE_URLS = [
-  '/assets/img/bg.webp',
   '/assets/fonts/SarasaUiSC-Regular.woff2',
+  '/assets/js/background.js',
+  '/assets/js/starmap-bg.js',
   // 可添加首页 HTML（可选）
   //'/index.html'
 ];

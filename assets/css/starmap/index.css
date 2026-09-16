@@ -5,23 +5,26 @@
   height: 100vh;
   padding-top: 72px;
   overflow: hidden;
-}
-
-/* 左侧星图区 */
-.starmap-left {
-  flex: 1;
   position: relative;
-  overflow: hidden;
 }
 
+/* 星图画布铺满整个内容区（含右侧信息栏下方），
+   这样它的坐标纸与背景的坐标纸落在同一套网格上，星系才能真正对齐交点；
+   右侧信息栏再叠在它上面。 */
 #starmap-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+  z-index: 0;
 }
 
 /* 右侧星系介绍区 */
 .starmap-right {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
   width: 380px;
   min-width: 320px;
   padding: 48px 36px;
@@ -34,6 +37,70 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+/* ── 比例尺控制按钮 ──
+   与站内其它按钮（.back-btn / .tool-btn / .btn-return）保持同一套语言：
+   描边 + 半透明底，hover 转金色。 */
+.map-zoom {
+  position: absolute;
+  left: 32px;
+  bottom: 28px;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-zoom__btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  cursor: pointer;
+
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.map-zoom__btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-zoom__btn:hover:not(:disabled) {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.1);
+}
+
+/* 按下时的金色渐变反馈 */
+.map-zoom__btn.is-active {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.55);
+  background: rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.18);
+}
+
+.map-zoom__btn:disabled {
+  opacity: 0.28;
+  cursor: default;
 }
 
 .starmap-right .empty-info {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,9 +19,11 @@
         body{font-family:"Sarasa","Georgia","Times New Roman",serif;color:white;background:black}
         .background{
             position:fixed;inset:0;
-            background-image:url("../assets/img/bg.webp");
-            background-size:cover;background-position:center;
-            transform:scale(1.05);z-index:-2
+            background-color:#0c0c0c;
+            /* 密集平铺的小六边形：填充 #0c0c0c，描边 #c0c0c0 */
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='51.9615' height='90' viewBox='0 0 51.9615 90'%3E%3Cg fill='%230c0c0c' stroke='%23c0c0c0' stroke-width='1.8' stroke-linejoin='miter'%3E%3Cpath d='M0 -60L25.9808 -45L25.9808 -15L0 0L-25.9808 -15L-25.9808 -45Z'/%3E%3Cpath d='M51.9615 -60L77.9423 -45L77.9423 -15L51.9615 0L25.9808 -15L25.9808 -45Z'/%3E%3Cpath d='M-25.9808 -15L0 0L0 30L-25.9808 45L-51.9615 30L-51.9615 0Z'/%3E%3Cpath d='M25.9808 -15L51.9615 0L51.9615 30L25.9808 45L0 30L0 0Z'/%3E%3Cpath d='M77.9423 -15L103.923 0L103.923 30L77.9423 45L51.9615 30L51.9615 0Z'/%3E%3Cpath d='M0 30L25.9808 45L25.9808 75L0 90L-25.9808 75L-25.9808 45Z'/%3E%3Cpath d='M51.9615 30L77.9423 45L77.9423 75L51.9615 90L25.9808 75L25.9808 45Z'/%3E%3Cpath d='M-25.9808 75L0 90L0 120L-25.9808 135L-51.9615 120L-51.9615 90Z'/%3E%3Cpath d='M25.9808 75L51.9615 90L51.9615 120L25.9808 135L0 120L0 90Z'/%3E%3Cpath d='M77.9423 75L103.923 90L103.923 120L77.9423 135L51.9615 120L51.9615 90Z'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat:repeat;background-size:51.9615px 90px;background-position:center top;
+            z-index:-2
         }
         .overlay{
             position:fixed;inset:0;
@@ -141,6 +143,7 @@
             .vocab-section{max-height:100px}
         }
     </style>
+    <script defer src="../assets/js/background.js"></script>
 </head>
 <body>
 <div class="background"></div>

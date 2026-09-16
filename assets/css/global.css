@@ -35,20 +35,52 @@ body{
     overflow-x:hidden;
 }
 
+/* 背景层占位：JS 启用时完全透明，真正的网格由下方 .hex-bg 画布绘制 */
 .background{
     position:fixed;
     inset:0;
-
-    background-image:
-        url("../img/bg.webp");
-
-    background-size:cover;
-    background-position:center;
-
-    transform:scale(1.05);
-
+    background:transparent;
     z-index:-2;
 }
+
+/* 静态背景纹理：仅在 JS 未启用时显示（background.js 会移除 .no-js） */
+.no-js .background{
+    background-color:#0c0c0c;
+
+    /* 密集平铺的小六边形：填充 #0c0c0c，描边 #c0c0c0 */
+    /* 尖顶六边形 R=30：宽 51.9615，高 60；平铺周期 51.9615 x 90 */
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='51.9615' height='90' viewBox='0 0 51.9615 90'%3E%3Cg fill='%230c0c0c' stroke='%23c0c0c0' stroke-width='1.8' stroke-linejoin='miter'%3E%3Cpath d='M0 -60L25.9808 -45L25.9808 -15L0 0L-25.9808 -15L-25.9808 -45Z'/%3E%3Cpath d='M51.9615 -60L77.9423 -45L77.9423 -15L51.9615 0L25.9808 -15L25.9808 -45Z'/%3E%3Cpath d='M-25.9808 -15L0 0L0 30L-25.9808 45L-51.9615 30L-51.9615 0Z'/%3E%3Cpath d='M25.9808 -15L51.9615 0L51.9615 30L25.9808 45L0 30L0 0Z'/%3E%3Cpath d='M77.9423 -15L103.923 0L103.923 30L77.9423 45L51.9615 30L51.9615 0Z'/%3E%3Cpath d='M0 30L25.9808 45L25.9808 75L0 90L-25.9808 75L-25.9808 45Z'/%3E%3Cpath d='M51.9615 30L77.9423 45L77.9423 75L51.9615 90L25.9808 75L25.9808 45Z'/%3E%3Cpath d='M-25.9808 75L0 90L0 120L-25.9808 135L-51.9615 120L-51.9615 90Z'/%3E%3Cpath d='M25.9808 75L51.9615 90L51.9615 120L25.9808 135L0 120L0 90Z'/%3E%3Cpath d='M77.9423 75L103.923 90L103.923 120L77.9423 135L51.9615 120L51.9615 90Z'/%3E%3C/g%3E%3C/svg%3E");
+
+    background-repeat:repeat;
+    background-size:51.9615px 90px;
+    background-position:center top;
+}
+
+/* 画布层：星云 / 星空 / 六边形网格 / 激活区特效 */
+.hex-bg{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:-9;
+}
+
+.hex-bg__sky,
+.hex-bg__stars,
+.hex-bg__grid,
+.hex-bg__fx{
+    position:absolute;
+    inset:0;
+    display:block;
+    width:100%;
+    height:100%;
+}
+
+/* 星云层必须不透明，作为整个背景的底 */
+.hex-bg__sky{ z-index:0; background:#0a0a12 }
+.hex-bg__stars{ z-index:1 }
+.hex-bg__grid{ z-index:2 }
+.hex-bg__fx{ z-index:3 }
 
 .overlay{
     position:fixed;
