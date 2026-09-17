@@ -11,15 +11,25 @@
 
     <!-- marked.js 用于 Markdown 渲染 -->
     <script src="../assets/js/marked.min.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then((reg) => {
-                    console.log('SW registered: ', reg.scope);
-                }).catch((err) => {
-                    console.log('SW registration failed: ', err);
-                });
-            });
+    <script defer src="../assets/js/seamless.js"></script>
+
+    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": "nav a" },
+                            { "not": { "href_matches": "/" } }
+                        ]
+                    },
+                    "eagerness": "moderate"
+                }
+            ],
+            "prefetch": [
+                { "where": { "selector_matches": "nav a" }, "eagerness": "conservative" }
+            ]
         }
     </script>
 </head>
@@ -32,7 +42,7 @@
     <header class="navbar">
         <div class="logo">星光圣域</div>
         <nav>
-            <a href="../..">首页</a>
+            <a href="..">首页</a>
             <a href="../starmap/">星图</a>
             <a href="../fleet/">舰队</a>
             <a href="../tool/">工具</a>

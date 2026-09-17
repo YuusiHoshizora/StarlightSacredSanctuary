@@ -143,3 +143,84 @@ nav a:hover{
     opacity:1;
     color:#FFD700;
 }
+
+/* ==========================================================================
+   无缝页面切换（Seamless Navigation）
+   --------------------------------------------------------------------------
+   1) 跨文档 View Transitions（Chrome/Edge 126+、Safari 18.2+）
+      在 global.css 里声明一次即可对全站所有页面跳转生效：
+      旧页面淡出、新页面淡入，顶栏作为共享元素保持不动，
+      视觉上就像"外壳常驻、内容替换"，没有生硬的白/黑闪。
+      不支持该特性的浏览器会直接忽略 @view-transition 规则，退化为普通跳转。
+   2) 兜底淡入（Firefox 等完全不支持 View Transitions 的内核）
+      用 @supports 判定，只在这些浏览器里给 body 做一次淡入，
+      避免硬切换；支持 View Transitions 的浏览器不做任何多余动画，
+      以免干扰新页面快照的抓取。
+   ========================================================================== */
+
+@view-transition{
+    navigation:auto;
+}
+
+/* 顶栏在每个页面位置/内容一致 → 声明为共享元素，切换时保持"钉住"不动 */
+.navbar{
+    view-transition-name:site-navbar;
+}
+
+@keyframes vt-fade-out{
+    to{ opacity:0 }
+}
+
+@keyframes vt-fade-in{
+    from{ opacity:0 }
+}
+
+/* 内容整体淡出 / 淡入 */
+::view-transition-old(root){
+    animation:vt-fade-out 180ms ease-in both;
+}
+
+::view-transition-new(root){
+    animation:vt-fade-in 240ms ease-out both;
+}
+
+/* 顶栏不做交叉淡化：直接显示新快照，避免文字重影 */
+::view-transition-group(site-navbar){
+    animation-duration:0s;
+}
+
+::view-transition-old(site-navbar){
+    display:none;
+}
+
+::view-transition-new(site-navbar){
+    animation:none;
+}
+
+/* 尊重"减少动态效果"设置：过渡几乎瞬时完成（而不是 none，否则旧快照会盖住新页面） */
+@media (prefers-reduced-motion: reduce){
+    ::view-transition-old(root),
+    ::view-transition-new(root),
+    ::view-transition-group(*){
+        animation-duration:1ms !important;
+        animation-delay:0s !important;
+    }
+}
+
+@supports not (view-transition-name: none){
+
+    @keyframes page-fade-in{
+        from{ opacity:0 }
+        to{ opacity:1 }
+    }
+
+    body{
+        animation:page-fade-in 260ms ease-out both;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+        body{
+            animation:none;
+        }
+    }
+}

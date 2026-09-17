@@ -25,6 +25,11 @@
 }
 
 .enter-btn{
+    /* 真链接（<a>）代替 <button>：可被预渲染/预取，支持中键与新标签打开 */
+    display:inline-block;
+    font:inherit;
+    text-decoration:none;
+
     padding:14px 42px;
 
     background:

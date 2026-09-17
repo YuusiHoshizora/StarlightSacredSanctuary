@@ -10,17 +10,27 @@
     <script defer src="assets/js/background.js"></script>
 
     <script defer src="assets/js/main.js"></script>
-    <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then((reg) => {
-      console.log('SW registered: ', reg.scope);
-    }).catch((err) => {
-      console.log('SW registration failed: ', err);
-    });
-  });
-}
-</script>
+    <script defer src="assets/js/seamless.js"></script>
+
+    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": "nav a, .enter-btn" },
+                            { "not": { "href_matches": "/" } }
+                        ]
+                    },
+                    "eagerness": "moderate"
+                }
+            ],
+            "prefetch": [
+                { "where": { "selector_matches": "nav a, .enter-btn" }, "eagerness": "conservative" }
+            ]
+        }
+    </script>
 </head>
 
 <body>
@@ -62,14 +72,8 @@ if ('serviceWorker' in navigator) {
                     Astra vias nostras illustrent pietate.
                 </p>
 
-                <button class="enter-btn">
-                    <script>
-                        document.querySelector('.enter-btn').addEventListener('click', () => {
-                            location.href = 'main/mainpage/';
-                        });
-                    </script>
-                    ENTER
-                </button>
+                <!-- 用真链接代替 button：可被预渲染/预取命中，也支持中键、新标签打开 -->
+                <a class="enter-btn" href="main/mainpage.html">ENTER</a>
 
             </div>
 
