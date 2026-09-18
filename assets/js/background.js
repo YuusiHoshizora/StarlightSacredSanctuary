@@ -46,19 +46,28 @@
 
     /* --- 网格样式 ---
        'hex'   ：六边形蜂窝（全站默认）
-       'coord' ：坐标纸式直角网格，供星图页使用；格子边长 = 视口高 / COORD_N，
-                 画布顶部与左边缘即为坐标原点，因此第 k 条线的位置是 k*cell，
-                 页面按同一个公式取整即可让内容精确落在交点上 */
+       'coord' ：坐标纸式直角网格，供星图页使用；小格边长 = 视口高 / COORD_N，
+                 画布顶部与左边缘即为坐标原点，因此第 k 条线的位置是 k*小格，
+                 页面按同一个公式取整即可让内容精确落在小坐标格点上
+
+       坐标纸分三级刻度（和真实坐标纸一样）：
+         小坐标  每 1 小格     细线，屏上间距够大时才画（默认比例尺下不画）
+         中坐标  每 5 小格     中等线，默认画
+         大坐标  每 25 小格    粗线（= 5 个中格），默认画
+       三级之间是固定比值，所以缩放时"哪条线属于哪一级"永远不变，不会跳格。 */
     GRID_STYLE: 'hex',
-    COORD_N: 20,              // 纵向格数（格子数量）
-    COORD_MAJOR: 5,           // 每隔几条画一条加粗主线（主线间隔永远是它的整数倍，缩放时不跳变）
-    COORD_MINOR: '#232334',   // 细线颜色
-    COORD_MAJOR_C: '#3d3d5c', // 主线颜色
-    COORD_AXIS: '#5a5a7a',    // 坐标轴颜色
-    COORD_MARK: 0.5,          // 交点小十字/小点的亮度（0 = 关闭）
-    COORD_SNAP_CELLS: 1,      // 内容吸附粒度（单位：细格）。1 = 落在细线交点；
-                              // 改成 COORD_MAJOR 则落在带标记的主线交点上
-    COORD_PX: 34,             // 网格在屏幕上保持的基准格距（px）
+    COORD_N: 20,                 // 纵向小格数（小格数量）
+    COORD_MINOR: '#232334',      // 小坐标线颜色
+    COORD_MEDIUM_C: '#3d3d5c',   // 中坐标线颜色
+    COORD_MAJOR_C: '#5a5a7a',    // 大坐标线颜色
+    COORD_AXIS: '#6a6a8e',       // 坐标轴（x = 0 / y = 0）颜色
+    COORD_MEDIUM_STEP: 5,        // 中坐标：每 5 个小格
+    COORD_MAJOR_STEP: 25,        // 大坐标：每 5 个中格
+    COORD_MINOR_MIN_PX: 26,      // 小格屏上间距小于该值就不画小坐标（默认只显示中/大坐标）
+    COORD_MEDIUM_MIN_PX: 18,     // 中格屏上间距小于该值就不画中坐标（缩放范围拉得很大时才生效）
+    COORD_MAJOR_MIN_PX: 60,      // 大格屏上间距小于该值就不画大坐标（同上）
+    COORD_MARK: 0.5,             // 大坐标交点的小点亮度（0 = 关闭）
+    COORD_SNAP_CELLS: 1,         // 内容吸附粒度（单位：小格）。1 = 星点落在小坐标格点上
     ZOOM_MIN: 0.7,            // 最小比例尺
     ZOOM_DEFAULT: 1,          // 默认比例尺（介于最小与最大之间）
     ZOOM_MAX: 1.45,           // 最大比例尺
@@ -162,9 +171,11 @@
        内容位置 = 吸附点 * zoom + pan
        网格线   = 原点 + k * (基准格距 * zoom) + pan
 
-     内容吸附在细格交点上（粒度见 COORD_SNAP_CELLS），主线只取每 COORD_MAJOR 格一条，
-     两者落在同一套格点上，因此任何比例尺下都严格对齐 —— 吸附在乘 zoom 之前完成，
-     缩放只是把"格点"整体拉近拉远，不会让内容滑到格子内部。
+     三级刻度都落在同一套「小格」格点上（中坐标 = 每 COORD_MEDIUM_STEP 小格，
+     大坐标 = 每 COORD_MAJOR_STEP 小格），内容吸附在最小的那一级上
+     （粒度见 COORD_SNAP_CELLS），因此任何比例尺下都严格对齐 ——
+     吸附在乘 zoom 之前完成，缩放只是把"格点"整体拉近拉远，不会让内容滑到格子内部。
+     某一级屏上间距过小时整级隐去（默认比例尺下不画小坐标），但不影响对齐关系。
 
      关键在于 pan 对两者的作用是**同向同量**的 —— 拖动时网格和内容一起走。
      缩放锚定在原点（画布左上角），因此不需要任何补偿平移，
@@ -294,55 +305,49 @@
     ctx.save();
     ctx.clearRect(0, 0, vw, vh);
 
-    /* 屏幕上的格距：随缩放变化，但保持在 COORD_PX 附近，过细则太密、过粗则显空 */
+    /* 小格在屏幕上的间距（随缩放变化，所以哪几级刻度可见也随之变化） */
     var c = refreshCoordCell();
     /* 网格原点：与内容共用同一个平移量，保证拖动时同向移动 */
     var ox = gridOriginX();
     var oy = gridOriginY();
 
-    /* 主线间隔永远是 COORD_MAJOR 的整数倍 —— 也就是"哪些线是主线"在逻辑坐标里固定不变，
-       缩放时主线与标记点不会整体错位（否则每换一档，整片格点都会跳一格，
-       星点看着就像离开了格点）。
-       只在主线过密时才升档（COORD_MAJOR 的 2 倍、3 倍……），升档也仍然落在同一套格点上。 */
-    var majorStep = Math.max(1, Math.round(1 / coordZoom));
-    var major = CFG.COORD_MAJOR * majorStep;
     var kx0 = Math.floor((0 - ox) / c), kx1 = Math.ceil((vw - ox) / c);
     var ky0 = Math.floor((0 - oy) / c), ky1 = Math.ceil((vh - oy) / c);
     var k;
 
-    /* 细线 */
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = CFG.COORD_MINOR;
-    ctx.beginPath();
-    for (k = kx0; k <= kx1; k++) {
-      if (k % major === 0) continue;
-      var x = ox + k * c;
-      ctx.moveTo(x + 0.5, 0);
-      ctx.lineTo(x + 0.5, vh);
-    }
-    for (k = ky0; k <= ky1; k++) {
-      if (k % major === 0) continue;
-      var y = oy + k * c;
-      ctx.moveTo(0, y + 0.5);
-      ctx.lineTo(vw, y + 0.5);
-    }
-    ctx.stroke();
+    /* 三级刻度：小坐标(1) → 中坐标(每 5 小格) → 大坐标(每 5 中格 = 25 小格)。
+       三级之间是固定比值，所以缩放时"哪条线属于哪一级"永远不变、不会跳格；
+       只在某级过密时把整级隐去（例如默认比例尺下不画小坐标）。 */
+    var minorStep = 1;
+    var medStep = Math.max(minorStep, Math.round(CFG.COORD_MEDIUM_STEP) || 5);
+    var majStep = Math.max(medStep, Math.round(CFG.COORD_MAJOR_STEP) || medStep * 5);
 
-    /* 主线 */
-    ctx.strokeStyle = CFG.COORD_MAJOR_C;
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    for (k = Math.ceil(kx0 / major) * major; k <= kx1; k += major) {
-      var mx = ox + k * c;
-      ctx.moveTo(mx + 0.5, 0);
-      ctx.lineTo(mx + 0.5, vh);
+    /* 画一级刻度（横向 + 纵向各一遍），step 单位是「小格」 */
+    function drawLevel(step, color, width) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      for (k = Math.ceil(kx0 / step) * step; k <= kx1; k += step) {
+        var x = ox + k * c;
+        ctx.moveTo(x + 0.5, 0);
+        ctx.lineTo(x + 0.5, vh);
+      }
+      for (k = Math.ceil(ky0 / step) * step; k <= ky1; k += step) {
+        var y = oy + k * c;
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(vw, y + 0.5);
+      }
+      ctx.stroke();
     }
-    for (k = Math.ceil(ky0 / major) * major; k <= ky1; k += major) {
-      var my = oy + k * c;
-      ctx.moveTo(0, my + 0.5);
-      ctx.lineTo(vw, my + 0.5);
-    }
-    ctx.stroke();
+
+    /* 从最细一级画起，粗的盖在细的上面 */
+    var showMinor = c * minorStep >= CFG.COORD_MINOR_MIN_PX;
+    var showMedium = c * medStep >= CFG.COORD_MEDIUM_MIN_PX;
+    var showMajor = c * majStep >= CFG.COORD_MAJOR_MIN_PX;
+
+    if (showMinor) drawLevel(minorStep, CFG.COORD_MINOR, 1);
+    if (showMedium) drawLevel(medStep, CFG.COORD_MEDIUM_C, 1.4);
+    if (showMajor) drawLevel(majStep, CFG.COORD_MAJOR_C, 2.2);
 
     /* 原点坐标轴（随内容一起缩放平移，因此也参与对齐） */
     ctx.strokeStyle = CFG.COORD_AXIS;
@@ -352,14 +357,14 @@
     ctx.moveTo(0, oy + 0.5); ctx.lineTo(vw, oy + 0.5);
     ctx.stroke();
 
-    /* 交点标记：只在主线上打点，避免整屏噪点 */
-    if (CFG.COORD_MARK > 0) {
+    /* 交点标记：只在大坐标交点上打点（数量少，作为定位参考，不至于整屏噪点） */
+    if (CFG.COORD_MARK > 0 && showMajor) {
       var r = 1.7;
       var a1 = 0.20 * CFG.COORD_MARK;
       ctx.fillStyle = 'rgba(192,192,192,' + a1 + ')';
       ctx.beginPath();
-      for (var i = Math.ceil(kx0 / major) * major; i <= kx1; i += major) {
-        for (var j = Math.ceil(ky0 / major) * major; j <= ky1; j += major) {
+      for (var i = Math.ceil(kx0 / majStep) * majStep; i <= kx1; i += majStep) {
+        for (var j = Math.ceil(ky0 / majStep) * majStep; j <= ky1; j += majStep) {
           var px = ox + i * c, py = oy + j * c;
           ctx.moveTo(px + r, py);
           ctx.arc(px, py, r, 0, Math.PI * 2);
