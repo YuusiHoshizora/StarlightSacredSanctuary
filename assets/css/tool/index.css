@@ -6,14 +6,6 @@
     text-align: center;
 }
 
-/* 多个入口纵向排列 */
-.tool-hero-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-}
-
 .tool-btn {
     padding: 14px 42px;
     background: rgba(255, 255, 255, 0.08);
