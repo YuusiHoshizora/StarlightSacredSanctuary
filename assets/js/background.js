@@ -531,7 +531,10 @@
 
   /* ============ 星空 ============ */
   function buildStars() {
-    var want = Math.max(40, Math.round(vw * vh * CFG.STAR_DENSITY));
+    /* STAR_DENSITY = 0 表示完全不要星点（有些页面希望背景只有网格） */
+    var want = CFG.STAR_DENSITY > 0
+      ? Math.max(40, Math.round(vw * vh * CFG.STAR_DENSITY))
+      : 0;
     while (stars.length > want) stars.pop();
     while (stars.length < want) stars.push(newStar());
     /* 按亮度分 3 档，绘制时每档一次 path */

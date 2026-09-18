@@ -430,29 +430,40 @@ const zoomSlider = document.getElementById("zoom-slider");
 /* ── 比例尺滑块 ──
    方向与按钮一致：滑块夹在「−」和「+」之间，
    向左拖 = 缩小（同左侧「−」），向右拖 = 放大（同右侧「+」）。
-   位置与比例尺取「等比」关系（0..1 线性拖动 = 比例尺按倍数变化），
-   这样整条滑轨手感一致 —— 直接用比例尺做线性映射的话，
-   越靠小比例尺一侧，同样的拖动距离带来的视野变化越大。
+   映射分两段、各自等比（0..1 线性拖动 = 比例尺按倍数变化），
+   于是「默认比例尺」永远落在滑轨正中：左半段从最小到默认，右半段从默认到最大。
+   注意不能用「整条等比」，那样默认比例尺会偏左（0.25~1.45 时落在 0.39 处）；
+   也不适合用线性，线性时越靠缩小端同样的拖动距离带来的视野变化越大。
    不显示数值：滑块位置本身就是当前比例尺。 */
-function zoomFromSliderPos(t, min, max) {
+function zoomFromSliderPos(t, min, max, def) {
   const clamped = Math.max(0, Math.min(1, t));
-  return min * Math.pow(max / min, clamped);   // t = 0 → 最小（缩小端），t = 1 → 最大（放大端）
+  if (clamped <= 0.5) {
+    if (!(def > min)) return min;                        // 退化保护
+    return min * Math.pow(def / min, clamped * 2);        // 0 → min，0.5 → def
+  }
+  if (!(max > def)) return def;
+  return def * Math.pow(max / def, (clamped - 0.5) * 2);  // 0.5 → def，1 → max
 }
 
-function sliderPosFromZoom(z, min, max) {
-  const t = Math.log(z / min) / Math.log(max / min);   // 最小 → 0，最大 → 1
+function sliderPosFromZoom(z, min, max, def) {
+  let t;
+  if (z <= def) {
+    t = def > min ? 0.5 * (Math.log(z / min) / Math.log(def / min)) : 0;
+  } else {
+    t = max > def ? 0.5 + 0.5 * (Math.log(z / def) / Math.log(max / def)) : 1;
+  }
   return Math.max(0, Math.min(1, t));
 }
 
 function syncZoomSlider() {
   const C = window.SSS_COORD;
   if (!zoomSlider || !C) return;
-  const { min, max } = C.limits();
-  zoomSlider.value = String(sliderPosFromZoom(C.zoom(), min, max));
+  const { min, max, def } = C.limits();
+  zoomSlider.value = String(sliderPosFromZoom(C.zoom(), min, max, def));
 }
 
 if (zoomSlider && window.SSS_COORD) {
-  const { min, max } = window.SSS_COORD.limits();
+  const { min, max, def } = window.SSS_COORD.limits();
   zoomSlider.min = "0";
   zoomSlider.max = "1";
   zoomSlider.step = "0.01";
@@ -463,7 +474,7 @@ if (zoomSlider && window.SSS_COORD) {
     if (!C) return;
     const lim = C.limits();
     // 滑块用即时缩放（不走缓动），拖动才跟手
-    C.setView(zoomFromSliderPos(parseFloat(zoomSlider.value), lim.min, lim.max));
+    C.setView(zoomFromSliderPos(parseFloat(zoomSlider.value), lim.min, lim.max, lim.def));
   });
 }
 
