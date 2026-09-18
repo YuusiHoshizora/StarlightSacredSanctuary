@@ -106,8 +106,8 @@
 /* ── 比例尺滑块 ──
    位于缩放按钮左侧，只辅助缩放、不显示数值。
    方向与按钮一致：向左拖 = 放大（同「+」），向右拖 = 缩小（同「−」）。
-   背景做成与按钮完全相同的那块"描边 + 半透明底"药丸（同圆角、同边框、同 hover 金色），
-   中间一条细线标示滑轨。 */
+   背景与按钮完全相同的那块"描边 + 半透明底"药丸（同圆角、同边框、同 hover 金色），
+   药丸由输入框本身绘制；滑块行程两端各留内边距，圆点不会贴到边框上。 */
 .map-zoom__slider {
   -webkit-appearance: none;
   appearance: none;
@@ -116,35 +116,36 @@
   height: 34px;              /* 与按钮等高，方便手指点按 */
   margin: 0 6px 0 0;
   padding: 0;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
   cursor: pointer;
+
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .map-zoom__slider:focus {
   outline: none;
 }
 
-/* 轨道 = 按钮那样的背景块 */
+/* 轨道：只负责"手柄能滑到哪"和中间那条细线，
+   左右各留 9px 内缩 —— 手柄到两端时与药丸边框保持距离，不再挨着边线 */
 .map-zoom__slider::-webkit-slider-runnable-track {
-  height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
+  height: 32px;              /* = 输入框内容高（34 - 上下边框），手柄垂直居中 */
+  margin: 0 9px;
+  border: none;
+  border-radius: 0;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / calc(100% - 24px) 2px no-repeat,
-    rgba(255, 255, 255, 0.04);
-
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / 100% 2px no-repeat;
 }
 
 .map-zoom__slider::-moz-range-track {
   height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
+  margin: 0 9px;
+  border: none;
+  border-radius: 0;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / calc(100% - 24px) 2px no-repeat,
-    rgba(255, 255, 255, 0.04);
-
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / 100% 2px no-repeat;
 }
 
 /* 滑块手柄 */
@@ -154,7 +155,7 @@
 
   width: 12px;
   height: 12px;
-  margin-top: 10px;          /* (轨道内容高 32px - 手柄 12px) / 2 */
+  margin-top: 10px;          /* (轨道高 32px - 手柄 12px) / 2 */
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -172,21 +173,23 @@
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-/* hover / 键盘聚焦：整块背景与手柄一起转金色，与按钮的 hover 反馈一致 */
+/* hover / 键盘聚焦：药丸底色、滑轨线与手柄一起转金色，与按钮的 hover 反馈一致 */
+.map-zoom__slider:hover,
+.map-zoom__slider:focus-visible {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.1);
+}
+
 .map-zoom__slider:hover::-webkit-slider-runnable-track,
 .map-zoom__slider:focus-visible::-webkit-slider-runnable-track {
-  border-color: rgba(255, 215, 0, 0.4);
   background:
-    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / calc(100% - 24px) 2px no-repeat,
-    rgba(255, 215, 0, 0.1);
+    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / 100% 2px no-repeat;
 }
 
 .map-zoom__slider:hover::-moz-range-track,
 .map-zoom__slider:focus-visible::-moz-range-track {
-  border-color: rgba(255, 215, 0, 0.4);
   background:
-    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / calc(100% - 24px) 2px no-repeat,
-    rgba(255, 215, 0, 0.1);
+    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / 100% 2px no-repeat;
 }
 
 .map-zoom__slider:hover::-webkit-slider-thumb,
