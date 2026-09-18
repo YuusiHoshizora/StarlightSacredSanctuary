@@ -73,6 +73,7 @@
     ZOOM_MAX: 1.45,              // 最大比例尺
     ZOOM_STEP: 1.16,             // 每次点击按钮的缩放步进
     ZOOM_MS: 420,                // 缩放缓动时长（毫秒），越大越柔和；0 = 立即切换
+    RESET_MS: 320,               // 「回到默认」飞回默认视角的时长（比按钮缩放更干脆）
     SNAP: true                   // 把 window.SSS_COORD 暴露给页面做对齐
   };
 
@@ -250,15 +251,26 @@
     refreshCoordCell();
   }
 
-  /* ============ 缩放缓动 ============
-     按钮点击不直接跳到目标比例尺，而是在 ZOOM_MS 内缓动过去；
+  /* ============ 视角缓动（比例尺 + 原点位置） ============
+     按钮点击不直接跳到目标，而是在 ZOOM_MS 内缓动过去；
      网格与内容每帧一起重绘，所以过渡期间两者始终同步。
      采用「指数趋近」：按下立即起步、接近目标时自然收尾，
-     连续点击只需改写目标值即可平滑接续，不会重新计时或跳变。 */
-  var zoomTween = { raf: 0, target: null, last: 0 };
+     连续点击只需改写目标值即可平滑接续，不会重新计时或跳变。
+
+     · zoomTween.target：比例尺终点（连续点放大/缩小可累积）
+     · panTween.x / y  ：原点屏幕位置的终点（null = 这一项不动），
+       点「回到默认」时位置与比例尺一起飞回去，而不是瞬间跳过去。 */
+  var zoomTween = { raf: 0, target: null, last: 0, tau: 0 };
+  var panTween = { x: null, y: null };
+
+  /* 缓动的时间常数：约 3 个 tau 后人眼已看不出还在动 */
+  function tweenTau() {
+    return zoomTween.tau || Math.max(0.001, (CFG.ZOOM_MS / 1000) / 3.2);
+  }
 
   function zoomAnimating() {
-    return Math.abs(zoomTween.target - coordZoom) > 0.0005;
+    return Math.abs(zoomTween.target - coordZoom) > 0.0005 ||
+      panTween.x != null || panTween.y != null;
   }
 
   function prefersReducedMotion() {
@@ -271,24 +283,43 @@
     var dtSec = zoomTween.last ? Math.min(0.05, (now - zoomTween.last) / 1000) : 1 / 60;
     zoomTween.last = now;
 
+    var k = 1 - Math.exp(-dtSec / tweenTau());
+
     var diff = zoomTween.target - coordZoom;
-    if (Math.abs(diff) <= 0.0005) {
-      coordApplyZoom(zoomTween.target);
+    var zoomDone = Math.abs(diff) <= 0.0005;
+    if (zoomDone) coordApplyZoom(zoomTween.target);
+    else coordApplyZoom(coordZoom + diff * k);
+
+    /* 位置与比例尺用同一个系数趋近，视觉上是一次整体的"飞过去"。
+       剩下不到 1.5px 时直接吸附到终点：这点位移看不出来，
+       但能避免末尾几十帧的无意义重绘。 */
+    var PAN_EPS = 1.5;
+    var panDone = true;
+    if (panTween.x != null) {
+      var dx = panTween.x - coordPanX;
+      if (Math.abs(dx) <= PAN_EPS) coordPanX = panTween.x;
+      else { coordPanX += dx * k; panDone = false; }
+    }
+    if (panTween.y != null) {
+      var dy = panTween.y - coordPanY;
+      if (Math.abs(dy) <= PAN_EPS) coordPanY = panTween.y;
+      else { coordPanY += dy * k; panDone = false; }
+    }
+
+    notifyView();
+
+    if (zoomDone && panDone) {
+      panTween.x = panTween.y = null;
       zoomTween.last = 0;
-      notifyView();
       return;
     }
-    /* tau 取时长的 1/3.2，约 3 个时间常数后基本到位 */
-    var tau = Math.max(0.001, (CFG.ZOOM_MS / 1000) / 3.2);
-    var k = 1 - Math.exp(-dtSec / tau);
-    coordApplyZoom(coordZoom + diff * k);
-    notifyView();
     zoomTween.raf = requestAnimationFrame(zoomTweenStep);
   }
 
   /* 平滑地把比例尺推向 z */
   function zoomTo(z) {
     zoomTween.target = Math.min(CFG.ZOOM_MAX, Math.max(CFG.ZOOM_MIN, z));
+    zoomTween.tau = Math.max(0.001, (CFG.ZOOM_MS / 1000) / 3.2);
     if (!(CFG.ZOOM_MS > 0) || prefersReducedMotion()) {
       coordApplyZoom(zoomTween.target);
       zoomTween.last = 0;
@@ -304,12 +335,13 @@
     zoomTo(from * factor);
   }
 
-  /* 立即停止缓动并停在 target */
+  /* 立即停止缓动并停在 target（拖动 / 滑块等直接操作时调用，交互优先） */
   function zoomStop() {
     if (zoomTween.raf) cancelAnimationFrame(zoomTween.raf);
     zoomTween.raf = 0;
     zoomTween.last = 0;
     zoomTween.target = coordZoom;
+    panTween.x = panTween.y = null;
   }
 
   function drawCoordGrid() {
@@ -873,15 +905,33 @@
     notifyView();
   }
 
-  /* 回到默认：比例尺缓动回去，原点重新摆回视口中心 */
+  /* 回到默认：比例尺与位置一起平滑飞回（原点重新摆到视口中心）。
+     关闭动效或系统偏好"减少动态"时直接就位。 */
   function resetView() {
+    var centerX = vw / 2;
+    var centerY = vh / 2;
+
     if (zoomTween.raf) cancelAnimationFrame(zoomTween.raf);
     zoomTween.raf = 0;
     zoomTween.last = 0;
-    coordPanX = vw / 2;
-    coordPanY = vh / 2;
-    zoomTo(CFG.ZOOM_DEFAULT);
-    if (!zoomTween.raf && Math.abs(coordZoom - CFG.ZOOM_DEFAULT) < 1e-9) notifyView();
+
+    if (!(CFG.ZOOM_MS > 0) || prefersReducedMotion()) {
+      coordPanX = centerX;
+      coordPanY = centerY;
+      panTween.x = panTween.y = null;
+      zoomTween.target = Math.min(CFG.ZOOM_MAX, Math.max(CFG.ZOOM_MIN, CFG.ZOOM_DEFAULT));
+      coordApplyZoom(zoomTween.target);
+      notifyView();
+      return;
+    }
+
+    /* 位置与比例尺都交给缓动循环，所以整段视角变化是一次连续移动。
+       这段"飞回去"用比按钮缩放更短的时长，动作干脆一些。 */
+    panTween.x = centerX;
+    panTween.y = centerY;
+    zoomTween.target = Math.min(CFG.ZOOM_MAX, Math.max(CFG.ZOOM_MIN, CFG.ZOOM_DEFAULT));
+    zoomTween.tau = Math.max(0.001, (CFG.RESET_MS / 1000) / 3.2);
+    if (!zoomTween.raf) zoomTween.raf = requestAnimationFrame(zoomTweenStep);
   }
 
   /* 小格坐标 -> 已对齐格点的像素位置（相对视口左上角） */

@@ -489,12 +489,13 @@ function syncZoomUI() {
   if (!C) return;
   if (zoomInBtn) zoomInBtn.disabled = !C.canZoomIn();
   if (zoomOutBtn) zoomOutBtn.disabled = !C.canZoomOut();
-  /* 已回到默认比例尺与位置时，默认按钮也置灰 */
+  /* 已经回到默认比例尺、且原点正好落在视口中心时，默认按钮置灰 */
   if (zoomResetBtn) {
     const def = C.limits().def;
     const pan = C.pan();
-    zoomResetBtn.disabled =
-      Math.abs(C.zoom() - def) < 1e-6 && Math.abs(pan[0]) < 0.5 && Math.abs(pan[1]) < 0.5;
+    const centered =
+      Math.abs(pan[0] - C.w() / 2) < 0.5 && Math.abs(pan[1] - C.h() / 2) < 0.5;
+    zoomResetBtn.disabled = Math.abs(C.zoom() - def) < 1e-6 && centered;
   }
   /* 滑块跟着比例尺走：缩放动画每一帧都会走到这里 */
   syncZoomSlider();
