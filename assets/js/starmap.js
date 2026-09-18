@@ -472,6 +472,7 @@ if (zoomSlider && window.SSS_COORD) {
   zoomSlider.addEventListener("input", () => {
     const C = window.SSS_COORD;
     if (!C) return;
+    stopWheelZoom();                       // 滑块接管视角
     const lim = C.limits();
     // 滑块用即时缩放（不走缓动），拖动才跟手
     C.setView(zoomFromSliderPos(parseFloat(zoomSlider.value), lim.min, lim.max, lim.def));
@@ -512,20 +513,24 @@ function syncZoomUI() {
   syncZoomSlider();
 }
 
-bindZoomButton(zoomInBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomIn(); });
-bindZoomButton(zoomOutBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomOut(); });
-bindZoomButton(zoomResetBtn, () => { if (window.SSS_COORD) window.SSS_COORD.reset(); });
+bindZoomButton(zoomInBtn, () => { stopWheelZoom(); if (window.SSS_COORD) window.SSS_COORD.zoomIn(); });
+bindZoomButton(zoomOutBtn, () => { stopWheelZoom(); if (window.SSS_COORD) window.SSS_COORD.zoomOut(); });
+bindZoomButton(zoomResetBtn, () => { stopWheelZoom(); if (window.SSS_COORD) window.SSS_COORD.reset(); });
 
 /* ── 鼠标滚轮缩放 ──
-   向上滚 = 放大、向下滚 = 缩小（与按钮方向一致），
-   并且锚定在鼠标位置：指针底下的那个点在缩放前后停在原地，
-   像地图一样"指着哪儿就往哪儿放大"。
-   一格滚轮的缩放量与按钮步进（ZOOM_STEP 1.16）相当；
-   触控板会连发几十个事件，所以先累加、每帧只处理一次。 */
-const WHEEL_SENS = 0.0016;     // 每像素滚动的缩放指数（200px 约 1.38×）
-let wheelDelta = 0;
-let wheelPoint = null;
+   向上滚 = 放大、向下滚 = 缩小（与按钮方向一致），并且锚定在鼠标位置：
+   指针底下的那个点在缩放过程中一直停在原地，像地图一样"指着哪儿就往哪儿放大"。
+   滚轮事件是离散的（一格上百像素），直接改比例尺会一格一跳，所以这里
+   每个事件只更新"目标比例尺"，再由每帧的缓动去逼近（时间常数 70ms 左右），
+   鼠标滚轮与触控板都因此变成连续滑动而不是硬跳。 */
+const WHEEL_SENS = 0.0016;     // 每像素滚动的缩放指数（120px 一格 ≈ 1.21×）
+const WHEEL_TAU = 0.07;        // 缓动时间常数（秒）：约 3τ ≈ 0.2s 到位
+const WHEEL_EPS = 0.0008;      // 比例尺收敛阈值
+
+let wheelTarget = null;        // 目标比例尺（null = 不在滚轮缩放中）
+let wheelAnchor = null;        // { x, y, gx, gy }：锚点屏幕位置 + 该处的内容坐标
 let wheelRaf = 0;
+let wheelLast = 0;
 
 function normalizeWheel(e) {
   let d = e.deltaY;
@@ -534,38 +539,72 @@ function normalizeWheel(e) {
   return d;
 }
 
-function applyWheelZoom() {
+/* 其它操作（按钮 / 滑块 / 拖动）接管视角时，先停掉滚轮缓动，避免两边互相拉 */
+function stopWheelZoom() {
+  if (wheelRaf) cancelAnimationFrame(wheelRaf);
+  wheelRaf = 0;
+  wheelLast = 0;
+  wheelTarget = null;
+  wheelAnchor = null;
+}
+
+function wheelStep(now) {
   wheelRaf = 0;
   const C = window.SSS_COORD;
-  if (!C || !wheelDelta || !wheelPoint) { wheelDelta = 0; return; }
+  if (!C || wheelTarget == null || !wheelAnchor) return;
 
-  const { min, max } = C.limits();
-  const from = C.zoom();
-  const to = Math.max(min, Math.min(max, from * Math.exp(-wheelDelta * WHEEL_SENS)));
-  wheelDelta = 0;
-  if (to === from) return;                               // 已经到比例尺上下限
+  const dtSec = wheelLast ? Math.min(0.05, (now - wheelLast) / 1000) : 1 / 60;
+  wheelLast = now;
 
-  /* 锚定指针：内容点 P 与指针的距离按缩放比例缩放，指针下的点就保持不动 */
-  const ratio = to / from;
-  const pan = C.pan();
-  const px = wheelPoint.x;
-  const py = wheelPoint.y;
-  C.setView(to, px + (pan[0] - px) * ratio, py + (pan[1] - py) * ratio);
-  drawStarMap();
+  const current = C.zoom();
+  const diff = wheelTarget - current;
+  const done = Math.abs(diff) < WHEEL_EPS;
+  const next = done ? wheelTarget : current + diff * (1 - Math.exp(-dtSec / WHEEL_TAU));
+
+  /* 锚点不动：锚点处的内容点在屏幕上保持同一像素位置，
+     于是每帧只需按当前比例尺反推原点位置 */
+  const unit = C.base() * next;
+  C.setView(next, wheelAnchor.x - wheelAnchor.gx * unit, wheelAnchor.y - wheelAnchor.gy * unit);
+
+  if (done) {
+    wheelLast = 0;
+    wheelTarget = null;
+    wheelAnchor = null;
+    return;
+  }
+  wheelRaf = requestAnimationFrame(wheelStep);
 }
 
 canvas.addEventListener("wheel", (e) => {
-  if (!window.SSS_COORD) return;
+  const C = window.SSS_COORD;
+  if (!C) return;
   /* 触控板双指捏合会带 ctrlKey：交还给浏览器做页面缩放，不抢这个手势 */
   if (e.ctrlKey) return;
   e.preventDefault();                                    // 星图区域不跟随页面滚动
-  wheelDelta += normalizeWheel(e);
-  wheelPoint = { x: e.clientX, y: e.clientY };
-  if (!wheelRaf) wheelRaf = requestAnimationFrame(applyWheelZoom);
+
+  const { min, max } = C.limits();
+  const from = wheelTarget == null ? C.zoom() : wheelTarget;
+  wheelTarget = Math.min(max, Math.max(min, from * Math.exp(-normalizeWheel(e) * WHEEL_SENS)));
+
+  /* 锚点按"当前实际视角"换算，所以中途移动鼠标再滚也依然锚得住 */
+  const pan = C.pan();
+  const unit = C.base() * C.zoom();
+  wheelAnchor = {
+    x: e.clientX,
+    y: e.clientY,
+    gx: (e.clientX - pan[0]) / unit,
+    gy: (e.clientY - pan[1]) / unit
+  };
+
+  if (!wheelRaf) {
+    wheelLast = 0;
+    wheelRaf = requestAnimationFrame(wheelStep);
+  }
 }, { passive: false });
 
 canvas.addEventListener("pointerdown", (e) => {
   if (!window.SSS_COORD) return;
+  stopWheelZoom();                         // 拖动接管视角
   dragFrom = { x: e.clientX, y: e.clientY };
   dragMoved = false;
   canvas.setPointerCapture(e.pointerId);
