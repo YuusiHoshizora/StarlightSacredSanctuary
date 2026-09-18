@@ -13,6 +13,10 @@
  * 更新机制：seamless.js 每次加载页面都会检查 /sw.js 是否有新版本；
  *           新版本安装完成后立即接管（skipWaiting + clients.claim），
  *           下一次跳转就用到最新页面，不必手动清缓存。
+ *
+ * 本地预览例外：在 localhost / 127.0.0.1 / ::1 上 SW 完全不插手
+ *（不预缓存、不拦截、并清掉历史缓存），这样本地改完刷新一次就能看到最新文件，
+ *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
 const CACHE_VERSION = 'v4.2';
@@ -60,9 +64,20 @@ const PRECACHE_URLS = [
     '/assets/post/index.json'
 ];
 
+/* 本地预览（localhost / 127.0.0.1 / ::1）：SW 完全不插手 ——
+   请求直接走网络，也不写入任何缓存。
+   否则本地改完 CSS/JS 后，页面会先用缓存里的旧文件（stale-while-revalidate），
+   看起来就像"改动没生效"。部署到真实域名后自动走下面的正常缓存策略。 */
+const DEV_HOST = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|::1|\[::1\])$/.test(self.location.hostname);
+
 /* ------------------------------- 安装：预缓存 ------------------------------- */
 
 self.addEventListener('install', (event) => {
+    if (DEV_HOST) {
+        event.waitUntil(self.skipWaiting());
+        return;
+    }
+
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
 
@@ -90,9 +105,10 @@ self.addEventListener('activate', (event) => {
         const names = await caches.keys();
         await Promise.all(
             names
-                .filter((name) => name !== CACHE_NAME)
+                /* 本地预览：以前留下的缓存全部清掉；线上：只删旧版本 */
+                .filter((name) => DEV_HOST || name !== CACHE_NAME)
                 .map((name) => {
-                    console.log('[SW] 删除旧缓存：', name);
+                    console.log('[SW] 删除缓存：', name);
                     return caches.delete(name);
                 })
         );
@@ -111,6 +127,9 @@ self.addEventListener('message', (event) => {
 /* --------------------------------- 请求拦截 --------------------------------- */
 
 self.addEventListener('fetch', (event) => {
+    /* 本地预览：不拦截，浏览器直接走网络（永远拿到最新文件） */
+    if (DEV_HOST) return;
+
     const request = event.request;
 
     // 只处理同源 GET
