@@ -63,17 +63,17 @@
     COORD_AXIS: '#6a6a8e',       // 坐标轴（x = 0 / y = 0）颜色
     COORD_MEDIUM_STEP: 5,        // 中坐标：每 5 个小格
     COORD_MAJOR_STEP: 25,        // 大坐标：每 5 个中格
-    COORD_MINOR_MIN_PX: 26,      // 小格屏上间距小于该值就不画小坐标（默认只显示中/大坐标）
-    COORD_MEDIUM_MIN_PX: 18,     // 中格屏上间距小于该值就不画中坐标（缩放范围拉得很大时才生效）
-    COORD_MAJOR_MIN_PX: 60,      // 大格屏上间距小于该值就不画大坐标（同上）
+    COORD_MINOR_MIN_PX: 26,      // 小格屏上间距小于该值就不画小坐标
+    COORD_MEDIUM_MIN_PX: 88,     // 中格屏上间距小于该值就不画中坐标（初始只看得到大坐标）
+    COORD_MAJOR_MIN_PX: 60,      // 大格屏上间距小于该值就不画大坐标（缩到极远时的兜底）
     COORD_MARK: 0.5,             // 大坐标交点的小点亮度（0 = 关闭）
     COORD_SNAP_CELLS: 1,         // 内容吸附粒度（单位：小格）。1 = 星点落在小坐标格点上
-    ZOOM_MIN: 0.7,            // 最小比例尺
-    ZOOM_DEFAULT: 1,          // 默认比例尺（介于最小与最大之间）
-    ZOOM_MAX: 1.45,           // 最大比例尺
-    ZOOM_STEP: 1.16,          // 每次点击按钮的缩放步进
-    ZOOM_MS: 420,             // 缩放缓动时长（毫秒），越大越柔和；0 = 立即切换
-    SNAP: true                // 把 window.SSS_COORD 暴露给页面做对齐
+    ZOOM_MIN: 0.25,              // 最小比例尺（可缩到约 136 小格高，给以后加星系留空间）
+    ZOOM_DEFAULT: 0.5,           // 默认比例尺：初始约可见 68 小格高，最细只画到大坐标
+    ZOOM_MAX: 1.45,              // 最大比例尺
+    ZOOM_STEP: 1.16,             // 每次点击按钮的缩放步进
+    ZOOM_MS: 420,                // 缩放缓动时长（毫秒），越大越柔和；0 = 立即切换
+    SNAP: true                   // 把 window.SSS_COORD 暴露给页面做对齐
   };
 
   /* 各页可通过 window.SSS_BG 覆盖上面任意一项，得到「同风格、不同克制程度」的背景。
@@ -143,6 +143,19 @@
     vw = window.innerWidth;
     vh = window.innerHeight;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    /* 坐标纸原点默认落在视口正中心；之后窗口尺寸变化时保持"视野中心"不动 */
+    if (!coordPanReady) {
+      coordPanX = vw / 2;
+      coordPanY = vh / 2;
+      coordPanReady = true;
+    } else if (coordLastW && coordLastH) {
+      coordPanX += (vw - coordLastW) / 2;
+      coordPanY += (vh - coordLastH) / 2;
+    }
+    coordLastW = vw;
+    coordLastH = vh;
+
     setup(sky, sctx);
     setup(st, tctx);
     setup(cx, ctx);
@@ -168,49 +181,47 @@
   /* ============ 坐标纸式直角网格（星图页用） ============
      网格与内容共用同一套「缩放 + 平移」，所以相对位置始终对齐：
 
-       内容位置 = 吸附点 * zoom + pan
-       网格线   = 原点 + k * (基准格距 * zoom) + pan
+       内容位置 = 小格坐标 * (基准格距 * zoom) + pan
+       网格线   = pan + k * (基准格距 * zoom)
+
+     坐标系原点 (0, 0) 就是 k = 0 的那两条线的交点，pan 即它在屏幕上的位置；
+     初始时原点落在视口正中，缩放以原点为锚点（pan 不变），所以原点在屏上不动。
+     因此星图只要把「原点定在某个星系上」，那个星系就永远钉在坐标原点。
 
      三级刻度都落在同一套「小格」格点上（中坐标 = 每 COORD_MEDIUM_STEP 小格，
      大坐标 = 每 COORD_MAJOR_STEP 小格），内容吸附在最小的那一级上
-     （粒度见 COORD_SNAP_CELLS），因此任何比例尺下都严格对齐 ——
-     吸附在乘 zoom 之前完成，缩放只是把"格点"整体拉近拉远，不会让内容滑到格子内部。
-     某一级屏上间距过小时整级隐去（默认比例尺下不画小坐标），但不影响对齐关系。
+     （粒度见 COORD_SNAP_CELLS），因此任何比例尺下都严格对齐。
+     某一级屏上间距过小时整级隐去 —— 初始只看得到大坐标，
+     放大后依次出现中坐标、小坐标（阈值见 COORD_*_MIN_PX）。
 
-     关键在于 pan 对两者的作用是**同向同量**的 —— 拖动时网格和内容一起走。
-     缩放锚定在原点（画布左上角），因此不需要任何补偿平移，
-     放大 → 缩小回到同一比例尺时 pan 自然复原。
      线条画在 +0.5 处，让 1px 线落在整像素上、不发虚。 */
   var coordZoom = 1;
-  var coordPanX = 0;       // 平移量（拖动画布 = 整体位移）
+  var coordPanX = 0;       // 原点在屏幕上的位置（拖动 = 改这个值）
   var coordPanY = 0;
+  var coordPanReady = false;   // 首次 resize 时把原点摆到视口中心
+  var coordLastW = 0, coordLastH = 0;
   var coordCellPx = 0;     // 当前渲染用的格距 = 基准格距 * zoom
 
-  /* 基准比例尺（zoom = 1）下的名义格距：内容坐标的量化步长 */
+  /* 基准比例尺（zoom = 1）下一个小格在屏幕上的边长 */
   function coordCellBase() {
     return vh / CFG.COORD_N;
   }
 
-  /* 内容吸附步长 = 基准格距 × COORD_SNAP_CELLS（默认 1 格，即吸附到细线交点）。
-     注意吸附发生在「乘 zoom 之前」，所以任何比例尺下吸附点都仍是格点：
-       (m*步长) * zoom + pan = m * (步长*zoom) + pan —— 正好是第 m 条网格线。 */
-  function coordSnapStep() {
-    var cells = Math.max(1, Math.round(CFG.COORD_SNAP_CELLS || 1));
-    return coordCellBase() * cells;
+  /* 内容坐标（单位：小格）-> 像素位置 */
+  function coordPosPx(x, y) {
+    var c = coordCellBase() * coordZoom;
+    return [x * c + coordPanX, y * c + coordPanY];
   }
 
-  /* 归一化坐标 -> 像素位置。
-     先在基准比例尺下吸附到格点，再整体乘 zoom、加 pan —— 只缩放一次。 */
-  function coordSnapZoomPx(u, v) {
-    var c = coordSnapStep();
-    var bx = Math.round((u * vw) / c) * c;
-    var by = Math.round((v * vh) / c) * c;
-    return [bx * coordZoom + coordPanX, by * coordZoom + coordPanY];
-  }
-
-  /* 不吸附，仅缩放平移 */
-  function coordPosPx(u, v) {
-    return [u * vw * coordZoom + coordPanX, v * vh * coordZoom + coordPanY];
+  /* 吸附到格点后的像素位置：粒度 = COORD_SNAP_CELLS 个小格（默认 1，即小坐标格点）。
+     数据本身就是小格整数时这一步是恒等映射，保留它便于以后写小数坐标。 */
+  function coordSnapZoomPx(x, y) {
+    var step = Math.max(1, Math.round(CFG.COORD_SNAP_CELLS || 1));
+    var c = coordCellBase() * coordZoom;
+    return [
+      (Math.round((x || 0) / step) * step) * c + coordPanX,
+      (Math.round((y || 0) / step) * step) * c + coordPanY
+    ];
   }
 
   /* 网格原点在屏幕上的位置（内容与网格共用，保证同向位移） */
@@ -859,20 +870,20 @@
     notifyView();
   }
 
-  /* 回到默认：比例尺缓动回去，位置立即归零 */
+  /* 回到默认：比例尺缓动回去，原点重新摆回视口中心 */
   function resetView() {
     if (zoomTween.raf) cancelAnimationFrame(zoomTween.raf);
     zoomTween.raf = 0;
     zoomTween.last = 0;
-    coordPanX = 0;
-    coordPanY = 0;
+    coordPanX = vw / 2;
+    coordPanY = vh / 2;
     zoomTo(CFG.ZOOM_DEFAULT);
     if (!zoomTween.raf && Math.abs(coordZoom - CFG.ZOOM_DEFAULT) < 1e-9) notifyView();
   }
 
-  /* 归一化坐标 -> 已对齐格点的像素位置（相对视口左上角） */
-  function snapPos(u, v) {
-    return coordSnapZoomPx(u == null ? 0 : u, v == null ? 0 : v);
+  /* 小格坐标 -> 已对齐格点的像素位置（相对视口左上角） */
+  function snapPos(x, y) {
+    return coordSnapZoomPx(x == null ? 0 : x, y == null ? 0 : y);
   }
 
   function init() {
@@ -899,7 +910,7 @@
         limits: function () {
           return { min: CFG.ZOOM_MIN, max: CFG.ZOOM_MAX, def: CFG.ZOOM_DEFAULT };
         },
-        /* 归一化 -> 像素：pos 不吸附，snap 先吸附再缩放平移 */
+        /* 小格坐标 -> 像素：pos 不吸附，snap 先吸附到格点（默认就是小坐标格点） */
         pos: coordPosPx,
         snap: coordSnapZoomPx,
         setView: setCoordView,
