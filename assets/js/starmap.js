@@ -428,16 +428,18 @@ const zoomResetBtn = document.getElementById("zoom-reset");
 const zoomSlider = document.getElementById("zoom-slider");
 
 /* ── 比例尺滑块 ──
+   方向与按钮一致：向左拖 = 放大（同「+」），向右拖 = 缩小（同「−」）。
    位置与比例尺取「等比」关系（0..1 线性拖动 = 比例尺按倍数变化），
-   这样整条滑轨的手感一致 —— 直接用比例尺做线性映射的话，
+   这样整条滑轨手感一致 —— 直接用比例尺做线性映射的话，
    越靠小比例尺一侧，同样的拖动距离带来的视野变化越大。
    不显示数值：滑块位置本身就是当前比例尺。 */
 function zoomFromSliderPos(t, min, max) {
-  return min * Math.pow(max / min, Math.max(0, Math.min(1, t)));
+  const clamped = Math.max(0, Math.min(1, t));
+  return max * Math.pow(min / max, clamped);   // t = 0 → 最大，t = 1 → 最小
 }
 
 function sliderPosFromZoom(z, min, max) {
-  const t = Math.log(z / min) / Math.log(max / min);
+  const t = Math.log(max / z) / Math.log(max / min);   // 最大 → 0，最小 → 1
   return Math.max(0, Math.min(1, t));
 }
 
@@ -445,9 +447,7 @@ function syncZoomSlider() {
   const C = window.SSS_COORD;
   if (!zoomSlider || !C) return;
   const { min, max } = C.limits();
-  const t = sliderPosFromZoom(C.zoom(), min, max);
-  zoomSlider.value = String(t);
-  zoomSlider.style.setProperty("--fill", (t * 100).toFixed(2) + "%");
+  zoomSlider.value = String(sliderPosFromZoom(C.zoom(), min, max));
 }
 
 if (zoomSlider && window.SSS_COORD) {

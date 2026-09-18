@@ -104,9 +104,10 @@
 }
 
 /* ── 比例尺滑块 ──
-   位于缩放按钮左侧，只辅助缩放、不显示数值：
-   滑块位置本身就是当前比例尺，金色已填充段表示"放大到哪一档"。
-   样式与按钮同一套语言（半透明底、金色高亮）。 */
+   位于缩放按钮左侧，只辅助缩放、不显示数值。
+   方向与按钮一致：向左拖 = 放大（同「+」），向右拖 = 缩小（同「−」）。
+   背景做成与按钮完全相同的那块"描边 + 半透明底"药丸（同圆角、同边框、同 hover 金色），
+   中间一条细线标示滑轨。 */
 .map-zoom__slider {
   -webkit-appearance: none;
   appearance: none;
@@ -123,27 +124,27 @@
   outline: none;
 }
 
-/* 轨道 */
+/* 轨道 = 按钮那样的背景块 */
 .map-zoom__slider::-webkit-slider-runnable-track {
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(
-    to right,
-    rgba(255, 215, 0, 0.45) var(--fill, 0%),
-    rgba(255, 255, 255, 0.16) var(--fill, 0%)
-  );
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / calc(100% - 24px) 2px no-repeat,
+    rgba(255, 255, 255, 0.04);
+
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .map-zoom__slider::-moz-range-track {
-  height: 2px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.16);
-}
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / calc(100% - 24px) 2px no-repeat,
+    rgba(255, 255, 255, 0.04);
 
-.map-zoom__slider::-moz-range-progress {
-  height: 2px;
-  border-radius: 2px;
-  background: rgba(255, 215, 0, 0.45);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 /* 滑块手柄 */
@@ -153,9 +154,9 @@
 
   width: 12px;
   height: 12px;
-  margin-top: -5px;          /* (轨道 2px - 手柄 12px) / 2 */
+  margin-top: 10px;          /* (轨道内容高 32px - 手柄 12px) / 2 */
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
@@ -165,13 +166,29 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-/* hover / 键盘聚焦时转金色，与按钮的 hover 反馈一致 */
+/* hover / 键盘聚焦：整块背景与手柄一起转金色，与按钮的 hover 反馈一致 */
+.map-zoom__slider:hover::-webkit-slider-runnable-track,
+.map-zoom__slider:focus-visible::-webkit-slider-runnable-track {
+  border-color: rgba(255, 215, 0, 0.4);
+  background:
+    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / calc(100% - 24px) 2px no-repeat,
+    rgba(255, 215, 0, 0.1);
+}
+
+.map-zoom__slider:hover::-moz-range-track,
+.map-zoom__slider:focus-visible::-moz-range-track {
+  border-color: rgba(255, 215, 0, 0.4);
+  background:
+    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / calc(100% - 24px) 2px no-repeat,
+    rgba(255, 215, 0, 0.1);
+}
+
 .map-zoom__slider:hover::-webkit-slider-thumb,
 .map-zoom__slider:focus-visible::-webkit-slider-thumb {
   background: #ffd700;
