@@ -65,16 +65,18 @@
             <div class="starmap-left">
                 <canvas id="starmap-canvas"></canvas>
 
-                <!-- 比例尺控制：滑块（辅助缩放，不显示数值）+ 放大 / 缩小 / 回到默认 -->
+                <!-- 比例尺控制：缩小 / 滑块（辅助缩放，不显示数值）/ 放大 / 回到默认
+                     滑块夹在两个按钮之间，拖动方向与紧邻的按钮一致：
+                     向左 = 缩小（同左侧「−」），向右 = 放大（同右侧「+」）。 -->
                 <div class="map-zoom" role="group" aria-label="比例尺控制">
+                    <button type="button" id="zoom-out" class="map-zoom__btn" aria-label="缩小" title="缩小">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+                    </button>
                     <input type="range" id="zoom-slider" class="map-zoom__slider"
                            min="0" max="1" step="0.01" value="0"
                            aria-label="比例尺（左右拖动缩放）" />
                     <button type="button" id="zoom-in" class="map-zoom__btn" aria-label="放大" title="放大">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                    </button>
-                    <button type="button" id="zoom-out" class="map-zoom__btn" aria-label="缩小" title="缩小">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
                     </button>
                     <button type="button" id="zoom-reset" class="map-zoom__btn" aria-label="回到默认" title="回到默认">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
