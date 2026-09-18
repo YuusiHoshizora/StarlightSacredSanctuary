@@ -15,7 +15,7 @@
  *           下一次跳转就用到最新页面，不必手动清缓存。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v4.1';
+const CACHE_VERSION = 'v4.2';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面
