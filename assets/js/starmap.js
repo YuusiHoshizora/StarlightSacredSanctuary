@@ -417,13 +417,54 @@ window.addEventListener("resize", () => {
 
 // ── 缩放与平移 ──
 // 坐标纸与星系共用同一套变换，所以缩放时两者的相对位置始终对齐。
-// 缩放只通过三个按钮操作：放大 / 缩小 / 回到默认（默认比例尺既非最大也非最小）。
+// 缩放通过左侧的比例尺滑块与放大 / 缩小 / 回到默认三个按钮操作
+//（滑块即时生效、按钮带缓动，两者始终互相同步；默认比例尺既非最大也非最小）。
 let dragMoved = false;
 let dragFrom = null;
 
 const zoomInBtn = document.getElementById("zoom-in");
 const zoomOutBtn = document.getElementById("zoom-out");
 const zoomResetBtn = document.getElementById("zoom-reset");
+const zoomSlider = document.getElementById("zoom-slider");
+
+/* ── 比例尺滑块 ──
+   位置与比例尺取「等比」关系（0..1 线性拖动 = 比例尺按倍数变化），
+   这样整条滑轨的手感一致 —— 直接用比例尺做线性映射的话，
+   越靠小比例尺一侧，同样的拖动距离带来的视野变化越大。
+   不显示数值：滑块位置本身就是当前比例尺。 */
+function zoomFromSliderPos(t, min, max) {
+  return min * Math.pow(max / min, Math.max(0, Math.min(1, t)));
+}
+
+function sliderPosFromZoom(z, min, max) {
+  const t = Math.log(z / min) / Math.log(max / min);
+  return Math.max(0, Math.min(1, t));
+}
+
+function syncZoomSlider() {
+  const C = window.SSS_COORD;
+  if (!zoomSlider || !C) return;
+  const { min, max } = C.limits();
+  const t = sliderPosFromZoom(C.zoom(), min, max);
+  zoomSlider.value = String(t);
+  zoomSlider.style.setProperty("--fill", (t * 100).toFixed(2) + "%");
+}
+
+if (zoomSlider && window.SSS_COORD) {
+  const { min, max } = window.SSS_COORD.limits();
+  zoomSlider.min = "0";
+  zoomSlider.max = "1";
+  zoomSlider.step = "0.01";
+  syncZoomSlider();
+
+  zoomSlider.addEventListener("input", () => {
+    const C = window.SSS_COORD;
+    if (!C) return;
+    const lim = C.limits();
+    // 滑块用即时缩放（不走缓动），拖动才跟手
+    C.setView(zoomFromSliderPos(parseFloat(zoomSlider.value), lim.min, lim.max));
+  });
+}
 
 /* 按钮按下时的金色渐变反馈：pointerdown 点亮，pointerup / 离开后再淡出 */
 function bindZoomButton(btn, action) {
@@ -454,6 +495,8 @@ function syncZoomUI() {
     zoomResetBtn.disabled =
       Math.abs(C.zoom() - def) < 1e-6 && Math.abs(pan[0]) < 0.5 && Math.abs(pan[1]) < 0.5;
   }
+  /* 滑块跟着比例尺走：缩放动画每一帧都会走到这里 */
+  syncZoomSlider();
 }
 
 bindZoomButton(zoomInBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomIn(); });

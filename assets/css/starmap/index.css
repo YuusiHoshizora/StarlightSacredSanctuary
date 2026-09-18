@@ -103,6 +103,89 @@
   cursor: default;
 }
 
+/* ── 比例尺滑块 ──
+   位于缩放按钮左侧，只辅助缩放、不显示数值：
+   滑块位置本身就是当前比例尺，金色已填充段表示"放大到哪一档"。
+   样式与按钮同一套语言（半透明底、金色高亮）。 */
+.map-zoom__slider {
+  -webkit-appearance: none;
+  appearance: none;
+
+  width: 132px;
+  height: 34px;              /* 与按钮等高，方便手指点按 */
+  margin: 0 6px 0 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.map-zoom__slider:focus {
+  outline: none;
+}
+
+/* 轨道 */
+.map-zoom__slider::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 215, 0, 0.45) var(--fill, 0%),
+    rgba(255, 255, 255, 0.16) var(--fill, 0%)
+  );
+}
+
+.map-zoom__slider::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.map-zoom__slider::-moz-range-progress {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 215, 0, 0.45);
+}
+
+/* 滑块手柄 */
+.map-zoom__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+
+  width: 12px;
+  height: 12px;
+  margin-top: -5px;          /* (轨道 2px - 手柄 12px) / 2 */
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.map-zoom__slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+/* hover / 键盘聚焦时转金色，与按钮的 hover 反馈一致 */
+.map-zoom__slider:hover::-webkit-slider-thumb,
+.map-zoom__slider:focus-visible::-webkit-slider-thumb {
+  background: #ffd700;
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
+.map-zoom__slider:hover::-moz-range-thumb,
+.map-zoom__slider:focus-visible::-moz-range-thumb {
+  background: #ffd700;
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
 .starmap-right .empty-info {
   display: flex;
   flex-direction: column;
@@ -254,5 +337,9 @@
     height: 40vh;
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  /* 窄屏下缩小滑块，避免控制条过长 */
+  .map-zoom__slider {
+    width: 92px;
   }
 }

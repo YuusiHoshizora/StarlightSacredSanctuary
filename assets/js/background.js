@@ -866,6 +866,9 @@
     if (z != null) coordZoom = Math.min(CFG.ZOOM_MAX, Math.max(CFG.ZOOM_MIN, z));
     if (panX != null) coordPanX = panX;
     if (panY != null) coordPanY = panY;
+    /* zoomStop() 会把缓动终点对齐到"改之前"的比例尺，而这里直接改了比例尺，
+       必须把终点同步过来 —— 否则 canZoomIn/Out 以及下一次按钮缩放的基准都会是旧值 */
+    zoomTween.target = coordZoom;
     refreshCoordCell();
     notifyView();
   }
