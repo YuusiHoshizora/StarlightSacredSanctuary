@@ -51,11 +51,13 @@
                  页面按同一个公式取整即可让内容精确落在交点上 */
     GRID_STYLE: 'hex',
     COORD_N: 20,              // 纵向格数（格子数量）
-    COORD_MAJOR: 5,           // 每隔几条画一条加粗主线
+    COORD_MAJOR: 5,           // 每隔几条画一条加粗主线（主线间隔永远是它的整数倍，缩放时不跳变）
     COORD_MINOR: '#232334',   // 细线颜色
     COORD_MAJOR_C: '#3d3d5c', // 主线颜色
     COORD_AXIS: '#5a5a7a',    // 坐标轴颜色
     COORD_MARK: 0.5,          // 交点小十字/小点的亮度（0 = 关闭）
+    COORD_SNAP_CELLS: 1,      // 内容吸附粒度（单位：细格）。1 = 落在细线交点；
+                              // 改成 COORD_MAJOR 则落在带标记的主线交点上
     COORD_PX: 34,             // 网格在屏幕上保持的基准格距（px）
     ZOOM_MIN: 0.7,            // 最小比例尺
     ZOOM_DEFAULT: 1,          // 默认比例尺（介于最小与最大之间）
@@ -160,6 +162,10 @@
        内容位置 = 吸附点 * zoom + pan
        网格线   = 原点 + k * (基准格距 * zoom) + pan
 
+     内容吸附在细格交点上（粒度见 COORD_SNAP_CELLS），主线只取每 COORD_MAJOR 格一条，
+     两者落在同一套格点上，因此任何比例尺下都严格对齐 —— 吸附在乘 zoom 之前完成，
+     缩放只是把"格点"整体拉近拉远，不会让内容滑到格子内部。
+
      关键在于 pan 对两者的作用是**同向同量**的 —— 拖动时网格和内容一起走。
      缩放锚定在原点（画布左上角），因此不需要任何补偿平移，
      放大 → 缩小回到同一比例尺时 pan 自然复原。
@@ -174,10 +180,18 @@
     return vh / CFG.COORD_N;
   }
 
+  /* 内容吸附步长 = 基准格距 × COORD_SNAP_CELLS（默认 1 格，即吸附到细线交点）。
+     注意吸附发生在「乘 zoom 之前」，所以任何比例尺下吸附点都仍是格点：
+       (m*步长) * zoom + pan = m * (步长*zoom) + pan —— 正好是第 m 条网格线。 */
+  function coordSnapStep() {
+    var cells = Math.max(1, Math.round(CFG.COORD_SNAP_CELLS || 1));
+    return coordCellBase() * cells;
+  }
+
   /* 归一化坐标 -> 像素位置。
      先在基准比例尺下吸附到格点，再整体乘 zoom、加 pan —— 只缩放一次。 */
   function coordSnapZoomPx(u, v) {
-    var c = coordCellBase();
+    var c = coordSnapStep();
     var bx = Math.round((u * vw) / c) * c;
     var by = Math.round((v * vh) / c) * c;
     return [bx * coordZoom + coordPanX, by * coordZoom + coordPanY];
@@ -286,8 +300,12 @@
     var ox = gridOriginX();
     var oy = gridOriginY();
 
-    /* 主线间隔恒为「5 个名义格」，缩小时自动降级，避免整屏都是主线 */
-    var major = Math.max(1, Math.round((coordCellBase() * CFG.COORD_MAJOR) / c));
+    /* 主线间隔永远是 COORD_MAJOR 的整数倍 —— 也就是"哪些线是主线"在逻辑坐标里固定不变，
+       缩放时主线与标记点不会整体错位（否则每换一档，整片格点都会跳一格，
+       星点看着就像离开了格点）。
+       只在主线过密时才升档（COORD_MAJOR 的 2 倍、3 倍……），升档也仍然落在同一套格点上。 */
+    var majorStep = Math.max(1, Math.round(1 / coordZoom));
+    var major = CFG.COORD_MAJOR * majorStep;
     var kx0 = Math.floor((0 - ox) / c), kx1 = Math.ceil((vw - ox) / c);
     var ky0 = Math.floor((0 - oy) / c), ky1 = Math.ceil((vh - oy) / c);
     var k;
