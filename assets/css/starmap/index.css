@@ -115,8 +115,15 @@
   width: 132px;
   height: 34px;              /* 与按钮等高，方便手指点按 */
   margin: 0 6px 0 0;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.04);
+  /* 左右各留 9px 内边距：手柄行程随之两端内缩（加 1px 边框 = 离药丸边 10px），
+     两个内核都支持这种做法（Firefox 会忽略轨道上的 margin，所以不能用那个）。 */
+  padding: 0 9px;
+  /* 药丸底色 + 中间一条细滑轨线。
+     滑轨线画在输入框上（而不是轨道上），这样 Chrome / Firefox 长度一致；
+     线两端与手柄行程的端点对齐（内缩 16px）。 */
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / calc(100% - 32px) 2px no-repeat,
+    rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   cursor: pointer;
@@ -128,24 +135,22 @@
   outline: none;
 }
 
-/* 轨道：只负责"手柄能滑到哪"和中间那条细线，
-   左右各留 9px 内缩 —— 手柄到两端时与药丸边框保持距离，不再挨着边线 */
+/* 轨道：只负责"手柄能滑到哪"，不画任何东西。
+   行程 = 输入框的内容框（已被上面的 padding 内缩），所以这里不再加 margin */
 .map-zoom__slider::-webkit-slider-runnable-track {
   height: 32px;              /* = 输入框内容高（34 - 上下边框），手柄垂直居中 */
-  margin: 0 9px;
+  margin: 0;
   border: none;
   border-radius: 0;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / 100% 2px no-repeat;
+  background: none;
 }
 
 .map-zoom__slider::-moz-range-track {
   height: 32px;
-  margin: 0 9px;
+  margin: 0;
   border: none;
   border-radius: 0;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)) center / 100% 2px no-repeat;
+  background: none;
 }
 
 /* 滑块手柄 */
@@ -177,19 +182,9 @@
 .map-zoom__slider:hover,
 .map-zoom__slider:focus-visible {
   border-color: rgba(255, 215, 0, 0.4);
-  background: rgba(255, 215, 0, 0.1);
-}
-
-.map-zoom__slider:hover::-webkit-slider-runnable-track,
-.map-zoom__slider:focus-visible::-webkit-slider-runnable-track {
   background:
-    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / 100% 2px no-repeat;
-}
-
-.map-zoom__slider:hover::-moz-range-track,
-.map-zoom__slider:focus-visible::-moz-range-track {
-  background:
-    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / 100% 2px no-repeat;
+    linear-gradient(rgba(255, 215, 0, 0.5), rgba(255, 215, 0, 0.5)) center / calc(100% - 32px) 2px no-repeat,
+    rgba(255, 215, 0, 0.1);
 }
 
 .map-zoom__slider:hover::-webkit-slider-thumb,
