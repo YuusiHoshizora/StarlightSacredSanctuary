@@ -516,6 +516,54 @@ bindZoomButton(zoomInBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomIn(
 bindZoomButton(zoomOutBtn, () => { if (window.SSS_COORD) window.SSS_COORD.zoomOut(); });
 bindZoomButton(zoomResetBtn, () => { if (window.SSS_COORD) window.SSS_COORD.reset(); });
 
+/* ── 鼠标滚轮缩放 ──
+   向上滚 = 放大、向下滚 = 缩小（与按钮方向一致），
+   并且锚定在鼠标位置：指针底下的那个点在缩放前后停在原地，
+   像地图一样"指着哪儿就往哪儿放大"。
+   一格滚轮的缩放量与按钮步进（ZOOM_STEP 1.16）相当；
+   触控板会连发几十个事件，所以先累加、每帧只处理一次。 */
+const WHEEL_SENS = 0.0016;     // 每像素滚动的缩放指数（200px 约 1.38×）
+let wheelDelta = 0;
+let wheelPoint = null;
+let wheelRaf = 0;
+
+function normalizeWheel(e) {
+  let d = e.deltaY;
+  if (e.deltaMode === 1) d *= 16;                        // 以"行"为单位
+  else if (e.deltaMode === 2) d *= window.innerHeight;   // 以"页"为单位
+  return d;
+}
+
+function applyWheelZoom() {
+  wheelRaf = 0;
+  const C = window.SSS_COORD;
+  if (!C || !wheelDelta || !wheelPoint) { wheelDelta = 0; return; }
+
+  const { min, max } = C.limits();
+  const from = C.zoom();
+  const to = Math.max(min, Math.min(max, from * Math.exp(-wheelDelta * WHEEL_SENS)));
+  wheelDelta = 0;
+  if (to === from) return;                               // 已经到比例尺上下限
+
+  /* 锚定指针：内容点 P 与指针的距离按缩放比例缩放，指针下的点就保持不动 */
+  const ratio = to / from;
+  const pan = C.pan();
+  const px = wheelPoint.x;
+  const py = wheelPoint.y;
+  C.setView(to, px + (pan[0] - px) * ratio, py + (pan[1] - py) * ratio);
+  drawStarMap();
+}
+
+canvas.addEventListener("wheel", (e) => {
+  if (!window.SSS_COORD) return;
+  /* 触控板双指捏合会带 ctrlKey：交还给浏览器做页面缩放，不抢这个手势 */
+  if (e.ctrlKey) return;
+  e.preventDefault();                                    // 星图区域不跟随页面滚动
+  wheelDelta += normalizeWheel(e);
+  wheelPoint = { x: e.clientX, y: e.clientY };
+  if (!wheelRaf) wheelRaf = requestAnimationFrame(applyWheelZoom);
+}, { passive: false });
+
 canvas.addEventListener("pointerdown", (e) => {
   if (!window.SSS_COORD) return;
   dragFrom = { x: e.clientX, y: e.clientY };
