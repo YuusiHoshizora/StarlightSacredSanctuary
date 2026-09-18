@@ -59,8 +59,9 @@ window.SSS_BG = {
   CLICK_BURST: false,
   SKY_PARALLAX: 0.012,
 
-  /* 星空：稀疏，作为网格之间的底噪 */
-  STAR_DENSITY: 1 / 26000,
+  /* 星空：星图页不要背景星点（只有坐标纸与星系），
+     STAR_DENSITY = 0 即完全不画星空层 */
+  STAR_DENSITY: 0,
   STAR_TWINKLE: 0,
 
   /* 星图自身在逐帧重绘，背景保持完全静止：
