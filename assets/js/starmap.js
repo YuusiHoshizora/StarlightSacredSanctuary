@@ -607,7 +607,10 @@ canvas.addEventListener("pointerdown", (e) => {
   stopWheelZoom();                         // 拖动接管视角
   dragFrom = { x: e.clientX, y: e.clientY };
   dragMoved = false;
-  canvas.setPointerCapture(e.pointerId);
+  /* 合成事件（没有真实指针）调用会抛 NotFoundError，这里容错处理 */
+  try {
+    canvas.setPointerCapture(e.pointerId);
+  } catch (err) { /* 忽略 */ }
 });
 
 canvas.addEventListener("pointermove", (e) => {
@@ -634,6 +637,133 @@ window.SSS_ON_ZOOM = function () {
   if (canvas && canvas.width) drawStarMap();
   syncZoomUI();
 };
+
+/* ── 星系搜索 ──
+   控制条最右边的搜索框：输入中文名或英文名筛选星系，
+   结果列表浮在输入框上方；↑↓ 选择、Enter 跳转、Esc 清空。
+   跳转 = 把该星系移到视野中心并选中（右侧信息栏随之更新）。 */
+const searchInput = document.getElementById("galaxy-search");
+const searchList = document.getElementById("galaxy-search-list");
+let searchHits = [];
+let searchCursor = -1;
+
+function searchKey(text) {
+  return String(text == null ? "" : text).trim().toLowerCase();
+}
+
+function findGalaxies(query) {
+  const q = searchKey(query);
+  if (!q) return [];
+  return STARMAP_DATA.filter(function (sys) {
+    return searchKey(sys.name).indexOf(q) >= 0 || searchKey(sys.nameEn).indexOf(q) >= 0;
+  });
+}
+
+function renderSearchList() {
+  if (!searchList) return;
+  searchList.innerHTML = "";
+
+  if (!searchInput.value.trim()) {          // 没输入内容就不弹列表
+    searchList.hidden = true;
+    return;
+  }
+
+  if (!searchHits.length) {
+    const empty = document.createElement("div");
+    empty.className = "map-search__empty";
+    empty.textContent = "没有找到匹配的星系";
+    searchList.appendChild(empty);
+    searchList.hidden = false;
+    return;
+  }
+
+  searchHits.forEach(function (sys, i) {
+    const row = document.createElement("div");
+    row.className = "map-search__item" + (i === searchCursor ? " is-active" : "");
+    row.setAttribute("role", "option");
+    row.dataset.index = String(i);
+
+    const name = document.createElement("span");
+    name.className = "map-search__name";
+    name.textContent = sys.name || sys.id || "(未命名)";
+
+    const en = document.createElement("span");
+    en.className = "map-search__en";
+    en.textContent = sys.nameEn || "";
+
+    const pos = document.createElement("span");
+    pos.className = "map-search__pos";
+    pos.textContent = "坐标 (" + sys.x + ", " + sys.y + ")";
+
+    row.appendChild(name);
+    row.appendChild(en);
+    row.appendChild(pos);
+    row.addEventListener("mousedown", function (e) {   // mousedown：抢在 blur 之前
+      e.preventDefault();
+      gotoGalaxy(sys);
+    });
+    searchList.appendChild(row);
+  });
+
+  searchList.hidden = false;
+  const active = searchList.querySelector(".is-active");
+  if (active && active.scrollIntoView) active.scrollIntoView({ block: "nearest" });
+}
+
+function updateSearch() {
+  searchHits = findGalaxies(searchInput.value);
+  searchCursor = searchHits.length ? 0 : -1;
+  renderSearchList();
+}
+
+function closeSearchList() {
+  if (!searchList) return;
+  searchList.hidden = true;
+  searchCursor = -1;
+}
+
+function moveSearchCursor(step) {
+  if (!searchHits.length) return;
+  searchCursor = (searchCursor + step + searchHits.length) % searchHits.length;
+  renderSearchList();
+}
+
+/* 跳到某个星系：移到视野中心 + 选中（地图高亮、右侧信息栏同步） */
+function gotoGalaxy(sys) {
+  const C = window.SSS_COORD;
+  if (C && sys) {
+    const cell = C.cell();
+    C.setView(null, C.w() / 2 - Number(sys.x) * cell, C.h() / 2 - Number(sys.y) * cell);
+  }
+  selectSystem(sys);
+  drawStarMap();
+  closeSearchList();
+  if (searchInput) searchInput.blur();
+}
+
+if (searchInput && searchList) {
+  searchInput.addEventListener("input", updateSearch);
+  searchInput.addEventListener("focus", function () {
+    if (searchInput.value.trim()) updateSearch();
+  });
+  searchInput.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown") { e.preventDefault(); moveSearchCursor(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); moveSearchCursor(-1); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchHits.length) gotoGalaxy(searchHits[Math.max(0, searchCursor)]);
+    } else if (e.key === "Escape") {
+      searchInput.value = "";
+      searchHits = [];
+      closeSearchList();
+      searchInput.blur();
+    }
+  });
+  /* 点到别处就收起列表 */
+  document.addEventListener("pointerdown", function (e) {
+    if (!e.target.closest || !e.target.closest(".map-search")) closeSearchList();
+  });
+}
 
 // ── 启动 ──
 function init() {

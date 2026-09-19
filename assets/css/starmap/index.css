@@ -53,6 +53,126 @@
   gap: 8px;
 }
 
+/* ── 星系搜索 ──
+   位置在「回到默认」右边；结果列表浮在输入框上方（控制条本来就贴在页面底部）。
+   样式与站内控件同一套：描边 + 半透明底，聚焦 / hover 转金色。 */
+.map-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.map-search__input {
+  width: 172px;
+  height: 34px;
+  padding: 0 10px 0 30px;      /* 左边给放大镜图标留位置 */
+  font: inherit;
+  font-size: 13px;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.04);
+  /* 放大镜图标：内联 SVG，颜色与站内图标一致 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.45' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  background-size: 15px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  outline: none;
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.map-search__input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.map-search__input:hover {
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.map-search__input:focus {
+  border-color: rgba(255, 215, 0, 0.5);
+  background-color: rgba(255, 215, 0, 0.08);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.14);
+}
+
+/* 原生清除按钮（×）在暗色下几乎看不见，调成浅色 */
+.map-search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.45);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
+}
+
+.map-search__input::-webkit-search-cancel-button:hover {
+  background-color: #ffd700;
+}
+
+/* 结果列表：浮在输入框上方 */
+.map-search__list {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  min-width: 100%;
+  max-width: 300px;
+  max-height: 232px;
+  overflow-y: auto;
+  padding: 6px;
+
+  background: rgba(10, 10, 30, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+.map-search__item {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding: 7px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.map-search__item:hover,
+.map-search__item.is-active {
+  background: rgba(255, 215, 0, 0.12);
+}
+
+.map-search__name {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+}
+
+.map-search__item.is-active .map-search__name {
+  color: #ffd700;
+}
+
+.map-search__en {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+.map-search__pos {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.map-search__empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
 .map-zoom__btn {
   width: 34px;
   height: 34px;
@@ -354,8 +474,14 @@
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
-  /* 窄屏下缩小滑块，避免控制条过长 */
+  /* 窄屏下缩小滑块与搜索框，避免控制条过长 */
   .map-zoom__slider {
     width: 92px;
+  }
+  .map-search__input {
+    width: 120px;
+  }
+  .map-search__list {
+    max-width: 220px;
   }
 }

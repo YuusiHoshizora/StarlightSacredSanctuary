@@ -84,6 +84,15 @@
                             <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>
                         </svg>
                     </button>
+
+                    <!-- 搜索星系（中文名 / 英文名）：结果浮在输入框上方，↑↓ 选择、Enter 跳转、Esc 清空 -->
+                    <div class="map-search">
+                        <div class="map-search__list" id="galaxy-search-list" role="listbox"
+                             aria-label="搜索结果" hidden></div>
+                        <input type="search" id="galaxy-search" class="map-search__input"
+                               placeholder="搜索星系" autocomplete="off" spellcheck="false"
+                               aria-label="按名称搜索星系（中文名或英文名）" />
+                    </div>
                 </div>
             </div>
 
