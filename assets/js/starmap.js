@@ -691,13 +691,8 @@ function renderSearchList() {
     en.className = "map-search__en";
     en.textContent = sys.nameEn || "";
 
-    const pos = document.createElement("span");
-    pos.className = "map-search__pos";
-    pos.textContent = "坐标 (" + sys.x + ", " + sys.y + ")";
-
     row.appendChild(name);
     row.appendChild(en);
-    row.appendChild(pos);
     row.addEventListener("mousedown", function (e) {   // mousedown：抢在 blur 之前
       e.preventDefault();
       gotoGalaxy(sys);

@@ -92,7 +92,6 @@
 .map-search__input:focus {
   border-color: rgba(255, 215, 0, 0.5);
   background-color: rgba(255, 215, 0, 0.08);
-  box-shadow: 0 0 14px rgba(255, 215, 0, 0.14);
 }
 
 /* 原生清除按钮（×）在暗色下几乎看不见，调成浅色 */
@@ -127,12 +126,11 @@
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
 }
 
+/* 结果行：中文名一行、英文名一行（英文名就在原先显示坐标的位置） */
 .map-search__item {
-  display: grid;
-  grid-template-columns: auto auto;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 2px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: 7px 9px;
   border-radius: 4px;
   cursor: pointer;
@@ -148,6 +146,8 @@
   font-size: 13px;
   color: rgba(255, 255, 255, 0.92);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .map-search__item.is-active .map-search__name {
@@ -158,13 +158,8 @@
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
   white-space: nowrap;
-}
-
-.map-search__pos {
-  grid-column: 1 / -1;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .map-search__empty {
