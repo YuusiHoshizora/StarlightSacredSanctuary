@@ -13,6 +13,19 @@
    ============================================================ */
 const STARMAP_DATA = [
   {
+    id: "aemys",
+    name: "爱梅斯",
+    nameEn: "Aemys",
+    starCount: 2,
+    planets: 2,
+    starType: "B、B",
+    developmentLevel: "次核心阶段",
+    description:
+      "爱梅斯是人类第一次认识到寂静领域存在的星系，也是星光圣域位于伊谢尔伦回廊附近的主补给站所在星系。",
+    x: 125,
+    y: -24,
+  },
+  {
     id: "aldaria",
     name: "阿尔达里亚",
     nameEn: "Aldaria",
@@ -22,8 +35,8 @@ const STARMAP_DATA = [
     developmentLevel: "深入阶段",
     description:
       "阿尔达里亚为星光圣域的半边缘核心星系，其资源匮乏，但具备独特的资源，故星光圣域计划在未来开发此星系，并可能提前进行开发。",
-    x: 24,
-    y: 5,
+    x: 88,
+    y: -14,
   },
   {
     id: "astralis",
@@ -33,23 +46,23 @@ const STARMAP_DATA = [
     planets: 3,
     starType: "G",
     developmentLevel: "完全",
-      description:
+    description:
       "星光圣域的通信枢纽之一，在索拉克分支矩阵“阿斯特拉利斯”的辅助下，阿斯特拉利斯成为全宇宙知名的服务器集群地之一，同时也是星域网的主服务器所在星系。",
-    x: 3,
+    x: 2,
     y: -1,
   },
   {
-    id: "b970",
-    name: "B-970 黑洞",
-    nameEn: "Black Hole B-970",
+    id: "b1203",
+    name: "B-1203黑洞",
+    nameEn: "Black Hole B-1203",
     starCount: 1,
-    planets: 1,
+    planets: 2,
     starType: "黑洞",
-    developmentLevel: "深入阶段",
+    developmentLevel: "休整阶段",
     description:
-      "B-970黑洞位于星光圣域的边境，是星光圣域位于罗素费亚回廊的前线。",
-    x: 33,
-    y: 3,
+      "B-970黑洞位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
+    x: 128,
+    y: -8,
   },
   {
     id: "b1206",
@@ -61,8 +74,21 @@ const STARMAP_DATA = [
     developmentLevel: "完全",
     description:
       "B-1206黑洞位于维斯佩拉和P-304脉冲星附近，是研究重力、时空、视界等方向的绝佳场所。",
-    x: -1,
+    x: -2,
     y: 1,
+  },
+  {
+    id: "b970",
+    name: "B-970 黑洞",
+    nameEn: "Black Hole B-970",
+    starCount: 1,
+    planets: 1,
+    starType: "黑洞",
+    developmentLevel: "深入阶段",
+    description:
+      "B-970黑洞位于星光圣域的边境，是星光圣域位于罗素费亚回廊的前线。",
+    x: 57,
+    y: 54,
   },
   {
     id: "brokensun",
@@ -74,8 +100,8 @@ const STARMAP_DATA = [
     developmentLevel: "次核心阶段",
     description:
       "残阳中的行星BSα-1（又称“星海星”）是闻名宇宙的度假行星，也是星光圣域用于正式外交的地点之一。",
-    x: 11,
-    y: 2,
+    x: 6,
+    y: 7,
   },
   {
     id: "caelus",
@@ -100,8 +126,21 @@ const STARMAP_DATA = [
     developmentLevel: "深入阶段",
     description:
       "埃罗尔位于星光圣域的边境，是星光圣域研究寂静领域的主要前哨站。",
-    x: -9,
-    y: -5,
+    x: -29,
+    y: -19,
+  },
+  {
+    id: "falanheide",
+    name: "法兰海德",
+    nameEn: "Falanheide",
+    starCount: "1",
+    planets: "3",
+    starType: "红巨星",
+    developmentLevel: "完全",
+    description:
+      "法兰海德是维斯佩拉主防御系统的最外层节点之一，同时为前往残阳的旅客提供引导。\t",
+    x: 12,
+    y: 5,
   },
   {
     id: "frigidus",
@@ -113,8 +152,8 @@ const STARMAP_DATA = [
     developmentLevel: "次核心阶段",
     description:
       "弗里吉杜斯是星光圣域用于补给的星系之一。",
-    x: 15,
-    y: 5,
+    x: 21,
+    y: -7,
   },
   {
     id: "lansdeia",
@@ -126,8 +165,34 @@ const STARMAP_DATA = [
     developmentLevel: "深入阶段",
     description:
       "兰斯德亚是星光圣域用于补给的星系之一。",
-    x: 34,
-    y: -4,
+    x: 46,
+    y: -3,
+  },
+  {
+    id: "lorenwald",
+    name: "洛伦伍德",
+    nameEn: "Lorenwald",
+    starCount: "1",
+    planets: "5",
+    starType: "F",
+    developmentLevel: "次核心阶段",
+    description:
+      "洛伦伍德是在第一次远距离探索时发现的星系，该星系中有两颗存在生命的行星，其中一颗上更是覆盖着大范围的森林。",
+    x: 32,
+    y: 38,
+  },
+  {
+    id: "n373",
+    name: "N-373中子星",
+    nameEn: "Neutron Star N-9",
+    starCount: 1,
+    planets: 2,
+    starType: "中子星",
+    developmentLevel: "休整阶段",
+    description:
+      "N-373中子星是星光圣域用于补给的星系之一。",
+    x: 12,
+    y: 43,
   },
   {
     id: "n9",
@@ -140,7 +205,7 @@ const STARMAP_DATA = [
     description:
       "N-9中子星位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团进攻的主要前哨。",
     x: -3,
-    y: 16,
+    y: 70,
   },
   {
     id: "nadiris",
@@ -166,7 +231,7 @@ const STARMAP_DATA = [
     description:
       "P-303脉冲星位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团的通信中心。",
     x: -1,
-    y: 14,
+    y: 65,
   },
   {
     id: "p304",
@@ -182,6 +247,32 @@ const STARMAP_DATA = [
     y: 2,
   },
   {
+    id: "paleforest",
+    name: "苍白森林",
+    nameEn: "Pale Forest",
+    starCount: "3",
+    planets: "0",
+    starType: "白矮星、白矮星、白矮星",
+    developmentLevel: "核心阶段",
+    description:
+      "苍白森林由三颗白矮星所组成，并且星系附近频繁出现电磁风暴，故星光圣域将该星系作为研究星系和堡垒星系，作为维斯佩拉主防御系统的最外层节点之一。",
+    x: 4,
+    y: 10,
+  },
+  {
+    id: "q327",
+    name: "Q-327类星体",
+    nameEn: "Quasar Q-327",
+    starCount: "1",
+    planets: "1",
+    starType: "类星体",
+    developmentLevel: "核心阶段",
+    description:
+      "维斯佩拉主防御系统的最外层节点之一。",
+    x: 7,
+    y: 9,
+  },
+  {
     id: "ridien",
     name: "瑞狄恩",
     nameEn: "Ridien",
@@ -191,8 +282,21 @@ const STARMAP_DATA = [
     developmentLevel: "休整阶段",
     description:
       "瑞狄恩是星光圣域用于补给的星系之一。",
-    x: 10,
-    y: 8,
+    x: 28,
+    y: 18,
+  },
+  {
+    id: "sierra",
+    name: "塞拉",
+    nameEn: "Sierra",
+    starCount: "2",
+    planets: "5",
+    starType: "G、G",
+    developmentLevel: "完全",
+    description:
+      "星光圣域的难民安置星系。",
+    x: 0,
+    y: -2,
   },
   {
     id: "skymirror",
@@ -204,8 +308,8 @@ const STARMAP_DATA = [
     developmentLevel: "次核心阶段",
     description:
       "天镜是在第一次远距离探索时发现的星系，因该星系与太阳相似而得名，特别是第三行星“仿地星”，其环境与地球别无二致，成为大部分无法前往地球旅行人的代替选择。",
-    x: 32,
-    y: -6,
+    x: 48,
+    y: 39,
   },
   {
     id: "stalko",
@@ -217,8 +321,8 @@ const STARMAP_DATA = [
     developmentLevel: "休整阶段",
     description:
       "斯达尔科为星光圣域的半边境星系，由于其战略价值较低，星光圣域并未优先开发此星系。",
-    x: -4,
-    y: -5,
+    x: -15,
+    y: -21,
   },
   {
     id: "tel",
@@ -230,8 +334,8 @@ const STARMAP_DATA = [
     developmentLevel: "休整阶段",
     description:
       "特尔位于伊谢尔伦回廊入口与罗素费亚回廊入口连线的中点附近，是星光圣域用于监测大空洞的主要星系之一，也是星光圣域边境防护指挥中心所在星系。",
-    x: 21,
-    y: 8,
+    x: 95,
+    y: 12,
   },
   {
     id: "vespera",
@@ -256,8 +360,8 @@ const STARMAP_DATA = [
     developmentLevel: "深入阶段",
     description:
       "亚斯科洛莱雅位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
-    x: 12,
-    y: 15,
+    x: 127,
+    y: -6,
   },
   {
     id: "yurien",
@@ -269,7 +373,7 @@ const STARMAP_DATA = [
     developmentLevel: "休整阶段",
     description:
       "尤利恩位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团进攻的堡垒之一。",
-    x: -4,
-    y: 13,
+    x: -5,
+    y: 69,
   },
 ];

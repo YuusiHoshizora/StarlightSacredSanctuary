@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>错误：无法访问该页面</title>
 
-    <link rel="stylesheet" href="assets/css/global.css">
-    <link rel="stylesheet" href="assets/css/error.css">
-    <script defer src="assets/js/background.js"></script>
-    <script defer src="assets/js/seamless.js"></script>
+    <!-- 注意：这个页面会被 Netlify 用"用户请求的那个 URL"渲染（任意路径都可能），
+         所以资源必须用绝对路径，否则带子目录的 404（如 /foo/bar）会去找
+         /foo/assets/... 而加载不到样式。 -->
+    <link rel="stylesheet" href="/assets/css/global.css">
+    <link rel="stylesheet" href="/assets/css/error.css">
+    <script defer src="/assets/js/background.js"></script>
+    <script defer src="/assets/js/seamless.js"></script>
 
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
