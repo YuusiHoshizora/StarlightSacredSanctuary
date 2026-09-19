@@ -64,8 +64,14 @@
     COORD_MEDIUM_STEP: 5,        // 中坐标：每 5 个小格
     COORD_MAJOR_STEP: 25,        // 大坐标：每 5 个中格
     COORD_MINOR_MIN_PX: 26,      // 小格屏上间距小于该值就不画小坐标
-    COORD_MEDIUM_MIN_PX: 88,     // 中格屏上间距小于该值就不画中坐标（初始只看得到大坐标）
+    COORD_MEDIUM_MIN_PX: 88,     // 中格屏上间距小于该值就不画中坐标（默认只看得到大坐标）
     COORD_MAJOR_MIN_PX: 60,      // 大格屏上间距小于该值就不画大坐标（缩到极远时的兜底）
+    /* 三级刻度也可以改按「比例尺档位」判断（星图页就是这么用的：
+       滑轨三等分，每过 1/3 显示更小一级）。打开后上面的像素阈值不再参与判断，
+       大坐标常显，中/小坐标分别在比例尺 ≥ 下面两个值时出现。 */
+    COORD_LEVEL_BY_ZOOM: false,
+    COORD_MEDIUM_FROM_ZOOM: 0,   // 比例尺达到该值时显示中坐标
+    COORD_MINOR_FROM_ZOOM: 0,    // 比例尺达到该值时显示小坐标
     COORD_MARK: 0.5,             // 大坐标交点的小点亮度（0 = 关闭）
     COORD_SNAP_CELLS: 1,         // 内容吸附粒度（单位：小格）。1 = 星点落在小坐标格点上
     ZOOM_MIN: 0.25,              // 最小比例尺（可缩到约 136 小格高，给以后加星系留空间）
@@ -383,10 +389,19 @@
       ctx.stroke();
     }
 
-    /* 从最细一级画起，粗的盖在细的上面 */
-    var showMinor = c * minorStep >= CFG.COORD_MINOR_MIN_PX;
-    var showMedium = c * medStep >= CFG.COORD_MEDIUM_MIN_PX;
-    var showMajor = c * majStep >= CFG.COORD_MAJOR_MIN_PX;
+    /* 从最细一级画起，粗的盖在细的上面。
+       显隐有两种判据：默认按屏上间距（像素阈值）；星图页按比例尺档位（COORD_LEVEL_BY_ZOOM）。 */
+    var byZoom = !!CFG.COORD_LEVEL_BY_ZOOM;
+    var showMinor, showMedium, showMajor;
+    if (byZoom) {
+      showMinor = coordZoom >= Number(CFG.COORD_MINOR_FROM_ZOOM);
+      showMedium = coordZoom >= Number(CFG.COORD_MEDIUM_FROM_ZOOM);
+      showMajor = true;        // 最粗一级常显，免得某一档整片空白
+    } else {
+      showMinor = c * minorStep >= CFG.COORD_MINOR_MIN_PX;
+      showMedium = c * medStep >= CFG.COORD_MEDIUM_MIN_PX;
+      showMajor = c * majStep >= CFG.COORD_MAJOR_MIN_PX;
+    }
 
     if (showMinor) drawLevel(minorStep, CFG.COORD_MINOR, 1);
     if (showMedium) drawLevel(medStep, CFG.COORD_MEDIUM_C, 1.4);
