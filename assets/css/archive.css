@@ -48,6 +48,9 @@
 .archive-card h2 {
     font-size: 22px;
     font-weight: 500;
+    /* 500 是「中等」：两个浏览器本来就都直接落到 Regular 字面、不会合成粗体，
+       所以显式取消 global.css 给标题加的仿粗体描边，保持原本的观感。 */
+    -webkit-text-stroke-width: 0;
     letter-spacing: 2px;
     margin-bottom: 8px;
 }

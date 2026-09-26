@@ -11,6 +11,10 @@
 .error-code {
     font-size: clamp(120px, 25vw, 200px);
     font-weight: 700;
+    /* 这行是渐变文字（background-clip: text + 透明填充），
+       不能像其它粗体那样用描边模拟（描边会盖住渐变），
+       所以只关掉字重合成：Chrome / Firefox 都用 Regular 字面 + 渐变，两边一致。 */
+    font-synthesis-weight: none;
     letter-spacing: 8px;
     background: linear-gradient(135deg, #FFD700, #ff8c00);
     -webkit-background-clip: text;

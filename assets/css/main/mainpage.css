@@ -81,6 +81,8 @@
 .article-header h1 {
     font-size: 26px;
     font-weight: 400;
+    /* 这几个标题是刻意用 Regular 的（正文风），不需要 global.css 的仿粗体描边 */
+    -webkit-text-stroke-width: 0;
     letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 10px;
@@ -110,6 +112,8 @@
 .markdown-body h5,
 .markdown-body h6 {
     font-weight: 400;
+    /* 正文里的标题刻意保持 Regular，取消 global.css 的仿粗体描边 */
+    -webkit-text-stroke-width: 0;
     letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.88);
     margin: 2em 0 0.75em;
@@ -214,6 +218,8 @@
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.7);
     font-weight: 500;
+    /* 500 属「中等」，浏览器不会合成粗体；取消 global.css 给 th 加的仿粗体描边 */
+    -webkit-text-stroke-width: 0;
     text-align: left;
     padding: 10px 14px;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -332,6 +338,8 @@
 .blog-header h1 {
     font-size: 28px;
     font-weight: 400;
+    /* 同上：刻意 Regular 的标题，取消仿粗体描边 */
+    -webkit-text-stroke-width: 0;
     letter-spacing: 3px;
     color: rgba(255, 255, 255, 0.9);
 }
