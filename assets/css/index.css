@@ -17,6 +17,25 @@
 .hero h1{
     font-size:72px;
     margin-bottom:24px;
+
+    /* 标题字体只有 Regular 一个字面（见 global.css 的 @font-face），
+       而 h1 默认是 bold：Chrome 会给它合成粗体（墨迹密度约 +40%），
+       Firefox 的合成粗体轻得多，于是同一句 slogan 在两个浏览器里一粗一细。
+       这里不再依赖浏览器的合成粗体：明确用 Regular 字面 + 同色等宽描边自己做粗体，
+       两种浏览器得到一致观感（描边宽度按实测对齐到 Chrome 原来的样子）。
+       写成宽 / 色两个长写属性，兼容性最好。 */
+    font-weight:400;
+    -webkit-text-stroke-width:0.029em;
+    -webkit-text-stroke-color:currentColor;
+}
+
+/* Firefox 的栅格化本身比 Chrome 略细：同样 0.029em 描边，墨迹密度 0.51 对 0.56。
+   只给 Firefox 加粗一点（0.0385em），实测两边对齐到同一观感。
+   （-moz-appearance 只在 Firefox 里成立，Chrome / Safari 不会命中这条） */
+@supports (-moz-appearance:none){
+    .hero h1{
+        -webkit-text-stroke-width:0.0385em;
+    }
 }
 
 .desc{
