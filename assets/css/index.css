@@ -55,3 +55,38 @@
 
     border-color:#FFD700;
 }
+
+/* ==========================================================================
+   移动端适配
+   ========================================================================== */
+@media (max-width: 768px){
+
+    .hero{
+        /* 手机浏览器的地址栏会占掉一部分 vh，用 svh 避免首屏被遮住 */
+        height: 100svh;
+        padding: 0 20px;
+    }
+
+    .sub{
+        font-size: 12px;
+        letter-spacing: 3px;      /* 8px 时那句英文会超出窄屏 */
+        margin-bottom: 14px;
+    }
+
+    .hero h1{
+        /* 10 个字的 slogan：320px 屏也放得下，随屏宽平滑放大 */
+        font-size: clamp(26px, 8.4vw, 56px);
+        letter-spacing: 0;
+        margin-bottom: 18px;
+    }
+
+    .desc{
+        font-size: 13px;
+        margin-bottom: 28px;
+    }
+
+    .enter-btn{
+        padding: 12px 28px;
+        font-size: 14px;
+    }
+}

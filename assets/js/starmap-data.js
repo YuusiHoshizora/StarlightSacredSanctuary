@@ -78,6 +78,19 @@ const STARMAP_DATA = [
     y: 1,
   },
   {
+    id: "b516",
+    name: "B-516黑洞",
+    nameEn: "Black Hole B-516",
+    starCount: "1",
+    planets: "1",
+    starType: "黑洞",
+    developmentLevel: "休整阶段",
+    description:
+      "B-970黑洞位于星光圣域的边境，是星光圣域研究寂静领域的前哨站之一。",
+    x: -97,
+    y: 28,
+  },
+  {
     id: "b970",
     name: "B-970 黑洞",
     nameEn: "Black Hole B-970",
@@ -114,7 +127,46 @@ const STARMAP_DATA = [
     description:
       "星光圣域的工业星系，星光圣域大部分半永久性生产线都位于此星系。同时，这里也是进入维斯佩拉星系的检查站之一，重点为计划与星光圣域进行贸易的商业舰船进行检查。",
     x: 3,
+    y: 3,
+  },
+  {
+    id: "cornflower",
+    name: "矢车菊",
+    nameEn: "Cornflower",
+    starCount: "1",
+    planets: "0",
+    starType: "蓝巨星",
+    developmentLevel: "完全",
+    description:
+      "星光圣域的难民安置星系。",
+    x: -1,
+    y: -4,
+  },
+  {
+    id: "differeceengine",
+    name: "差分机",
+    nameEn: "the Difference Engine",
+    starCount: "1",
+    planets: "5",
+    starType: "M",
+    developmentLevel: "完全",
+    description:
+      "星光圣域的工业星系，星光圣域大部分半固定及固定船坞都位于此星系。其第二行星“巴贝奇”上有着丰富的金属资源。",
+    x: 2,
     y: 1,
+  },
+  {
+    id: "dolace",
+    name: "多莱斯",
+    nameEn: "Dolace",
+    starCount: "1",
+    planets: "3",
+    starType: "B",
+    developmentLevel: "核心阶段",
+    description:
+      "维斯佩拉主防御系统的最外层节点之一。\n",
+    x: 8,
+    y: 8,
   },
   {
     id: "errol",
@@ -126,8 +178,8 @@ const STARMAP_DATA = [
     developmentLevel: "深入阶段",
     description:
       "埃罗尔位于星光圣域的边境，是星光圣域研究寂静领域的主要前哨站。",
-    x: -29,
-    y: -19,
+    x: -62,
+    y: -52,
   },
   {
     id: "falanheide",
@@ -221,6 +273,19 @@ const STARMAP_DATA = [
     y: -1,
   },
   {
+    id: "p234",
+    name: "p-234脉冲星",
+    nameEn: "Pulsar Star P-234",
+    starCount: "1",
+    planets: "0",
+    starType: "脉冲星",
+    developmentLevel: "休整阶段",
+    description:
+      "星光圣域边境探索指挥中心所在星系",
+    x: -8,
+    y: -36,
+  },
+  {
     id: "p303",
     name: "P-303脉冲星",
     nameEn: "Pulsar P-303",
@@ -243,7 +308,7 @@ const STARMAP_DATA = [
     developmentLevel: "完全",
     description:
       "星光圣域科研中心所在地。借助脉冲星的脉冲电磁信号，星光圣域能够进行对时间的精细校准和通常宇宙内的导航。",
-    x: 1,
+    x: 0,
     y: 2,
   },
   {
@@ -269,7 +334,7 @@ const STARMAP_DATA = [
     developmentLevel: "核心阶段",
     description:
       "维斯佩拉主防御系统的最外层节点之一。",
-    x: 7,
+    x: 6,
     y: 9,
   },
   {
@@ -318,11 +383,11 @@ const STARMAP_DATA = [
     starCount: 1,
     planets: 0,
     starType: "K",
-    developmentLevel: "休整阶段",
+    developmentLevel: "深入阶段",
     description:
       "斯达尔科为星光圣域的半边境星系，由于其战略价值较低，星光圣域并未优先开发此星系。",
-    x: -15,
-    y: -21,
+    x: -51,
+    y: -37,
   },
   {
     id: "tel",
@@ -346,7 +411,7 @@ const STARMAP_DATA = [
     starType: "B、B、K",
     developmentLevel: "完全",
     description:
-      "星光圣域的名义首都所在星系，也是星光圣域舰队最常驻留的位置。目前，星光圣域已经实现了对此星系的完全开发，加上了完善的辅助设施，让维斯佩拉星系能够成为通常宇宙中极为繁华的星系之一。",
+      "星光圣域的名义首都所在星系，也是星光圣域舰队最常驻留的位置。目前，星光圣域已经实现了对此星系的完全开发，加上完善的辅助设施，让维斯佩拉星系能够成为通常宇宙中极为繁华的星系之一。",
     x: 0,
     y: 0,
   },
@@ -375,5 +440,18 @@ const STARMAP_DATA = [
       "尤利恩位于星光圣域与阿尔赫尼托追随者教团边境，是星光圣域用于防范阿尔赫尼托追随者教团进攻的堡垒之一。",
     x: -5,
     y: 69,
+  },
+  {
+    id: "wistar",
+    name: "威斯塔尔",
+    nameEn: "Wistar",
+    starCount: "1",
+    planets: "3",
+    starType: "A",
+    developmentLevel: "次核心阶段",
+    description:
+      "威斯塔尔是组织“太空环境观测局”总局所在星系，也是星光圣域用于检测寂静领域的站点之一。",
+    x: -25,
+    y: -8,
   },
 ];

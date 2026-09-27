@@ -94,6 +94,53 @@
     animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* ==========================================================================
+   移动端适配：那个大字 ERROR 原来最小 120px，在窄屏会撑出横向滚动
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    .error-container {
+        min-height: 100svh;
+        padding: 88px 16px 48px;
+    }
+
+    .error-code {
+        font-size: clamp(56px, 21vw, 120px);
+        letter-spacing: 2px;
+        margin-bottom: 4px;
+    }
+
+    .error-sub {
+        font-size: clamp(14px, 4.4vw, 20px);
+        letter-spacing: 3px;
+        margin-bottom: 18px;
+    }
+
+    .error-message {
+        font-size: 14px;
+        margin-bottom: 28px;
+        padding: 0 4px;
+    }
+
+    .error-message span {
+        font-size: 13px;
+        letter-spacing: 0;
+    }
+
+    .btn-return {
+        padding: 12px 26px;
+        font-size: 15px;
+        letter-spacing: 2px;
+    }
+
+    .glitch-line {
+        margin-top: 24px;
+        font-size: 12px;
+        letter-spacing: 1px;
+        padding: 6px 12px;
+    }
+}
+
 @keyframes pulse-glow {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }

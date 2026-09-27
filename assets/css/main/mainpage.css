@@ -542,4 +542,29 @@
     .blog-card {
         padding: 16px;
     }
+
+    /* 宽表格在窄屏改为横向滚动，别把整页撑宽 */
+    .markdown-body table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .markdown-body th,
+    .markdown-body td {
+        padding: 8px 10px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .article-header h1,
+    .blog-header h1 {
+        font-size: 21px;
+        letter-spacing: 1px;
+    }
+
+    .calendar-widget {
+        padding: 14px;
+    }
 }

@@ -457,26 +457,121 @@
   color: #FFD700;
 }
 
-/* 响应式 */
+/* ==========================================================================
+   移动端适配
+   --------------------------------------------------------------------------
+   手机上是「地图占满屏幕 + 信息栏做底部卡片」：信息栏固定在下方 42svh，
+   比例尺控制条移到卡片上方（否则会被卡片盖住），按钮加大到手指点得着的尺寸。
+   画布设 touch-action:none，这样单指拖动就是平移地图，而不是滚页面 / 缩放页面。
+   ========================================================================== */
 @media (max-width: 768px) {
+
   .starmap-layout {
     flex-direction: column;
+    height: 100svh;
+    padding-top: 60px;
   }
+
+  #starmap-canvas {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 底部信息卡片：绝对定位贴住布局底部
+     （.starmap-left 里的内容都是绝对定位、自身高度为 0，
+       靠 flex 竖排的话卡片会跑到屏幕顶上） */
   .starmap-right {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     min-width: unset;
-    height: 40vh;
+    height: 42svh;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
     border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.45);
+    gap: 14px;
+    -webkit-overflow-scrolling: touch;
   }
-  /* 窄屏下缩小滑块与搜索框，避免控制条过长 */
+
+  /* 卡片里的字号整体收一档，窄屏才放得下 */
+  .system-name {
+    font-size: 23px;
+  }
+
+  .system-name-en {
+    font-size: 14px;
+  }
+
+  .system-description {
+    font-size: 14px;
+  }
+
+  .system-info-grid {
+    gap: 12px 14px;
+  }
+
+  /* 控制条浮在信息卡片上方 */
+  .map-zoom {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(42svh + 12px);
+    gap: 6px;
+  }
+
+  .map-zoom__btn {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+  }
+
+  .map-zoom__btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* 滑块吃掉剩余宽度，搜索框固定一个能用的宽度 */
   .map-zoom__slider {
-    width: 92px;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 60px;
   }
+
+  .map-search {
+    flex: 0 0 auto;
+  }
+
   .map-search__input {
-    width: 120px;
+    width: 130px;
+    height: 40px;
   }
+
   .map-search__list {
-    max-width: 220px;
+    max-width: min(78vw, 300px);
+  }
+}
+
+@media (max-width: 420px) {
+
+  .map-zoom {
+    gap: 5px;
+  }
+
+  .map-zoom__btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .map-search__input {
+    width: 104px;
+    height: 36px;
+    padding-left: 26px;
+    font-size: 12px;
+    background-position: 6px center;
+    background-size: 13px 13px;
   }
 }

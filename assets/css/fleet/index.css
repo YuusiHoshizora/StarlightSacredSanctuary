@@ -71,3 +71,43 @@
     opacity: 0.7;
     line-height: 1.6;
 }
+
+/* ==========================================================================
+   移动端适配：三张卡片竖排，去掉过大的内边距
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    .fleet-section {
+        min-height: 100svh;
+        padding: 84px 18px 48px;
+        align-items: flex-start;
+    }
+
+    .fleet-grid {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 18px;
+    }
+
+    .fleet-card {
+        flex: none;
+        max-width: none;
+        width: 100%;
+        padding: 26px 20px;
+        border-radius: 16px;
+    }
+
+    /* 手机上不靠 hover，卡片本身给一点静态底色区分 */
+    .fleet-card--research { border-color: rgba(61, 174, 255, 0.35); }
+    .fleet-card--industry { border-color: rgba(219, 164, 0, 0.35); }
+    .fleet-card--defense  { border-color: rgba(224, 84, 76, 0.35); }
+
+    .fleet-card h2 {
+        font-size: 19px;
+        letter-spacing: 3px;
+    }
+
+    .fleet-card .desc {
+        font-size: 13px;
+    }
+}

@@ -22,3 +22,24 @@
     background: rgba(255, 215, 0, 0.15);
     border-color: #FFD700;
 }
+
+/* ==========================================================================
+   移动端适配：只有一个大按钮的入口页，压缩内边距、允许换行
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    .tool-hero {
+        height: 100svh;
+        padding: 0 20px;
+    }
+
+    .tool-btn {
+        display: block;
+        padding: 14px 18px;
+        font-size: 14px;
+        line-height: 1.5;
+        /* 那句很长的入口文案要能换行 */
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+}

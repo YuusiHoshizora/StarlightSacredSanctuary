@@ -604,6 +604,10 @@ canvas.addEventListener("wheel", (e) => {
 
 canvas.addEventListener("pointerdown", (e) => {
   if (!window.SSS_COORD) return;
+  if (e.pointerType === "touch") {
+    touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touchPts.size >= 2) { startPinch(); return; }
+  }
   stopWheelZoom();                         // 拖动接管视角
   dragFrom = { x: e.clientX, y: e.clientY };
   dragMoved = false;
@@ -615,7 +619,18 @@ canvas.addEventListener("pointerdown", (e) => {
 
 canvas.addEventListener("pointermove", (e) => {
   const C = window.SSS_COORD;
-  if (!dragFrom || !C) return;
+  if (!C) return;
+
+  /* 双指捏合：以两指中点为锚点缩放（手指底下的格点保持不动） */
+  if (e.pointerType === "touch" && touchPts.has(e.pointerId)) {
+    touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinchFrom && touchPts.size >= 2) {
+      movePinch();
+      return;
+    }
+  }
+
+  if (!dragFrom) return;
   const dx = e.clientX - dragFrom.x;
   const dy = e.clientY - dragFrom.y;
   if (Math.abs(dx) + Math.abs(dy) < 2) return;
@@ -626,11 +641,69 @@ canvas.addEventListener("pointermove", (e) => {
 });
 
 canvas.addEventListener("pointerup", (e) => {
+  endTouch(e);
   dragFrom = null;
   if (canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
     canvas.releasePointerCapture(e.pointerId);
   }
 });
+
+canvas.addEventListener("pointercancel", endTouch);
+
+/* ── 触摸：双指捏合缩放（移动端） ──
+   单指拖动沿用上面的平移；检测到第二根手指就切到捏合：
+   记录两指中点下方的格坐标，缩放时让那个格点始终留在手指中点下面。 */
+const touchPts = new Map();
+let pinchFrom = null;
+
+function pinchDistance() {
+  const pts = Array.from(touchPts.values());
+  return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+}
+
+function pinchMid() {
+  const pts = Array.from(touchPts.values());
+  return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+}
+
+function startPinch() {
+  const C = window.SSS_COORD;
+  if (!C || touchPts.size < 2) return;
+  stopWheelZoom();
+  const mid = pinchMid();
+  const pan = C.pan();
+  const cell = C.cell();
+  pinchFrom = {
+    dist: Math.max(1, pinchDistance()),
+    zoom: C.zoom(),
+    gx: (mid.x - pan[0]) / cell,
+    gy: (mid.y - pan[1]) / cell
+  };
+  dragFrom = null;      // 别同时单指平移
+  dragMoved = true;     // 捏合之后不要触发选中
+}
+
+function movePinch() {
+  const C = window.SSS_COORD;
+  if (!C || !pinchFrom) return;
+  const limits = C.limits();
+  const scale = pinchDistance() / pinchFrom.dist;
+  const z = Math.max(limits.min, Math.min(limits.max, pinchFrom.zoom * scale));
+  const mid = pinchMid();
+  const cell = (C.cell() / C.zoom()) * z;      // 新比例尺下一个小格的像素
+  C.setView(z, mid.x - pinchFrom.gx * cell, mid.y - pinchFrom.gy * cell);
+  drawStarMap();
+}
+
+function endTouch(e) {
+  if (!e || e.pointerType !== "touch") return;
+  touchPts.delete(e.pointerId);
+  if (touchPts.size < 2) {
+    pinchFrom = null;
+    const rest = Array.from(touchPts.values())[0];
+    dragFrom = rest ? { x: rest.x, y: rest.y } : null;   // 还剩一根手指就继续平移
+  }
+}
 
 // 背景网格重绘后同步重画星图，并刷新按钮状态
 window.SSS_ON_ZOOM = function () {

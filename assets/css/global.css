@@ -55,10 +55,18 @@ h1, h2, h3, h4, h5, h6, b, strong, th, legend, summary {
     }
 }
 
+html{
+    /* iOS 横屏时不要自动放大字号 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 body{
     background:black;
     color:white;
     overflow-x:hidden;
+    /* 超长英文 / URL 不撑破窄屏 */
+    overflow-wrap:break-word;
 }
 
 /* 背景层占位：JS 启用时完全透明，真正的网格由下方 .hex-bg 画布绘制 */
@@ -248,5 +256,57 @@ nav a:hover{
         body{
             animation:none;
         }
+    }
+}
+
+/* ==========================================================================
+   移动端适配（全站共用部分）
+   --------------------------------------------------------------------------
+   桌面样式完全不受影响：下面只在窄屏生效。
+   导航栏在手机上要放得下「logo + 5 个链接」，所以缩小字号与间距，
+   并留出刘海屏安全区；链接加大可点区域（手指点得着）。
+   ========================================================================== */
+@media (max-width: 768px){
+
+    .navbar{
+        height: 60px;
+        padding-left: max(14px, env(safe-area-inset-left));
+        padding-right: max(14px, env(safe-area-inset-right));
+    }
+
+    .logo{
+        font-size: 18px;
+        letter-spacing: 2px;
+    }
+
+    nav{
+        gap: 14px;
+    }
+
+    nav a{
+        font-size: 13px;
+        padding: 8px 2px;
+    }
+}
+
+@media (max-width: 380px){
+
+    .navbar{
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+    }
+
+    .logo{
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+
+    nav{
+        gap: 10px;
+    }
+
+    nav a{
+        font-size: 12px;
+        letter-spacing: 0;
     }
 }
