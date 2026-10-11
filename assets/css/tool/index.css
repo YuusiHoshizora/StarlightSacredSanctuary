@@ -1,45 +1,276 @@
-.tool-hero {
-    height: 100vh;
+/* ==========================================================================
+   工具页
+   --------------------------------------------------------------------------
+   两栏：左边窄（需要二级入口的复杂工具），右边宽（可以直接用的小工具）。
+   视觉沿用站内一套：玻璃面板 + 描边 + hover 转金色。
+   ========================================================================== */
+
+.tool-layout {
+    position: relative;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);   /* 左窄右宽 */
+    gap: 26px;
+    align-items: start;
+
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 104px 40px 64px;
+}
+
+/* ── 左栏：二级入口 ── */
+.tool-side__title,
+.tool-main__title {
+    margin: 0;
+    font-size: 17px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.tool-side__hint,
+.tool-main__hint {
+    margin: 6px 0 16px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 左栏暂时没有内容时的占位 */
+.tool-side__empty {
+    margin: 0;
+    padding: 18px 16px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.42);
+    /* 底子给实一点，否则小字压在六边形花纹上看不清 */
+    background: rgba(20, 20, 50, 0.42);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.tool-entry {
+    position: relative;
+    display: block;
+
+    padding: 16px 34px 16px 16px;
+    margin-bottom: 12px;
+
+    color: #fff;
+    text-decoration: none;
+
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    transition: background 0.25s, border-color 0.25s, transform 0.25s;
+}
+
+.tool-entry:hover,
+.tool-entry:focus-visible {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.45);
+    transform: translateY(-2px);
+}
+
+.tool-entry__name {
+    display: block;
+    font-size: 15px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.tool-entry:hover .tool-entry__name,
+.tool-entry:focus-visible .tool-entry__name {
+    color: #FFD700;
+}
+
+.tool-entry__desc {
+    display: block;
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.tool-entry__arrow {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.25s, right 0.25s;
+}
+
+.tool-entry:hover .tool-entry__arrow,
+.tool-entry:focus-visible .tool-entry__arrow {
+    right: 11px;
+    color: #FFD700;
+}
+
+/* ── 右栏：小工具 ── */
+.tool-card {
+    padding: 20px 22px 22px;
+    background: rgba(20, 20, 50, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.tool-card + .tool-card {
+    margin-top: 18px;
+}
+
+.tool-card__name {
+    margin: 0;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: #FFD700;
+}
+
+.tool-card__desc {
+    margin: 6px 0 18px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── 色相环 ── */
+.hue {
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    gap: 26px;
+    flex-wrap: wrap;
 }
 
-.tool-btn {
-    padding: 14px 42px;
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+.hue__wheel-wrap {
+    flex: 0 0 auto;
+}
+
+.hue__wheel {
+    display: block;
+    width: 260px;
+    height: 260px;
+    max-width: 68vw;
+    max-height: 68vw;
+    cursor: crosshair;
+    touch-action: none;             /* 手机上拖动取色，别滚页面 */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.hue__panel {
+    flex: 1 1 220px;
+    min-width: 200px;
+}
+
+.hue__swatch {
+    width: 100%;
+    height: 56px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: #FFD700;
+    transition: background 0.15s;
+}
+
+.hue__values {
+    margin: 0;
+}
+
+.hue__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hue__row dt {
+    flex: 0 0 42px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.hue__row dd {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.hue__copy {
+    width: 100%;
+    padding: 6px 8px;
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-align: left;
+    color: rgba(255, 255, 255, 0.88);
+
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid transparent;
+    border-radius: 6px;
     cursor: pointer;
-    transition: 0.3s;
-    text-decoration: none;
-    display: inline-block;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.tool-btn:hover {
-    background: rgba(255, 215, 0, 0.15);
-    border-color: #FFD700;
+.hue__copy:hover,
+.hue__copy:focus-visible {
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.12);
+    border-color: rgba(255, 215, 0, 0.35);
+}
+
+.hue__tip {
+    margin: 12px 0 0;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.32);
+    min-height: 1em;
+}
+
+.hue__tip--done {
+    color: #8cdca0;
 }
 
 /* ==========================================================================
-   移动端适配：只有一个大按钮的入口页，压缩内边距、允许换行
+   移动端：单列（先二级入口、后小工具），色相环缩到屏宽内
    ========================================================================== */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 
-    .tool-hero {
-        height: 100svh;
-        padding: 0 20px;
+    .tool-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 22px;
+        padding: 88px 18px 48px;
     }
 
-    .tool-btn {
-        display: block;
-        padding: 14px 18px;
-        font-size: 14px;
-        line-height: 1.5;
-        /* 那句很长的入口文案要能换行 */
-        white-space: normal;
-        overflow-wrap: break-word;
+    .tool-side {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 18px;
+    }
+
+    .tool-card {
+        padding: 16px 16px 18px;
+    }
+
+    .hue {
+        gap: 18px;
+    }
+
+    .hue__wheel-wrap {
+        margin: 0 auto;
+    }
+
+    .hue__wheel {
+        width: 66vw;
+        height: 66vw;
+        min-width: 200px;
+        min-height: 200px;
+    }
+
+    .hue__panel {
+        flex: 1 1 100%;
     }
 }
