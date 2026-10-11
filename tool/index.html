@@ -69,26 +69,53 @@
                     <div class="hue__wheel-wrap">
                         <canvas id="hue-wheel" class="hue__wheel" width="220" height="220"
                                 role="slider" tabindex="0" aria-label="拾色器：色相环与外圈内的饱和度亮度方块"
-                                aria-valuemin="0" aria-valuemax="359" aria-valuenow="51"
-                                aria-valuetext="#FFD700 · 饱和度 100% · 亮度 50%"></canvas>
+                                aria-valuemin="0" aria-valuemax="359" aria-valuenow="249"
+                                aria-valuetext="#3A3072 · 饱和度 41% · 亮度 32%"></canvas>
                     </div>
 
                     <div class="hue__panel">
                         <div class="hue__swatch" id="hue-swatch" aria-hidden="true"></div>
-                        <dl class="hue__values">
+                        <div class="hue__values">
                             <div class="hue__row">
-                                <dt>HEX</dt>
-                                <dd><button type="button" class="hue__copy" id="hue-hex" data-copy="#FFD700">#FFD700</button></dd>
+                                <span class="hue__key">HEX</span>
+                                <input type="text" id="hue-hex" class="hue__input" value="#3A3072"
+                                       spellcheck="false" autocomplete="off"
+                                       aria-label="HEX 颜色值，输入后回车跳转" />
+                                <button type="button" class="hue__copy" data-target="hue-hex"
+                                        aria-label="复制 HEX 值" title="复制">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                                        <rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5"/>
+                                        <path d="M10.5 5.5V3.6A1.6 1.6 0 0 0 8.9 2H4.1A1.6 1.6 0 0 0 2.5 3.6v7A1.6 1.6 0 0 0 4.1 12h1.4"/>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="hue__row">
-                                <dt>RGB</dt>
-                                <dd><button type="button" class="hue__copy" id="hue-rgb" data-copy="rgb(255, 215, 0)">255, 215, 0</button></dd>
+                                <span class="hue__key">RGB</span>
+                                <input type="text" id="hue-rgb" class="hue__input" value="58, 48, 114"
+                                       spellcheck="false" autocomplete="off"
+                                       aria-label="RGB 颜色值，输入后回车跳转" />
+                                <button type="button" class="hue__copy" data-target="hue-rgb"
+                                        aria-label="复制 RGB 值" title="复制">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                                        <rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5"/>
+                                        <path d="M10.5 5.5V3.6A1.6 1.6 0 0 0 8.9 2H4.1A1.6 1.6 0 0 0 2.5 3.6v7A1.6 1.6 0 0 0 4.1 12h1.4"/>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="hue__row">
-                                <dt>HSL</dt>
-                                <dd><button type="button" class="hue__copy" id="hue-hsl" data-copy="hsl(51, 100%, 50%)">51°, 100%, 50%</button></dd>
+                                <span class="hue__key">HSL</span>
+                                <input type="text" id="hue-hsl" class="hue__input" value="249°, 41%, 32%"
+                                       spellcheck="false" autocomplete="off"
+                                       aria-label="HSL 颜色值，输入后回车跳转" />
+                                <button type="button" class="hue__copy" data-target="hue-hsl"
+                                        aria-label="复制 HSL 值" title="复制">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                                        <rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5"/>
+                                        <path d="M10.5 5.5V3.6A1.6 1.6 0 0 0 8.9 2H4.1A1.6 1.6 0 0 0 2.5 3.6v7A1.6 1.6 0 0 0 4.1 12h1.4"/>
+                                    </svg>
+                                </button>
                             </div>
-                        </dl>
+                        </div>
                         <p class="hue__tip" id="hue-tip"></p>
                     </div>
                 </div>

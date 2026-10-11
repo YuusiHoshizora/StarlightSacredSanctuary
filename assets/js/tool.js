@@ -23,10 +23,13 @@
   const outHsl = document.getElementById("hue-hsl");
   const ctx = canvas.getContext("2d");
 
-  /* 初始状态 = 站内金色 #FFD700（金色对应 50.588°，写整 51° 会算成 #FFD900） */
-  let hue = 50.588;
-  let sat = 1;
-  let light = 0.5;
+  /* 初始颜色：#3A3072（站内那抹深紫）。改这一行就能换默认色。 */
+  const INITIAL = "#3A3072";
+  const initHsl = rgbToHsl(hexToRgb(INITIAL));
+
+  let hue = initHsl[0];
+  let sat = initHsl[1];
+  let light = initHsl[2];
 
   let dragging = null;        // "ring" | "square" | null
   let cssSize = 300;
@@ -54,6 +57,51 @@
 
   function toHex(rgb) {
     return "#" + rgb.map((v) => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+  }
+
+  /* 反方向：hex / rgb → HSL（用于「直接输入数值跳转颜色」与初始色） */
+  function hexToRgb(text) {
+    let s = String(text).trim().replace(/^#/, "");
+    if (s.length === 3) s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
+    if (!/^[0-9a-fA-F]{6}$/.test(s)) return null;
+    return [parseInt(s.slice(0, 2), 16), parseInt(s.slice(2, 4), 16), parseInt(s.slice(4, 6), 16)];
+  }
+
+  function rgbToHsl(rgb) {
+    const r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    const c = max - min;
+    if (!c) return [0, 0, l];
+    const s = c / (1 - Math.abs(2 * l - 1));
+    let h;
+    if (max === r) h = ((g - b) / c) % 6;
+    else if (max === g) h = (b - r) / c + 2;
+    else h = (r - g) / c + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+    return [h, Math.min(1, s), Math.min(1, l)];
+  }
+
+  const clamp255 = (v) => Math.min(255, Math.max(0, Math.round(Number(v) || 0)));
+
+  /* 解析用户输入：支持 #RGB / #RRGGBB / RRGGBB / rgb(r,g,b) / r,g,b / hsl(h,s%,l%) / h,s%,l% */
+  function parseColor(text) {
+    const s = String(text).trim();
+    if (!s) return null;
+
+    const rgb = hexToRgb(s);
+    if (rgb) return rgbToHsl(rgb);
+
+    const m3 = s.match(/^(?:rgba?\()?\s*(-?\d{1,3})\D+(-?\d{1,3})\D+(-?\d{1,3})\s*\)?$/i);
+    if (m3) return rgbToHsl([clamp255(m3[1]), clamp255(m3[2]), clamp255(m3[3])]);
+
+    const mh = s.match(/^(?:hsla?\()?\s*(-?\d{1,3}(?:\.\d+)?)\D+(\d{1,3}(?:\.\d+)?)\s*%\D+(\d{1,3}(?:\.\d+)?)\s*%\s*\)?$/i);
+    if (mh) {
+      const h = ((Number(mh[1]) % 360) + 360) % 360;
+      return [h, Math.min(1, Math.abs(Number(mh[2])) / 100), Math.min(1, Math.abs(Number(mh[3])) / 100)];
+    }
+    return null;
   }
 
   const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -176,25 +224,47 @@
     const h = ((Math.round(hue) % 360) + 360) % 360;
     const s100 = Math.round(sat * 100);
     const l100 = Math.round(light * 100);
-    const hslText = "hsl(" + h + ", " + s100 + "%, " + l100 + "%)";
 
     if (swatch) swatch.style.background = hex;
-    if (outHex) {
-      outHex.textContent = hex;
-      outHex.dataset.copy = hex;
-    }
-    if (outRgb) {
-      outRgb.textContent = rgb.join(", ");
-      outRgb.dataset.copy = "rgb(" + rgb.join(", ") + ")";
-    }
-    if (outHsl) {
-      outHsl.textContent = h + "°, " + s100 + "%, " + l100 + "%";
-      outHsl.dataset.copy = hslText;
-    }
+    /* 正在输入的那个框别去覆盖它，其余两个跟着当前颜色走 */
+    setField(outHex, hex);
+    setField(outRgb, rgb.join(", "));
+    setField(outHsl, h + "°, " + s100 + "%, " + l100 + "%");
+
     canvas.setAttribute("aria-valuenow", String(h));
     canvas.setAttribute("aria-valuetext", hex + " · 饱和度 " + s100 + "% · 亮度 " + l100 + "%");
     draw();
   }
+
+  function setField(input, value) {
+    if (!input || document.activeElement === input) return;
+    input.value = value;
+  }
+
+  /* 输入框：聚焦全选、回车跳到该颜色、失焦则回到当前真实值 */
+  [outHex, outRgb, outHsl].forEach((input) => {
+    if (!input) return;
+    input.addEventListener("focus", () => input.select());
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const parsed = parseColor(input.value);
+        if (parsed) {
+          hue = parsed[0];
+          sat = parsed[1];
+          light = parsed[2];
+          input.blur();                       // 失焦后 update() 会把三个框都刷新成新值
+          update();
+          showTip("已跳到 " + toHex(hslToRgb(hue, sat, light)), true);
+        } else {
+          showTip("看不出这是什么颜色值：" + input.value.trim(), false);
+        }
+      } else if (e.key === "Escape") {
+        input.blur();                          // 放弃这次输入
+      }
+    });
+    input.addEventListener("blur", () => update());
+  });
 
   /* ── 取色 ── */
   function applyRing(x, y) {
@@ -282,7 +352,7 @@
     }, 1400);
   }
 
-  function fallbackCopy(text) {
+  function fallbackCopy(text, btn) {
     try {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -293,26 +363,39 @@
       ta.select();
       document.execCommand("copy");
       ta.remove();
+      flashButton(btn);
       showTip("已复制 " + text, true);
     } catch (err) {
       showTip("复制失败，手动选中吧：" + text, false);
     }
   }
 
-  function copyText(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(
-        () => showTip("已复制 " + text, true),
-        () => fallbackCopy(text)
-      );
-      return;
-    }
-    fallbackCopy(text);
+  function flashButton(btn) {
+    if (!btn) return;
+    btn.classList.add("hue__copy--done");
+    window.setTimeout(() => btn.classList.remove("hue__copy--done"), 1200);
   }
 
-  [outHex, outRgb, outHsl].forEach((btn) => {
-    if (!btn) return;
-    btn.addEventListener("click", () => copyText(btn.dataset.copy || btn.textContent.trim()));
+  function copyText(text, btn) {
+    const done = () => {
+      flashButton(btn);
+      showTip("已复制 " + text, true);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, btn));
+      return;
+    }
+    fallbackCopy(text, btn);
+  }
+
+  /* ── 每行最右侧的复制按钮：复制同一行输入框里的值 ── */
+  document.querySelectorAll(".hue__copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = document.getElementById(btn.dataset.target);
+      const value = target ? target.value.trim() : "";
+      if (!value) return;
+      copyText(value, btn);
+    });
   });
 
   /* ── 启动 ── */
