@@ -344,11 +344,12 @@
   function showTip(text, ok) {
     if (!tip) return;
     tip.textContent = text;
-    tip.classList.toggle("hue__tip--done", !!ok);
+    tip.classList.toggle("hue__tip--done", !!ok);       // 金色：成功
+    tip.classList.toggle("hue__tip--err", ok === false); // 复用错误页那支红：失败
     window.clearTimeout(showTip.timer);
     showTip.timer = window.setTimeout(() => {
       tip.textContent = "";            // 提示只在复制后短暂出现，平时留空
-      tip.classList.remove("hue__tip--done");
+      tip.classList.remove("hue__tip--done", "hue__tip--err");
     }, 1400);
   }
 
@@ -363,29 +364,21 @@
       ta.select();
       document.execCommand("copy");
       ta.remove();
-      flashButton(btn);
       showTip("已复制 " + text, true);
     } catch (err) {
       showTip("复制失败，手动选中吧：" + text, false);
     }
   }
 
-  function flashButton(btn) {
-    if (!btn) return;
-    btn.classList.add("hue__copy--done");
-    window.setTimeout(() => btn.classList.remove("hue__copy--done"), 1200);
-  }
-
-  function copyText(text, btn) {
-    const done = () => {
-      flashButton(btn);
-      showTip("已复制 " + text, true);
-    };
+  function copyText(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, btn));
+      navigator.clipboard.writeText(text).then(
+        () => showTip("已复制 " + text, true),
+        () => fallbackCopy(text)
+      );
       return;
     }
-    fallbackCopy(text, btn);
+    fallbackCopy(text);
   }
 
   /* ── 每行最右侧的复制按钮：复制同一行输入框里的值 ── */
@@ -394,7 +387,7 @@
       const target = document.getElementById(btn.dataset.target);
       const value = target ? target.value.trim() : "";
       if (!value) return;
-      copyText(value, btn);
+      copyText(value);
     });
   });
 

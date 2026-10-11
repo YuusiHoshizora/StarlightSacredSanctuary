@@ -47,22 +47,25 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: none;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.5);
+    /* 与全站按钮同一套令牌：默认玻璃底，hover / 聚焦转金 */
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    color: var(--ctl-fg-dim);
     font-family: inherit;
     font-size: 13px;
     letter-spacing: 1px;
     padding: 7px 16px;
-    border-radius: 4px;
+    border-radius: var(--ctl-radius);
     cursor: pointer;
     margin-bottom: 28px;
-    transition: 0.2s;
+    transition: var(--ctl-transition);
 }
 
-.back-btn:hover {
-    border-color: rgba(255, 215, 0, 0.4);
-    color: #FFD700;
+.back-btn:hover,
+.back-btn:focus-visible {
+    border-color: var(--ctl-border-hover);
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
 }
 
 .back-btn svg {

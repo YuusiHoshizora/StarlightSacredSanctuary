@@ -27,33 +27,32 @@
 }
 
 .enter-btn{
-    /* 真链接（<a>）代替 <button>：可被预渲染/预取，支持中键与新标签打开 */
+    /* 真链接（<a>）代替 <button>：可被预渲染/预取，支持中键与新标签打开。
+       外观走 global.css 里那套控件令牌：默认玻璃底 + 淡描边，hover/键盘聚焦转金。 */
     display:inline-block;
     font:inherit;
+    font-size:15px;
+    letter-spacing:2px;
     text-decoration:none;
 
-    padding:14px 42px;
+    padding:12px 32px;
 
-    background:
-        rgba(255,255,255,0.08);
+    color:var(--ctl-fg);
+    background:var(--ctl-bg);
 
-    color:white;
-
-    backdrop-filter:blur(8px);
-
-    border:
-        1px solid rgba(255,255,255,0.15);
+    border:1px solid var(--ctl-border);
+    border-radius:var(--ctl-radius);
 
     cursor:pointer;
 
-    transition:0.3s;
+    transition:var(--ctl-transition);
 }
 
-.enter-btn:hover{
-    background:
-        rgba(255,215,0,0.15);
-
-    border-color:#FFD700;
+.enter-btn:hover,
+.enter-btn:focus-visible{
+    color:var(--ctl-fg-hover);
+    background:var(--ctl-bg-strong);
+    border-color:var(--ctl-border-hover);
 }
 
 /* ==========================================================================
@@ -86,7 +85,6 @@
     }
 
     .enter-btn{
-        padding: 12px 28px;
-        font-size: 14px;
+        padding: 12px 24px;
     }
 }

@@ -69,29 +69,30 @@
   font: inherit;
   font-size: 13px;
   color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--ctl-bg);
   /* 放大镜图标：内联 SVG，颜色与站内图标一致 */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.45' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: 8px center;
   background-size: 15px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--ctl-radius);
   outline: none;
-  transition: color 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition: var(--ctl-transition);
 }
 
 .map-search__input::placeholder {
   color: rgba(255, 255, 255, 0.35);
 }
 
+/* 输入类控件：hover 淡金提示，聚焦才是整条金边（与拾色器那几个输入框一致） */
 .map-search__input:hover {
-  border-color: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.35);
 }
 
 .map-search__input:focus {
-  border-color: rgba(255, 215, 0, 0.5);
-  background-color: rgba(255, 215, 0, 0.08);
+  border-color: var(--ctl-border-hover);
+  background-color: var(--ctl-bg-focus);
 }
 
 /* 原生清除按钮（×）在暗色下几乎看不见，调成浅色 */
@@ -176,17 +177,14 @@
   justify-content: center;
 
   padding: 0;
-  color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
+  /* 与全站按钮同一套令牌（见 global.css） */
+  color: var(--ctl-fg-dim);
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
 
-  transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s,
-    box-shadow 0.2s;
+  transition: var(--ctl-transition);
 }
 
 .map-zoom__btn svg {
@@ -199,18 +197,18 @@
   stroke-linejoin: round;
 }
 
-.map-zoom__btn:hover:not(:disabled) {
-  color: #ffd700;
-  border-color: rgba(255, 215, 0, 0.4);
-  background: rgba(255, 215, 0, 0.1);
+.map-zoom__btn:hover:not(:disabled),
+.map-zoom__btn:focus-visible:not(:disabled) {
+  color: var(--ctl-fg-hover);
+  border-color: var(--ctl-border-hover);
+  background: var(--ctl-bg-strong);
 }
 
-/* 按下时的金色渐变反馈 */
+/* 选中态（例如已经停在默认比例尺时的「回到默认」）：同样是金色强调，不加额外光晕 */
 .map-zoom__btn.is-active {
-  color: #ffd700;
-  border-color: rgba(255, 215, 0, 0.55);
-  background: rgba(255, 215, 0, 0.2);
-  box-shadow: 0 0 14px rgba(255, 215, 0, 0.18);
+  color: var(--ctl-fg-hover);
+  border-color: var(--ctl-border-hover);
+  background: var(--ctl-bg-strong);
 }
 
 .map-zoom__btn:disabled {
@@ -434,27 +432,30 @@
 
 .system-list-btn {
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: white;
+  /* 与全站按钮同一套令牌 */
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--ctl-radius);
+  color: var(--ctl-fg);
   cursor: pointer;
-  font-family: "Sarasa";
+  font-family: inherit;
   font-size: 15px;
   text-align: left;
   letter-spacing: 2px;
-  transition: 0.3s;
+  transition: var(--ctl-transition);
 }
 
-.system-list-btn:hover {
-  background: rgba(255, 215, 0, 0.08);
-  border-color: rgba(255, 215, 0, 0.2);
-  color: #FFD700;
+.system-list-btn:hover,
+.system-list-btn:focus-visible {
+  background: var(--ctl-bg-strong);
+  border-color: var(--ctl-border-hover);
+  color: var(--ctl-fg-hover);
 }
 
 .system-list-btn.active {
-  background: rgba(255, 215, 0, 0.1);
-  border-color: #FFD700;
-  color: #FFD700;
+  background: var(--ctl-bg-strong);
+  border-color: var(--ctl-border-hover);
+  color: var(--ctl-fg-hover);
 }
 
 /* ==========================================================================
