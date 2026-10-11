@@ -77,15 +77,16 @@
 
             <div class="tool-card">
                 <div class="tool-card__head">
-                    <h3 class="tool-card__name">色相环</h3>
-                    <p class="tool-card__desc">点或拖圆环取色，也可用方向键微调（Shift 加速）；下面给出 HEX / RGB / HSL，点色值即可复制。</p>
+                    <h3 class="tool-card__name">拾色器</h3>
+                    <p class="tool-card__desc">圆环选色相，环内方块调饱和度与亮度 —— 覆盖所有颜色。也可用键盘：←→ 色相、↑↓ 亮度、Shift+↑↓ 饱和度；点色值即可复制。</p>
                 </div>
 
                 <div class="hue">
                     <div class="hue__wheel-wrap">
-                        <canvas id="hue-wheel" class="hue__wheel" width="260" height="260"
-                                role="slider" tabindex="0" aria-label="色相"
-                                aria-valuemin="0" aria-valuemax="359" aria-valuenow="51" aria-valuetext="#FFD700"></canvas>
+                        <canvas id="hue-wheel" class="hue__wheel" width="300" height="300"
+                                role="slider" tabindex="0" aria-label="拾色器：色相环与外圈内的饱和度亮度方块"
+                                aria-valuemin="0" aria-valuemax="359" aria-valuenow="51"
+                                aria-valuetext="#FFD700 · 饱和度 100% · 亮度 50%"></canvas>
                     </div>
 
                     <div class="hue__panel">
