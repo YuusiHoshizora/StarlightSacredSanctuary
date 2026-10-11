@@ -20,34 +20,11 @@
 }
 
 /* ── 左栏：二级入口 ── */
-.tool-side__title,
-.tool-main__title {
+.tool-side__title {
     margin: 0;
     font-size: 17px;
     letter-spacing: 3px;
     color: rgba(255, 255, 255, 0.9);
-}
-
-.tool-side__hint,
-.tool-main__hint {
-    margin: 6px 0 16px;
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.35);
-}
-
-/* 左栏暂时没有内容时的占位 */
-.tool-side__empty {
-    margin: 0;
-    padding: 18px 16px;
-    font-size: 12px;
-    line-height: 1.7;
-    color: rgba(255, 255, 255, 0.42);
-    /* 底子给实一点，否则小字压在六边形花纹上看不清 */
-    background: rgba(20, 20, 50, 0.42);
-    border: 1px dashed rgba(255, 255, 255, 0.14);
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
 }
 
 .tool-entry {
@@ -55,7 +32,7 @@
     display: block;
 
     padding: 16px 34px 16px 16px;
-    margin-bottom: 12px;
+    margin-top: 14px;
 
     color: #fff;
     text-decoration: none;
@@ -110,8 +87,7 @@
 }
 
 /* ── 右栏：小工具 ──
-   卡片按内容自适应、可换行排列（以后加工具会自然排成一行行），
-   单个卡片最宽 380px，避免一张卡横跨整个右栏。 */
+   卡片宽度跟着内容走（现在就是拾色器那么宽），以后加工具会自动排成一行行。 */
 .tool-main {
     display: flex;
     flex-wrap: wrap;
@@ -120,9 +96,8 @@
 }
 
 .tool-card {
-    flex: 1 1 320px;
-    max-width: 380px;
-    padding: 16px 18px 18px;
+    flex: 0 0 auto;
+    padding: 14px 16px 16px;
     background: rgba(20, 20, 50, 0.42);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
@@ -130,29 +105,29 @@
 }
 
 .tool-card__name {
-    margin: 0 0 14px;
-    font-size: 16px;
+    margin: 0 0 12px;
+    font-size: 15px;
     letter-spacing: 2px;
     color: #FFD700;
 }
 
-/* ── 拾色器：圆环在上，色值在下 ── */
+/* ── 拾色器：圆环与下方色值同宽（都跟着这个宽度走） ── */
 .hue {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
+    width: min(200px, 60vw);
+    margin: 0 auto;
 }
 
 .hue__wheel-wrap {
-    margin: 0 auto;
+    width: 100%;
 }
 
 .hue__wheel {
     display: block;
-    width: 220px;
-    height: 220px;
-    max-width: 60vw;
-    max-height: 60vw;
+    width: 100%;
+    height: auto;                   /* 画布本身是正方形，宽度定了高度就跟着来 */
     cursor: crosshair;
     touch-action: none;             /* 手机上拖动取色，别滚页面 */
     -webkit-user-select: none;
@@ -160,12 +135,12 @@
 }
 
 .hue__panel {
-    min-width: 0;
+    width: 100%;
 }
 
 .hue__swatch {
     width: 100%;
-    height: 34px;
+    height: 30px;
     margin-bottom: 10px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.18);
@@ -186,9 +161,9 @@
 }
 
 .hue__row dt {
-    flex: 0 0 38px;
+    flex: 0 0 34px;
     font-size: 11px;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.35);
 }
 
@@ -200,10 +175,10 @@
 
 .hue__copy {
     width: 100%;
-    padding: 5px 8px;
+    padding: 5px 7px;
     font: inherit;
-    font-size: 13px;
-    letter-spacing: 1px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
     text-align: left;
     color: rgba(255, 255, 255, 0.88);
 
@@ -221,12 +196,12 @@
     border-color: rgba(255, 215, 0, 0.35);
 }
 
-/* 这一行只在复制后短暂显示提示，平时是空的（不再是常驻说明文字） */
+/* 这一行只在复制后短暂显示提示，平时是空的 */
 .hue__tip {
-    margin: 10px 0 0;
+    margin: 8px 0 0;
     min-height: 1em;
-    font-size: 12px;
-    letter-spacing: 1px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.32);
 }
 
@@ -235,33 +210,31 @@
 }
 
 /* ==========================================================================
-   移动端：单列（先二级入口、后小工具），色相环缩到屏宽内
+   移动端：单列（二级入口在上、小工具在下）
    ========================================================================== */
 @media (max-width: 900px) {
 
     .tool-layout {
         grid-template-columns: minmax(0, 1fr);
-        gap: 22px;
+        gap: 20px;
         padding: 88px 18px 48px;
     }
 
     .tool-side {
+        padding-bottom: 14px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        padding-bottom: 18px;
+    }
+
+    .tool-main {
+        display: block;
     }
 
     .tool-card {
-        flex: 1 1 100%;
-        max-width: none;
+        width: 100%;
         padding: 16px 16px 18px;
     }
 
     .hue {
-        gap: 12px;
-    }
-
-    .hue__wheel {
-        width: min(60vw, 220px);
-        height: min(60vw, 220px);
+        width: min(200px, 62vw);
     }
 }
