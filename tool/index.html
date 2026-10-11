@@ -61,13 +61,6 @@
             <p class="tool-side__hint">点进去是独立的页面</p>
 
             <p class="tool-side__empty">暂时还没有需要二级入口的工具</p>
-
-            <!-- 以后需要二级入口的工具按这个结构加在这里：
-                 <a class="tool-entry" href="xxx.html">
-                     <span class="tool-entry__name">名称</span>
-                     <span class="tool-entry__desc">一句话说明</span>
-                     <span class="tool-entry__arrow" aria-hidden="true">→</span>
-                 </a> -->
         </aside>
 
         <!-- 右栏（宽）：可以直接用的小工具 -->
@@ -76,14 +69,11 @@
             <p class="tool-main__hint">不用跳页，就在这里用</p>
 
             <div class="tool-card">
-                <div class="tool-card__head">
-                    <h3 class="tool-card__name">拾色器</h3>
-                    <p class="tool-card__desc">圆环选色相，环内方块调饱和度与亮度 —— 覆盖所有颜色。也可用键盘：←→ 色相、↑↓ 亮度、Shift+↑↓ 饱和度；点色值即可复制。</p>
-                </div>
+                <h3 class="tool-card__name">拾色器</h3>
 
                 <div class="hue">
                     <div class="hue__wheel-wrap">
-                        <canvas id="hue-wheel" class="hue__wheel" width="300" height="300"
+                        <canvas id="hue-wheel" class="hue__wheel" width="220" height="220"
                                 role="slider" tabindex="0" aria-label="拾色器：色相环与外圈内的饱和度亮度方块"
                                 aria-valuemin="0" aria-valuemax="359" aria-valuenow="51"
                                 aria-valuetext="#FFD700 · 饱和度 100% · 亮度 50%"></canvas>
@@ -105,12 +95,10 @@
                                 <dd><button type="button" class="hue__copy" id="hue-hsl" data-copy="hsl(51, 100%, 50%)">51°, 100%, 50%</button></dd>
                             </div>
                         </dl>
-                        <p class="hue__tip" id="hue-tip">点色值复制</p>
+                        <p class="hue__tip" id="hue-tip"></p>
                     </div>
                 </div>
             </div>
-
-            <!-- 以后新增的小工具按同样的 .tool-card 结构加在这里 -->
         </section>
 
     </main>

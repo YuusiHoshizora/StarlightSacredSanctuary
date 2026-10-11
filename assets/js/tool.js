@@ -277,7 +277,7 @@
     tip.classList.toggle("hue__tip--done", !!ok);
     window.clearTimeout(showTip.timer);
     showTip.timer = window.setTimeout(() => {
-      tip.textContent = "点色值复制";
+      tip.textContent = "";            // 提示只在复制后短暂出现，平时留空
       tip.classList.remove("hue__tip--done");
     }, 1400);
   }
