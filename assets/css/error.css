@@ -61,7 +61,7 @@
     background: var(--ctl-bg);
     color: var(--ctl-fg);
     font-size: 15px;
-    font-family: inherit;
+    /* 字体族交给 global.css 的界面字体规则（Sarasa UI），不要 inherit 回 Gothic */
     letter-spacing: 2px;
     cursor: pointer;
     text-decoration: none;

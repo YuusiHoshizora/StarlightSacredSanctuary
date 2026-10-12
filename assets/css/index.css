@@ -28,9 +28,9 @@
 
 .enter-btn{
     /* 真链接（<a>）代替 <button>：可被预渲染/预取，支持中键与新标签打开。
-       外观走 global.css 里那套控件令牌：默认玻璃底 + 淡描边，hover/键盘聚焦转金。 */
+       外观走 global.css 里那套控件令牌；字体族由 global.css 的界面字体规则统一给
+       （Sarasa UI）—— 这里不要写 font:inherit，否则会从 Gothic 的父元素继承回去。 */
     display:inline-block;
-    font:inherit;
     font-size:15px;
     letter-spacing:2px;
     text-decoration:none;

@@ -5,9 +5,9 @@
     box-sizing:border-box;
     -ms-overflow-style: none;
     scrollbar-width: none;
-    /* 全站关掉「字重合成」：字体只有 Regular 一个字面，
-       让浏览器各自合成粗体的话 Chrome / Firefox 差别很大（详见下方 h1~h6 那组规则）。
-       这里只是禁用「伪造」粗体；如果将来真的提供了粗体字面，仍会正常使用。 */
+    /* 全站关掉「字重合成」：粗体一律用真实的 Bold 字面（见下方 @font-face），
+       不让浏览器各自伪造 —— 各家合成算法差别很大（Chrome 明显更重），而且伪造的粗细
+       在文字被选中时还会变。将来某处缺字面时也只是退回同族的真实字面，不会出现跨浏览器差异。 */
     font-synthesis-weight: none;
 }
 
@@ -49,22 +49,63 @@
 }
 
 @font-face {
+    /* 正文 / 标题：Sarasa Gothic SC —— Regular / Bold / Italic 三个真实字面 */
     font-family: "Sarasa";
+    src: url("../fonts/SarasaGothicSC-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Sarasa";
+    src: url("../fonts/SarasaGothicSC-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Sarasa";
+    src: url("../fonts/SarasaGothicSC-Italic.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    /* 界面（导航 / 控件 / 工具页）：Sarasa UI SC。
+       目前只有 Regular 一个字面；将来补了 UiSC-Bold 再加一条 @font-face 即可。 */
+    font-family: "Sarasa UI";
     src: url("../fonts/SarasaUiSC-Regular.woff2") format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
-/* ── 粗体：只用真实字面，不合成、不描边 ──
-   站内 @font-face 只有 Regular 一个字面。之前为了跨浏览器一致，关掉「字重合成」之后
-   再用同色描边把字加粗 —— 但**描边在文字被选中时不会被绘制**，于是同一段粗体一选中就变细。
-   现在统一成 Regular 字面的真实粗细（也就是原来"选中时"的那个粗细）：
-   仍然保留 font-weight: 700 的语义，只关掉合成，于是 Chrome / Firefox 完全一致、
-   选中前后也不再变化。 */
+/* ── 粗体：用真实的 Bold 字面 ──
+   站内 @font-face 现在提供了真正的 Bold，所以粗体不再依赖浏览器合成、也不再用描边伪造
+   （描边在文字被选中时不会被绘制，会出现"一选中就变细"）。 */
 h1, h2, h3, h4, h5, h6, b, strong, th, legend, summary {
     font-weight: 700;
-    font-synthesis-weight: none;
+}
+
+/* ==========================================================================
+   界面字体：站点外壳与控件统一用 "Sarasa UI"
+   --------------------------------------------------------------------------
+   正文与标题用 "Sarasa"（Gothic，见上面的 @font-face）；
+   导航、按钮、输入框、工具页、提示弹窗这类"界面"用 "Sarasa UI"。
+   注意：`*` 规则给**每个元素**都直接指定了 Sarasa，所以继承不会自动生效 ——
+   界面容器要连它的后代一起写（.tool-layout * 这种），否则里面的元素还是 Gothic。
+   ========================================================================== */
+.navbar, .navbar *,
+nav, nav a,
+button, input, select, textarea,
+.enter-btn, .btn-return, .back-btn, .system-list-btn,
+.map-zoom, .map-zoom *, .map-search, .map-search *,
+.tool-layout, .tool-layout *,
+.sss-notice, .sss-notice * {
+    font-family: "Sarasa UI", "Sarasa";
 }
 
 html{
