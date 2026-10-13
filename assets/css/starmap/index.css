@@ -2,7 +2,10 @@
 
 .starmap-layout {
   display: flex;
-  height: 100vh;
+  /* 高度由 body / main 的 flex 分配（正好撑满页脚以上），不写死 100vh ——
+     写死的话页脚会被挤到视口外面，星图页就看不到授权声明了 */
+  flex: 1 1 auto;
+  min-height: 0;
   padding-top: 72px;
   overflow: hidden;
   position: relative;
@@ -469,7 +472,6 @@
 
   .starmap-layout {
     flex-direction: column;
-    height: 100svh;
     padding-top: 60px;
   }
 

@@ -104,6 +104,7 @@ button, input, select, textarea,
 .enter-btn, .btn-return, .back-btn, .system-list-btn,
 .map-zoom, .map-zoom *, .map-search, .map-search *,
 .tool-layout, .tool-layout *,
+.site-footer, .site-footer *,
 .sss-notice, .sss-notice * {
     font-family: "Sarasa UI", "Sarasa";
 }
@@ -120,6 +121,20 @@ body{
     overflow-x:hidden;
     /* 超长英文 / URL 不撑破窄屏 */
     overflow-wrap:break-word;
+
+    /* 页脚（.site-footer）要贴在视口底部：body 竖排，页面主体吃掉剩余高度。
+       内容超过一屏时照常滚动，页脚自然落在文档末尾。 */
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+}
+
+/* 各页主体撑满页脚以上的空间。
+   注意 .tool-layout 自带 display:grid（类选择器权重更高），会覆盖这里的 display。 */
+body > main{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
 }
 
 /* 背景层占位：JS 启用时完全透明，真正的网格由下方 .hex-bg 画布绘制 */
@@ -313,6 +328,43 @@ nav a:hover{
 }
 
 /* ==========================================================================
+   页脚：授权声明
+   --------------------------------------------------------------------------
+   全站共用一段。默认淡白，链接沿用站内规则（hover / 键盘聚焦才转金色）。
+   贴住视口底部靠的是上面 body 与 body > main 的竖排 flex。
+   ========================================================================== */
+.site-footer{
+    flex:0 0 auto;
+
+    padding:18px 24px calc(18px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid rgba(255,255,255,0.08);
+
+    font-size:12px;
+    line-height:1.7;
+    letter-spacing:0.5px;
+    text-align:center;
+    color:rgba(255,255,255,0.38);
+}
+
+.site-footer__author{
+    color:rgba(255,255,255,0.62);
+}
+
+.site-footer a{
+    color:inherit;
+    text-decoration:underline;
+    text-decoration-color:rgba(255,255,255,0.25);
+    text-underline-offset:2px;
+    transition:var(--ctl-transition);
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible{
+    color:var(--ctl-fg-hover);
+    text-decoration-color:currentColor;
+}
+
+/* ==========================================================================
    移动端适配（全站共用部分）
    --------------------------------------------------------------------------
    桌面样式完全不受影响：下面只在窄屏生效。
@@ -320,6 +372,17 @@ nav a:hover{
    并留出刘海屏安全区；链接加大可点区域（手指点得着）。
    ========================================================================== */
 @media (max-width: 768px){
+
+    /* 手机浏览器地址栏会占掉一部分 vh：整屏高度改用 svh（页脚也算在里面） */
+    body{
+        min-height:100svh;
+    }
+
+    .site-footer{
+        padding:14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+        font-size:11px;
+        line-height:1.6;
+    }
 
     .navbar{
         height: 60px;

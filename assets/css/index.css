@@ -1,5 +1,7 @@
 .hero{
-    height:100vh;
+    /* 高度由 body / main 的 flex 分配（撑满页脚以上的空间），不写死 100vh ——
+       写死的话加上页脚就会多出一条滚动条 */
+    flex:1 1 auto;
 
     display:flex;
     align-items:center;
@@ -61,8 +63,8 @@
 @media (max-width: 768px){
 
     .hero{
-        /* 手机浏览器的地址栏会占掉一部分 vh，用 svh 避免首屏被遮住 */
-        height: 100svh;
+        /* 高度仍然交给 flex；手机地址栏占高度的问题由 body 的 min-height:100svh 处理
+           （见 global.css 的窄屏片段），这里不再写死 100svh */
         padding: 0 20px;
     }
 

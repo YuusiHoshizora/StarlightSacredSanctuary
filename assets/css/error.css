@@ -1,9 +1,10 @@
 .error-container {
+    /* 它自己就是 body > main，高度由 global.css 的 flex 给（撑满页脚以上），
+       内容仍然靠 justify-content 垂直居中 */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
     text-align: center;
     padding: 100px 24px 60px;
 }
@@ -101,7 +102,6 @@
 @media (max-width: 768px) {
 
     .error-container {
-        min-height: 100svh;
         padding: 88px 16px 48px;
     }
 

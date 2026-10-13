@@ -120,7 +120,90 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 时间转换：星纪元（S.E.） ⇄ 公元（A.D.）。
+                 两边都是三个数字框，任何一边改动，另一边即时跟着变。
+                 纪元：公元 2110-01-01 00:00:00 UTC = S.E. 1 年 1 月 1 日 00:00:00。
+                 公元 2110 年之前的日期落在纪元前，星纪元年份记作 0 或负数（前星纪元）。 -->
+            <div class="tool-card tool-card--timeconv">
+                <h3 class="tool-card__name">时间转换</h3>
+
+                <div class="timeconv">
+
+                    <!-- 上：星纪元 -->
+                    <section class="timeconv__block">
+                        <div class="timeconv__head">
+                            <span class="timeconv__label">星纪元</span>
+                            <span class="timeconv__unit">S.E.</span>
+                        </div>
+
+                        <div class="timeconv__fields">
+                            <label class="timeconv__field">
+                                <input type="number" id="se-year" class="tool-field" inputmode="numeric"
+                                       value="395" aria-label="星纪元 年（0 或负数表示前星纪元）" />
+                                <span class="timeconv__key">年</span>
+                            </label>
+                            <label class="timeconv__field">
+                                <input type="number" id="se-month" class="tool-field" inputmode="numeric"
+                                       value="6" aria-label="星纪元 月（1–12）" />
+                                <span class="timeconv__key">月</span>
+                            </label>
+                            <label class="timeconv__field">
+                                <input type="number" id="se-day" class="tool-field" inputmode="numeric"
+                                       value="9" aria-label="星纪元 日（1–30）" />
+                                <span class="timeconv__key">日</span>
+                            </label>
+                        </div>
+
+                        <p class="timeconv__note" id="se-note"></p>
+                    </section>
+
+                    <!-- 中：换算方向 -->
+                    <div class="timeconv__switch" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                            <path d="M8 2.5v11M4.5 6L8 2.5 11.5 6M4.5 10L8 13.5 11.5 10"/>
+                        </svg>
+                    </div>
+
+                    <!-- 下：公元 -->
+                    <section class="timeconv__block">
+                        <div class="timeconv__head">
+                            <span class="timeconv__label">公元</span>
+                            <span class="timeconv__unit">A.D.</span>
+                        </div>
+
+                        <div class="timeconv__fields">
+                            <label class="timeconv__field">
+                                <input type="number" id="ad-year" class="tool-field" inputmode="numeric"
+                                       value="2498" aria-label="公元 年" />
+                                <span class="timeconv__key">年</span>
+                            </label>
+                            <label class="timeconv__field">
+                                <input type="number" id="ad-month" class="tool-field" inputmode="numeric"
+                                       value="9" aria-label="公元 月（1–12）" />
+                                <span class="timeconv__key">月</span>
+                            </label>
+                            <label class="timeconv__field">
+                                <input type="number" id="ad-day" class="tool-field" inputmode="numeric"
+                                       value="25" aria-label="公元 日" />
+                                <span class="timeconv__key">日</span>
+                            </label>
+                        </div>
+
+                        <p class="timeconv__note" id="ad-note"></p>
+                    </section>
+
+                </div>
+            </div>
+
         </section>
 
     </main>
+
+    <!-- 授权声明：本站文字采用 CC BY 4.0（完整协议见仓库根目录 LICENSE） -->
+    <footer class="site-footer">
+        除特别注明外，本站文字由 <span class="site-footer__author">余事星空（YuusiHoshizora）</span> 创作，采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 —— 转载请注明作者与原文链接。
+    </footer>
+
 </body>
+</html>
