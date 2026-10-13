@@ -2,6 +2,10 @@
 .main-layout {
     display: flex;
     gap: 0;
+    /* 宽度必须写死 100%：body 是竖排 flex 容器，而 flex 项在交叉轴上带 auto margin 时
+       不会被拉伸、会退化成 fit-content —— 那样三栏总宽就跟内容走，
+       列表视图与文章视图的最大内容宽度不同，切进文章时整栏会突然缩窄。 */
+    width: 100%;
     min-height: 100vh;
     padding-top: 72px; /* navbar高度 */
     max-width: 1600px;
@@ -385,6 +389,76 @@
     color: rgba(255, 255, 255, 0.5);
     margin-top: 12px;
     line-height: 1.7;
+}
+
+/* ==========================================================================
+   列表切换动画 与 卡片背景形变
+   --------------------------------------------------------------------------
+   1) 切分类：整列卡片从右向左离开，新的一列从左向右进来
+   2) 点卡片：卡片背景展开成文章正文的背景；返回时缩回卡片形状
+   ========================================================================== */
+
+/* 形变层用绝对定位，坐标相对中栏算（见 mainpage.html 的 panelRect） */
+.center-panel {
+    position: relative;
+}
+
+/* 列表横向滑动时要裁剪，否则卡片会滑到左边那一栏上面去 */
+.blog-list-view {
+    overflow: hidden;
+}
+
+.blog-list.switching {
+    animation: list-out-left 0.24s ease-in both;
+}
+
+.blog-list.entering {
+    animation: list-in-left 0.36s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes list-out-left {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-100%); }
+}
+
+@keyframes list-in-left {
+    from { opacity: 0; transform: translateX(-100%); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* 文章内容要压在形变背景之上 */
+.article-view {
+    position: relative;
+    z-index: 1;
+}
+
+/* 卡片背景的形变层：位置与尺寸由 JS 写，靠过渡做动画。
+   外观与 .blog-card 完全一致 —— 它就是「那张卡片的背景」被拉展开。 */
+.article-morph {
+    position: absolute;
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+
+    transition: left 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                top 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                height 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.26s ease;
+}
+
+/* 尊重「减少动态效果」：形变与滑动都几乎瞬时完成 */
+@media (prefers-reduced-motion: reduce) {
+    .article-morph,
+    .blog-list.switching,
+    .blog-list.entering {
+        transition-duration: 0.001s !important;
+        animation-duration: 0.001s !important;
+    }
 }
 
 /* ===== 右侧栏 ===== */

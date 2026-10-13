@@ -13,6 +13,10 @@
  *    Chrome / Edge 由页面里的 <script type="speculationrules"> 负责预渲染；
  *    Safari / Firefox 等不支持推测规则的内核，则在鼠标悬停 / 键盘聚焦 /
  *    触摸按下时，提前把目标页面取回本地缓存。
+ *
+ * 3) 页脚的版权年份（文件末尾，单独一个 IIFE）
+ *    起止年的「起始年」写在 HTML 里，结束年改成当年，省得每年一月回头改一遍。
+ *    注意：主 IIFE 在支持推测规则的内核里会提前 return，所以这段必须单独成块。
  * ========================================================================== */
 
 (function () {
@@ -124,4 +128,27 @@
     document.addEventListener('pointerover', onIntent, { passive: true });
     document.addEventListener('focusin', onIntent, true);
     document.addEventListener('touchstart', onIntent, { passive: true });
+})();
+
+/* =============================================================================
+ * 页脚的版权年份
+ * -----------------------------------------------------------------------------
+ * HTML 里写着 `© <span class="copyright-years" data-since="2025">2025–2026</span>`，
+ * 起始年写死、结束年由这里改成当年 —— 跨年不用回头改 8 个页面。
+ * 静态年份本来就写在 HTML 里，所以禁用 JS 时也显示得出来（只是不会自动跨年）。
+ * 单独一个 IIFE：上面那个在支持推测规则的内核里会提前 return，写在里面会被跳过。
+ * ========================================================================== */
+(function () {
+    'use strict';
+
+    var els = document.querySelectorAll('.copyright-years');
+    if (!els.length) return;
+
+    var now = new Date().getFullYear();
+
+    Array.prototype.forEach.call(els, function (el) {
+        var since = parseInt(el.getAttribute('data-since'), 10);
+        if (!since || !now || now < since) return;
+        el.textContent = now > since ? since + '–' + now : String(since);
+    });
 })();
