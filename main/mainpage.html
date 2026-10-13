@@ -71,6 +71,10 @@
         <!-- 中间栏：博客文章列表 / Markdown 文章视图 -->
         <main class="center-panel">
 
+            <!-- 文章背景的形变层：点卡片时从卡片矩形展开成正文背景，返回时缩回卡片形状。
+                 位置与尺寸由 JS 写（见 morphToArticle / morphToCard），平时 opacity 0 且不挡点击。 -->
+            <div class="article-morph" id="article-morph" aria-hidden="true"></div>
+
             <!-- 列表视图 -->
             <div class="blog-list-view" id="blog-list-view">
                 <div class="blog-header">
@@ -128,9 +132,9 @@
         </aside>
     </div>
 
-    <!-- 授权声明：完整说明与第三方致谢见「关于」页 -->
+    <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
     <footer class="site-footer">
-        除特别注明外，本站文字由 <span class="site-footer__author">余事星空（YuusiHoshizora）</span> 创作，采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../about/">关于本站</a>。
+        © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../about/">关于本站</a>
     </footer>
 
 <script>
@@ -180,6 +184,9 @@
         }
         mdContent = lines.join('\n');
 
+        // 树形结构靠行首缩进表达层级，Markdown 默认会把续行的缩进吃掉，这里补回来
+        mdContent = preserveLineIndent(mdContent);
+
         // 渲染文章头部 + Markdown 内容
         articleContent.innerHTML =
             '<div class="article-header">' +
@@ -198,12 +205,18 @@
             link.setAttribute('rel', 'noopener noreferrer');
         });
 
+        // 卡片背景展开成正文的背景
+        morphToArticle();
+
         // 滚动到顶部
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
 function showList() {
     if (articleView.classList.contains('active')) {
+        // 背景缩回卡片形状（正文同时淡出）
+        morphToCard();
+
         // 先播放退出动画
         articleView.classList.add('leaving');
         // 动画结束后再切换显示
@@ -212,6 +225,8 @@ function showList() {
             articleView.classList.remove('active', 'leaving');
             listView.classList.remove('hidden');
             articleContent.innerHTML = '';
+            // 回到列表时回到顶部，缩回卡片的那段动画才看得见
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         articleView.addEventListener('animationend', onAnimationEnd);
     } else {
@@ -240,21 +255,113 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
     }
 
     const filter = link.dataset.filter;
-    const cards = document.querySelectorAll('.blog-card');
 
-    cards.forEach(function(card) {
-        if (filter === 'all' || card.dataset.tag === filter) {
-            card.style.display = '';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-
-    // 如果在文章视图中，先返回列表
+    // 还在文章视图里点分类：先退回列表（背景缩回卡片的动画由 showList 负责），
+    // 等退场动画走完再套用筛选，免得两个动画撞在一起
     if (articleView.classList.contains('active')) {
         showList();
+        window.setTimeout(function () { applyFilter(filter); }, 380);
+    } else {
+        applyFilter(filter);
     }
 });
+
+    // ===== 分类筛选：整列卡片向左离开，新的一列从左边进来 =====
+    function applyFilter(filter) {
+        var list = document.getElementById('blog-list');
+        if (!list) return;
+
+        function apply() {
+            document.querySelectorAll('.blog-card').forEach(function (card) {
+                card.style.display = (filter === 'all' || card.dataset.tag === filter) ? '' : 'none';
+            });
+        }
+
+        // 列表当前不可见（还在文章视图里）或正在切换：直接改显示，不播动画
+        if (listView.classList.contains('hidden') || list.classList.contains('switching')) {
+            apply();
+            return;
+        }
+
+        list.classList.add('switching');                 // 向左离开
+        window.setTimeout(function () {
+            apply();
+            list.classList.remove('switching');
+            void list.offsetWidth;                       // 强制回流，进入动画才会重新播放
+            list.classList.add('entering');              // 从左边进来
+            window.setTimeout(function () { list.classList.remove('entering'); }, 420);
+        }, 240);
+    }
+
+    // ===== 卡片背景 ⇄ 文章背景的形变 =====
+    // 坐标一律按「相对中栏」算：getBoundingClientRect 给的是视口坐标，两边都减去中栏的位置
+    // 就与页面滚动无关了 —— 返回时即使页面滚动过，也能缩回卡片原来的位置。
+    var morphEl = document.getElementById('article-morph');
+    var lastCardRect = null;
+
+    // 用 offset* 而不是 getBoundingClientRect()，两个原因：
+    //   · offset* 相对「最近的定位祖先」= .center-panel 的 padding 边，
+    //     正好就是形变层绝对定位的基准，两边坐标同一套
+    //   · offset* 不受 transform 影响 —— 文章入场动画（translateY 12px）正播到一半时，
+    //     getBoundingClientRect() 会多算那 12px，展开的终点就会偏
+    function panelRect(el) {
+        return { left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight };
+    }
+
+    function placeMorph(rect, visible) {
+        if (!morphEl) return;
+        morphEl.style.left    = rect.left + 'px';
+        morphEl.style.top     = rect.top + 'px';
+        morphEl.style.width   = rect.width + 'px';
+        morphEl.style.height  = rect.height + 'px';
+        morphEl.style.opacity = visible ? '1' : '0';
+    }
+
+    // 展开的目标矩形：
+    //   · 上边从文章头部那根分割线开始 —— 标题 / 日期 / 分类留在背景之外
+    //   · 左右比正文各宽出 MORPH_SIDE、底部留 MORPH_BOTTOM，免得文字紧贴背景边缘
+    // 头部相对文章顶部的位置用 rect 相减算：入场动画的 transform 会同时位移两者，差值不受影响
+    var MORPH_SIDE = 24;
+    var MORPH_BOTTOM = 24;
+
+    function morphTargetRect() {
+        var header = articleView.querySelector('.article-header');
+        var artTop = articleView.getBoundingClientRect().top;
+        var headBottom = header ? (header.getBoundingClientRect().bottom - artTop) : 0;
+        return {
+            left:   articleView.offsetLeft - MORPH_SIDE,
+            top:    articleView.offsetTop + headBottom,
+            width:  articleView.offsetWidth + MORPH_SIDE * 2,
+            height: articleView.offsetHeight - headBottom + MORPH_BOTTOM
+        };
+    }
+
+    // 先瞬间落到卡片位置（不带过渡），再过渡到上面的目标矩形
+    function morphToArticle() {
+        if (!morphEl || !lastCardRect) return;
+        morphEl.style.transition = 'none';
+        placeMorph(lastCardRect, true);
+        void morphEl.offsetWidth;                        // 强制回流，下面的过渡才会生效
+        morphEl.style.transition = '';
+        placeMorph(morphTargetRect(), true);
+
+        // 网页字体是 swap 加载的，正文落地后行高可能还会微调一点（长文更明显）：
+        // 动画结束后再对齐一次，免得背景比正文短一截
+        window.setTimeout(function () {
+            if (articleView.classList.contains('active') && !articleView.classList.contains('leaving')) {
+                placeMorph(morphTargetRect(), true);
+            }
+        }, 520);
+    }
+
+    // 缩回卡片形状；落地后淡出（真卡片已经在那儿了）
+    function morphToCard() {
+        if (!morphEl || !lastCardRect) return;
+        placeMorph(lastCardRect, true);
+        window.setTimeout(function () {
+            if (morphEl) morphEl.style.opacity = '0';
+        }, 400);
+    }
 
     // ===== 安全转义辅助 =====
     function escapeHtml(str) {
@@ -287,6 +394,44 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
             }
                 }
         return '';
+    }
+
+    // ===== 保留段落续行的行首缩进 =====
+    // Markdown 会把段落「续行」行首的空白吃掉，而写日志的树形结构正是靠行首缩进表达层级的。
+    // 这里把续行行首的制表符 / 空格换成等宽的不换行空格（U+00A0）：解析器不会再吃掉它，
+    // 行内语法（**粗体**、链接等）照常生效。
+    // 只在「上一行非空」（真正的段落续行）时转换，且不碰下面这些行首有结构含义的写法：
+    //   · 围栏代码块（``` / ~~~，进出都不碰）
+    //   · 列表、引用、标题、表格、分隔线
+    function preserveLineIndent(mdText) {
+        var lines = mdText.split(/\r?\n/);
+        var out = [];
+        var inFence = false;
+        var STRUCT = /^(?:[-+*]\s|\d+[.)]\s|>|#|\||-{3,}$|\*{3,}$|_{3,}$)/;
+
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+
+            if (/^\s*(?:```|~~~)/.test(line)) {
+                inFence = !inFence;
+                out.push(line);
+                continue;
+            }
+
+            var prevBlank = out.length === 0 || out[out.length - 1].trim() === '';
+            var m = inFence ? null : line.match(/^([ \t]+)(\S.*)$/);
+
+            if (m && !prevBlank && !STRUCT.test(m[2])) {
+                var width = 0;
+                for (var k = 0; k < m[1].length; k++) {
+                    width += m[1].charAt(k) === '\t' ? 4 : 1;   // 制表符按 4 个空格折算（与 CommonMark 一致）
+                }
+                out.push(new Array(width + 1).join('\u00A0') + m[2]);
+            } else {
+                out.push(line);
+            }
+        }
+        return out.join('\n');
     }
 
     // ===== 日历渲染 =====
@@ -504,6 +649,15 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
         var mdInline = card.dataset.mdInline || '';
 
         if (mdSrc) {
+            // 记下卡片矩形，并让形变层先贴上去：正文渲染完再展开成文章背景
+            lastCardRect = panelRect(card);
+            if (morphEl) {
+                morphEl.style.transition = 'none';
+                placeMorph(lastCardRect, true);
+                void morphEl.offsetWidth;
+                morphEl.style.transition = '';
+            }
+
             articleContent.innerHTML = '<div class="md-loading">正在加载……</div>';
             listView.classList.add('hidden');
             articleView.classList.add('active');
