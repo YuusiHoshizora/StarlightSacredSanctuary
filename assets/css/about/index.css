@@ -1,0 +1,136 @@
+/* ==========================================================================
+   关于页
+   --------------------------------------------------------------------------
+   单栏阅读版式：标题 + 若干张玻璃面板卡片，每张卡片一节。
+   视觉沿用站内那套：半透明底 + 淡描边 + 面板圆角；金色只当强调色。
+   正文字体用默认的 Sarasa Gothic（这是阅读内容，不是界面控件）。
+   ========================================================================== */
+
+.about-section {
+    position: relative;
+    z-index: 1;
+
+    /* 同 .archive-section：main 是竖排 flex 容器，而带 auto margin 的 flex 项
+       不会被拉伸、宽度会退化成 fit-content；写死 100% 才是
+       「铺满可用宽度、超过上限才居中」。 */
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 120px 60px 80px;
+}
+
+.about-head {
+    margin-bottom: 36px;
+}
+
+.about-head h1 {
+    margin: 0;
+    font-size: 30px;
+    letter-spacing: 6px;
+    color: #FFD700;
+}
+
+.about-sub {
+    margin: 8px 0 0;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 一张卡片 = 一节 */
+.about-card {
+    padding: 26px 28px;
+    margin-bottom: 20px;
+
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+.about-card:last-child {
+    margin-bottom: 0;
+}
+
+.about-card h2 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: #FFD700;
+}
+
+.about-card p {
+    margin: 0 0 1em;
+    font-size: 14px;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.about-card p:last-child,
+.about-card ul:last-child {
+    margin-bottom: 0;
+}
+
+.about-card strong {
+    color: #fff;
+}
+
+.about-card ul {
+    margin: 0 0 1em;
+    padding-left: 1.2em;          /* 全站 * 规则把 padding 清零了，这里要补回来 */
+    font-size: 14px;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.about-card li {
+    margin-bottom: 4px;
+}
+
+.about-card li::marker {
+    color: rgba(255, 215, 0, 0.5);
+}
+
+.about-card a {
+    color: rgba(255, 255, 255, 0.92);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 215, 0, 0.35);
+    text-underline-offset: 3px;
+    transition: var(--ctl-transition);
+}
+
+.about-card a:hover,
+.about-card a:focus-visible {
+    color: var(--ctl-fg-hover);
+    text-decoration-color: currentColor;
+}
+
+/* 「不在授权范围内」这类补充说明：比正文淡一档 */
+.about-note {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================================
+   移动端：收窄内边距，避免一行字太少
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    .about-section {
+        padding: 96px 18px 56px;
+    }
+
+    .about-head {
+        margin-bottom: 24px;
+    }
+
+    .about-head h1 {
+        font-size: 24px;
+        letter-spacing: 4px;
+    }
+
+    .about-card {
+        padding: 20px 18px;
+        margin-bottom: 16px;
+    }
+}

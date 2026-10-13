@@ -1,6 +1,9 @@
 .archive-section {
     position: relative;
     z-index: 1;
+    /* 同 .main-layout：main 是竖排 flex 容器，带 auto margin 的项不会被拉伸，
+       宽度会退化成 fit-content；写死 100% 才是「铺满可用宽度、超过上限才居中」。 */
+    width: 100%;
     padding: 120px 60px 80px;
     max-width: 1400px;
     margin: 0 auto;

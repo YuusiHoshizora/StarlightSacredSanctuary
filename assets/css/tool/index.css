@@ -15,6 +15,9 @@
     align-items: start;
 
     max-width: 1180px;
+    /* 同 .main-layout：body 是竖排 flex 容器，带 auto margin 的项不会被拉伸，
+       宽度会退化成 fit-content；写死 100% 才是「铺满可用宽度、超过上限才居中」。 */
+    width: 100%;
     margin: 0 auto;
     padding: 104px 40px 64px;
 }

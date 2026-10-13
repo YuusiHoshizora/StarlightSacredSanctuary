@@ -2,6 +2,10 @@
 .main-layout {
     display: flex;
     gap: 0;
+    /* 宽度必须写死 100%：body 是竖排 flex 容器，而 flex 项在交叉轴上带 auto margin 时
+       不会被拉伸、会退化成 fit-content —— 那样三栏总宽就跟内容走，
+       列表视图与文章视图的最大内容宽度不同，切进文章时整栏会突然缩窄。 */
+    width: 100%;
     min-height: 100vh;
     padding-top: 72px; /* navbar高度 */
     max-width: 1600px;

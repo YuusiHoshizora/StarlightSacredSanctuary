@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于·星光圣域</title>
+
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/about/index.css">
+    <script defer src="../assets/js/background.js"></script>
+    <script defer src="../assets/js/notice.js"></script>
+    <script defer src="../assets/js/seamless.js"></script>
+
+    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": "nav a" },
+                            { "not": { "href_matches": "/" } }
+                        ]
+                    },
+                    "eagerness": "moderate"
+                }
+            ],
+            "prefetch": [
+                { "where": { "selector_matches": "nav a" }, "eagerness": "conservative" }
+            ]
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <header class="navbar">
+
+        <div class="logo">
+            星光圣域
+        </div>
+
+        <nav>
+            <a href="..">首页</a>
+            <a href="../starmap/">星图</a>
+            <a href="../fleet/">舰队</a>
+            <a href="../tool/">工具</a>
+            <a href="../archive/">档案</a>
+            <a href=".">关于</a>
+        </nav>
+
+    </header>
+
+    <main>
+        <section class="about-section">
+
+            <header class="about-head">
+                <h1>关于</h1>
+                <p class="about-sub">About</p>
+            </header>
+
+            <div class="about-card">
+                <h2>这是什么</h2>
+                <p>
+                    星光圣域是一个个人架空世界站点。世界的事件记录、星图、舰队与档案都写在这里，
+                    时间用站点自己的两套历法标注：<strong>星纪元（S.E.）</strong> 与 <strong>公元（A.D.）</strong>，
+                    两者可以在「工具」页互转。
+                </p>
+                <p>
+                    第一次来，可以从首页点 <strong>ENTER</strong> 进入主页面 —— 那里按时间倒序列出全部事件，
+                    左侧还能按分类筛选。
+                </p>
+            </div>
+
+            <div class="about-card">
+                <h2>授权</h2>
+                <p>
+                    除特别注明外，本站的<strong>文字内容</strong>（事件文章、设定文字与页面文案）采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">知识共享 署名 4.0 国际（CC BY 4.0）</a>
+                    授权。
+                </p>
+                <p>
+                    也就是说：你可以在<strong>署名</strong>的前提下自由转载、节选、翻译，甚至用于商业用途，
+                    <strong>不必另行询问</strong>。署名时请给出前面那四项信息：
+                </p>
+                <ul>
+                    <li>作者：<strong>余事星空（YuusiHoshizora）</strong></li>
+                    <li>原文链接（本站对应的页面）</li>
+                    <li>协议名称与链接：CC BY 4.0</li>
+                    <li>若对内容做过修改，请一并注明</li>
+                </ul>
+                <p class="about-note">
+                    以下内容不在这份授权范围内：文中引用他人作品的部分（会注明来源与版权归属）、
+                    星图数据与网页代码，以及下面列出的第三方资源（各自沿用原有许可）。
+                </p>
+            </div>
+
+            <div class="about-card">
+                <h2>致谢</h2>
+                <p>本站使用了以下开放资源，在此致谢：</p>
+                <ul>
+                    <li>
+                        <a href="https://github.com/be5invis/Sarasa-Gothic" rel="noopener noreferrer" target="_blank">Sarasa Gothic 更纱黑体</a>
+                        （作者 Belleve Invis）—— 全站字体，SIL Open Font License 1.1
+                    </li>
+                    <li>
+                        <a href="https://github.com/markedjs/marked" rel="noopener noreferrer" target="_blank">marked</a>
+                        —— 主页面渲染 Markdown，MIT
+                    </li>
+                    <li>
+                        <a href="https://creativecommons.org/" rel="noopener noreferrer" target="_blank">Creative Commons</a>
+                        —— 本站使用的 CC BY 4.0 协议文本由其释出
+                    </li>
+                </ul>
+            </div>
+
+            <div class="about-card">
+                <h2>源码与反馈</h2>
+                <p>
+                    本站是纯静态页面（没有构建步骤，也没有任何框架），源码放在
+                    <a href="https://github.com/YuusiHoshizora/starlightsacredsanctuary" rel="noopener noreferrer" target="_blank">GitHub</a>。
+                    发现问题、或者只是想说什么，欢迎在仓库里提 issue。
+                </p>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- 本页自己就是授权说明页，页脚就不再重复链接回本页 -->
+    <footer class="site-footer">
+        除特别注明外，本站文字由 <span class="site-footer__author">余事星空（YuusiHoshizora）</span> 创作，采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权。
+    </footer>
+
+</body>
+</html>

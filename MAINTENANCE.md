@@ -15,10 +15,11 @@
 ├── netlify.toml                Netlify 配置（发布根目录、错误页重定向）
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
-├── starmap/index.html          星图
+├── starmap/index.html          星图（刻意没有页脚）
 ├── fleet/index.html            舰队
 ├── tool/index.html             工具
 ├── archive/index.html          档案
+├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
 │   ├── css/
@@ -29,7 +30,8 @@
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── starmap/index.css   星图页
 │   │   ├── fleet/index.css     舰队页
-│   │   └── tool/index.css      工具页
+│   │   ├── tool/index.css      工具页
+│   │   └── about/index.css     关于页
 │   │
 │   ├── js/
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
@@ -136,16 +138,32 @@ stale-while-revalidate）。所以**改完 CSS / JS 记得把 `sw.js` 顶部的 
 
 ## 授权声明放在哪
 
-站内文字走 **CC BY 4.0**（署名即可转载，允许商用）。声明散在几处，改动时要保持一致：
+站内文字走 **CC BY 4.0**（署名即可转载，允许商用）。声明分散在下面几处，改动时要保持一致：
 
-- **每页底部的 `.site-footer`** —— index / main / starmap / fleet / tool / archive / error 共 7 个 HTML。
-  样式在 `assets/css/global.css` 的 `.site-footer`；靠 `body`（竖排 flex）与 `body > main` 贴住视口底部
-- 仓库根目录 **`LICENSE`** —— 完整协议文本 + 不在授权范围内的内容说明
+- **「关于」页**（`about/index.html`）—— 面向读者的正式说明：授权条款 + 第三方致谢。
+  改授权口径以这页为准
+- **每页底部的 `.site-footer`** —— index / main / fleet / tool / archive / error 共 6 个页面。
+  **星图页刻意不放页脚**（整屏地图要沉浸感，页脚 HTML 里留了注释说明）；
+  样式在 `assets/css/global.css` 的 `.site-footer`
+- 仓库根目录 **`LICENSE`** —— 协议全文 + 不在授权范围内的内容说明
 - **`README.md`** 的「授权与致谢」
 
-新增页面时记得一起加页脚。**页脚高度算在 `body` 的 flex 里，所以新页面的主体不要再写死
-`height: 100vh`**（会让页脚被挤出视口）—— 要撑满就写 `flex: 1 1 auto`；
-星图页 `.starmap-layout` 与首页 `.hero` 就是这么处理的。
+### 加新页面时要一起做的三件事
+
+1. 导航栏的 `<nav>` 里加链接（注意各页相对路径不同：根目录页用 `about/`，子目录页用 `../about/`，
+   错误页用绝对路径 `/about/`）
+2. 页脚：拷一份 `.site-footer`，把「关于本站」链接改成正确的相对路径
+3. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS（否则离线访问那一页会漏）
+
+### 两个已经踩过的布局坑
+
+- **页脚高度算在 `body` 的竖排 flex 里**，所以页面主体不要再写死 `height: 100vh`
+  （页脚会被挤出视口）。要撑满就写 `flex: 1 1 auto` —— 首页 `.hero`、舰队 `.fleet-section`、
+  错误页 `.error-container`、星图 `.starmap-layout` 都是这么处理的。
+- **带 `margin: 0 auto` 的容器必须同时写 `width: 100%`**（主页面 `.main-layout`、
+  档案 `.archive-section`、工具 `.tool-layout`、关于 `.about-section`）。
+  它们是 `body` / `main` 这个竖排 flex 容器的 flex 项，而 flex 项在交叉轴上带 auto margin 时
+  **不会被拉伸**、宽度会退化成 fit-content —— 主页面「打开文章整栏突然变窄」就是这么来的。
 
 ---
 

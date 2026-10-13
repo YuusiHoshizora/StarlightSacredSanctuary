@@ -38,6 +38,8 @@ const PRECACHE_URLS = [
     '/tool/index.html',
     '/archive/',
     '/archive/index.html',
+    '/about/',
+    '/about/index.html',
     '/main/mainpage.html',
     '/error.html',
 
@@ -50,6 +52,7 @@ const PRECACHE_URLS = [
     '/assets/css/starmap/index.css',
     '/assets/css/fleet/index.css',
     '/assets/css/tool/index.css',
+    '/assets/css/about/index.css',
 
     // 脚本
     '/assets/js/seamless.js',
