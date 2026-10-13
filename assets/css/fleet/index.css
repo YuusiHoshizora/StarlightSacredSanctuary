@@ -1,5 +1,7 @@
 .fleet-section {
-    min-height: 100vh;
+    /* 高度交给 main 的 flex（见 global.css），不写死 100vh：
+       写死再加上页脚就会多出一条滚动条 */
+    flex: 1 1 auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,7 +80,6 @@
 @media (max-width: 768px) {
 
     .fleet-section {
-        min-height: 100svh;
         padding: 84px 18px 48px;
         align-items: flex-start;
     }

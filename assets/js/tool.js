@@ -399,3 +399,221 @@
     update();
   });
 })();
+
+
+/* ============================================================
+   工具页脚本：时间转换（星纪元 ⇄ 公元）
+   ------------------------------------------------------------
+   设定（写死在这里，方便以后调）：
+     · 公元 2110-01-01 00:00:00 UTC = 星纪元（S.E.）1 年 1 月 1 日 00:00:00
+     · 星纪元一年 12 个月、一个月 30 天、一天 24 小时 —— 一年恒为 360 天，
+       没有闰年、闰月、闰秒
+     · 本工具只换算「日」，时/分/秒两边都是 00:00:00（纪元本身也对齐在午夜）
+
+   算法：
+     两条时间轴都以「自公元 2110-01-01 UTC 起的整日数」为桥（记为绝对日）。
+     · SE → 绝对日：(年-1)*360 + (月-1)*30 + (日-1)
+     · 绝对日 → SE：除以 360 / 30 取商取余（负数要向下取整，JS 的 % 会出负余数）
+     · 公元 → 绝对日：用 Date.UTC 做日期运算，闰年交给 Date 处理（它是前推格里历）
+       —— 不自己数闰年，避免把「整百年不是闰年」写错
+     · 绝对日 → 公元：二分查找落在哪一年（年长 365/366 不固定，直接算会踩闰年边界），
+       再取年内的第几天
+
+     公元 2110-01-01 之前的日期落在纪元之前：绝对日变成负数，S.E. 年份记作 0 或负数
+     （0 = 纪元前一年，-1 = 纪元前两年……即「前星纪元 N 年」的 N 就是 |年|）。
+
+   两边互为输入：改星纪元就更新公元，改公元就更新星纪元；每次都由当前输入重算，
+   不保留中间状态，所以来回切也不会累积误差。
+
+   界面：输入框排成「395 年 6 月 9 日」，年月日三个字放在输入框外面；不额外回显日期、不显示星期。
+   两边都报「年内第几天」，各自按自己的历法算。星纪元一年恒 360 天，落在纪元之前的
+   0 / 负数年同样是完整的一年，所以也照报年内天数，不换说法。
+   ============================================================ */
+(function () {
+  "use strict";
+
+  const MS_PER_DAY = 86400000;
+  const SE_MONTHS = 12;
+  const SE_MONTH_DAYS = 30;
+  const SE_YEAR_DAYS = SE_MONTHS * SE_MONTH_DAYS;   // 360
+
+  /* 纪元锚点：公元 2110-01-01 UTC。Date.UTC 的月份从 0 开始，所以是 0。 */
+  const EPOCH = Date.UTC(2110, 0, 1);
+
+  const el = {
+    seYear: document.getElementById("se-year"),
+    seMonth: document.getElementById("se-month"),
+    seDay: document.getElementById("se-day"),
+    seNote: document.getElementById("se-note"),
+    adYear: document.getElementById("ad-year"),
+    adMonth: document.getElementById("ad-month"),
+    adDay: document.getElementById("ad-day"),
+    adNote: document.getElementById("ad-note"),
+  };
+  if (!el.seYear || !el.adYear) return;      // 这张卡片不在这个页面上
+
+  /* ── 基础换算 ── */
+  /* 某年某月的天数（前推格里历闰年规则：4 整除、整百年须 400 整除） */
+  function daysInGregorianMonth(year, month) {
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+  }
+
+  function jdnToDate(jdn) {
+    return new Date(EPOCH + jdn * MS_PER_DAY);
+  }
+
+  function dateToJdn(year, month, day) {
+    const t = Date.UTC(year, month - 1, day);
+    if (!isFinite(t)) return null;
+    return Math.round((t - EPOCH) / MS_PER_DAY);
+  }
+
+  /* ── SE → 绝对日 ──
+     JS 的 % 对负数会给负余数（-1 % 30 === -1），所以不能直接用取余公式。
+     这里把「年在内的第几天」先归一化到 0..359，负数年也能得到正确结果。 */
+  function seToJdn(year, month, day) {
+    const start = (year - 1) * SE_YEAR_DAYS;
+    const within = (month - 1) * SE_MONTH_DAYS + (day - 1);
+    return start + within;
+  }
+
+  /* ── 绝对日 → SE ──
+     允许负的年月日：绝对日 < 0 就是纪元之前，年份自然落到 0 或负数。 */
+  function seFromJdn(jdn) {
+    const year = Math.floor(jdn / SE_YEAR_DAYS) + 1;
+    const inYear = jdn - (year - 1) * SE_YEAR_DAYS;      // 恒在 0..359
+    return {
+      year: year,
+      month: Math.floor(inYear / SE_MONTH_DAYS) + 1,
+      day: (inYear % SE_MONTH_DAYS) + 1,
+    };
+  }
+
+  /* ── 绝对日 → 公元（二分查找年份：格里历年长不固定，直接算会踩闰年边界） ── */
+  function gregorianFromJdn(jdn) {
+    const target = jdnToDate(jdn);
+    if (!isFinite(target.getTime())) return null;
+
+    const y = target.getUTCFullYear();
+
+    /* 年份上下界：先取相邻年，再逐年推开，保证恰好把目标年夹住 */
+    let lo = y - 1;
+    let hi = y + 1;
+    while (dateToJdn(lo, 1, 1) !== null && dateToJdn(lo, 1, 1) > jdn) lo -= 1;
+    while (dateToJdn(hi, 1, 1) !== null && dateToJdn(hi, 1, 1) <= jdn) hi += 1;
+
+    while (dateToJdn(lo, 1, 1) === null || dateToJdn(hi, 1, 1) === null || hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (mid === lo || mid === hi) return null;          // 推到 Date 能表示的边界了
+      if (dateToJdn(mid, 1, 1) === null) return null;
+      if (dateToJdn(mid, 1, 1) <= jdn) lo = mid;
+      else hi = mid;
+    }
+
+    const dayOfYear = jdn - dateToJdn(lo, 1, 1) + 1;
+    if (dayOfYear < 1 || dayOfYear > 366) return null;
+    if (dayOfYear !== (jdnToDate(jdn).getTime() - Date.UTC(lo, 0, 1)) / MS_PER_DAY + 1) return null;
+
+    return {
+      year: lo,
+      month: target.getUTCMonth() + 1,
+      day: target.getUTCDate(),
+      dayOfYear: dayOfYear,
+    };
+  }
+
+  /* ── 输入读取 ──
+     type=number 的 .value 是「用户看见的那串字符」：空串、'-'、'1e5' 都读得出来，
+     所以用 Number() 会把空串当成 0。这里一律先当字符串校验，非纯整数就返回 null。 */
+  function readInt(input) {
+    const text = input ? input.value.trim() : "";
+    if (!/^[+-]?\d+$/.test(text)) return null;
+    return parseInt(text, 10);
+  }
+
+  /* ── 提示行 ── */
+  const notes = { se: el.seNote, ad: el.adNote };
+
+  function setNote(side, text, isError) {
+    const node = notes[side];
+    if (!node) return;
+    node.textContent = text;
+    node.classList.toggle("timeconv__note--err", !!isError);
+  }
+
+  /* 两侧都报「年内第几天」，各自按自己的历法算（年长不同，同一个日子序号也不同）。
+     · 星纪元：一年恒 360 天，0 与负数年（前星纪元）也照样是完整的一年
+     · 公元：按 365/366 天算，直接用 Date 落在当年第几天 */
+  function setSeNote(seMonth, seDay) {
+    setNote("se", "年内第 " + ((seMonth - 1) * SE_MONTH_DAYS + (seDay - 1) + 1) + " 天");
+  }
+
+  function setAdNote(adYear, adMonth, adDay) {
+    setNote("ad", "年内第 " + (dateToJdn(adYear, adMonth, adDay) - dateToJdn(adYear, 1, 1) + 1) + " 天");
+  }
+
+  /* ── 星纪元 → 公元 ── */
+  function syncFromSe() {
+    const y = readInt(el.seYear);
+    const m = readInt(el.seMonth);
+    const d = readInt(el.seDay);
+
+    if (y === null || m === null || d === null) {
+      setNote("ad", "", false);          // 输入没填完：只清提示，不抹掉已经填好的数字
+      return;
+    }
+    if (m < 1 || m > SE_MONTHS) { setNote("ad", "星纪元的月份只有 1–12", true); return; }
+    if (d < 1 || d > SE_MONTH_DAYS) { setNote("ad", "星纪元每月固定 30 天（1–30）", true); return; }
+
+    const jdn = seToJdn(y, m, d);
+    const g = gregorianFromJdn(jdn);
+    if (!g) { setNote("ad", "超出可换算范围", true); return; }
+
+    el.adYear.value = g.year;
+    el.adMonth.value = g.month;
+    el.adDay.value = g.day;
+
+    /* 两边各报自己历法里的信息 */
+    setSeNote(m, d);
+    setAdNote(g.year, g.month, g.day);
+  }
+
+  /* ── 公元 → 星纪元 ── */
+  function syncFromAd() {
+    const y = readInt(el.adYear);
+    const m = readInt(el.adMonth);
+    const d = readInt(el.adDay);
+
+    if (y === null || m === null || d === null) {
+      setNote("se", "", false);
+      return;
+    }
+    if (m < 1 || m > 12) { setNote("se", "公元的月份只有 1–12", true); return; }
+    if (d < 1 || d > daysInGregorianMonth(y, m)) {
+      setNote("se", "公元 " + y + " 年 " + m + " 月没有 " + d + " 日", true);
+      return;
+    }
+
+    const jdn = dateToJdn(y, m, d);
+    if (jdn === null) { setNote("se", "超出可换算范围", true); return; }
+    const se = seFromJdn(jdn);
+
+    el.seYear.value = se.year;
+    el.seMonth.value = se.month;
+    el.seDay.value = se.day;
+
+    setSeNote(se.month, se.day);
+    setAdNote(y, m, d);
+  }
+
+  /* ── 绑定：两边都能改，谁改就由谁驱动另一边 ── */
+  [el.seYear, el.seMonth, el.seDay].forEach(function (input) {
+    input.addEventListener("input", syncFromSe);
+  });
+  [el.adYear, el.adMonth, el.adDay].forEach(function (input) {
+    input.addEventListener("input", syncFromAd);
+  });
+
+  /* ── 默认值：星纪元 395 年 6 月 9 日（页面 HTML 里已经写好，这里再算一遍保证自洽） ── */
+  syncFromSe();
+})();
