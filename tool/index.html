@@ -24,6 +24,23 @@
             }
         })();
     </script>
+    <!-- 首帧保护：预渲染被提前激活时（悬停后就点），浏览器可能先画一帧"样式表还在路上"的
+         裸 HTML（正常导航不会 —— 样式表本身阻塞渲染）。这里在解析阶段先把内容藏起来，
+         等样式表就位（或 2s 兜底）再放行；禁用 JS 时不加 js 类，等于没这段。 -->
+    <style>
+        /* 底色只能挂在"加载中"这个状态下：html 一旦有背景，body 的黑色就不再传播到画布，
+           负 z-index 的背景层（.hex-bg 等）会被 body 盖住 —— 背景就没了。
+           所以两条都限定在 js 且未 css-ready 时，样式一到就撤销、传播恢复。 */
+        html.js:not(.css-ready) { background: black; }
+        html.js:not(.css-ready) body { visibility: hidden; }
+    </style>
+    <script>
+        (function () {
+            var h = document.documentElement;
+            h.classList.add('js');
+            window.setTimeout(function () { h.classList.add('css-ready'); }, 2000);
+        })();
+    </script>
     <link rel="stylesheet" href="../assets/css/boot.css">
     <script defer src="../assets/js/boot.js"></script>
 
@@ -53,6 +70,8 @@
             ]
         }
     </script>
+    <!-- 样式表就位后放行（这行内联脚本会被它前面的样式表阻塞，所以执行时样式一定已经应用） -->
+    <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
 <body>

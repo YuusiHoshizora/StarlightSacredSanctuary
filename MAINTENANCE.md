@@ -211,6 +211,17 @@ stale-while-revalidate）。所以**改完 CSS / JS 记得把 `sw.js` 顶部的 
 - **公告**：不再「首次访问自动弹一次」，改成按需打开 —— 入口是「关于」页的「站点公告」卡片。
   实现：`notice.js` 只监听 `document` 上的 `sss:notice` 事件并调 `show(true)`；
   `start()` 保留但不再调用（想恢复自动弹，取消那行注释即可）
+- **首帧保护（防"闪一帧裸 HTML"）**：预渲染被提前激活时（悬停后马上点击），浏览器可能先把
+  「样式表还在路上」的页面画出来。各页 `<head>` 里因此有两段内联脚本：
+  · 前面那段：给 `<html>` 加 `js`，并留一个 2s 兜底（`html{background:black}` 让这段空窗
+    是站点底色而不是白屏）
+  · `</head>` 前那段：加 `css-ready` —— **它会被它前面的样式表阻塞，所以执行时样式一定已应用**
+  两者配合 `html.js:not(.css-ready) body{visibility:hidden}` 把内容藏到样式就位；
+  禁用 JS 时不会加 `js` 类，等于没这段。**这两段别当冗余代码删掉。**
+  ⚠️ 那段空窗底色**必须**写成 `html.js:not(.css-ready){ background:black }`，不能写成裸的
+  `html{ background:black }`：**html 一旦有背景，body 的黑色就不再传播到画布**，
+  负 z-index 的背景层（`.hex-bg` 是 -9、`.background` 是 -2）会被 body 自己那层黑盖住，
+  表现就是"整站背景全没了"。（这个坑已经踩过一次。）
 - **主页面两个动效**（都在 `assets/css/main/mainpage.css` + `main/mainpage.html`）：
   · 切分类：整列卡片 `translateX(-100%)` 从右向左离开，新的一列再从左边进来（`.blog-list.switching` / `.entering`）
   · 点卡片：卡片背景（`.article-morph`）从中栏的绝对定位矩形展开成文章正文的背景，返回时缩回卡片形状。
