@@ -19,7 +19,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v4.6';
+const CACHE_VERSION = 'v4.8';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面
@@ -53,9 +53,11 @@ const PRECACHE_URLS = [
     '/assets/css/fleet/index.css',
     '/assets/css/tool/index.css',
     '/assets/css/about/index.css',
+    '/assets/css/boot.css',
 
     // 脚本
     '/assets/js/seamless.js',
+    '/assets/js/boot.js',
     '/assets/js/notice.js',
     '/assets/js/tool.js',
     '/assets/js/main.js',
@@ -66,7 +68,10 @@ const PRECACHE_URLS = [
     '/assets/js/marked.min.js',
 
     // 文章索引
-    '/assets/post/index.json'
+    '/assets/post/index.json',
+
+    // 图标
+    '/assets/img/logo_SSS.svg'
 ];
 
 /* 本地预览（localhost / 127.0.0.1 / ::1）：SW 完全不插手 ——

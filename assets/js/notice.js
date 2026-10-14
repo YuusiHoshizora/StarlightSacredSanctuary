@@ -198,9 +198,10 @@
     return wrap;
   }
 
-  function show() {
-    if (dialog || seen()) return;
-    markSeen();                       // 「只弹一次」：显示过就记下来
+  function show(force) {
+    if (dialog) return;              // 已经开着就别重复弹
+    if (!force && seen()) return;    // 平时「只弹一次」
+    markSeen();                       // 显示过就记下来
     lastFocus = document.activeElement;
     dialog = build();
     prevOverflow = document.documentElement.style.overflow;
@@ -229,9 +230,14 @@
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once: true });
-  } else {
-    start();
-  }
+  /* 打开公告：不再「首次访问自动弹一次」，改成按需打开 ——
+     入口是「关于」页的「站点公告」卡片，工具页那个「公告测试」也发同一个事件。
+     两处都只是往 document 上发一个 sss:notice 事件，公告本身不关心是谁触发的。 */
+  document.addEventListener("sss:notice", function () {
+    show(true);
+  });
+
+  /* 自动弹出已停用。start() 留着（里面还有预渲染 / 自动化环境的判断），
+     哪天想恢复「首次访问弹一次」，把下面这行取消注释即可。 */
+  // start();
 })();

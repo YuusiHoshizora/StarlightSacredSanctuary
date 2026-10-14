@@ -111,6 +111,34 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
+/* 「站点公告」卡片：整张可点，所以要做成能点的样子（hover / 键盘聚焦转金） */
+.about-card--action {
+    cursor: pointer;
+    transition: var(--ctl-transition), transform 0.25s, background-color 0.25s, border-color 0.25s;
+}
+
+.about-card--action:hover,
+.about-card--action:focus-visible {
+    outline: none;
+    background: rgba(255, 215, 0, 0.06);
+    border-color: rgba(255, 215, 0, 0.45);
+    transform: translateY(-2px);
+}
+
+.about-card__go {
+    display: inline-block;
+    margin-top: 2px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: var(--ctl-transition);
+}
+
+.about-card--action:hover .about-card__go,
+.about-card--action:focus-visible .about-card__go {
+    color: #FFD700;
+}
+
 /* ==========================================================================
    移动端：收窄内边距，避免一行字太少
    ========================================================================== */

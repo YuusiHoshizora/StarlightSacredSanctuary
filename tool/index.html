@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>工具·星光圣域</title>
 
+    <!-- 站点图标：SVG，跟随浏览器主题切换黑/白描边 -->
+    <link rel="icon" type="image/svg+xml" href="../assets/img/logo_SSS.svg">
+
+    <!-- 加载屏：只有「资源还没进缓存」时才显示（首次访问 / 缓存被清掉）。
+         判断必须在这里同步做 —— 首次绘制前就要决定，否则会先画出页面再盖上、闪一下。
+         结构与逻辑见 assets/js/boot.js，样式见 assets/css/boot.css。 -->
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator)) return;      // 没有 SW，就没有"缓存全部资源"这回事
+            if (location.protocol === 'file:') return;        // 本地双击打开时 SW 注册不了，别把页面卡住
+            var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
+            var booted = false;
+            try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
+            // 只有「这台浏览器还没走过加载流程」才显示：首次访问把资源缓存下来，之后各页无缝
+            if (force || !booted) {
+                document.documentElement.className += ' sss-boot';
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="../assets/css/boot.css">
+    <script defer src="../assets/js/boot.js"></script>
+
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/tool/index.css">
     <script defer src="../assets/js/background.js"></script>
@@ -35,12 +57,16 @@
 
 <body>
 
+    <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
+    <div class="boot" id="boot"></div>
+
     <div class="background"></div>
     <div class="overlay"></div>
 
     <header class="navbar">
 
         <div class="logo">
+            <span class="logo__mark" aria-hidden="true"></span>
             星光圣域
         </div>
 

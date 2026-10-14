@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="_x30_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="1024px" height="1024px" viewBox="0 0 1024 1024" enable-background="new 0 0 1024 1024" xml:space="preserve">
+<style>
+	/* 作为浏览器标签页图标时跟随浏览器主题：浅色主题用黑线，深色主题用白线
+	   （原来的描边是纯黑，在深色标签栏上等于看不见）。
+	   站内导航栏是把它当 CSS mask 用的 —— 只取形状、颜色由 CSS 决定，不受这里影响。 */
+	path, line { stroke: #000000; }
+	@media (prefers-color-scheme: dark) {
+		path, line { stroke: #ffffff; }
+	}
+</style>
+<g id="CIRCLE">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M1023.765,512C1023.765,229.36,794.64,0.235,512,0.235S0.235,229.36,0.235,512S229.36,1023.765,512,1023.765
+		S1023.765,794.64,1023.765,512L1023.765,512z"/>
+</g>
+<g id="ELLIPSE">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M206.417,366.333c-74.805,19.759-132.972,46.395-168.219,77.03"/>
+</g>
+<g id="ELLIPSE_1_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M0.235,512C0.235,612.292,229.36,693.594,512,693.594S1023.765,612.292,1023.765,512"/>
+</g>
+<g id="ELLIPSE_2_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M985.802,443.364c-35.247-30.635-93.414-57.271-168.219-77.03"/>
+</g>
+<g id="ELLIPSE_3_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M657.666,206.417c-19.758-74.805-46.395-132.972-77.03-168.219"/>
+</g>
+<g id="ELLIPSE_4_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M512,0.235C411.708,0.235,330.406,229.36,330.406,512S411.708,1023.765,512,1023.765"/>
+</g>
+<g id="ELLIPSE_5_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M580.636,985.802c30.636-35.247,57.272-93.414,77.03-168.219"/>
+</g>
+<g id="ELLIPSE_6_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M192.022,401.483c-196.674,54.844-212.85,148.783-36.131,209.82c49.815,17.205,111.888,30.563,181.273,39.011"/>
+</g>
+<g id="ELLIPSE_7_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M370.1,653.9c252.523,24.321,520.766-19.493,599.135-97.862c55.416-55.416,1.814-115.774-137.257-154.555"/>
+</g>
+<g id="ELLIPSE_8_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M622.517,192.022c-54.844-196.674-148.783-212.85-209.82-36.131c-43.16,124.96-59.795,319.446-42.597,498.009"/>
+</g>
+<g id="ELLIPSE_9_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M373.685,686.836C403.652,932.979,489.87,1054.24,566.26,957.682c21.533-27.22,40.797-70.264,56.257-125.704"/>
+</g>
+<g id="ARC">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M512,990.748c237.892,0,439.696-174.678,473.802-410.112"/>
+</g>
+<g id="ARC_1_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M990.748,512c0-264.405-214.343-478.748-478.748-478.748"/>
+</g>
+<g id="ARC_2_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M443.364,38.198C207.93,72.304,33.252,274.108,33.252,512"/>
+</g>
+<g id="ARC_3_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M38.198,580.636c30.405,209.89,195.277,374.762,405.166,405.166"/>
+</g>
+<g id="LINE">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="512" y1="1023.765" x2="512" y2="990.748"/>
+</g>
+<g id="LINE_1_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="340.861" y1="683.139" x2="370.1" y2="653.9"/>
+</g>
+<g id="LINE_2_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="990.748" y1="512" x2="1023.765" y2="512"/>
+</g>
+<g id="LINE_3_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="512" y1="33.252" x2="512" y2="0.235"/>
+</g>
+<g id="LINE_4_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="0.235" y1="512" x2="33.252" y2="512"/>
+</g>
+<g id="LINE_5_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="33.252" y1="512" x2="377.693" y2="167.56"/>
+</g>
+<g id="LINE_6_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="427.882" y1="117.371" x2="512" y2="33.252"/>
+</g>
+<g id="LINE_7_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="512" y1="33.252" x2="990.748" y2="512"/>
+</g>
+<g id="LINE_8_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="370.1" y1="653.9" x2="990.748" y2="512"/>
+</g>
+<g id="LINE_9_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="512" y1="990.748" x2="856.44" y2="646.308"/>
+</g>
+<g id="LINE_10_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="906.629" y1="596.118" x2="990.748" y2="512"/>
+</g>
+<g id="LINE_11_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="512" y1="33.252" x2="370.1" y2="653.9"/>
+</g>
+<g id="LINE_12_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="33.252" y1="512" x2="117.371" y2="596.118"/>
+</g>
+<g id="LINE_13_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="167.56" y1="646.308" x2="377.693" y2="856.44"/>
+</g>
+<g id="LINE_14_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="427.882" y1="906.629" x2="512" y2="990.748"/>
+</g>
+<g id="LINE_15_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="33.252" y1="512" x2="336.141" y2="639.595"/>
+</g>
+<g id="LINE_16_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="384.405" y1="687.859" x2="512" y2="990.748"/>
+</g>
+<g id="LINE_17_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="512" y1="33.252" x2="573.438" y2="179.096"/>
+</g>
+<g id="LINE_18_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="990.748" y1="512" x2="844.904" y2="450.562"/>
+</g>
+<g id="LINE_19_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="175.03" y1="479.585" x2="33.252" y2="512"/>
+</g>
+<g id="LINE_20_">
+	
+		<line fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="544.415" y1="848.97" x2="512" y2="990.748"/>
+</g>
+<g id="ARC_4_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M366.333,206.417c-155.522,74.135-230.557,253.251-174.311,416.1"/>
+</g>
+<g id="ARC_5_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M206.417,657.666c33.397,70.062,89.855,126.52,159.917,159.917"/>
+</g>
+<g id="ARC_6_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M401.483,831.978c162.849,56.246,341.965-18.789,416.1-174.312"/>
+</g>
+<g id="ARC_7_">
+	<path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M831.978,622.517c61.037-176.719-32.742-369.458-209.461-430.494c-71.603-24.731-149.431-24.731-221.033,0"/>
+</g>
+</svg>

@@ -59,7 +59,7 @@
 | 资源 | 用途 | 许可 |
 | --- | --- | --- |
 | [marked](https://github.com/markedjs/marked) | 渲染 Markdown | MIT |
-| [Sarasa Gothic 更纱黑体](https://github.com/be5invis/Sarasa-Gothic) | 全站字体 | SIL Open Font License 1.1 |
+| [Sarasa Gothic 更纱黑体](https://github.com/be5invis/Sarasa-Gothic) | 全站字体（含等宽的 Sarasa Mono） | SIL Open Font License 1.1 |
 
 ---
 

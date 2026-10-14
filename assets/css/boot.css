@@ -1,0 +1,173 @@
+/* ==========================================================================
+   首屏加载屏
+   --------------------------------------------------------------------------
+   全站共用（每个页面 <head> 里引这一份，<body> 开头放一个空的
+   `<div class="boot" id="boot">`，内容与逻辑由 assets/js/boot.js 生成）。
+   何时显示由各页 <head> 里那段内联脚本同步决定：给 <html> 挂上 sss-boot
+   才显示 —— 必须在首次绘制前决定，否则会先画出页面再盖上，闪一下。
+   ========================================================================== */
+
+.boot { display: none; }
+html.sss-boot .boot {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+}
+
+/* 背景里那枚放大的、半透明的 logo。
+   它和读数一起在开门前先淡掉 —— 不留到舱门展开的时候，那样会显得退得太晚。 */
+.boot__bg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(78vh, 72vw);
+    height: min(78vh, 72vw);
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.07);
+    -webkit-mask: url("../img/logo_SSS.svg") center / contain no-repeat;
+            mask: url("../img/logo_SSS.svg") center / contain no-repeat;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.22s ease;
+}
+.boot.is-open .boot__bg { opacity: 0; }
+
+/* 简报框：一圈细描边 + 两个金色角标 */
+.boot__frame {
+    position: absolute;
+    inset: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+}
+.boot.is-open .boot__frame { opacity: 0; }
+.boot__frame::before,
+.boot__frame::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+}
+.boot__frame::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.boot__frame::after { right: -1px; bottom: -1px; border-top: 0; border-left: 0; }
+
+/* 上下两扇门：等中间那层（logo / 读数 / 框）先淡掉再开，0.2s 的错拍 */
+.boot__half {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: calc(50% + 1px);
+    background: #05060b;
+    transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1) 0.2s;
+}
+.boot__half--top { top: 0; }
+.boot__half--bottom { bottom: 0; }
+.boot.is-open .boot__half--top { transform: translateY(-100%); }
+.boot.is-open .boot__half--bottom { transform: translateY(100%); }
+
+/* 中缝那道金线：开门瞬间淡掉 */
+.boot__seam {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(50% - 1px);
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.85), transparent);
+    opacity: 0.28;
+    transition: opacity 0.3s;
+}
+.boot.is-open .boot__seam { opacity: 0; }
+
+/* 中间读数：等宽，用系统等宽字体，不去等 Sarasa Mono（那正是它要等的资源） */
+.boot__inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    transition: opacity 0.26s ease, transform 0.26s ease;
+}
+.boot.is-open .boot__inner { opacity: 0; transform: scale(0.98); }
+
+/* 去掉小 logo 后，标题直接顶在最上面 */
+.boot__title { font-size: 19px; letter-spacing: 8px; color: #fff; }
+.boot__sub {
+    margin-top: 9px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.32);
+}
+
+.boot__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 32px;
+}
+.boot__step {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.25s;
+}
+.boot__step i {
+    width: 5px;
+    height: 5px;
+    flex: 0 0 auto;
+    background: rgba(255, 255, 255, 0.18);
+    transition: background 0.25s, box-shadow 0.25s;
+}
+.boot__step.is-done { color: rgba(255, 255, 255, 0.82); }
+.boot__step.is-done i {
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+.boot__bar {
+    width: min(320px, 62vw);
+    height: 2px;
+    margin-top: 26px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+.boot__bar i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: #FFD700;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.boot__hint {
+    margin-top: 16px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.24);
+}
+
+/* 门开时，底下的页面从略微缩小恢复，像被"推近"了一点。
+   注意只动 main —— body 上有 position:fixed 的背景层，给 body 加 transform 会把它们框住。 */
+html.sss-boot main { transform: scale(0.992); opacity: 0.5; }
+html.sss-boot.boot-open main {
+    transform: none;
+    opacity: 1;
+    transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1) 0.2s, opacity 0.6s ease 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .boot__half,
+    .boot__inner,
+    .boot__seam,
+    html.sss-boot.boot-open main {
+        transition-duration: 0.001s !important;
+    }
+}

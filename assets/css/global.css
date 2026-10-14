@@ -83,6 +83,41 @@
     font-display: swap;
 }
 
+/* ── Markdown 正文：Sarasa Mono SC（等宽）──
+   四个真实字面齐全，主页面渲染出来的文章内容整体用它，
+   与「Sarasa」「Sarasa UI」并列成第三个字体族（见下面「Markdown 正文字体」）。 */
+@font-face {
+    font-family: "Sarasa Mono";
+    src: url("../fonts/SarasaMonoSC-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Sarasa Mono";
+    src: url("../fonts/SarasaMonoSC-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Sarasa Mono";
+    src: url("../fonts/SarasaMonoSC-Italic.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Sarasa Mono";
+    src: url("../fonts/SarasaMonoSC-BoldItalic.woff2") format("woff2");
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
 /* ── 粗体：用真实的 Bold 字面 ──
    站内 @font-face 现在提供了真正的 Bold，所以粗体不再依赖浏览器合成、也不再用描边伪造
    （描边在文字被选中时不会被绘制，会出现"一选中就变细"）。 */
@@ -107,6 +142,19 @@ button, input, select, textarea,
 .site-footer, .site-footer *,
 .sss-notice, .sss-notice * {
     font-family: "Sarasa UI", "Sarasa";
+}
+
+/* ==========================================================================
+   Markdown 正文字体：文章内容整篇用等宽
+   --------------------------------------------------------------------------
+   主页面渲染出来的文章（.markdown-body 及其所有后代）统一用 "Sarasa Mono" SC。
+   和上面「界面字体」同理：`*` 规则给每个元素都直接指定了 Sarasa，
+   所以必须连后代一起写（`.markdown-body *`），否则里面的元素还是 Gothic。
+   文章标题 / 日期 / 分类（.article-header）和列表里的摘要卡片不在其中，
+   仍是正常正文字体。
+   ========================================================================== */
+.markdown-body, .markdown-body * {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
 }
 
 html{
@@ -223,8 +271,27 @@ body > main{
 }
 
 .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
     font-size:24px;
     letter-spacing:4px;
+}
+
+/* ── 导航栏图标 ──
+   源文件 assets/img/logo_SSS.svg 是照 1024px 画的细线图（描边只有 5/1024），
+   而且描边是纯黑 —— 直接当图片贴出来，在这套近黑底上等于看不见。
+   所以这里把它当 CSS mask 用：只取形状，颜色交给 currentColor，
+   于是它永远与导航栏文字同色，以后改配色也不用动图。 */
+.logo__mark{
+    flex:0 0 auto;
+    width:1.35em;
+    height:1.35em;
+    background-color:currentColor;
+
+    -webkit-mask:url("../img/logo_SSS.svg") center / contain no-repeat;
+            mask:url("../img/logo_SSS.svg") center / contain no-repeat;
 }
 
 nav{
@@ -368,7 +435,7 @@ nav a:hover{
    移动端适配（全站共用部分）
    --------------------------------------------------------------------------
    桌面样式完全不受影响：下面只在窄屏生效。
-   导航栏在手机上要放得下「logo + 5 个链接」，所以缩小字号与间距，
+   导航栏在手机上要放得下「logo（含图标）+ 6 个链接」，所以缩小字号与间距，
    并留出刘海屏安全区；链接加大可点区域（手指点得着）。
    ========================================================================== */
 @media (max-width: 768px){
@@ -393,10 +460,11 @@ nav a:hover{
     .logo{
         font-size: 18px;
         letter-spacing: 2px;
+        gap: 8px;              /* 图标与文字的间距：窄屏收一点，给导航腾地方 */
     }
 
     nav{
-        gap: 14px;
+        gap: 11px;             /* 原本 14px —— 多了「关于」一栏和 logo 图标，要收紧 */
     }
 
     nav a{
@@ -415,10 +483,15 @@ nav a:hover{
     .logo{
         font-size: 16px;
         letter-spacing: 1px;
+        gap: 6px;
+    }
+
+    .logo__mark{
+        width: 1.1em;          /* 320px 上下再收一档，免得把导航挤到贴边 */
     }
 
     nav{
-        gap: 10px;
+        gap: 7px;
     }
 
     nav a{
