@@ -73,19 +73,9 @@
     font-display: swap;
 }
 
-@font-face {
-    /* 界面（导航 / 控件 / 工具页）：Sarasa UI SC。
-       目前只有 Regular 一个字面；将来补了 UiSC-Bold 再加一条 @font-face 即可。 */
-    font-family: "Sarasa UI";
-    src: url("../fonts/SarasaUiSC-Regular.woff2") format("woff2");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
 /* ── Markdown 正文：Sarasa Mono SC（等宽）──
    四个真实字面齐全，主页面渲染出来的文章内容整体用它，
-   与「Sarasa」「Sarasa UI」并列成第三个字体族（见下面「Markdown 正文字体」）。 */
+   与界面/正文的「Sarasa」（Gothic）并列成第二个字体族（见下面「Markdown 正文字体」）。 */
 @font-face {
     font-family: "Sarasa Mono";
     src: url("../fonts/SarasaMonoSC-Regular.woff2") format("woff2");
@@ -126,23 +116,14 @@ h1, h2, h3, h4, h5, h6, b, strong, th, legend, summary {
 }
 
 /* ==========================================================================
-   界面字体：站点外壳与控件统一用 "Sarasa UI"
+   界面字体：与正文同族
    --------------------------------------------------------------------------
-   正文与标题用 "Sarasa"（Gothic，见上面的 @font-face）；
-   导航、按钮、输入框、工具页、提示弹窗这类"界面"用 "Sarasa UI"。
-   注意：`*` 规则给**每个元素**都直接指定了 Sarasa，所以继承不会自动生效 ——
-   界面容器要连它的后代一起写（.tool-layout * 这种），否则里面的元素还是 Gothic。
+   界面原先单独用 "Sarasa UI" 字面，等于每个页面多下一份 8 MB 的字体，
+   而且因为 `*` 规则给每个元素都直接指定了 Sarasa，界面容器还得连着后代一起写
+   （.tool-layout * 之类）才不会漏。
+   现在去掉那份字面：导航、控件、工具页、弹窗全部沿用 `*` 给的 "Sarasa"（Gothic）。
+   文章正文仍单独用等宽，见下面「Markdown 正文字体」。
    ========================================================================== */
-.navbar, .navbar *,
-nav, nav a,
-button, input, select, textarea,
-.enter-btn, .btn-return, .back-btn, .system-list-btn,
-.map-zoom, .map-zoom *, .map-search, .map-search *,
-.tool-layout, .tool-layout *,
-.site-footer, .site-footer *,
-.sss-notice, .sss-notice * {
-    font-family: "Sarasa UI", "Sarasa";
-}
 
 /* ==========================================================================
    Markdown 正文字体：文章内容整篇用等宽

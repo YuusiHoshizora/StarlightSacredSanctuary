@@ -44,7 +44,7 @@
 │   │   ├── starmap-bg.js       星图页专用的背景参数
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
 │   │
-│   ├── fonts/                  Gothic / UI / Mono 三族共 8 个 woff2（约 51 MB）
+│   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
 │   └── post/                   事件正文 .md + 自动生成的 index.json
 │
@@ -141,7 +141,7 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 但老访客的 SW 还在拿上一版的缓存页面，改动就是"看不见"。判断办法：`CACHE_VERSION`
 有没有跟着这次改动一起加。（这个坑已经踩过一次：改了 8 个页面但忘了加版本号。）
 
-字体文件（8 个 woff2、约 51 MB）是故意不放进预缓存清单的，第一次真正用到时才缓存 ——
+字体文件（7 个 woff2、约 43 MB）是故意不放进预缓存清单的，第一次真正用到时才缓存 ——
 所以一个页面只会下载它实际用到的字面（例如文章正文用等宽，就只拉 Mono 的 Regular + Bold）。
 
 ---
@@ -202,11 +202,12 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   金色只用于 hover / 键盘聚焦 / 选中，不做默认态，也不引入新颜色
 - **控件**：按钮与输入框统一使用 `global.css` 里 `:root` 的 `--ctl-*` 令牌
   （背景、描边、圆角、过渡），不要在页面样式里另写一套
-- **字体**：正文与标题用 Sarasa Gothic SC 的三个真实字面（Regular / Bold / Italic），
-  界面文字用 Sarasa UI SC，**主页面渲染出来的 Markdown 文章内容整体用 Sarasa Mono SC（等宽）**
+- **字体**：正文、标题与界面都用 Sarasa Gothic SC 的三个真实字面（Regular / Bold / Italic），
+  **主页面渲染出来的 Markdown 文章内容整体用 Sarasa Mono SC（等宽）**
   —— 见 `global.css` 里「Markdown 正文字体」那段（`.markdown-body, .markdown-body *`）；
   全站 `font-synthesis-weight: none`，粗体一律走真实 Bold 字面，
-  不允许浏览器合成（合成粗细在不同浏览器差别很大，文字被选中时还会变）
+  不允许浏览器合成（合成粗细在不同浏览器差别很大，文字被选中时还会变）。
+  界面原先还单独用了一份 "Sarasa UI" 字面（等于每页多下 8 MB），已去掉，全站统一 Gothic。
 - **背景**：`background.js` 在 `<div class="background">` 里绘制星野 + 六边形网格 +
   鼠标附近的激活区特效；星图页用 `starmap-bg.js` 覆盖了这套参数
 - **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪

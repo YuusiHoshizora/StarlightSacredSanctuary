@@ -441,7 +441,7 @@
   border-radius: var(--ctl-radius);
   color: var(--ctl-fg);
   cursor: pointer;
-  /* 字体族交给 global.css 的界面字体规则（Sarasa UI） */
+  /* 字体族由 global.css 的「*」规则统一给 Sarasa */
   font-size: 15px;
   text-align: left;
   letter-spacing: 2px;
