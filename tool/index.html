@@ -104,6 +104,21 @@
         <!-- 左栏（窄）：需要二级入口的复杂工具 -->
         <aside class="tool-side">
             <h2 class="tool-side__title">工具</h2>
+
+            <!-- 测试入口（会随站点一起发布，访客也能看到）：
+                 公告测试 → 发一个 sss:notice 事件，让 notice.js 弹一次公告
+                 加载测试 → 就是个普通链接，跳到 ../?boot=1 重播一次首屏加载屏 -->
+            <a class="tool-entry" href="#" id="entry-notice">
+                <span class="tool-entry__name">公告测试</span>
+                <span class="tool-entry__desc">重新弹一次站点公告</span>
+                <span class="tool-entry__arrow">›</span>
+            </a>
+
+            <a class="tool-entry" href="../?boot=1">
+                <span class="tool-entry__name">加载测试</span>
+                <span class="tool-entry__desc">重播一遍首屏加载流程</span>
+                <span class="tool-entry__arrow">›</span>
+            </a>
         </aside>
 
         <!-- 右栏（宽）：可以直接用的小工具 -->
@@ -250,6 +265,20 @@
     <footer class="site-footer">
         © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../about/">关于本站</a>
     </footer>
+
+    <script>
+    /* 工具页左栏两个测试入口的行为（另一个是普通链接，不需要脚本）：
+       「公告测试」发一个 document 上的 sss:notice 事件，notice.js 收到就弹公告。 */
+    (function () {
+        var entry = document.getElementById('entry-notice');
+        if (!entry) return;
+
+        entry.addEventListener('click', function (e) {
+            e.preventDefault();                 // 是个 <a href="#">，别让它跳走
+            document.dispatchEvent(new Event('sss:notice'));
+        });
+    })();
+    </script>
 
 </body>
 </html>
