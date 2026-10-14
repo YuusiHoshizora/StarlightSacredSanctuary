@@ -47,7 +47,7 @@
                 '<div class="boot__step" data-step="ready"><i></i><span>系统就绪</span></div>' +
             '</div>' +
             '<div class="boot__bar"><i id="boot-bar"></i></div>' +
-            '<div class="boot__hint">首次访问 · 正在把站内资源存到本地，之后就快了</div>' +
+            '<div class="boot__hint">正在进行资源预载中，请稍后</div>' +
         '</div>';
 
     var bar = document.getElementById('boot-bar');
