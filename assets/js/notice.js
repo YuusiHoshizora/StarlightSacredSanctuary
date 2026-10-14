@@ -17,7 +17,7 @@
 
   /* ── 通知内容：改这里就行 ── */
   const NOTICE = {
-    id: "2026-09-26-first-open",          // 换新 id = 当成一条新通知，所有人会再看一次
+    id: "2026-10-14-first-open",          // 换新 id = 当成一条新通知，所有人会再看一次
     label: "通知",
     title: "欢迎来到星光圣域",
     body: "这里会不定期发布星域动态、星图与档案的更新说明。",
@@ -216,7 +216,13 @@
 
   function activate() {
     if (seen()) return;
-    window.setTimeout(show, DELAY);
+    /* 首次访问时加载屏还盖着，先等它让开（首页这时 slogan 才开始打字），
+       否则公告会藏在加载屏后面，开门时突然杵在那儿。 */
+    if (document.documentElement.classList.contains('sss-boot')) {
+      document.addEventListener("sss:booted", function () { window.setTimeout(show, DELAY); }, { once: true });
+    } else {
+      window.setTimeout(show, DELAY);
+    }
   }
 
   function start() {
@@ -230,14 +236,13 @@
     }
   }
 
-  /* 打开公告：不再「首次访问自动弹一次」，改成按需打开 ——
-     入口是「关于」页的「站点公告」卡片，工具页那个「公告测试」也发同一个事件。
+  /* 打开公告（按需）：入口是「关于」页的「站点公告」卡片，工具页的「公告测试」也发同一个事件。
      两处都只是往 document 上发一个 sss:notice 事件，公告本身不关心是谁触发的。 */
   document.addEventListener("sss:notice", function () {
     show(true);
   });
 
-  /* 自动弹出已停用。start() 留着（里面还有预渲染 / 自动化环境的判断），
-     哪天想恢复「首次访问弹一次」，把下面这行取消注释即可。 */
-  // start();
+  /* 第一次访问自动弹一次（关掉后同一浏览器不再弹）。
+     想对所有人再弹一次：把上面 NOTICE.id 改成新值。 */
+  start();
 })();

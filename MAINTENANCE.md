@@ -223,9 +223,12 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
     `main.js` 的打字机等 `sss:booted` 事件 —— 否则动画会在加载屏后面白白播完
   · 收尾必须 `classList.remove('sss-boot','boot-open')`：**用字符串 `replace` 会漏掉开头那个类**，
     而 `html.sss-boot main{ opacity:.5 }` 会一直生效（页面永久半透明）
-- **公告**：不再「首次访问自动弹一次」，改成按需打开 —— 入口是「关于」页的「站点公告」卡片。
-  实现：`notice.js` 只监听 `document` 上的 `sss:notice` 事件并调 `show(true)`；
-  `start()` 保留但不再调用（想恢复自动弹，取消那行注释即可）
+- **公告**：第一次访问自动弹一次（关掉后同一浏览器不再弹），「关于」页的「站点公告」卡片可随时重看。
+  实现：`notice.js` 的 `start()` 负责首次自动弹，并监听 `document` 上的 `sss:notice` 事件
+  （关于页卡片、工具页「公告测试」都发这个事件）调 `show(true)`。
+  · **想对所有人再弹一次：把 `NOTICE.id` 改成新值** —— 「已读」是按 id 记的，换 id 就是一条新公告
+  · 首次访问若加载屏还盖着，它会等 `sss:booted` 再弹（否则公告藏在加载屏后面）
+  · 自动化环境不弹：`navigator.webdriver` 为真、或页面里设了 `window.__SSS_NO_NOTICE = true`
 - **首帧保护（防"闪一帧裸 HTML"）**：预渲染被提前激活时（悬停后马上点击），浏览器可能先把
   「样式表还在路上」的页面画出来。各页 `<head>` 里因此有两段内联脚本：
   · 前面那段：给 `<html>` 加 `js`，并留一个 2s 兜底（`html{background:black}` 让这段空窗
