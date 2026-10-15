@@ -95,8 +95,8 @@ Test-Path-Code '/error'       @(200) '错误页（去扩展名）'
 Test-Path-Code '/sw.js'       @(200) 'Service Worker'
 Test-Path-Code '/assets/post/index.json' @(200) '文章索引'
 
-# 尾斜杠形态：Netlify 是 301、Pages 可能直接 200，两者都算正常
-Test-Path-Code '/about'       @(200, 301) '关于页（无尾斜杠）'
+# 尾斜杠形态：Netlify 是 301、Cloudflare Pages 是 307（或直接 200），都算正常
+Test-Path-Code '/about'       @(200, 301, 307, 308) '关于页（无尾斜杠）'
 
 # ── 2. 关键：404 必须仍是 404 + 自定义错误页 ───────────────────────
 #    如果 Pages 上没有顶层 404.html，这里会变成「200 + 首页」——这是最需要抓的回归。
@@ -104,7 +104,11 @@ $tmp404 = Join-Path $env:TEMP ('verify-site-404-' + [guid]::NewGuid().ToString('
 $r404 = Get-Body ($BaseUrl.TrimEnd('/') + '/no-such-page-verify-script') $tmp404
 if ($r404.Code -eq 404) {
     $localError = Join-Path $RepoRoot 'error.html'
-    if (Test-Path $localError) {
+    if ($r404.Size -lt 100) {
+        # 实测过的真实故障形态：Pages 上没有可用的顶层 404.html 时，
+        # 返回 404 但响应体是空的 —— 访问者看到一片空白。
+        Add-Result 'FAIL' '不存在的路径' '[404 + 自定义错误页]' "404，但响应体是空的（$($r404.Size) B）—— 缺顶层 404.html"
+    } elseif (Test-Path $localError) {
         # 注意：工作区是 CRLF、部署出去的 blob 是 LF（core.autocrlf），
         # 必须先归一化行尾再比，否则永远不相等（5972 B vs 6092 B）。
         $localText  = ([System.IO.File]::ReadAllText($localError)) -replace "`r`n", "`n"
@@ -173,6 +177,12 @@ if (-not $SkipDomainChecks) {
         Add-Result $level 'www 跳裸域' "[301 -> $ShortTargetUrl]" "$($h.Code) $($h.Location)"
     }
 }
+
+# ── 6. 发布范围：这些文件本来就不该被托管出去 ──────────────────────
+#    Netlify 从不发布 netlify.toml 与点开头的目录；Pages 只有在构建命令生效时才不发布。
+#    这两条 FAIL 通常意味着 Pages 项目的「构建命令 / 构建输出目录」没配对。
+Test-Path-Code '/netlify.toml' @(404) 'netlify.toml 未被发布'
+Test-Path-Code '/.github/workflows/generate-post-index.yml' @(404) '.github/ 未被发布'
 
 # ── 汇总 ───────────────────────────────────────────────────────────
 Write-Host ("{0,-6} {1,-26} {2,-28} {3}" -f '结果', '检查项', '期望', '实际') -ForegroundColor Cyan

@@ -373,3 +373,48 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
 2. **注册商**：DNSSEC 是否未启用；NS 是否可自由修改
    （公网查不到 DS 记录，但注册商侧可能另有开关）
 3. `stsas.top` zone 添加后，把两个 zone 的 **导出 CSV** 发回来做最后一次对照（第 3.1 / 3.2 节）
+
+---
+
+## 11. 实际执行记录（进行中）
+
+**已经完成的** `[实测]`：
+
+- 两个域名的 **NS 都已指向 Cloudflare**（`ignacio.ns.cloudflare.com` / `carol.ns.cloudflare.com`）
+- **主站已由 Cloudflare Pages 提供服务**：`https://starlightsacredsanctuary.top/` 返回 200，
+  响应头里没有 `x-nf-request-id`，且有 Pages 特征的
+  `Cache-Control: public, max-age=0, must-revalidate` → 源站不再是 Netlify
+- `/main` 返回 404、`/error` 返回 200，站点本身正常
+- `stsas.top` 的 apex 已建 `192.0.2.1` 占位（公网解析到 CF 的 `104.21/172.67` 段 = 已代理）
+- 线上 `assets/post/index.json` 与仓库一致（5 篇）
+- 邮件侧 MX、SPF、DMARC 都在
+
+**还没做完 / 已发现的问题**（按紧急程度）：
+
+1. **`stsas.top` / `www.stsas.top` 的 Redirect Rule 还没建** → 短域名现在返回 **530**
+   （CF 收到请求但找不到源站）。规则一建立刻正常，见第 6 节
+2. **`www.stsas.top` 连 DNS 记录都没有** → 公网完全解析不出来。必须补一条
+   `A 192.0.2.1`（**已代理**），否则规则匹配不到它
+3. **两条邮件记录丢了**（CF 已是权威，公网已解析不到 `[实测]`）：
+   `qqmail33f0a580` CNAME → `mail.qq.com`、`qsjb2609._domainkey` 的 DKIM TXT。
+   值见第 3.1 节。MX 还在所以**收信没断**，但 DKIM 失效会影响送达率/进垃圾箱
+4. **404 页是空响应**：不存在的路径返回 404 但响应体 0 字节 —— 原因是 Pages 项目
+   **没有用第 4.2 节的构建命令**（现在发布的是仓库根目录的原样文件）。
+   仓库里已补一份 `404.html`（`error.html` 的逐字节拷贝）作保险；
+   彻底修法是回 Pages 项目设置里把「构建命令 / 构建输出目录」按第 5 节配对
+5. 同一原因导致 **`/netlify.toml`、`/.gitignore`、`/.github/...` 现在公开可读** `[实测]`
+   （Netlify 从来不发布它们）。构建命令配好后自动恢复
+6. **`www.starlightsacredsanctuary.top` 没有记录** → 主站的 www 现在是死的。
+   修法：把它加成 Pages 自定义域（CF 会自动建 CNAME）+ 建一条 www→裸域 规则
+
+**自检对比**（`.github/verify-site.ps1`）：
+
+- 迁移前（Netlify）：**PASS 16 / WARN 0 / FAIL 0**
+- 现在：**PASS 12 / WARN 0 / FAIL 3**（空 404 页、`netlify.toml` 被发布、`.github/` 被发布）
+- 脚本这轮加了两条「发布范围」检查，并把 Pages 的 **307** 尾斜杠跳转算作正常
+  （Netlify 是 301、Pages 是 307 —— 不是故障）
+
+**一个与迁移无关、但值得记住的行为**：`generate-post-index.yml` 提交 index.json 时带
+`[skip ci]`，而 **Cloudflare Pages 与 Netlify 一样会跳过这次部署**。如果哪天发现文章列表
+没更新，先想到这一点（目前线上 index.json 与仓库一致，暂无问题）。
+

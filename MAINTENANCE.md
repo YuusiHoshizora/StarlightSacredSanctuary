@@ -10,9 +10,10 @@
 ```
 .
 ├── index.html                  首页
-├── error.html                  错误页
+├── error.html                  错误页（唯一的源）
+├── 404.html                    error.html 的逐字节拷贝：Cloudflare Pages 的 404 页
 ├── sw.js                       Service Worker：预缓存 + 缓存优先
-├── netlify.toml                Netlify 配置（发布根目录、错误页重定向、短域名跳转）
+├── netlify.toml                Netlify 配置（迁移后已无用，留档；见「部署」）
 ├── MIGRATION-CLOUDFLARE.md     计划迁往 Cloudflare 的准备清单（迁移完成后删）
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
@@ -122,38 +123,37 @@ Obsidian 写最省事（`.obsidian/` 已经在 `.gitignore` 里，不会被部�
 
 ## 部署
 
-托管在 Netlify，绑定的域名是 `starlightsacredsanctuary.top`（短域名 `stsas.top` 301 过来，见下）。
+托管在 **Cloudflare Pages**，绑定的域名是 `starlightsacredsanctuary.top`
+（短域名 `stsas.top` 与其 `www` 由 Cloudflare 的 Redirect Rule 301 过来，见下）。
 
-> ⚠️ **计划迁往 Cloudflare Pages**：Netlify 免费版 100 GB/月带宽被 43 MB 字体包打爆了，
-> 而 Pages 免费版不限带宽。准备清单、DNS 搬迁注意事项（`stsas.top` 上有 QQ 企业邮！）
-> 与切换顺序见 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md)。
-> 迁移完成后把本节改写成 Cloudflare 口径，并删掉那份手册。
+> 🚧 **刚从 Netlify 迁过来，正在收尾**：原托管是 Netlify，免费版 100 GB/月带宽被 43 MB
+> 字体包打爆。现状、遗留问题与待办见 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md)
+> 第 11 节；全部收尾后把那份手册删掉。
 
-下面这几条是从仓库里的文件读出来的，**没在 Netlify 后台核对过**，换环境或排查问题时先确认一下：
-
-- `netlify.toml` 里 `publish = "."`、没有 build command → 发布的就是仓库根目录的原样文件
-- 404 / 500 / 502 / 503 四种状态都重定向到 `/error.html`
-- 推送到 `master` 会自动触发部署（推断：仓库在 GitHub，`netlify.toml` 也在仓库里）
+- Pages 项目的**构建命令**必须是 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md) 第 4.2 节
+  那一行、**构建输出目录** `_site`。没配对的话有三个实测过的后果：顶层 `404.html` 不生成
+  → 未匹配路径返回**空响应**；`netlify.toml`、`.gitignore`、`.github/` 变成**公开可读**
+- 推送到 `master` 自动部署。⚠️ 带 `[skip ci]` 的提交（Actions 那个 index.json 自动提交）
+  **会跳过部署** —— Netlify 与 Cloudflare Pages 都是这个行为
+- 仓库根目录有一份 `404.html`（`error.html` 的逐字节拷贝）：构建命令生效时它会被重新生成
+  覆盖；留着是为了构建命令没配对时也不至于给访问者一片空白（但要记得它跟 `error.html` 同步）
+- 自检：`powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1`
+  （可加 `-ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`）。
+  迁移前基线 PASS 16 / FAIL 0；出现 FAIL 都值得查
 
 ### 短域名 `stsas.top` 跳到长域名
 
-短域名 `stsas.top`（含 `www.stsas.top`）是挂在**同一个 site** 上的 domain alias，
-不是独立站点。要求是：**访问短域名的一切路径都 301 到 `starlightsacredsanctuary.top`
-的同名路径**。实现是 `netlify.toml` 顶部那四条 domain-level redirect
-（裸域 / www × http / https）。
+现在由 **Cloudflare 的 Redirect Rule**（zone `stsas.top`）实现，不在仓库里配置：
 
-三条容易踩的前提：
+- 前提：`stsas.top` 与 `www.stsas.top` **各有一条 A `192.0.2.1`、且「已代理」（橙云）**
+  的占位记录 —— 规则只对经过 Cloudflare 边缘的请求生效，记录不代理就不触发
+- 规则匹配 `(http.host eq "stsas.top" or http.host eq "www.stsas.top")`，动态重定向到
+  `concat("https://starlightsacredsanctuary.top", http.request.uri.path)`，301 +
+  Preserve query string。完整写法见迁移手册第 6 节
+- ⚠️ 别碰 Cloudflare 的 **Email Routing**：`stsas.top` 上有 QQ 企业邮，开启会改写 MX
 
-- **位置**：必须排在 `/* → /error.html` 那批错误页规则**前面**。Netlify 顺序匹配、
-  先命中先赢；顺序反了的话，短域名下不存在的路径会先命中 404 规则，直接显示错误页而不跳转
-- **`force = true`**：`stsas.top` 上存在同名真实文件（`index.html`、`archive/`……），
-  不加 force 会被 shadowing 吃掉，规则等于没写
-- **域名必须还挂在 site 上**：Netlify 官方原文 "the domain must be assigned to the site"。
-  哪天在后台把 `stsas.top` 从 site 上摘掉，这些规则随之失效，跳转就得改由 DNS / 注册商做
-
-还有一个前提没法从仓库里读出来，要在 Netlify 后台确认：
-`Project configuration → Domain management` 里 **primary domain 是
-`starlightsacredsanctuary.top`**，`stsas.top` 和 `www.stsas.top` 只是别名。
+（历史：迁移前这段靠 `netlify.toml` 顶部那四条 domain-level redirect 实现；
+那四条规则只在 Netlify 仍是源站时才有意义。）
 
 验证（应看到 `301` + `Location: https://starlightsacredsanctuary.top/`）：
 
