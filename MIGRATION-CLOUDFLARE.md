@@ -89,11 +89,11 @@ v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXFmFVg1X5+fMLIC13V5wKOa
 
 ### 3.2 Cloudflare 上应该建成什么（照这张表建，别照搬 Netlify 的类型）
 
-| 来源（Netlify） | Cloudflare 里建成 | 代理状态 |
+| 来源（Netlify） | Cloudflare 里怎么处理 | 代理状态 |
 | --- | --- | --- |
-| 长域名的 `NETLIFY` / `NETLIFYv6`（`@` 与 `www`） | **A** 记录 `52.74.6.109` + `13.215.239.219`（扫描会自动导入这两条） | **DNS only**（灰云） |
-| 5 条邮件记录（MX ×2、`qqmail33f0a580` CNAME、`qsjb2609._domainkey` DKIM、SPF、DMARC） | 原样照抄 | **一律 DNS only**（MX 本来就不能代理；那个 CNAME 被代理会让邮箱验证失效） |
-| `stsas.top` / `www.stsas.top` 的 `NETLIFY*` | **不要建**，改建第 6 节那两条 `192.0.2.1` 占位 | **已代理**（跳转规则要求） |
+| 长域名的 `NETLIFY` / `NETLIFYv6`（`@` 与 `www`；CF 扫成 4 条 A + 4 条 AAAA） | **直接删掉** —— 走第 7 节最短路径，不保留 Netlify 的解析；加自定义域时 Pages 会自动建那条 CNAME | —（删掉就不用管） |
+| 5 条邮件记录（MX ×2、`qqmail33f0a580` CNAME、`qsjb2609._domainkey` DKIM、SPF、DMARC） | 原样照抄 | **一律「仅 DNS」**（MX 本来就不能代理；那个 CNAME 被代理会让邮箱验证失效） |
+| `stsas.top` / `www.stsas.top` 的 `NETLIFY*` | **删掉**，改建第 6 节那两条 `192.0.2.1` 占位 | **已代理**（跳转规则要求） |
 
 两条实测结论支撑上表 `[实测]`：
 
@@ -103,14 +103,14 @@ v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXFmFVg1X5+fMLIC13V5wKOa
   - **Cloudflare 扫描导入的**：apex `18.208.88.157` / `98.84.224.111`（美东）、
     www `13.52.188.95` / `52.52.192.191`（美西），外加上面 4 条 AAAA
   - 站点主机名 `starlightsacredsanctuary.netlify.app` 本机解析出来也是那两条新加坡 IP
-  → 结论：**扫描导入什么就留什么，不要照我最初那张表去手建 IP**。两边都是 Netlify
-    真实的 LB 地址，阶段 B 期间都指向 Netlify，这就够了
+  → 结论：**这些 IP 不必手建、也不必校真** —— 既然走最短路径要整批删掉，
+    唯一要做的是确认「删的是 Netlify 那 8 条」而不是邮件记录
 - ⚠️ 我最初「`NETLIFYv6` 不产出 AAAA、CF 上不用建 IPv6」的判断是**错的**：本机查 AAAA
-  为空只是因为解析来源不同，CF 扫描实际拿到了 4 条 AAAA。**不要因为那句话去删 IPv6 记录**
+  为空只是因为解析来源不同，CF 扫描实际拿到了 4 条 AAAA。删记录时**别把 4 条 AAAA 漏掉**
+  以为「反正没 IPv6」
 
-> ⚠️ Cloudflare 扫描导入的记录**默认是「已代理」（橙云）**。长域名那两条必须先改成
-> **DNS only**，否则阶段 B 的流量会绕一圈 CF 再回 Netlify —— 那就不是「与今天一致」了
-> （见第 7 节阶段 A 第 4 步）。邮件记录无论如何都要保持 DNS only。
+> ⚠️ Cloudflare 扫描导入的记录**默认是「已代理」（橙云）**。对**邮件记录**这个默认值必须
+> 改掉（一律「仅 DNS」）；长域名的 web 记录按最短路径整批删掉，不必管它的代理状态。
 
 ---
 
@@ -217,67 +217,75 @@ Single Redirects：免费版 **10 条/zone**、支持通配符、不支持正则
 
 ---
 
-## 7. 切换顺序（分四阶段，每阶段都可回滚）
+## 7. 切换顺序（最短路径 —— 已确认不介意短暂中断）
 
-**先说一个容易搞反的地方**：Pages 的自定义域在证书验证通过前**不会生效**，而验证要求
-`http://<域名>/.well-known/acme-challenge/*` 能被 Cloudflare 看到 —— NS 还指着 Netlify 时
-它一定验证不了，自定义域会一直停在 Pending `[推断]`（依据 Pages Known issues：
-「Cloudflare 无法为该主机名验证证书时，域名不会验证」）。所以正确顺序是
-**先搬 DNS、后换源站**，而不是「先激活自定义域，再改 NS」。
+前提：本站实际只有本人测试访问，**短暂中断可以接受** → 不再需要「先把 DNS 搬过去、
+仍由 Netlify 供站」这个中间态，走最短路径。
 
-### 阶段 A —— 准备（线上毫无变化）
+但有两件事**与访问量无关、必须保证**：
 
-1. **抄全 DNS 记录**（第 3 节）。这一步没做完，不要动 NS
-2. Cloudflare → Add a site：依次加 `starlightsacredsanctuary.top`、`stsas.top`（Free 套餐），
-   记下 CF 给出的两组 NS 地址
-3. **逐条核对自动扫描导入的记录** —— 三条邮件记录（MX ×2、SPF、DMARC）一条都不能少、值不能变
-4. **按第 3.2 节把记录建成 CF 的形状**：
-   - 长域名的 A/AAAA 记录 → **DNS only**：阶段 B 靠它们把流量送回 Netlify，行为与今天一致，
-     也就不必操心 CF 的 Universal SSL 是否就绪
-     （扫描导入的 IP 可能与你本机解析到的不一样 —— Netlify 按来源分发，属正常，别去改）
-   - 5 条邮件记录 → 一条不落地照抄，**DNS only**
-   - `stsas.top` / `www.stsas.top` → **不要建指向 Netlify 的记录**，直接建成
-     `192.0.2.1` 占位（**已代理**），并在 Rules → Redirect Rules 里**现在就把第 6 节的
-     跳转规则建好**：规则在 zone 里不生效时完全无害，但等 NS 一翻过去它立刻是活的，
-     短域名不会出现空窗
-   - ⚠️ **别碰 Cloudflare 的 Email Routing**：它会接管并改写 MX 记录，QQ 企业邮会当场断。
-     CF 若提示「启用邮件路由」，一律跳过
-5. 建 Pages 项目（第 5 节参数），在 `xxx.pages.dev` 上验：
-   `verify-site.ps1 -BaseUrl https://xxx.pages.dev -SkipDomainChecks` → 应全 PASS
+1. **邮箱不能断** —— MX / SPF / DKIM / DMARC 原样搬，一个字都不能改
+2. **短域名跳转与 404 行为正确** —— 那是站点的功能，不是可用性问题
 
-### 阶段 B —— 搬 DNS（唯一有风险的窗口）
+还有一条绕不过去的事实：Pages 的自定义域要等证书验证通过才生效，而验证要求
+`http://<域名>/.well-known/acme-challenge/*` 能回到 Cloudflare —— NS 还指着 Netlify 时
+它验证不了，自定义域会停在 **Pending** `[推断]`（依据 Pages Known issues）。所以顺序仍是
+「**先加自定义域 → 再改 NS**」，只是中间不再需要保留 Netlify 的解析记录。
 
-6. **先只改 `stsas.top` 的 NS**（那边只有跳转和邮箱，出问题好定位），等生效后：
-   - `verify-site.ps1 -ShortUrl https://stsas.top` 应全 PASS（占位记录与跳转规则在阶段 A 已建好）
-   - 抽查邮件记录还在：`Resolve-DnsName stsas.top -Type MX` 和
-     `Resolve-DnsName qsjb2609._domainkey.stsas.top -Type TXT` 都应正常返回
-   - **再发一封测试信到 `astra@stsas.top`**，确认 QQ 企业邮没断
-7. 再改主域名的 NS。此时访问路径是 **DNS(CF) → 源站(Netlify)**，站点必须还是好的：
-   跑一次 `verify-site.ps1`（**先不加** `-ShortUrl` 也行，加了也没问题）应全 PASS
-   > 这一步是整件事最值钱的地方：DNS 换了、源站没换，出问题几乎一定是 DNS/邮件，
-   > 而不是站点本身 —— 二分起来非常干净
+### 步骤 1 —— 两个 zone 的记录改成最终形态（此时线上毫无变化）
 
-**回滚点**：阶段 B 的任何时刻，在注册商把 NS 改回 Netlify 的四个 nsone 地址即可，
-Netlify 那边什么都别拆。阶段 C 之后 Netlify 才真正失去意义。
+`starlightsacredsanctuary.top`：
 
-### 阶段 C —— 把源站换成 Pages
+- **删掉扫描进来的 8 条 Netlify A/AAAA**。它们不是回滚的必需品：值已存档在导出的 CSV
+  和第 3.1 节里，真要退回去，1 分钟就能重新加两条
+- web 记录不用手建 —— 加自定义域时 Pages 会自动创建那条 CNAME `[docs]`
+- 想更保险也可以先「留着 + 仅 DNS」，等 Pages 自定义域 Active 之后再删；
+  但那样加自定义域时可能撞上「记录冲突」，需要先删再加 —— 直删更省事
 
-8. 给 Pages 加自定义域：`starlightsacredsanctuary.top` + `www.starlightsacredsanctuary.top`
-   → CF 会在这个 zone 里自动建/替换成 Pages 的 CNAME（覆盖阶段 A 留着的 Netlify A 记录）
-   `[docs]`；证书签发完成后 Custom domains 里变成 Active
-9. 配 `www → 裸域` 的跳转规则（第 6 节末）
-10. **Purge Everything 一次**（Caching → Configuration → Purge Everything）：
-    阶段 B 期间 CF 边缘可能缓存过从 Netlify 取来的静态资源 `[docs]`
-11. 全量验证：
-    `verify-site.ps1 -ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`
-    → 应全 PASS（这就是当前基线，任何 FAIL 都是真回归）
+`stsas.top`：
 
-### 阶段 D —— 收尾
+- 删掉 4 条指向 Netlify 的 A/AAAA → **2 条 A `192.0.2.1`，且必须「已代理」（橙云）**
+  —— 这是跳转规则能触发的前提（第 6 节）
+- **6 条邮件记录（MX ×2、`qqmail33f0a580` CNAME、`qsjb2609._domainkey` DKIM、SPF、DMARC）
+  原样保留、一律「仅 DNS」**
+- Redirect Rule 现在就建好：zone 不生效时完全无害，等 NS 一翻过去立刻是活的
 
-12. 观察 3–7 天：站点、邮件、Service Worker 都正常
-13. 回 Netlify 移除两个 custom domain（或直接关站）
-14. 改写 `MAINTENANCE.md` 的「部署」一节、删掉本文、`netlify.toml` 可以删掉
-15. （可选）`sw.js`：`OFFLINE_URL` 改成 `/404`、`CACHE_VERSION` +1
+两个 zone 都：⚠️ **别碰 Email Routing** —— 它会接管并改写 MX 记录，QQ 企业邮当场断。
+
+### 步骤 2 —— 建 Pages 项目 + 加自定义域
+
+- 建项目（第 5 节参数），先在 `xxx.pages.dev` 上跑：
+  `verify-site.ps1 -BaseUrl https://xxx.pages.dev -SkipDomainChecks` → 应全 PASS。
+  这步免费，能把 404 / 跳转的问题提前挑出来，值得做
+- 加自定义域：`starlightsacredsanctuary.top` + `www.starlightsacredsanctuary.top`
+  → 此时状态是 **Pending**，**这是正常的**（证书要等 NS 指过来才能验证），别当失败。
+  如果是 apex，CF 也可能提示「等 NS 生效后自动创建记录」，同样正常 `[docs]`
+- 建 `www → 裸域` 的跳转规则（第 6 节末）
+
+### 步骤 3 —— 改 NS（先 `stsas.top`，再主域名）
+
+先改 `stsas.top` 不是为了可用性，而是**把邮箱问题和站点问题分开**：
+
+- 等生效后：`verify-site.ps1 -ShortUrl https://stsas.top` 应全 PASS
+- 抽查邮件记录还在：`Resolve-DnsName stsas.top -Type MX`、
+  `Resolve-DnsName qsjb2609._domainkey.stsas.top -Type TXT`
+- **发一封测试信到 `astra@stsas.top`** —— 确认没断，再动主域名
+
+再改主域名的 NS。等几分钟到十几分钟，Pages 自定义域会从 Pending 自动变 **Active**
+（证书签发完成），站点就活了。
+
+**回滚点**：这条路径下回滚 = 在注册商把 NS 改回 Netlify 的四个 nsone 地址（几分钟生效）。
+Netlify 侧什么都还没拆，所以随时能退。
+
+### 步骤 4 —— 收尾
+
+- 全量验证：
+  `verify-site.ps1 -ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`
+  → 应全 PASS（当前基线 PASS 16 / WARN 0 / FAIL 0，任何 FAIL 都是真回归）
+- **Purge Everything 一次**（Caching → Configuration → Purge Everything），清掉可能残留的旧内容 `[docs]`
+- 观察几天（站点、邮件、Service Worker）→ 回 Netlify 移除两个 custom domain（或直接关站）
+- 改写 `MAINTENANCE.md` 的「部署」一节、删掉本文、`netlify.toml` 可以删掉
+- （可选）`sw.js`：`OFFLINE_URL` 改成 `/404`、`CACHE_VERSION` +1
 
 ---
 
@@ -352,15 +360,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
 
 **本轮已定**：
 
-- 发布范围走 **glob 排除方案**（第 4.2 节那条命令）——发布内容与今天一致；
-  白名单变体保留为备选，不采用
-- Cloudflare **已有账号**，两个域名还没加进去 → 从第 7 节「阶段 A」第 2 步开始
+- 发布范围走 **glob 排除方案**（第 4.2 节那条命令）；白名单变体仅作备选
+- **不介意短暂中断**（实际只有本人测试访问）→ 走第 7 节的**最短路径**：不再保留
+  「DNS 搬完但仍由 Netlify 供站」的中间态，主域名 zone 里扫描进来的 8 条 Netlify
+  A/AAAA 直接删掉（值已存档，回滚只需 1 分钟）
+- Cloudflare 已有账号；`starlightsacredsanctuary.top` zone 已添加，扫描导入 8 条待处理
 
 **还需要你提供 / 确认** `[待核对]`：
 
-1. ~~Netlify DNS 的完整记录表~~ —— **已拿到**：两个 zone 共 14 条，见第 3.1 节。
-   据此发现两条公网看不到的记录：`qqmail33f0a580` 的 CNAME 和 `qsjb2609._domainkey` 的 DKIM
-   （公网只查到过不存在的 `default._domainkey`）
+1. ~~Netlify DNS 的完整记录表~~ —— 已拿到（两个 zone 共 14 条，见第 3.1 节），
+   并据此发现两条公网看不到的记录：`qqmail33f0a580` CNAME 与 `qsjb2609._domainkey` DKIM
 2. **注册商**：DNSSEC 是否未启用；NS 是否可自由修改
    （公网查不到 DS 记录，但注册商侧可能另有开关）
-3. 阶段 A 第 3 步核对导入记录时，把 Cloudflare **实际导入的列表**贴回来，我逐条对照第 3.2 节
+3. `stsas.top` zone 添加后，把两个 zone 的 **导出 CSV** 发回来做最后一次对照（第 3.1 / 3.2 节）
