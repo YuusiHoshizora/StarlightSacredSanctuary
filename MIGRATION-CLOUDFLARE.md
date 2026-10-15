@@ -205,6 +205,30 @@ Netlify 那边什么都别拆就行。第 6 步之后 Netlify 才真正失去意
 
 ## 8. 切换后必须逐条验的清单
 
+**这一段已经脚本化了**：`.github/verify-site.ps1`（放在 `.github/` 下是故意的 ——
+两个托管都不会发布它，对线上站点零影响）。它把下面整张表逐条跑一遍：
+
+```powershell
+# 1) 迁移前基线（现在跑过：PASS 16 / WARN 0 / FAIL 0）
+powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
+  -ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top
+
+# 2) Cloudflare 预览域名先验 —— 还没动 DNS 时最关键的一步
+powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
+  -BaseUrl https://你的项目.pages.dev -SkipDomainChecks
+
+# 3) 切换后再跑一次第 1 条，应仍是全 PASS
+```
+
+脚本会真的下载 8 MB 那个字体、解析 `index.json`、并把 404 页与 `error.html` 逐字比对
+（已处理工作区 CRLF / 部署 LF 的差异），还会校验短域名的路径与查询串是否原样带过去。
+退出码 0 = 全通过。浏览器里的 Service Worker 注册、星图/工具页交互仍需人工点一遍（脚本验不了）。
+
+> 改脚本时注意：`verify-site.ps1` 必须保持 **UTF-8 带 BOM**，否则 Windows PowerShell 5.1
+> 会把中文当 ANSI 读、解析直接报假错。
+
+**下面是原始清单**（脚本就是照它实现的，手工排查时也照这个看）：
+
 **URL 契约**（「现在」列是本次在 Netlify 上的实测值）：
 
 | 路径 | 现在（Netlify）`[实测]` | CF 上期望 |
