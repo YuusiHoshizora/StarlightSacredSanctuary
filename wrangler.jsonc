@@ -1,0 +1,21 @@
+{
+  // 必须与现有 Worker 名字完全一致，否则 wrangler 会新建一个 Worker
+  "name": "starlight-sacred-sanctuary",
+
+  // 沿用 Cloudflare 自动配置（提交 82b0f3d，未合并分支 cloudflare/workers-autoconfig）里给的值，
+  // 站点没有 Worker 脚本，这个日期实际影响很小；要改就改成当天
+  "compatibility_date": "2026-06-23",
+
+  // 与后台「Observability / Workers Logs 已启用」保持一致，漏掉可能把它改回默认
+  "observability": { "enabled": true },
+
+  "assets": {
+    // 资源目录 = 仓库根目录（与 CF 自动配置一致，保持发布行为不变）
+    "directory": ".",
+
+    // 关键：未匹配路径时返回最近的 404.html。
+    // 不写这一项时，纯静态资源 Worker（本项目没有 Worker 脚本）的行为是
+    // 「直接返回 404 空响应」—— 实测过：响应体 0 字节，访问者看到一片空白。
+    "not_found_handling": "404-page"
+  }
+}

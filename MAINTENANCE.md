@@ -123,20 +123,28 @@ Obsidian 写最省事（`.obsidian/` 已经在 `.gitignore` 里，不会被部�
 
 ## 部署
 
-托管在 **Cloudflare Pages**，绑定的域名是 `starlightsacredsanctuary.top`
-（短域名 `stsas.top` 与其 `www` 由 Cloudflare 的 Redirect Rule 301 过来，见下）。
+托管在 **Cloudflare Workers（纯静态资源 Worker）**，Worker 名 `starlight-sacred-sanctuary`，
+绑定域名 `starlightsacredsanctuary.top`（短域名 `stsas.top` 与其 `www` 由 Cloudflare 的
+Redirect Rule 301 过来，见下）。
 
 > 🚧 **刚从 Netlify 迁过来，正在收尾**：原托管是 Netlify，免费版 100 GB/月带宽被 43 MB
-> 字体包打爆。现状、遗留问题与待办见 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md)
-> 第 11 节；全部收尾后把那份手册删掉。
+> 字体包打爆。现状、遗留问题与待办见 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md) 第 11 节。
 
-- Pages 项目的**构建命令**必须是 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md) 第 4.2 节
-  那一行、**构建输出目录** `_site`。没配对的话有三个实测过的后果：顶层 `404.html` 不生成
-  → 未匹配路径返回**空响应**；`netlify.toml`、`.gitignore`、`.github/` 变成**公开可读**
-- 推送到 `master` 自动部署。⚠️ 带 `[skip ci]` 的提交（Actions 那个 index.json 自动提交）
-  **会跳过部署** —— Netlify 与 Cloudflare Pages 都是这个行为
-- 仓库根目录有一份 `404.html`（`error.html` 的逐字节拷贝）：构建命令生效时它会被重新生成
-  覆盖；留着是为了构建命令没配对时也不至于给访问者一片空白（但要记得它跟 `error.html` 同步）
+发布配置在**仓库里**，不在后台：
+
+- **`wrangler.jsonc`** —— `assets.directory = "."`，资源目录就是仓库根目录
+- ⚠️ **`assets.not_found_handling` 必须是 `"404-page"`**：本项目没有 Worker 脚本，
+  纯静态资源 Worker 不写这一项时，未匹配路径会返回 **404 空响应**（响应体 0 字节、
+  访问者看到白屏）—— 这是实测踩过的
+- **`.assetsignore`** —— 排除不该发布的东西。⚠️ **没有它，资源目录里的 `.git/` 会被
+  原样公开托管**：`/.git/HEAD`、`/.git/config`、`/.git/index`、`.git/logs/HEAD` 实测都能
+  匿名下载；`.github/`、`.gitignore`、`netlify.toml` 也一样
+- 后台「设置 → 构建」：**构建命令「无」**、部署命令 `npx wrangler deploy`、根目录 `/`；
+  推送到 `master` 自动构建部署（每次约 30–50 秒）
+- ⚠️ 带 `[skip ci]` 的提交（Actions 那个 index.json 自动提交）**会跳过部署** ——
+  Netlify 与 Cloudflare 都是这个行为
+- 仓库根目录有一份 `404.html`（`error.html` 的逐字节拷贝）：**改了 `error.html` 要同步它**
+  （自检脚本会把线上 404 页与 `error.html` 逐字比对，忘了同步会报 WARN）
 - 自检：`powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1`
   （可加 `-ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`）。
   迁移前基线 PASS 16 / FAIL 0；出现 FAIL 都值得查

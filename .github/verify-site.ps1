@@ -183,6 +183,9 @@ if (-not $SkipDomainChecks) {
 #    这两条 FAIL 通常意味着 Pages 项目的「构建命令 / 构建输出目录」没配对。
 Test-Path-Code '/netlify.toml' @(404) 'netlify.toml 未被发布'
 Test-Path-Code '/.github/workflows/generate-post-index.yml' @(404) '.github/ 未被发布'
+# 资源目录如果在仓库根目录，.git/ 会被一起托管出去（实测过 /  .git/HEAD = 200）。
+# 这一条是安全回归测试：必须靠 .assetsignore 排除掉。
+Test-Path-Code '/.git/HEAD' @(404) '.git/ 未被发布（安全）'
 
 # ── 汇总 ───────────────────────────────────────────────────────────
 Write-Host ("{0,-6} {1,-26} {2,-28} {3}" -f '结果', '检查项', '期望', '实际') -ForegroundColor Cyan

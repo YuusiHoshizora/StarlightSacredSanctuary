@@ -1,0 +1,20 @@
+# Workers 静态资源上传时的排除清单（语法同 .gitignore）
+#
+# 背景：没有这个文件时，资源目录（仓库根目录）里的东西会被**原样公开托管**。
+# 实测确认过：/.git/HEAD、/.git/config、/.git/index、/.git/logs/HEAD、/.gitignore、
+# /.github/workflows/generate-post-index.yml、/netlify.toml 全部可以匿名下载。
+# 其中 .git/ 等于把整个仓库历史和元数据一起挂到公网（幸好 GitHub 上的仓库本来就是公开的）。
+
+# —— 绝对不能发布的 ——
+.git
+.github
+.gitignore
+netlify.toml
+
+# —— 本地环境 / 工具产物（CI 的干净 clone 里本来没有，列上是防手工上传时误带）——
+.venv
+.idea
+.vscode
+.graphflow-cache
+graphflow-out
+node_modules

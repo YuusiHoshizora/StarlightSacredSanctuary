@@ -418,3 +418,46 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
 `[skip ci]`，而 **Cloudflare Pages 与 Netlify 一样会跳过这次部署**。如果哪天发现文章列表
 没更新，先想到这一点（目前线上 index.json 与仓库一致，暂无问题）。
 
+### 11.1 重要更正：线上其实是 **Workers 静态资源**，不是 Pages
+
+迁移时建的项目是 `Workers and Pages → starlight-sacred-sanctuary`，面板上写着
+「Metrics 不适用于**仅包含静态资产的 Workers**」—— 它不是 Pages 项目。前面几节里所有
+Pages 专属的说法因此要按下面换算（`[实测]` 都是这轮在线上验出来的）：
+
+| 本文前面的 Pages 说法 | 实际（Workers 静态资源） |
+| --- | --- |
+| 放顶层 `404.html` 就会被自动用作 404 页 | 要在 `wrangler.jsonc` 里设 **`assets.not_found_handling = "404-page"`**；不设时**没有 Worker 脚本就直接返回 404 空响应**（官方原文）`[docs]` |
+| 构建命令 + 输出目录 `_site` | 可以不用：`assets.directory = "."` + **`.assetsignore`** 也能达到目的（当前就是这么配的） |
+| Pages 会给静态响应加 `Access-Control-Allow-Origin` / `Referrer-Policy` / `X-Content-Type-Options` | Workers 静态资源**不加**这几个头 —— 这也是「线上不是 Pages」的判据 |
+| Pages 的 `_redirects` 不支持域级跳转 | 一样：域级跳转仍走 zone 级 Redirect Rule |
+| 单文件上限 25 MiB | 同样（最大字体 8.22 MB，通过） |
+
+**配置现在长在仓库里**：`wrangler.jsonc`（`name` = `starlight-sacred-sanctuary`、
+`compatibility_date` 沿用 CF 自动配置的 `2026-06-23`、`observability.enabled = true` 与后台
+一致、`assets.directory = "."`、`not_found_handling = "404-page"`）+ `.assetsignore`。
+CF 那份自动生成的 `wrangler.jsonc` 一直躺在**未合并**的分支 `cloudflare/workers-autoconfig`
+（提交 `82b0f3d`）上，内容就是 `assets.directory = "."`（没有 404 设置）—— 现在的版本是在它基础上修好的。
+
+### 11.2 ⚠️ 顺带发现的安全问题：`.git/` 曾被公开托管
+
+资源目录是仓库根目录、又没有 `.assetsignore` 时，整个 `.git/` 会被当成静态资源发布出去，
+`[实测]`：
+
+```
+/.git/HEAD          200  41B
+/.git/config        200  256B
+/.git/index         200  5670B
+/.git/logs/HEAD     200  212B
+/.gitignore         200
+/.github/workflows/generate-post-index.yml  200
+/netlify.toml       200
+```
+
+**严重程度：中等偏低** —— GitHub 上那个仓库本身就是公开的（`github.com/YuusiHoshizora/StarlightSacredSanctuary` 返回 200），
+所以 `.git` 里能拿到的源码与历史在 GitHub 上本来就有。但它仍然是「仓库元数据被额外挂到公网」，
+而且**以后万一提交了密钥、`.env` 之类，就会被直接公开**。
+
+修法：`.assetsignore` 里排除 `.git`、`.github`、`.gitignore`、`netlify.toml`。
+自检脚本新增了 `/.git/HEAD` 应为 404 的安全回归测试。
+
+
