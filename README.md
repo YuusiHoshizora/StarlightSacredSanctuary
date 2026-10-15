@@ -1,6 +1,6 @@
 # 星光圣域 · Starlight Sacred Sanctuary
 
-**线上站点：<https://starlightsacredsanctuary.top>，<https://stsas/top>**
+**线上站点：<https://starlightsacredsanctuary.top>（短域名 <https://stsas.top> 会 301 跳到这里）**
 
 一个个人架空世界的展示站点。世界的地图、势力、事件与设定都写在站点里，
 这个仓库只是那些页面的源码 —— 设定内容不在这里重复。
