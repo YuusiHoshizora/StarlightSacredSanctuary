@@ -1,6 +1,39 @@
 [build]
   publish = "."
 
+# ── 域名归一化：stsas.top（裸域 + www，http + https）全部 301 到主域名 ──────
+# 三条前提，缺一条这些规则就不生效：
+#   1. 规则必须排在下面那批 /* 错误页规则「前面」。Netlify 是顺序匹配、先命中先赢，
+#      否则访问短域名下不存在的路径会先命中 404 规则，直接给错误页而不跳转。
+#   2. force = true 不能省：站点里存在同名真实文件（index.html、archive/ 等），
+#      不加 force 会被 shadowing 吃掉，规则等于没写。
+#   3. stsas.top / www.stsas.top 必须仍作为 domain alias 挂在同一个 site 上，
+#      且 primary domain 是 starlightsacredsanctuary.top。
+# http 的两条在「Force SSL」开着时是冗余的兜底，关掉时才有用，留着无副作用。
+[[redirects]]
+  from = "https://stsas.top/*"
+  to = "https://starlightsacredsanctuary.top/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://stsas.top/*"
+  to = "https://starlightsacredsanctuary.top/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.stsas.top/*"
+  to = "https://starlightsacredsanctuary.top/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.stsas.top/*"
+  to = "https://starlightsacredsanctuary.top/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/error.html"

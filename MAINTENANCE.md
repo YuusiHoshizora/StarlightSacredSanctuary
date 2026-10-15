@@ -129,6 +129,36 @@ Obsidian 写最省事（`.obsidian/` 已经在 `.gitignore` 里，不会被部�
 - 404 / 500 / 502 / 503 四种状态都重定向到 `/error.html`
 - 推送到 `master` 会自动触发部署（推断：仓库在 GitHub，`netlify.toml` 也在仓库里）
 
+### 短域名 `stsas.top` 跳到长域名
+
+短域名 `stsas.top`（含 `www.stsas.top`）是挂在**同一个 site** 上的 domain alias，
+不是独立站点。要求是：**访问短域名的一切路径都 301 到 `starlightsacredsanctuary.top`
+的同名路径**。实现是 `netlify.toml` 顶部那四条 domain-level redirect
+（裸域 / www × http / https）。
+
+三条容易踩的前提：
+
+- **位置**：必须排在 `/* → /error.html` 那批错误页规则**前面**。Netlify 顺序匹配、
+  先命中先赢；顺序反了的话，短域名下不存在的路径会先命中 404 规则，直接显示错误页而不跳转
+- **`force = true`**：`stsas.top` 上存在同名真实文件（`index.html`、`archive/`……），
+  不加 force 会被 shadowing 吃掉，规则等于没写
+- **域名必须还挂在 site 上**：Netlify 官方原文 "the domain must be assigned to the site"。
+  哪天在后台把 `stsas.top` 从 site 上摘掉，这些规则随之失效，跳转就得改由 DNS / 注册商做
+
+还有一个前提没法从仓库里读出来，要在 Netlify 后台确认：
+`Project configuration → Domain management` 里 **primary domain 是
+`starlightsacredsanctuary.top`**，`stsas.top` 和 `www.stsas.top` 只是别名。
+
+验证（应看到 `301` + `Location: https://starlightsacredsanctuary.top/`）：
+
+```powershell
+curl.exe -sSI https://stsas.top/ | Select-String -Pattern 'HTTP/|location'
+curl.exe -sSI https://stsas.top/archive/ | Select-String -Pattern 'HTTP/|location'
+curl.exe -sSI https://stsas.top/no-such-page | Select-String -Pattern 'HTTP/|location'
+```
+
+改 `netlify.toml` / 本文档**不需要**动 `sw.js` 的 `CACHE_VERSION`（那不是页面资源）。
+
 ---
 
 ## 改了样式或脚本之后
