@@ -11,6 +11,12 @@
 .gitignore
 netlify.toml
 
+# —— 部署配置 / 仓库文档：GitHub 上本来就是公开的，没必要再占一份站点资源 ——
+# （实测：没有这几行时 /wrangler.jsonc、/MAINTENANCE.md、/MIGRATION-CLOUDFLARE.md 都是 200）
+wrangler.jsonc
+MAINTENANCE.md
+MIGRATION-CLOUDFLARE.md
+
 # —— 本地环境 / 工具产物（CI 的干净 clone 里本来没有，列上是防手工上传时误带）——
 .venv
 .idea
@@ -18,3 +24,7 @@ netlify.toml
 .graphflow-cache
 graphflow-out
 node_modules
+
+# —— 文章目录里那份 Obsidian 配置（36 MB、上百个文件，含同步冲突垃圾）——
+# 它在发布目录里面，本地 wrangler deploy 时会被整个传上去，务必留着这条
+assets/post/.obsidian

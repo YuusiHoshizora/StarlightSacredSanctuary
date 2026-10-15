@@ -11,10 +11,11 @@
 .
 ├── index.html                  首页
 ├── error.html                  错误页（唯一的源）
-├── 404.html                    error.html 的逐字节拷贝：Cloudflare Pages 的 404 页
+├── 404.html                    error.html 的逐字节拷贝：CF 静态资源 Worker 的 404 页
 ├── sw.js                       Service Worker：预缓存 + 缓存优先
-├── netlify.toml                Netlify 配置（迁移后已无用，留档；见「部署」）
-├── MIGRATION-CLOUDFLARE.md     计划迁往 Cloudflare 的准备清单（迁移完成后删）
+├── wrangler.jsonc              部署配置：资源目录 = 仓库根、未匹配路径回 404.html
+├── .assetsignore               不上传清单（.git/、内部文档、编辑器与工具产物…）
+├── MIGRATION-CLOUDFLARE.md     迁往 Cloudflare 的迁移手册（收尾完成后可删）
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
 ├── starmap/index.html          星图（刻意没有页脚）
@@ -138,7 +139,10 @@ Redirect Rule 301 过来，见下）。
   访问者看到白屏）—— 这是实测踩过的
 - **`.assetsignore`** —— 排除不该发布的东西。⚠️ **没有它，资源目录里的 `.git/` 会被
   原样公开托管**：`/.git/HEAD`、`/.git/config`、`/.git/index`、`.git/logs/HEAD` 实测都能
-  匿名下载；`.github/`、`.gitignore`、`netlify.toml` 也一样
+  匿名下载；`.github/`、`.gitignore` 也一样
+- 2026-10 又补进清单的（补之前实测都是 200 公开可读）：**`wrangler.jsonc`、
+  `MAINTENANCE.md`、`MIGRATION-CLOUDFLARE.md`**，以及发布目录里那份 36 MB 的
+  `assets/post/.obsidian` —— 它在 cwd 里，哪天用本地 `wrangler deploy` 会整个传上去
 - 后台「设置 → 构建」：**构建命令「无」**、部署命令 `npx wrangler deploy`、根目录 `/`；
   推送到 `master` 自动构建部署（每次约 30–50 秒）
 - ⚠️ 带 `[skip ci]` 的提交（Actions 那个 index.json 自动提交）**会跳过部署** ——
@@ -171,7 +175,7 @@ curl.exe -sSI https://stsas.top/archive/ | Select-String -Pattern 'HTTP/|locatio
 curl.exe -sSI https://stsas.top/no-such-page | Select-String -Pattern 'HTTP/|location'
 ```
 
-改 `netlify.toml` / 本文档**不需要**动 `sw.js` 的 `CACHE_VERSION`（那不是页面资源）。
+改 `.assetsignore` / `wrangler.jsonc` / 本文档**不需要**动 `sw.js` 的 `CACHE_VERSION`（那不是页面资源）。
 
 ---
 
