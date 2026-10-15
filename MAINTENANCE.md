@@ -12,7 +12,8 @@
 ├── index.html                  首页
 ├── error.html                  错误页
 ├── sw.js                       Service Worker：预缓存 + 缓存优先
-├── netlify.toml                Netlify 配置（发布根目录、错误页重定向）
+├── netlify.toml                Netlify 配置（发布根目录、错误页重定向、短域名跳转）
+├── MIGRATION-CLOUDFLARE.md     计划迁往 Cloudflare 的准备清单（迁移完成后删）
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
 ├── starmap/index.html          星图（刻意没有页脚）
@@ -121,7 +122,12 @@ Obsidian 写最省事（`.obsidian/` 已经在 `.gitignore` 里，不会被部�
 
 ## 部署
 
-托管在 Netlify，绑定的域名是 `starlightsacredsanctuary.top`。
+托管在 Netlify，绑定的域名是 `starlightsacredsanctuary.top`（短域名 `stsas.top` 301 过来，见下）。
+
+> ⚠️ **计划迁往 Cloudflare Pages**：Netlify 免费版 100 GB/月带宽被 43 MB 字体包打爆了，
+> 而 Pages 免费版不限带宽。准备清单、DNS 搬迁注意事项（`stsas.top` 上有 QQ 企业邮！）
+> 与切换顺序见 [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md)。
+> 迁移完成后把本节改写成 Cloudflare 口径，并删掉那份手册。
 
 下面这几条是从仓库里的文件读出来的，**没在 Netlify 后台核对过**，换环境或排查问题时先确认一下：
 
