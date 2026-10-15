@@ -10,8 +10,7 @@
 ```
 .
 ├── index.html                  首页
-├── error.html                  错误页（唯一的源）
-├── 404.html                    error.html 的逐字节拷贝：CF 静态资源 Worker 的 404 页
+├── 404.html                    错误页（唯一的源）：CF 静态资源 Worker 的 404 页，也是 SW 的离线页
 ├── sw.js                       Service Worker：预缓存 + 缓存优先
 ├── wrangler.jsonc              部署配置：资源目录 = 仓库根、未匹配路径回 404.html
 ├── .assetsignore               不上传清单（.git/、内部文档、编辑器与工具产物…）
@@ -147,8 +146,8 @@ Redirect Rule 301 过来，见下）。
   推送到 `master` 自动构建部署（每次约 30–50 秒）
 - ⚠️ 带 `[skip ci]` 的提交（Actions 那个 index.json 自动提交）**会跳过部署** ——
   Netlify 与 Cloudflare 都是这个行为
-- 仓库根目录有一份 `404.html`（`error.html` 的逐字节拷贝）：**改了 `error.html` 要同步它**
-  （自检脚本会把线上 404 页与 `error.html` 逐字比对，忘了同步会报 WARN）
+- 错误页只有一份 `404.html`（原先 `error.html` + `404.html` 两份内容相同，已合并成一份）：
+  CF 的 404 页与 SW 的离线页都用它；自检脚本会把线上 404 响应与它逐字比对（不一致报 WARN）
 - 自检：`powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1`
   （可加 `-ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`）。
   迁移前基线 PASS 16 / FAIL 0；出现 FAIL 都值得查

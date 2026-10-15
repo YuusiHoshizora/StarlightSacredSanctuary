@@ -1,10 +1,10 @@
-﻿<#
+<#
 .SYNOPSIS
     站点 URL 契约自检 —— 迁移到 Cloudflare 前后都用它。
 
 .DESCRIPTION
     逐条核对 MIGRATION-CLOUDFLARE.md 第 8 节那份「切换后必须验的清单」。
-    判定标准全部来自仓库里的文件（error.html、sw.js、assets/），不写死内容。
+    判定标准全部来自仓库里的文件（404.html、sw.js、assets/），不写死内容。
 
     放在 .github/ 下是故意的：两个托管（Netlify 与 Cloudflare Pages 的构建命令）
     都不会把它发布出去，所以它对线上站点零影响。
@@ -103,7 +103,7 @@ Test-Path-Code '/about'       @(200, 301, 307, 308) '关于页（无尾斜杠）
 $tmp404 = Join-Path $env:TEMP ('verify-site-404-' + [guid]::NewGuid().ToString('N') + '.html')
 $r404 = Get-Body ($BaseUrl.TrimEnd('/') + '/no-such-page-verify-script') $tmp404
 if ($r404.Code -eq 404) {
-    $localError = Join-Path $RepoRoot 'error.html'
+    $localError = Join-Path $RepoRoot '404.html'
     if ($r404.Size -lt 100) {
         # 实测过的真实故障形态：Pages 上没有可用的顶层 404.html 时，
         # 返回 404 但响应体是空的 —— 访问者看到一片空白。
@@ -114,12 +114,12 @@ if ($r404.Code -eq 404) {
         $localText  = ([System.IO.File]::ReadAllText($localError)) -replace "`r`n", "`n"
         $remoteText = ([System.IO.File]::ReadAllText($tmp404))     -replace "`r`n", "`n"
         if ($localText -ceq $remoteText) {
-            Add-Result 'PASS' '不存在的路径' '[404 + 自定义错误页]' "404，内容与 error.html 完全一致（$($r404.Size) B）"
+            Add-Result 'PASS' '不存在的路径' '[404 + 自定义错误页]' "404，内容与 404.html 完全一致（$($r404.Size) B）"
         } else {
-            Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' "404，但内容与 error.html 不一致（$($r404.Size) B）—— 可能被压缩/注入了，人工看一眼"
+            Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' "404，但内容与 404.html 不一致（$($r404.Size) B）—— 可能被压缩/注入了，人工看一眼"
         }
     } else {
-        Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' '404，但本地找不到 error.html 无法比对'
+        Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' '404，但本地找不到 404.html 无法比对'
     }
 } elseif ($r404.Code -eq 200) {
     Add-Result 'FAIL' '不存在的路径' '[404 + 自定义错误页]' "200 —— 未匹配路径返回了首页，说明顶层 404.html 缺失（Pages 会当 SPA 处理）"

@@ -19,11 +19,11 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.1';
+const CACHE_VERSION = 'v5.2';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
-// 断网且无缓存时显示的离线页面
-const OFFLINE_URL = '/error.html';
+// 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
+const OFFLINE_URL = '/404.html';
 
 // 预缓存清单：全部页面 + 全站共用资源（体积都很小）
 const PRECACHE_URLS = [
@@ -41,8 +41,7 @@ const PRECACHE_URLS = [
     '/about/',
     '/about/index.html',
     '/main/mainpage.html',
-    '/error.html',
-
+    '/404.html',
     // 样式
     '/assets/css/global.css',
     '/assets/css/index.css',

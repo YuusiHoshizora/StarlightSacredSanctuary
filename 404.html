@@ -44,9 +44,9 @@
     <link rel="stylesheet" href="/assets/css/boot.css">
     <script defer src="/assets/js/boot.js"></script>
 
-    <!-- 注意：这个页面会被 Netlify 用"用户请求的那个 URL"渲染（任意路径都可能），
-         所以资源必须用绝对路径，否则带子目录的 404（如 /foo/bar）会去找
-         /foo/assets/... 而加载不到样式。 -->
+    <!-- 注意：这个页面会被 Cloudflare 静态资源 Worker 用"用户请求的那个 URL"渲染
+         （任意路径都可能），所以资源必须用绝对路径，否则带子目录的 404（如 /foo/bar）
+         会去找 /foo/assets/... 而加载不到样式。 -->
     <link rel="stylesheet" href="/assets/css/global.css">
     <link rel="stylesheet" href="/assets/css/error.css">
     <script defer src="/assets/js/background.js"></script>
