@@ -97,12 +97,16 @@ v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXFmFVg1X5+fMLIC13V5wKOa
 
 两条实测结论支撑上表 `[实测]`：
 
-- Netlify 的 `NETLIFY` 类型就是「指向站点主机名的扁平化别名」，而
-  `starlightsacredsanctuary.netlify.app` 解析出来**正好就是** `52.74.6.109` / `13.215.239.219`，
-  与 apex 现在解析到的一致 —— 所以建成 A 记录与今天完全等价
-  （想更抗变也可以建成指向该主机名的 CNAME，Cloudflare 支持根域 CNAME 扁平化）
-- **`NETLIFYv6` 目前不产出任何 AAAA**：四个主机名显式查 AAAA 全为空 `[实测]`
-  → Cloudflare 上**不用建 IPv6**
+- Netlify 的 `NETLIFY` / `NETLIFYv6` 本质是「指向站点主机名的扁平化别名」，
+  但**它按解析来源分发不同的 IP** —— 这是实测撞上的：
+  - 本机递归解析 apex：`52.74.6.109` / `13.215.239.219`（AWS 新加坡段）
+  - **Cloudflare 扫描导入的**：apex `18.208.88.157` / `98.84.224.111`（美东）、
+    www `13.52.188.95` / `52.52.192.191`（美西），外加上面 4 条 AAAA
+  - 站点主机名 `starlightsacredsanctuary.netlify.app` 本机解析出来也是那两条新加坡 IP
+  → 结论：**扫描导入什么就留什么，不要照我最初那张表去手建 IP**。两边都是 Netlify
+    真实的 LB 地址，阶段 B 期间都指向 Netlify，这就够了
+- ⚠️ 我最初「`NETLIFYv6` 不产出 AAAA、CF 上不用建 IPv6」的判断是**错的**：本机查 AAAA
+  为空只是因为解析来源不同，CF 扫描实际拿到了 4 条 AAAA。**不要因为那句话去删 IPv6 记录**
 
 > ⚠️ Cloudflare 扫描导入的记录**默认是「已代理」（橙云）**。长域名那两条必须先改成
 > **DNS only**，否则阶段 B 的流量会绕一圈 CF 再回 Netlify —— 那就不是「与今天一致」了
@@ -228,13 +232,16 @@ Single Redirects：免费版 **10 条/zone**、支持通配符、不支持正则
    记下 CF 给出的两组 NS 地址
 3. **逐条核对自动扫描导入的记录** —— 三条邮件记录（MX ×2、SPF、DMARC）一条都不能少、值不能变
 4. **按第 3.2 节把记录建成 CF 的形状**：
-   - 长域名的 A 记录 → **DNS only**：阶段 B 靠它们把流量送回 Netlify，行为与今天一致，
+   - 长域名的 A/AAAA 记录 → **DNS only**：阶段 B 靠它们把流量送回 Netlify，行为与今天一致，
      也就不必操心 CF 的 Universal SSL 是否就绪
+     （扫描导入的 IP 可能与你本机解析到的不一样 —— Netlify 按来源分发，属正常，别去改）
    - 5 条邮件记录 → 一条不落地照抄，**DNS only**
    - `stsas.top` / `www.stsas.top` → **不要建指向 Netlify 的记录**，直接建成
      `192.0.2.1` 占位（**已代理**），并在 Rules → Redirect Rules 里**现在就把第 6 节的
      跳转规则建好**：规则在 zone 里不生效时完全无害，但等 NS 一翻过去它立刻是活的，
      短域名不会出现空窗
+   - ⚠️ **别碰 Cloudflare 的 Email Routing**：它会接管并改写 MX 记录，QQ 企业邮会当场断。
+     CF 若提示「启用邮件路由」，一律跳过
 5. 建 Pages 项目（第 5 节参数），在 `xxx.pages.dev` 上验：
    `verify-site.ps1 -BaseUrl https://xxx.pages.dev -SkipDomainChecks` → 应全 PASS
 
