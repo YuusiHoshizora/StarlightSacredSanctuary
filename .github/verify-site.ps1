@@ -207,4 +207,12 @@ Write-Host "浏览器里还要人工确认两件事（脚本验不了）：" -Fo
 Write-Host "  1. 打开首页 → 控制台看 Service Worker 是否正常注册/更新" -ForegroundColor DarkGray
 Write-Host "  2. 星图页 / 工具页的交互是否正常（背景、拾色器、时间转换）" -ForegroundColor DarkGray
 
+if ($fail -gt 0) {
+    Write-Host ""
+    Write-Host "排错第一步：某项若显示「0」或完全无响应，先怀疑解析缓存，别急着改配置 ——" -ForegroundColor Yellow
+    Write-Host "  递归解析器会把「记录不存在」的负答案缓存住（实测被坑过两轮）。查权威 NS 才准：" -ForegroundColor DarkGray
+    Write-Host "    Resolve-DnsName stsas.top -Type A -Server ignacio.ns.cloudflare.com" -ForegroundColor DarkGray
+    Write-Host "  本机仍显示旧的，就 ipconfig /flushdns 后再跑一次本脚本。" -ForegroundColor DarkGray
+}
+
 if ($fail -gt 0) { exit 1 } else { exit 0 }

@@ -460,4 +460,37 @@ CF 那份自动生成的 `wrangler.jsonc` 一直躺在**未合并**的分支 `cl
 修法：`.assetsignore` 里排除 `.git`、`.github`、`.gitignore`、`netlify.toml`。
 自检脚本新增了 `/.git/HEAD` 应为 404 的安全回归测试。
 
+### 11.3 迁移完成状态
+
+`[实测]`（用**权威 NS** + 真实 HTTP 请求验的）：
+
+| 项目 | 状态 |
+| --- | --- |
+| `https://starlightsacredsanctuary.top/` | 200，由 Worker 提供；404 页正确；`/.git`、`netlify.toml`、`.github/` 全部 404 |
+| `https://stsas.top/` | **301 → `https://starlightsacredsanctuary.top/`** ✓ |
+| `https://stsas.top/archive/index.html?a=1&b=2` | 301，**路径与查询串原样保留** ✓ |
+| `https://www.stsas.top/` | 301 → 裸域 ✓ |
+| 邮件（MX×2 / SPF / DKIM / DMARC / `qqmail33f0a580` CNAME） | 权威 NS 上全部在线 ✓ |
+| `https://www.starlightsacredsanctuary.top/` | **待做**：先在 Worker「域」里加自定义域（CF 自动建 CNAME），再建一条 www→裸域 规则 |
+
+自检：**PASS 18 / FAIL 1**（唯一 FAIL 就是主域名 www 那条）。
+
+**四条实测教训**（下次排查别再踩）：
+
+1. **查 DNS 一定要问权威 NS**。递归解析器会把「记录不存在」的负答案缓存住，我因此两次
+   误判成「记录没生效」，而权威 NS 上其实早就有了，白白多折腾几轮。命令：
+   `Resolve-DnsName <名字> -Type A -Server ignacio.ns.cloudflare.com`；
+   本机仍然看着是旧的，就 `ipconfig /flushdns` 再试
+2. **apex 的占位记录 A 和 AAAA 都要有**。只发布 IPv6（AAAA）时，纯 IPv4 的网络访问 apex
+   直接解析失败。正确写法是 `A @ 192.0.2.1`（已代理）**加** `AAAA @ 100::`（已代理）——
+   两条都代理，CF 才会同时发布自己的 IPv4 与 IPv6 anycast 地址
+3. **Cloudflare 的规则模板会预填示例值**：「重定向到其他域」模板把**目标**域名填进了
+   「主机名」匹配框（应该填**源**域名），目标 URL 里还留着 `globalstore.example.net`。
+   另外通配符模式下 `http*://host/*` 有两个 `*`，路径捕获是 **`${2}`** 而不是 `${1}`
+   （官方跨域名示例用的就是 `${2}`）。想彻底避开计数问题，就切到「自定义筛选表达式」写
+   `concat("https://目标域名", http.request.uri.path)`
+4. **有 Worker 的 hostname，DNS 记录不能是「仅 DNS」**：redirect/Worker 都只在经过
+   Cloudflare 边缘时才生效，占位记录必须开着代理（橙云）；否则请求根本到不了 CF
+
+
 
