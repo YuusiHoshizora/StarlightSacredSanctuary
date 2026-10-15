@@ -51,36 +51,62 @@
 
 ---
 
-## 3. ⚠️ 迁移前必须抄全的 DNS 记录（最容易断邮箱的一步）
+## 3. ⚠️ DNS 记录清单（已导出核对完毕；这是最容易断邮箱的一步）
 
-`stsas.top` 上有 **QQ 企业邮箱**（MX + SPF + DMARC）`[实测]`。NS 一改，这些记录必须已经在
-Cloudflare 上存在，否则**邮箱立刻收不到信**。
+`stsas.top` 上有 **QQ 企业邮箱**，而且**不只是 MX**：NS 一改，下面这些记录必须已经在
+Cloudflare 上存在且一字不差，否则轻则收不到信、重则进垃圾箱。
 
-**实测到的记录（已确认存在的部分）：**
+### 3.1 两个 zone 的完整记录（来自 Netlify 后台导出 CSV，权威）
 
-| 类型 | 名称 | 值 | 备注 |
-| --- | --- | --- | --- |
-| A | `stsas.top` | `52.74.6.109` / `13.215.239.219` | Netlify 的，迁移后**删掉**（见第 6 节占位记录） |
-| A | `www.stsas.top` | 同上 | 同上 |
-| A | `starlightsacredsanctuary.top` | 同上 | 加自定义域时由 Pages 换成 CNAME |
-| A | `www.starlightsacredsanctuary.top` | 同上 | 同上 |
-| MX | `stsas.top` | `mxbiz1.qq.com`(5) / `mxbiz2.qq.com`(10) | **原样搬** |
-| TXT | `stsas.top` | `v=spf1 include:spf.mail.qq.com ~all` | **原样搬** |
-| TXT | `_dmarc.stsas.top` | `v=DMARC1; p=none; rua=mailto:astra@stsas.top; fo=1; adkim=r; aspf=r` | **原样搬** |
+**`starlightsacredsanctuary.top`（4 条；这个域名没有邮箱）**
 
-**还没找到、但 Netlify DNS 里可能有的 `[待核对]`**（我只能在公网查到上面这些，剩下的必须进后台看）：
+| Netlify 类型 | 名称 | 值 |
+| --- | --- | --- |
+| `NETLIFY` | `@` | `starlightsacredsanctuary.netlify.app` |
+| `NETLIFY` | `www` | 同上 |
+| `NETLIFYv6` | `@` | 同上 |
+| `NETLIFYv6` | `www` | 同上 |
 
-- DKIM 记录（QQ 企业邮的可选配置，常见于 `xxx._domainkey`，selector 名各家不同）
-- 其它 TXT：企业邮箱/搜索平台/监控的域名验证字符串
-- 其它 CNAME：`autodiscover`、`mail`、`smtp` 之类
-- 主域名 `starlightsacredsanctuary.top` 上是否有 MX/TXT（公网查询未见 `[实测]`，应该是没有邮箱）
+**`stsas.top`（10 条）**
 
-**做法**：Netlify 后台 → Domains → 打开该 zone → 记录表逐条抄（或整体截图）。
-Cloudflare 添加 zone 时会**自动扫描并导入**现有记录，但：
+| Netlify 类型 | 名称 | 值 |
+| --- | --- | --- |
+| `NETLIFY` / `NETLIFYv6` | `@`、`www` | `starlightsacredsanctuary.netlify.app` |
+| `MX` | `@` | `mxbiz1.qq.com`(5)、`mxbiz2.qq.com`(10) |
+| `CNAME` | `qqmail33f0a580` | `mail.qq.com` |
+| `TXT` | `qsjb2609._domainkey` | DKIM，234 字符（下面全文），已实测在线 `[实测]` |
+| `TXT` | `@` | `v=spf1 include:spf.mail.qq.com ~all` |
+| `TXT` | `_dmarc` | `v=DMARC1; p=none; rua=mailto:astra@stsas.top; fo=1; adkim=r; aspf=r` |
 
-> ⚠️ 导入进来的 A 记录默认是「**已代理**」（橙色云）状态、值仍指向 Netlify 的 IP。
-> 这样请求会先到 CF 再回 Netlify，等于没搬。**必须删掉这四条 A 记录**
-> （或让「加自定义域」流程把它们覆盖成 Pages 的 CNAME）。
+> 后两条（`qqmail33f0a580` 的 CNAME、`qsjb2609._domainkey` 的 DKIM）是**导出 CSV 才发现的** ——
+> 公网查询只找到过 `default._domainkey`（不存在）。这就是这一步必须导出核对的原因。
+
+DKIM 全文（公钥，本来就在公开 DNS 里，放这里方便复制）：
+
+```
+v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXFmFVg1X5+fMLIC13V5wKOamuGwaGLgvZ6eDcIsuHGk2FndTpWtd0UepLOoowkgFpwAkv+CSJ6/ZxwhrtjKh9LA+mP7aNTIW7R8j4f8wagbc8c9qm6Z4EukaFIZTCPnRyGwBqN6fAYSJQXKCQssc7dMG8ZBS2qWC00689fE1rjwIDAQAB
+```
+
+### 3.2 Cloudflare 上应该建成什么（照这张表建，别照搬 Netlify 的类型）
+
+| 来源（Netlify） | Cloudflare 里建成 | 代理状态 |
+| --- | --- | --- |
+| 长域名的 `NETLIFY` / `NETLIFYv6`（`@` 与 `www`） | **A** 记录 `52.74.6.109` + `13.215.239.219`（扫描会自动导入这两条） | **DNS only**（灰云） |
+| 5 条邮件记录（MX ×2、`qqmail33f0a580` CNAME、`qsjb2609._domainkey` DKIM、SPF、DMARC） | 原样照抄 | **一律 DNS only**（MX 本来就不能代理；那个 CNAME 被代理会让邮箱验证失效） |
+| `stsas.top` / `www.stsas.top` 的 `NETLIFY*` | **不要建**，改建第 6 节那两条 `192.0.2.1` 占位 | **已代理**（跳转规则要求） |
+
+两条实测结论支撑上表 `[实测]`：
+
+- Netlify 的 `NETLIFY` 类型就是「指向站点主机名的扁平化别名」，而
+  `starlightsacredsanctuary.netlify.app` 解析出来**正好就是** `52.74.6.109` / `13.215.239.219`，
+  与 apex 现在解析到的一致 —— 所以建成 A 记录与今天完全等价
+  （想更抗变也可以建成指向该主机名的 CNAME，Cloudflare 支持根域 CNAME 扁平化）
+- **`NETLIFYv6` 目前不产出任何 AAAA**：四个主机名显式查 AAAA 全为空 `[实测]`
+  → Cloudflare 上**不用建 IPv6**
+
+> ⚠️ Cloudflare 扫描导入的记录**默认是「已代理」（橙云）**。长域名那两条必须先改成
+> **DNS only**，否则阶段 B 的流量会绕一圈 CF 再回 Netlify —— 那就不是「与今天一致」了
+> （见第 7 节阶段 A 第 4 步）。邮件记录无论如何都要保持 DNS only。
 
 ---
 
@@ -95,7 +121,7 @@ Pages 找不到文件时：**如果没有顶层 `404.html`，它会当成 SPA，
 同时 `_redirects` **不支持 404 规则**（能力表里 rewrites/其它状态码是 ❌）`[docs]`，
 所以不能照搬 Netlify 的 `/* → /error.html 404`。
 
-### 4.2 构建命令（推荐方案：glob 排除，行为与今天一致）
+### 4.2 构建命令（已选方案：glob 排除，行为与今天一致）
 
 ```bash
 mkdir -p _site && for f in *; do [ "$f" = "_site" ] || cp -r "$f" "_site/"; done && rm -f _site/netlify.toml && cp _site/error.html _site/404.html
@@ -201,19 +227,24 @@ Single Redirects：免费版 **10 条/zone**、支持通配符、不支持正则
 2. Cloudflare → Add a site：依次加 `starlightsacredsanctuary.top`、`stsas.top`（Free 套餐），
    记下 CF 给出的两组 NS 地址
 3. **逐条核对自动扫描导入的记录** —— 三条邮件记录（MX ×2、SPF、DMARC）一条都不能少、值不能变
-4. **四条指向 Netlify IP 的 A 记录先留着**（阶段 B 还要靠它们把流量送回去），
-   但把**代理关掉**（灰色云 / DNS only）：这样阶段 B 的站点行为与今天逐字节一致，
-   也就不必操心 CF 的 Universal SSL 是否就绪
+4. **按第 3.2 节把记录建成 CF 的形状**：
+   - 长域名的 A 记录 → **DNS only**：阶段 B 靠它们把流量送回 Netlify，行为与今天一致，
+     也就不必操心 CF 的 Universal SSL 是否就绪
+   - 5 条邮件记录 → 一条不落地照抄，**DNS only**
+   - `stsas.top` / `www.stsas.top` → **不要建指向 Netlify 的记录**，直接建成
+     `192.0.2.1` 占位（**已代理**），并在 Rules → Redirect Rules 里**现在就把第 6 节的
+     跳转规则建好**：规则在 zone 里不生效时完全无害，但等 NS 一翻过去它立刻是活的，
+     短域名不会出现空窗
 5. 建 Pages 项目（第 5 节参数），在 `xxx.pages.dev` 上验：
    `verify-site.ps1 -BaseUrl https://xxx.pages.dev -SkipDomainChecks` → 应全 PASS
 
 ### 阶段 B —— 搬 DNS（唯一有风险的窗口）
 
 6. **先只改 `stsas.top` 的 NS**（那边只有跳转和邮箱，出问题好定位），等生效后：
-   - 立刻建两条 `192.0.2.1` 占位记录（**已代理**，第 6 节）+ Single Redirect 规则，
-     把短域名跳转在新家恢复起来
-   - `verify-site.ps1 -ShortUrl https://stsas.top` 应全 PASS
-   - **发一封测试信到 `astra@stsas.top`**，确认 QQ 企业邮没断
+   - `verify-site.ps1 -ShortUrl https://stsas.top` 应全 PASS（占位记录与跳转规则在阶段 A 已建好）
+   - 抽查邮件记录还在：`Resolve-DnsName stsas.top -Type MX` 和
+     `Resolve-DnsName qsjb2609._domainkey.stsas.top -Type TXT` 都应正常返回
+   - **再发一封测试信到 `astra@stsas.top`**，确认 QQ 企业邮没断
 7. 再改主域名的 NS。此时访问路径是 **DNS(CF) → 源站(Netlify)**，站点必须还是好的：
    跑一次 `verify-site.ps1`（**先不加** `-ShortUrl` 也行，加了也没问题）应全 PASS
    > 这一步是整件事最值钱的地方：DNS 换了、源站没换，出问题几乎一定是 DNS/邮件，
@@ -286,7 +317,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
 | `/assets/fonts/SarasaGothicSC-Regular.woff2` | 200 | 200（8 MB 那个，字体能下就行） |
 | `stsas.top/*` | 301 → 长域名同名路径+查询串 | 301（规则验证） |
 | `www.starlightsacredsanctuary.top/*` | 301 → 裸域 | 301 |
-| 邮件 | MX 在 QQ 企业邮 | 发一封测试信到 `astra@stsas.top` |
+| 邮件 | MX ×2 / DKIM(`qsjb2609._domainkey`) / SPF / DMARC 都在 QQ 企业邮 `[实测]` | 四条记录都还能解析 + 发一封测试信到 `astra@stsas.top` |
 
 **顺带确认发布范围**：`/MAINTENANCE.md`、`/README.md`、`/LICENSE` 现在**是公开可读的** `[实测]`
 （`/netlify.toml`、`/.gitignore`、`/.github/...` 不是）。第 4.2 节的默认方案会保持这个现状；
@@ -320,7 +351,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
 
 **还需要你提供 / 确认** `[待核对]`：
 
-1. **Netlify DNS 里两个 zone 的完整记录表**（尤其 `stsas.top` 有没有 DKIM / 其它 TXT / CNAME）
-   —— 唯一可能让邮箱静默断掉的信息，公网看不全
+1. ~~Netlify DNS 的完整记录表~~ —— **已拿到**：两个 zone 共 14 条，见第 3.1 节。
+   据此发现两条公网看不到的记录：`qqmail33f0a580` 的 CNAME 和 `qsjb2609._domainkey` 的 DKIM
+   （公网只查到过不存在的 `default._domainkey`）
 2. **注册商**：DNSSEC 是否未启用；NS 是否可自由修改
-3. 阶段 A 第 3 步核对导入记录时，把「实际导入的列表」贴回来，我逐条对照第 3 节的清单
+   （公网查不到 DS 记录，但注册商侧可能另有开关）
+3. 阶段 A 第 3 步核对导入记录时，把 Cloudflare **实际导入的列表**贴回来，我逐条对照第 3.2 节
