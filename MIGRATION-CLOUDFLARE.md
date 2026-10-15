@@ -118,14 +118,15 @@ mkdir -p _site && for f in *; do [ "$f" = "_site" ] || cp -r "$f" "_site/"; done
   而 CI 里只有 53 个文件 / 43 MB）—— 用 Direct Upload 时留意
 - 命令里 `[ "$f" = "_site" ]` 这个判断不能省，否则 `_site` 会被复制进自己
 
-**变体**（白名单写法，发布内容更干净，但代价是每加一个顶层目录都得记得加进来）：
+**备选变体**（白名单写法，**本轮已决定不采用** —— 采用上面的 glob 方案）：
+发布内容更干净，代价是每加一个顶层目录都得记得加进来。
 
 ```bash
 mkdir -p _site && cp -r index.html error.html sw.js about archive assets fleet main starmap tool _site/ && cp _site/error.html _site/404.html
 ```
 
 这个变体会顺带**不发布** `MAINTENANCE.md` / `README.md` / `LICENSE` / 本文档
-（注意：这几个现在在 Netlify 上是**公开可读的** `[实测]`，见第 8 节）。
+（注意：这几个现在在 Netlify 上是**公开可读的** `[实测]`，glob 方案会保持这个现状）。
 
 ### 4.3 不需要的东西
 
@@ -186,20 +187,59 @@ Single Redirects：免费版 **10 条/zone**、支持通配符、不支持正则
 
 ---
 
-## 7. 切换顺序（每步都有回滚点）
+## 7. 切换顺序（分四阶段，每阶段都可回滚）
 
-0. **抄全 DNS 记录**（第 3 节）。这一步没做完，不要动 NS
-1. Cloudflare 加两个 zone（**先不改 NS**）→ 逐条核对导入的记录 → 删掉指向 Netlify IP 的四条 A 记录
-2. 建 Pages 项目（第 5 节参数）→ 在 `xxx.pages.dev` 上跑完第 8 节清单
-3. 给 Pages 加自定义域（apex + www）→ Custom domains 里显示 Active、证书签发完成
-4. 注册商处改 NS。**建议先只改 `stsas.top`**（它只有跳转和邮箱，问题好定位），
-   观察 24 小时正常后再改主域名；嫌麻烦也可以一起改，但一起出问题时不好二分
-5. 全量验证（第 8 节），特别是邮箱（发一封测试信到 `astra@stsas.top`）
-6. 观察 3–7 天，一切正常后再回 Netlify 移除两个 custom domain（或直接关站）
-7. 收尾：改写 `MAINTENANCE.md` 的「部署」一节、删掉本文、`netlify.toml` 可以删掉
+**先说一个容易搞反的地方**：Pages 的自定义域在证书验证通过前**不会生效**，而验证要求
+`http://<域名>/.well-known/acme-challenge/*` 能被 Cloudflare 看到 —— NS 还指着 Netlify 时
+它一定验证不了，自定义域会一直停在 Pending `[推断]`（依据 Pages Known issues：
+「Cloudflare 无法为该主机名验证证书时，域名不会验证」）。所以正确顺序是
+**先搬 DNS、后换源站**，而不是「先激活自定义域，再改 NS」。
 
-**回滚点**：第 4 步之前，随时可以在注册商把 NS 改回 Netlify 的四个 nsone 地址，
-Netlify 那边什么都别拆就行。第 6 步之后 Netlify 才真正失去意义。
+### 阶段 A —— 准备（线上毫无变化）
+
+1. **抄全 DNS 记录**（第 3 节）。这一步没做完，不要动 NS
+2. Cloudflare → Add a site：依次加 `starlightsacredsanctuary.top`、`stsas.top`（Free 套餐），
+   记下 CF 给出的两组 NS 地址
+3. **逐条核对自动扫描导入的记录** —— 三条邮件记录（MX ×2、SPF、DMARC）一条都不能少、值不能变
+4. **四条指向 Netlify IP 的 A 记录先留着**（阶段 B 还要靠它们把流量送回去），
+   但把**代理关掉**（灰色云 / DNS only）：这样阶段 B 的站点行为与今天逐字节一致，
+   也就不必操心 CF 的 Universal SSL 是否就绪
+5. 建 Pages 项目（第 5 节参数），在 `xxx.pages.dev` 上验：
+   `verify-site.ps1 -BaseUrl https://xxx.pages.dev -SkipDomainChecks` → 应全 PASS
+
+### 阶段 B —— 搬 DNS（唯一有风险的窗口）
+
+6. **先只改 `stsas.top` 的 NS**（那边只有跳转和邮箱，出问题好定位），等生效后：
+   - 立刻建两条 `192.0.2.1` 占位记录（**已代理**，第 6 节）+ Single Redirect 规则，
+     把短域名跳转在新家恢复起来
+   - `verify-site.ps1 -ShortUrl https://stsas.top` 应全 PASS
+   - **发一封测试信到 `astra@stsas.top`**，确认 QQ 企业邮没断
+7. 再改主域名的 NS。此时访问路径是 **DNS(CF) → 源站(Netlify)**，站点必须还是好的：
+   跑一次 `verify-site.ps1`（**先不加** `-ShortUrl` 也行，加了也没问题）应全 PASS
+   > 这一步是整件事最值钱的地方：DNS 换了、源站没换，出问题几乎一定是 DNS/邮件，
+   > 而不是站点本身 —— 二分起来非常干净
+
+**回滚点**：阶段 B 的任何时刻，在注册商把 NS 改回 Netlify 的四个 nsone 地址即可，
+Netlify 那边什么都别拆。阶段 C 之后 Netlify 才真正失去意义。
+
+### 阶段 C —— 把源站换成 Pages
+
+8. 给 Pages 加自定义域：`starlightsacredsanctuary.top` + `www.starlightsacredsanctuary.top`
+   → CF 会在这个 zone 里自动建/替换成 Pages 的 CNAME（覆盖阶段 A 留着的 Netlify A 记录）
+   `[docs]`；证书签发完成后 Custom domains 里变成 Active
+9. 配 `www → 裸域` 的跳转规则（第 6 节末）
+10. **Purge Everything 一次**（Caching → Configuration → Purge Everything）：
+    阶段 B 期间 CF 边缘可能缓存过从 Netlify 取来的静态资源 `[docs]`
+11. 全量验证：
+    `verify-site.ps1 -ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`
+    → 应全 PASS（这就是当前基线，任何 FAIL 都是真回归）
+
+### 阶段 D —— 收尾
+
+12. 观察 3–7 天：站点、邮件、Service Worker 都正常
+13. 回 Netlify 移除两个 custom domain（或直接关站）
+14. 改写 `MAINTENANCE.md` 的「部署」一节、删掉本文、`netlify.toml` 可以删掉
+15. （可选）`sw.js`：`OFFLINE_URL` 改成 `/404`、`CACHE_VERSION` +1
 
 ---
 
@@ -270,10 +310,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1 `
 
 ---
 
-## 10. 待办：需要你本人确认的三件事 `[待核对]`
+## 10. 已定事项与待办
+
+**本轮已定**：
+
+- 发布范围走 **glob 排除方案**（第 4.2 节那条命令）——发布内容与今天一致；
+  白名单变体保留为备选，不采用
+- Cloudflare **已有账号**，两个域名还没加进去 → 从第 7 节「阶段 A」第 2 步开始
+
+**还需要你提供 / 确认** `[待核对]`：
 
 1. **Netlify DNS 里两个 zone 的完整记录表**（尤其 `stsas.top` 有没有 DKIM / 其它 TXT / CNAME）
-   —— 这是唯一可能让邮箱断掉的信息，我无法从公网看全
+   —— 唯一可能让邮箱静默断掉的信息，公网看不全
 2. **注册商**：DNSSEC 是否未启用；NS 是否可自由修改
-3. **发布范围**：用默认的 glob 方案（与今天一致，`MAINTENANCE.md` 等继续公开）
-   还是白名单方案（只发布站点文件）
+3. 阶段 A 第 3 步核对导入记录时，把「实际导入的列表」贴回来，我逐条对照第 3 节的清单
