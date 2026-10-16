@@ -59,6 +59,17 @@
                     console.log('[seamless] SW registration failed: ', err);
                 });
         });
+
+        /* 新版本接管时留个标记：说明刚部署过、SW 的缓存整个换了一轮，
+           下次导航补弹一次加载屏（各页 <head> 里读 sss-boot-next，读走即清）。
+           只在"本来就有控制器"时才记 —— 首次安装也会触发 controllerchange，
+           而那一次本来就已经弹过加载屏了，不能再多记一次。
+           注意这段必须在下面「预取回退」那个 return 之前。 */
+        var hadController = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (!hadController) return;
+            try { localStorage.setItem('sss-boot-next', '1'); } catch (err) { /* 无痕模式等，忽略 */ }
+        });
     }
 
     /* ------------------------ 预取回退（仅非 Chromium 内核） ------------------------ */

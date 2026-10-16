@@ -18,8 +18,23 @@
             var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
             var booted = false;
             try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
-            // 只有「这台浏览器还没走过加载流程」才显示：首次访问把资源缓存下来，之后各页无缝
-            if (force || !booted) {
+
+            // ① 这一次不是从 SW 缓存里拿的 → 该弹加载屏。controller 为空意味着：首次访问、
+            //    Ctrl+F5 硬刷新（硬刷新会连 Service Worker 一起绕过）、或站点数据被清过。
+            //    光看 sss-booted 标记不够 —— 它只记「这台浏览器走过加载流程」，
+            //    硬刷新时「标记还在」与「资源确实没走缓存」会分叉。
+            var cold = !navigator.serviceWorker.controller;
+
+            // ② 刚部署过新版本：seamless.js 在新 SW 接管（controllerchange）时留下的标记，
+            //    说明缓存整个换过一轮，这一趟补弹一次。读走即清，只补一次。
+            var afterUpdate = false;
+            try {
+                afterUpdate = localStorage.getItem('sss-boot-next') === '1';
+                if (afterUpdate) localStorage.removeItem('sss-boot-next');
+            } catch (e) {}
+
+            // ③ 其余情况（站内正常导航）：不弹，切换才不会闪
+            if (force || !booted || cold || afterUpdate) {
                 document.documentElement.className += ' sss-boot';
             }
 
