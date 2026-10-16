@@ -114,15 +114,15 @@
 /* 「站点公告」卡片：整张可点，所以要做成能点的样子（hover / 键盘聚焦转金） */
 .about-card--action {
     cursor: pointer;
-    transition: var(--ctl-transition), transform 0.25s, background-color 0.25s, border-color 0.25s;
+    transition: var(--ctl-transition), background-color 0.25s, border-color 0.25s;
 }
 
+/* hover / 键盘聚焦：淡金底 + 金色描边，不做位移（全站可点击卡片统一如此） */
 .about-card--action:hover,
 .about-card--action:focus-visible {
     outline: none;
     background: rgba(255, 215, 0, 0.06);
     border-color: rgba(255, 215, 0, 0.45);
-    transform: translateY(-2px);
 }
 
 .about-card__go {

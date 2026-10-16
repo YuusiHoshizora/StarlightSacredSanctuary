@@ -33,9 +33,8 @@
     display: block;
 }
 
-.fleet-card:hover {
-    transform: translateY(-6px);
-}
+/* 卡片 hover 只换底色与描边，不做位移
+   （全站可点击卡片统一如此 —— 档案主页的 .archive-card 就只有描边/阴影，见 DESIGN.md 第五节） */
 
 /* 科研与管理舰队 */
 .fleet-card--research:hover {

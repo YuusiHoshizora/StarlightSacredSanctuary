@@ -44,14 +44,38 @@
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--ctl-panel-radius);
 
-    transition: background 0.25s, border-color 0.25s, transform 0.25s;
+    transition: background 0.25s, border-color 0.25s, transform 0.25s ease;
 }
 
+/* 左侧那条标识竖线：落在卡片**外面**（留白里），一根实心金线，默认不显示，hover / 键盘聚焦时亮起。
+   选中态整体照主页面左栏的分类列表（.left-panel nav.vertical-nav a）：内容向右让开、左边亮一条竖线。
+   ⚠️ 全站只有这一处卡片会位移：其余可点击卡片一律只换描边/阴影，见 DESIGN.md 第五节。 */
+.tool-entry::before {
+    content: "";
+    position: absolute;
+    left: -8px;                  /* 卡片外侧（.tool-layout 的左内边距里，不会被裁掉） */
+    top: 13px;
+    bottom: 13px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--ctl-border-hover);   /* 实心：站内那支金，不做渐变 */
+    opacity: 0;
+    /* 只能写 opacity：--ctl-transition 只覆盖 color / background-color / border-color，
+       拿它来挂这条线等于没有过渡（线会硬出现） */
+    transition: opacity 0.25s ease;
+}
+
+/* 选中态：金色底 + 金色描边 + 整块向右抬起一点（右侧箭头不再另外滑动） */
 .tool-entry:hover,
 .tool-entry:focus-visible {
     background: rgba(255, 215, 0, 0.1);
     border-color: rgba(255, 215, 0, 0.45);
-    transform: translateY(-2px);
+    transform: translateX(5px);
+}
+
+.tool-entry:hover::before,
+.tool-entry:focus-visible::before {
+    opacity: 1;
 }
 
 .tool-entry__name {
@@ -77,16 +101,29 @@
     position: absolute;
     top: 50%;
     right: 14px;
-    transform: translateY(-50%);
+    transform: translateY(-50%);     /* 垂直居中，不是 hover 位移 */
     font-size: 15px;
     color: rgba(255, 255, 255, 0.3);
-    transition: color 0.25s, right 0.25s;
+    transition: color 0.25s;
 }
 
 .tool-entry:hover .tool-entry__arrow,
 .tool-entry:focus-visible .tool-entry__arrow {
-    right: 11px;
     color: #FFD700;
+}
+
+/* 「减少动态效果」：不位移、不过渡 */
+@media (prefers-reduced-motion: reduce) {
+    .tool-entry,
+    .tool-entry::before,
+    .tool-entry__arrow {
+        transition: none;
+    }
+
+    .tool-entry:hover,
+    .tool-entry:focus-visible {
+        transform: none;
+    }
 }
 
 /* ── 右栏：小工具 ──

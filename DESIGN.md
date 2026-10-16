@@ -126,6 +126,17 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 }
 ```
 
+**可点击的整块卡片**（`.archive-card` / `.fleet-card` / `.org-card` / `.org-supreme` /
+`.about-card--action` …）hover 与键盘聚焦**只做「描边转金 / 阴影加深 / 文字变色」，不做位移**：
+不要写 `transform: translateY(…)` 把卡片抬起来，`transition` 里也别再挂 `transform` —— 各页保持一致。
+基准就是「档案」主页的 `.archive-card`（只有描边 + 阴影）。
+
+> **唯一的例外：工具页的二级入口 `.tool-entry`。** 它是"列表条目"而不是卡片，选中态照
+> **主页面左栏的分类列表**（`.left-panel nav.vertical-nav a`）—— 整块**向右挪 5px**，
+> 同时左侧亮起一条 **3px 实心金色竖线**。这条线落在**卡片外面**（`::before`：`left:-8px`、
+> `top/bottom:13px`，底色直接取 `--ctl-border-hover`，不做渐变）。
+> 右侧箭头只把颜色转金，不再另外横向滑动。
+
 ### 正文里的链接
 ```css
 a { text-decoration: underline;
@@ -251,6 +262,7 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 - [ ] 新控件的圆角/颜色/过渡**全部来自 `--ctl-*`**，没有自创值
 - [ ] 金色只出现在 hover / 聚焦 / 选中 / 关键读数上
 - [ ] 键盘可达：可点的东西都能 Tab 到、有可见的 `:focus-visible`
+- [ ] 可点击卡片 hover 时**没有位移**（只换描边 / 阴影 / 文字颜色；唯一例外是工具页的 `.tool-entry`：右移 5px + 左侧金竖线）
 - [ ] 窄屏（≤768px）看过一眼：顶栏折叠、按钮不溢出、点得着
 - [ ] `prefers-reduced-motion` 下没有动画
 - [ ] 改过 HTML/CSS/JS → `sw.js` 的 `CACHE_VERSION` 已 +1、新资源已进预缓存
