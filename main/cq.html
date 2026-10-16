@@ -194,10 +194,11 @@
             </div>
 
             <!-- 下一段（SSTV / QSL 卡片）用：这一段先不接触发，留着结构与样式 -->
+            <!-- 收尾放的是**解出来的**那张，不是原始图：src 在解完时由 canvas 写成 data URL。
+                 原始 QSL.png 只是当初的参照物，这一页不再显示它。 -->
             <figure class="cq-screen" id="cq-screen" hidden>
-                <img src="../assets/img/QSL.png" alt="通过 SSTV 慢扫描电视传回来的 QSL 卡片"
-                     width="2854" height="2008" loading="lazy" decoding="async">
-                <figcaption>QSL · 2854 × 2008 —— 由 SSTV 慢扫描电视逐行传回</figcaption>
+                <img id="cq-decoded" alt="从这段 SSTV 音频逐像素解出来的 QSL 卡片">
+                <figcaption>ROBOT 36 · 320 × 240 —— 由上面那段音频逐像素解出</figcaption>
             </figure>
 
             <!-- preload="none"：这两段音频加起来 5 MB，不进预缓存，点了才下 -->
@@ -686,7 +687,12 @@
             btn.setAttribute('aria-pressed', 'false');
             stopLoop();
             render(audio.currentTime * 1000);
-            if (screen) screen.hidden = false;      // 顺带把那张 QSL 卡片放出来对一下
+            /* 把解出来的这张放出来（不是原始图）：canvas → data URL 塞进 <img> */
+            var shot = document.getElementById('cq-decoded');
+            if (screen && shot) {
+                shot.src = canvas.toDataURL('image/png');
+                screen.hidden = false;
+            }
         }
 
         function sync() {
