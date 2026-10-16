@@ -109,8 +109,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<!-- data-egg：本页是哪个彩蛋。assets/js/eggs.js 见到它就自动登记"已发现" -->
-<body data-egg="cq">
+<!-- 本页这个彩蛋**不靠 data-egg 自动登记**：要等用户点开解出来的图、
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -203,10 +202,16 @@
             <!-- 下一段（SSTV / QSL 卡片）用：这一段先不接触发，留着结构与样式 -->
             <!-- 收尾放的是**解出来的**那张，不是原始图：src 在解完时由 canvas 写成 data URL。
                  原始 QSL.png 只是当初的参照物，这一页不再显示它。 -->
-            <figure class="cq-screen" id="cq-screen" hidden>
-                <img id="cq-decoded" alt="从这段 SSTV 音频逐像素解出来的 QSL 卡片">
-                <figcaption>ROBOT 36 · 320 × 240 —— 由上面那段音频逐像素解出</figcaption>
-            </figure>
+            <!-- 解码完成后：先出「解析已完成」，再出解出来的那张图。
+                 点这张图会弹出原始卡片与下载按钮，并宣告彩蛋完成（见页面末尾的脚本）。 -->
+            <div class="cq-result" id="cq-screen" hidden>
+                <p class="cq-line cq-step" id="cq-done">解析已完成</p>
+                <figure class="cq-screen cq-step" id="cq-shot">
+                    <img id="cq-decoded" tabindex="0" role="button"
+                         alt="从这段 SSTV 音频逐像素解出来的 QSL 卡片（点击查看原始卡片）">
+                    <figcaption>ROBOT 36 · 320 × 240 —— 由上面那段音频逐像素解出（点图看原始卡片）</figcaption>
+                </figure>
+            </div>
 
             <!-- preload="none"：这两段音频加起来 5 MB，不进预缓存，点了才下 -->
             <audio id="cq-audio" src="../assets/audio/cq.wav" preload="none"></audio>
@@ -228,8 +233,9 @@
     (function () {
         'use strict';
 
-        var STEP_MS = 520;      // 两条文字之间的间隔
+        var STEP_MS = 340;      // 两条文字之间的间隔
         var FOLD_MS = 480;      // 折叠动画时长（与 CSS 的 transition 对齐）
+        var WARN_MS = 460;      // warn 那行之后多停一会儿 —— 出问题的地方值得多看两眼
         var reduced = false;
         try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
@@ -270,7 +276,7 @@
             caret.className = 'cq-log__caret';
             var i = 0;
             (function next() {
-                if (i >= lines.length) { window.setTimeout(fold, 420); return; }
+                if (i >= lines.length) { window.setTimeout(fold, 240); return; }
                 var item = lines[i];
                 var row = document.createElement('div');
                 row.className = 'cq-log__line';
@@ -282,7 +288,8 @@
                 row.appendChild(caret);
                 logEl.appendChild(row);
                 i++;
-                window.setTimeout(next, 86 + ((i * 37) % 62));   // 固定但参差的节奏
+                // 固定但参差的节奏；warn 那行之后停久一点
+                window.setTimeout(next, 52 + ((i * 37) % 46) + (item[0] === 'warn' ? WARN_MS : 0));
             })();
             function fold() {
                 box.classList.add('is-folded');
@@ -318,7 +325,7 @@
 
         /* 第一段：进页面就开始 */
         var section = document.querySelector('.cq-section');
-        if (section) runSteps(stepsIn(section, '#cq-sstv'));
+        if (section) runSteps(stepsIn(section, '#cq-sstv, #cq-screen'));
     })();
     </script>
 
@@ -759,6 +766,10 @@
             if (screen && shot) {
                 shot.src = canvas.toDataURL('image/png');
                 screen.hidden = false;
+                /* 先「解析已完成」，再出图 */
+                if (window.__cqRunSteps && window.__cqStepsIn) {
+                    window.__cqRunSteps(window.__cqStepsIn(screen));
+                }
             }
         }
 
@@ -799,5 +810,71 @@
     })();
     </script>
 
+    <!-- 点解出来的图 → 原始 QSL 卡片 + 下载按钮；同时底部弹出「彩蛋已发现」的小提示。
+         这个彩蛋的"完成点"就在这里：不是进页面就算发现，而是这个小提示弹出来才算。 -->
+    <div class="cq-modal" id="cq-modal" hidden>
+        <div class="cq-modal__panel" role="dialog" aria-modal="true" aria-label="原始 QSL 卡片">
+            <button type="button" class="cq-modal__close" id="cq-modal-close" aria-label="关闭">×</button>
+            <h2 class="cq-modal__title">原始 QSL 卡片</h2>
+            <img class="cq-modal__img" src="../assets/img/QSL.png" alt="原始的 QSL 卡片">
+            <p class="cq-modal__note">上面那张是这段音频逐像素解出来的；这一张是它的原始图，对比着看。</p>
+            <a class="cq-modal__dl" id="cq-download" href="../assets/img/QSL.png" download="QSL.png">下载原始图片</a>
+        </div>
+    </div>
+
+    <div class="cq-toast" id="cq-toast" role="status">
+        <span class="cq-toast__dot" aria-hidden="true"></span>彩蛋已发现：神秘信号
+    </div>
+
+    <script>
+    /* 点图 → 原始卡片弹窗 + 「彩蛋已发现」提示
+       ----------------------------------------------------------------------------
+       这个彩蛋的"完成"点在这里：**弹出那个小提示**才算发现，而不是进页面就算。
+       提示一弹出来就往 eggs.js 登记一次 —— 于是「关于」页的列表里出现它，
+       首页左下角那个点的名字也从 "???" 变成 "73"。 */
+    (function () {
+        'use strict';
+
+        var shot = document.getElementById('cq-decoded');
+        var modal = document.getElementById('cq-modal');
+        var closeBtn = document.getElementById('cq-modal-close');
+        var toast = document.getElementById('cq-toast');
+        if (!shot || !modal || !closeBtn || !toast) return;
+
+        var announced = false;
+
+        function announce() {
+            toast.classList.add('is-in');
+            window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
+            if (announced) return;
+            announced = true;
+            var eggs = window.SSS_EGGS;
+            if (eggs && eggs.findWhenActive) eggs.findWhenActive('cq');
+        }
+
+        function open() {
+            modal.hidden = false;
+            document.documentElement.classList.add('cq-modal-open');
+            announce();
+            closeBtn.focus();
+        }
+
+        function close() {
+            modal.hidden = true;
+            document.documentElement.classList.remove('cq-modal-open');
+            shot.focus();
+        }
+
+        shot.addEventListener('click', open);
+        shot.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+        closeBtn.addEventListener('click', close);
+        modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !modal.hidden) close();
+        });
+    })();
+    </script>
 </body>
 </html>
