@@ -405,6 +405,13 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
     由 eggs.js 填内容并放行；**一个都没发现时它就保持 hidden，整张卡片不出现**
   · 彩蛋页的音频与图片体积都不小（约 5 MB + 10 MB），**故意不进 SW 预缓存**，
     点了才下（`preload="none"` + `loading="lazy"`）；页面的 HTML/CSS/JS 照常进预缓存
+  · **入口**（CQ 那个）：首页左下角藏一个点（`index.html` 的 `#cq-dot`），默认不可见、也点不到，
+    名字 `???`。在首页任意处**点一下**，背景会画一圈扩散到 `CFG.RADIUS` 的金色波纹；
+    `assets/js/cq-entry.js` 用**同一个半径**做判定（半径从 `window.SSSHex.cfg.RADIUS` 现读，
+    所以"看到的扫描"和"判定"永远是同一个数）—— 点在范围内就被扫出来，现身并保持、
+    顺手很小声（volume 0.16）放一遍 `cq.wav`。点它进 CQ 页；之后名字变成 `73`。
+    · 「已扫出」记在 `sss.cq-dot`，「已发现」记在 `sss.eggs`（eggs.js），两者独立
+    · 想调难易：改 `background.js` 的 `RADIUS`（或只改首页那份 CFG 覆盖），判定跟着变
 - **首帧保护（防"闪一帧裸 HTML"）**：预渲染被提前激活时（悬停后马上点击），浏览器可能先把
   「样式表还在路上」的页面画出来。各页 `<head>` 里因此有两段内联脚本：
   · 前面那段：给 `<html>` 加 `js`，并留一个 2s 兜底（`html{background:black}` 让这段空窗

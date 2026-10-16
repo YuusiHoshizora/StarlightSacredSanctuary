@@ -1,0 +1,96 @@
+/* ==========================================================================
+   首页那个"要被扫出来"的 CQ 入口（结构与逻辑见 assets/js/cq-entry.js）
+   --------------------------------------------------------------------------
+    Appearance 参照星图上的星系：一个金色小点 + 一圈很淡的外环 + 名字。
+    默认整块不可见、也点不到；被背景的扫描扫到之后加 .is-found 才出现。
+    只出现在首页，所以这一份挂在首页的样式表里。
+   ========================================================================== */
+
+.cq-dot {
+    position: fixed;
+    left: 48px;
+    bottom: 56px;
+    z-index: 50;                    /* 在内容之上、顶栏(100)与加载屏(99999)之下 */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+
+    text-decoration: none;
+
+    /* 默认：看不见、点不到、也 Tab 不到 */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+.cq-dot.is-found {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.5s ease, visibility 0s;
+}
+
+/* 星系核：金色小点 + 两层光晕 */
+.cq-dot__core {
+    position: relative;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85),
+                0 0 20px rgba(255, 215, 0, 0.35);
+}
+
+/* 外层扫描环：像残留的波纹那样慢慢呼吸（呼应背景那圈点击波纹） */
+.cq-dot__core::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 50%;
+    animation: cq-dot-ring 2.6s ease-in-out infinite;
+}
+
+@keyframes cq-dot-ring {
+    0%, 100% { transform: scale(1);    opacity: 0.55; }
+    50%      { transform: scale(1.28); opacity: 0.12; }
+}
+
+.cq-dot__name {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: var(--ctl-transition);
+}
+
+/* 跟站内其它可点元素一样：hover / 键盘聚焦转金 */
+.cq-dot:hover .cq-dot__name,
+.cq-dot:focus-visible .cq-dot__name {
+    color: var(--ctl-fg-hover);
+}
+
+.cq-dot:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 6px;
+    border-radius: var(--ctl-radius);
+}
+
+@media (max-width: 768px) {
+    .cq-dot {
+        left: 18px;
+        bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cq-dot__core::before {
+        animation: none;
+    }
+}
