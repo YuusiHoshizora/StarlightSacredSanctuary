@@ -259,6 +259,18 @@
     to   { opacity: 1; transform: none; }
 }
 
+/* 解码出来的画面：320×240，按行填进去 */
+.cq-console__canvas {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    margin: 0 0 14px;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-radius);
+}
+
 /* SSTV 的行日志会一路长到 240 行，给它自己的滚动区 */
 .cq-console__text--scroll {
     max-height: 176px;

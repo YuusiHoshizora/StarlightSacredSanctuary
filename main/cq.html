@@ -187,6 +187,7 @@
                         <span class="cq-console__lamp" id="cq-sstv-lamp" aria-hidden="true"></span>
                         <span class="cq-console__meta">ROBOT 36 · 320×240 · 150 ms/行</span>
                     </div>
+                    <canvas class="cq-console__canvas" id="cq-sstv-canvas" width="320" height="240"></canvas>
                     <div class="cq-console__code" id="cq-sstv-code"></div>
                     <div class="cq-console__text cq-console__text--scroll" id="cq-sstv-text"></div>
                 </div>
@@ -447,17 +448,20 @@
     </script>
 
     <script>
-    /* SSTV（Robot 36）解析台
-       ----------------------------------------------------------------------------
-       这一段与上面摩斯那段**结构完全一样**，只有解析内容不同：
-       那边是点划与明文，这边是 240 行的帧结构与每行的分隔标记。
-       时间轴同样**只读 audio.currentTime**，所以暂停就是同步暂停。
-
-       参数是量出来的（不是从规格书上抄的）：240 行 × 150ms；
-       每行 = 9ms 行同步(1200Hz) + 3ms 休止(1500Hz) + 88ms 亮度 + 4.5ms 分隔 + 44ms 色度 + 1.5ms 余量；
-       首个同步在 300ms（前面是 300ms 的 1900Hz leader）；
-       分隔段 1500 / 2300Hz 交替 —— 那是 Robot 36 用来区分这行送 R-Y 还是 B-Y 的标记。
-       （下一步把像素真正解成图时，只要把这里的相位读数换成逐像素的频率估计即可。） */
+    /* SSTV（Robot 36）实时解码器 —— 把音频解成画面
+       ---------------------------------------------------------------------------
+       参数全部来自对这段 wav 的实测（不是抄规格书）：
+         240 行 × 150ms；每行 = 9 同步(1200Hz) + 3 休止 + 88 亮度 + 4.5 分隔 + 44 色度 + 1.5 余量；
+         首个同步在 300ms（前面 300ms 是 1900Hz leader）；
+         分隔段 1500/2300 交替 —— 实测 0 基偶数行送 B-Y、奇数行送 R-Y。
+       解调：正交解调（乘 1900Hz 的 cos/sin 搬到基带）→ 每个像素取复基带均值 →
+             相邻像素求相位差 → 瞬时频率。这段音频是纯正弦满幅，一个像素
+             只要十来个样本的加减乘除就能定频，比 FFT 便宜得多，也足够准。
+       同步：不自己找同步头，直接用 audio.currentTime 定位到行 ——
+             所以暂停/拖动进度条，画面都跟着，和上面摩斯那段一个道理。
+       采样：整段 wav 先 fetch + decodeAudioData 拿 PCM（3.1MB，本来就要下载），
+             再按播放位置增量解码。比实时抓流稳，也不受 Web Audio 自动播放策略影响。
+       ========================================================================== */
     (function () {
         'use strict';
 
@@ -468,29 +472,140 @@
         var lamp = document.getElementById('cq-sstv-lamp');
         var codeEl = document.getElementById('cq-sstv-code');
         var textEl = document.getElementById('cq-sstv-text');
+        var canvas = document.getElementById('cq-sstv-canvas');
         var screen = document.getElementById('cq-screen');
         var morse = document.getElementById('cq-audio');
-        if (!stage || !btn || !audio || !box || !lamp || !codeEl || !textEl) return;
+        if (!stage || !btn || !audio || !box || !lamp || !codeEl || !textEl || !canvas) return;
 
-        var VOLUME = 0.35;
-        var LEAD_MS = 300;          // leader
-        var LINE_MS = 150;          // 实测：行周期整整齐齐 150ms
-        var LINES = 240;            // 240 × 150ms = 36.0s，正是模式名里的"36"
+        var LEAD_MS = 300, LINE_MS = 150, LINES = 240;
         var T_SYNC = 9, T_PORCH = 3, T_Y = 88, T_SEP = 4.5, T_CHROMA = 44;
-        var TOTAL_MS = LEAD_MS + LINES * LINE_MS;
+        var W = 320, CW = 160, H = 240;      // 亮度 320 点；色度横向下采样 2:1
+        var F0 = 1900;                       // 基带中心频率
 
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+
+        /* ---------------- 取 PCM ---------------- */
+        var pcm = null, sr = 44100, loading = false, failed = false;
+        function loadPcm() {
+            if (pcm || loading) return;
+            loading = true;
+            fetch(audio.getAttribute('src'))
+                .then(function (r) { return r.arrayBuffer(); })
+                .then(function (buf) {
+                    var AC = window.AudioContext || window.webkitAudioContext;
+                    return new AC().decodeAudioData(buf);
+                })
+                .then(function (ab) {
+                    sr = ab.sampleRate;
+                    pcm = ab.getChannelData(0);
+                    loading = false;
+                })
+                .catch(function () { loading = false; failed = true; });
+        }
+
+        /* ---------------- 解调 ---------------- */
+        /* 把 start 起 len 个样本搬到基带，返回复均值 */
+        function baseband(start, len) {
+            var re = 0, im = 0, n, ph, x;
+            for (var i = 0; i < len; i++) {
+                n = start + i;
+                if (n < 0 || n >= pcm.length) continue;
+                ph = 2 * Math.PI * F0 * n / sr;
+                x = pcm[n];
+                re += x * Math.cos(ph);
+                im -= x * Math.sin(ph);
+            }
+            return { re: re / len, im: im / len };
+        }
+
+        /* 扫一段（从 startMs 起、durMs 长、取 count 个点），返回每个点的瞬时频率 */
+        function demodScan(startMs, durMs, count) {
+            var s0 = startMs * sr / 1000;
+            var step = (durMs * sr / 1000) / count;
+            var n = Math.max(2, Math.round(step));
+            var out = new Float32Array(count);
+            var prev = null;
+            for (var p = 0; p < count; p++) {
+                var z = baseband(Math.round(s0 + p * step), n);
+                if (prev) {
+                    var dr = z.re * prev.re + z.im * prev.im;
+                    var di = z.im * prev.re - z.re * prev.im;
+                    out[p] = F0 + Math.atan2(di, dr) * sr / (2 * Math.PI * n);
+                } else {
+                    out[p] = F0;
+                }
+                prev = z;
+            }
+            return out;
+        }
+
+        /* 频率 → 归一化取值：亮度 1500=黑 2300=白；色度 1900 为中性 */
+        function luma(f) { var v = (f - 1500) / 800; return v < 0 ? 0 : (v > 1 ? 1 : v); }
+        function chroma(f) { var v = (f - 1900) / 400; return v < -1 ? -1 : (v > 1 ? 1 : v); }
+
+        var lineY = [], lineC = [], lineF = [];
+        function decodeLineY(i) {
+            var f = demodScan(LEAD_MS + i * LINE_MS + T_SYNC + T_PORCH, T_Y, W);
+            var out = lineY[i] || (lineY[i] = new Uint8ClampedArray(W));
+            for (var p = 0; p < W; p++) out[p] = Math.round(luma(f[p]) * 255);
+            lineF[i] = f;
+            return out;
+        }
+        function decodeLineC(i) {
+            var f = demodScan(LEAD_MS + i * LINE_MS + T_SYNC + T_PORCH + T_Y + T_SEP, T_CHROMA, CW);
+            var out = lineC[i] || (lineC[i] = new Float32Array(CW));
+            for (var p = 0; p < CW; p++) out[p] = chroma(f[p]);
+            return out;
+        }
+
+        /* ---------------- 上屏 ---------------- */
+        var row = ctx.createImageData(W, 1);
+        function paintRow(i, upto) {
+            var y = lineY[i];
+            if (!y) return;
+            var pair = i - (i % 2);
+            var cB = lineC[pair], cR = lineC[pair + 1];   // 偶数行 B-Y、奇数行 R-Y
+            var hasC = !!(cB && cR);
+            var d = row.data, cb, cr, Y, r, g, b, x2;
+            for (var x = 0; x < upto; x++) {
+                Y = y[x];
+                r = g = b = Y;
+                if (hasC) {
+                    x2 = (x / 2) | 0;
+                    cb = 128 + 127 * cB[x2];
+                    cr = 128 + 127 * cR[x2];
+                    r = Y + 1.402 * (cr - 128);
+                    g = Y - 0.344136 * (cb - 128) - 0.714136 * (cr - 128);
+                    b = Y + 1.772 * (cb - 128);
+                }
+                d[x * 4]     = r < 0 ? 0 : (r > 255 ? 255 : r);
+                d[x * 4 + 1] = g < 0 ? 0 : (g > 255 ? 255 : g);
+                d[x * 4 + 2] = b < 0 ? 0 : (b > 255 ? 255 : b);
+                d[x * 4 + 3] = 255;
+            }
+            ctx.putImageData(row, 0, i, 0, 0, Math.max(1, upto), 1);
+        }
+        function clearAll() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, H);
+            lineY = []; lineC = []; lineF = [];
+        }
+
+        /* ---------------- 状态与日志 ---------------- */
         function pad3(n) { return n < 10 ? '00' + n : (n < 100 ? '0' + n : '' + n); }
-
-        /* 这一行送的是哪路色度：实测第 2 个同步头(0 基下标 1)对应 1500Hz，随后交替 */
         function sepOf(i) { return (i % 2 === 1) ? '1500 · R-Y' : '2300 · B-Y'; }
-
-        /* 当前处在这一行的哪一段 —— 就是"实时解析"的读数 */
-        function phase(t) {
-            var u = t - LEAD_MS;
-            if (u < 0) return '等待载波';
-            var i = Math.floor(u / LINE_MS);
-            if (i >= LINES) return '帧结束';
-            var k = u - i * LINE_MS;
+        var logged = 0;
+        function logLine(i) {
+            var el = document.createElement('div');
+            el.className = 'cq-log__line';
+            el.textContent = 'L' + pad3(i + 1) + '  亮度 ✓  分隔 ' + sepOf(i);
+            textEl.appendChild(el);
+            textEl.scrollTop = textEl.scrollHeight;
+        }
+        function phase(k, i) {
+            if (i >= LINES) return '帧结束';      // i 被夹到 LINES，k 就越界了，别再报百分比
             if (k < T_SYNC) return '行同步 1200 Hz';
             if (k < T_SYNC + T_PORCH) return '休止 1500 Hz';
             if (k < T_SYNC + T_PORCH + T_Y) return '亮度扫描 ' + Math.round((k - 12) / T_Y * 100) + '%';
@@ -498,27 +613,54 @@
             return '色度扫描 ' + Math.round((k - 104.5) / T_CHROMA * 100) + '%';
         }
 
-        var logged = 0;
-        function logLine(i) {
-            var row = document.createElement('div');
-            row.className = 'cq-log__line';
-            row.textContent = 'L' + pad3(i + 1) + '  亮度 ✓  分隔 ' + sepOf(i);
-            textEl.appendChild(row);
-            textEl.scrollTop = textEl.scrollHeight;
-        }
-
+        /* ---------------- 主循环：只读 audio.currentTime ---------------- */
+        var decoded = 0;      // 已整行解完的行数
         function render(t) {
+            if (failed) { codeEl.textContent = '样本取回失败'; return; }
+            if (!pcm) { codeEl.textContent = loading ? '取回样本中……' : '等待开始'; return; }
+
             var u = t - LEAD_MS;
             var i = u < 0 ? 0 : Math.floor(u / LINE_MS);
+            if (i > LINES) i = LINES;
             var k = u < 0 ? 0 : u - i * LINE_MS;
+
+            if (i < decoded) {                 // 往前拖了：整幅重来
+                clearAll();
+                textEl.textContent = '';
+                decoded = 0; logged = 0;
+            }
+            while (decoded < Math.min(i, LINES)) {
+                decodeLineY(decoded);
+                decodeLineC(decoded);
+                paintRow(decoded, W);
+                if (decoded % 2 === 1) {        // 一对收齐，两行一起上色
+                    paintRow(decoded - 1, W);
+                    paintRow(decoded, W);
+                }
+                logLine(decoded);
+                decoded++;
+            }
+
+            /* 当前行：画到已经扫过的那一段，所以能看见一行行扫过去 */
+            var liveHz = 0;
+            if (u >= 0 && i < LINES) {
+                var yEl = k - (T_SYNC + T_PORCH);
+                if (yEl > 0) {
+                    var upto = Math.min(W, Math.floor(yEl / T_Y * W));
+                    if (upto > 0) {
+                        decodeLineY(i);
+                        paintRow(i, upto);
+                        liveHz = lineF[i][upto - 1];
+                    }
+                }
+            }
+
             var on = u >= 0 && i < LINES && k < (T_SYNC + T_PORCH + T_Y + T_SEP + T_CHROMA);
             lamp.className = 'cq-console__lamp' + (on ? ' is-on' : '');
 
-            var upto = Math.min(i, LINES);
-            while (logged < upto) { logLine(logged); logged++; }
-
             var n = Math.min(LINES, (u < 0 ? 1 : i + 1));
-            codeEl.textContent = '第 ' + pad3(n) + ' / ' + LINES + ' 行 · ' + phase(t);
+            codeEl.textContent = '第 ' + pad3(n) + ' / ' + LINES + ' 行 · ' + phase(k, i) +
+                (liveHz ? ' · ' + Math.round(liveHz) + ' Hz' : '');
         }
 
         var raf = 0;
@@ -532,7 +674,7 @@
             btn.setAttribute('aria-pressed', 'false');
             stopLoop();
             render(audio.currentTime * 1000);
-            if (screen) screen.hidden = false;      // 收完整帧，把 QSL 卡片放出来
+            if (screen) screen.hidden = false;      // 顺带把那张 QSL 卡片放出来对一下
         }
 
         function sync() {
@@ -549,14 +691,14 @@
             }
         }
 
-        /* 摩斯那段解析完，把这一块放出来（Morse 的 finish() 会摘掉 hidden） */
-        audio.volume = VOLUME;
+        audio.volume = 0.35;
 
         btn.addEventListener('click', function (e) {
             if (e && e.preventDefault) e.preventDefault();
             if (btn.getAttribute('aria-disabled') === 'true') return;
             if (audio.paused || audio.ended) {
-                if (morse) morse.pause();           // 同一时刻只放一段
+                loadPcm();                             // 第一次点开始才去取样本
+                if (morse) morse.pause();
                 var p = audio.play();
                 if (p && p.catch) p.catch(function () {});
             } else {
@@ -567,6 +709,7 @@
         audio.addEventListener('play', sync);
         audio.addEventListener('pause', sync);
         audio.addEventListener('ended', sync);
+        audio.addEventListener('seeked', function () { render(audio.currentTime * 1000); });
         sync();
     })();
     </script>
