@@ -171,6 +171,27 @@
                 <div class="cq-console__text" id="cq-text"><span class="cq-console__caret"></span></div>
             </div>
 
+            <!-- 第二阶段：SSTV（Robot 36）。摩斯那段解析完才出现（hidden 由脚本摘掉）。
+                 结构与上面那段一模一样，只是解析内容从点划/明文换成了帧结构与每行的分隔标记 -->
+            <div class="cq-sstv" id="cq-sstv" hidden>
+                <p class="cq-line">异常信号解析完成。</p>
+                <p class="cq-line">发现额外的附属信息，准备进行解析。</p>
+                <p class="cq-line">准备已完成，随时可以开始。</p>
+
+                <div class="cq-actions">
+                    <a class="cq-start" id="cq-sstv-start" href="#" role="button" aria-pressed="false">开始</a>
+                </div>
+
+                <div class="cq-console" id="cq-sstv-console" hidden>
+                    <div class="cq-console__head">
+                        <span class="cq-console__lamp" id="cq-sstv-lamp" aria-hidden="true"></span>
+                        <span class="cq-console__meta">ROBOT 36 · 320×240 · 150 ms/行</span>
+                    </div>
+                    <div class="cq-console__code" id="cq-sstv-code"></div>
+                    <div class="cq-console__text cq-console__text--scroll" id="cq-sstv-text"></div>
+                </div>
+            </div>
+
             <!-- 下一段（SSTV / QSL 卡片）用：这一段先不接触发，留着结构与样式 -->
             <figure class="cq-screen" id="cq-screen" hidden>
                 <img src="../assets/img/QSL.png" alt="通过 SSTV 慢扫描电视传回来的 QSL 卡片"
@@ -385,6 +406,9 @@
             stopLoop();
             box.hidden = false;
             render(audio.currentTime * 1000);   // 画面停在"整段都解出来"
+            // 摩斯解析完 → 放出第二段（SSTV）那三行字与「开始」
+            var sstv = document.getElementById('cq-sstv');
+            if (sstv) sstv.hidden = false;
         }
 
         function sync() {
@@ -410,6 +434,131 @@
                 if (audio.ended) audio.currentTime = 0;   // 播完了再按就是从头再来
                 var p = audio.play();
                 if (p && p.catch) p.catch(function () { /* 被浏览器拦下就保持现状 */ });
+            } else {
+                audio.pause();
+            }
+        });
+
+        audio.addEventListener('play', sync);
+        audio.addEventListener('pause', sync);
+        audio.addEventListener('ended', sync);
+        sync();
+    })();
+    </script>
+
+    <script>
+    /* SSTV（Robot 36）解析台
+       ----------------------------------------------------------------------------
+       这一段与上面摩斯那段**结构完全一样**，只有解析内容不同：
+       那边是点划与明文，这边是 240 行的帧结构与每行的分隔标记。
+       时间轴同样**只读 audio.currentTime**，所以暂停就是同步暂停。
+
+       参数是量出来的（不是从规格书上抄的）：240 行 × 150ms；
+       每行 = 9ms 行同步(1200Hz) + 3ms 休止(1500Hz) + 88ms 亮度 + 4.5ms 分隔 + 44ms 色度 + 1.5ms 余量；
+       首个同步在 300ms（前面是 300ms 的 1900Hz leader）；
+       分隔段 1500 / 2300Hz 交替 —— 那是 Robot 36 用来区分这行送 R-Y 还是 B-Y 的标记。
+       （下一步把像素真正解成图时，只要把这里的相位读数换成逐像素的频率估计即可。） */
+    (function () {
+        'use strict';
+
+        var stage = document.getElementById('cq-sstv');
+        var btn = document.getElementById('cq-sstv-start');
+        var audio = document.getElementById('cq-audio-sstv');
+        var box = document.getElementById('cq-sstv-console');
+        var lamp = document.getElementById('cq-sstv-lamp');
+        var codeEl = document.getElementById('cq-sstv-code');
+        var textEl = document.getElementById('cq-sstv-text');
+        var screen = document.getElementById('cq-screen');
+        var morse = document.getElementById('cq-audio');
+        if (!stage || !btn || !audio || !box || !lamp || !codeEl || !textEl) return;
+
+        var VOLUME = 0.35;
+        var LEAD_MS = 300;          // leader
+        var LINE_MS = 150;          // 实测：行周期整整齐齐 150ms
+        var LINES = 240;            // 240 × 150ms = 36.0s，正是模式名里的"36"
+        var T_SYNC = 9, T_PORCH = 3, T_Y = 88, T_SEP = 4.5, T_CHROMA = 44;
+        var TOTAL_MS = LEAD_MS + LINES * LINE_MS;
+
+        function pad3(n) { return n < 10 ? '00' + n : (n < 100 ? '0' + n : '' + n); }
+
+        /* 这一行送的是哪路色度：实测第 2 个同步头(0 基下标 1)对应 1500Hz，随后交替 */
+        function sepOf(i) { return (i % 2 === 1) ? '1500 · R-Y' : '2300 · B-Y'; }
+
+        /* 当前处在这一行的哪一段 —— 就是"实时解析"的读数 */
+        function phase(t) {
+            var u = t - LEAD_MS;
+            if (u < 0) return '等待载波';
+            var i = Math.floor(u / LINE_MS);
+            if (i >= LINES) return '帧结束';
+            var k = u - i * LINE_MS;
+            if (k < T_SYNC) return '行同步 1200 Hz';
+            if (k < T_SYNC + T_PORCH) return '休止 1500 Hz';
+            if (k < T_SYNC + T_PORCH + T_Y) return '亮度扫描 ' + Math.round((k - 12) / T_Y * 100) + '%';
+            if (k < T_SYNC + T_PORCH + T_Y + T_SEP) return '分隔 ' + sepOf(i) + ' Hz';
+            return '色度扫描 ' + Math.round((k - 104.5) / T_CHROMA * 100) + '%';
+        }
+
+        var logged = 0;
+        function logLine(i) {
+            var row = document.createElement('div');
+            row.className = 'cq-log__line';
+            row.textContent = 'L' + pad3(i + 1) + '  亮度 ✓  分隔 ' + sepOf(i);
+            textEl.appendChild(row);
+            textEl.scrollTop = textEl.scrollHeight;
+        }
+
+        function render(t) {
+            var u = t - LEAD_MS;
+            var i = u < 0 ? 0 : Math.floor(u / LINE_MS);
+            var k = u < 0 ? 0 : u - i * LINE_MS;
+            var on = u >= 0 && i < LINES && k < (T_SYNC + T_PORCH + T_Y + T_SEP + T_CHROMA);
+            lamp.className = 'cq-console__lamp' + (on ? ' is-on' : '');
+
+            var upto = Math.min(i, LINES);
+            while (logged < upto) { logLine(logged); logged++; }
+
+            var n = Math.min(LINES, (u < 0 ? 1 : i + 1));
+            codeEl.textContent = '第 ' + pad3(n) + ' / ' + LINES + ' 行 · ' + phase(t);
+        }
+
+        var raf = 0;
+        function tick() { render(audio.currentTime * 1000); raf = window.requestAnimationFrame(tick); }
+        function stopLoop() { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } }
+
+        function finish() {
+            btn.textContent = '解析完成';
+            btn.setAttribute('aria-disabled', 'true');
+            btn.setAttribute('tabindex', '-1');
+            btn.setAttribute('aria-pressed', 'false');
+            stopLoop();
+            render(audio.currentTime * 1000);
+            if (screen) screen.hidden = false;      // 收完整帧，把 QSL 卡片放出来
+        }
+
+        function sync() {
+            if (audio.ended) { finish(); return; }
+            var playing = !audio.paused && !audio.ended;
+            btn.textContent = playing ? '暂停' : '开始';
+            btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
+            if (playing) {
+                box.hidden = false;
+                if (!raf) raf = window.requestAnimationFrame(tick);
+            } else {
+                stopLoop();
+                render(audio.currentTime * 1000);
+            }
+        }
+
+        /* 摩斯那段解析完，把这一块放出来（Morse 的 finish() 会摘掉 hidden） */
+        audio.volume = VOLUME;
+
+        btn.addEventListener('click', function (e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (btn.getAttribute('aria-disabled') === 'true') return;
+            if (audio.paused || audio.ended) {
+                if (morse) morse.pause();           // 同一时刻只放一段
+                var p = audio.play();
+                if (p && p.catch) p.catch(function () {});
             } else {
                 audio.pause();
             }

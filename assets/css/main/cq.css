@@ -229,6 +229,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .cq-sstv {
+        animation: none;
+    }
+
     .cq-log__caret,
     .cq-console__caret {
         animation: none;
@@ -239,7 +243,30 @@
     }
 }
 
-/* SSTV 收到的画面：下一段用，解码走完之前整块不显示（hidden 由脚本摘掉） */
+/* 第二阶段（SSTV）整块：摩斯那段解析完之前 hidden —— 不用 opacity 藏，
+   那样虽然看不见但仍占着高度，会在控制台下面留一大片空白。出现时淡入并上移一点。 */
+.cq-sstv {
+    margin-top: 34px;
+    animation: cq-sstv-in 0.5s ease both;
+}
+
+.cq-sstv[hidden] {
+    display: none;
+}
+
+@keyframes cq-sstv-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* SSTV 的行日志会一路长到 240 行，给它自己的滚动区 */
+.cq-console__text--scroll {
+    max-height: 176px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+/* SSTV 收到的画面：整帧解完才显示（hidden 由脚本摘掉） */
 .cq-screen {
     margin: 26px 0 0;
 }
