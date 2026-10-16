@@ -372,6 +372,49 @@ nav a:hover{
     }
 }
 
+/* ==========================================================================
+   跨页切换：内容"先藏住、字体就绪再淡入"
+   --------------------------------------------------------------------------
+   背景画布（.hex-bg）与顶栏在每个页面都是同一套，本来就只有内容在变 ——
+   所以这里只让**内容区**参与过渡，外壳完全不动，看起来就是"外壳常驻、内容替换"。
+   顺带把字体解码那 0.3–0.7 秒（见上面「字体载入策略」）的空窗盖住：内容不是
+   "先画回退字体再换掉"，而是等字体就绪后整体淡入，不会看到字形突变。
+
+   · sss-switch    ← 各页 <head> 里同步加（看 referrer 判断是不是站内跳转）
+                     内容透明度 0；首次绘制前就藏好，不会"先画出来再藏"
+   · sss-switch-in ← 字体就绪后加 → 内容淡入
+   两个类都由 assets/js/boot.js 收尾摘掉；<head> 里另有 5 秒兜底，不怕脚本没跑起来。
+
+   内容容器的选择器要照顾到全部页面：多数页是 <main>，主页面没有 <main>（它的内容
+   在 <div class="main-layout"> 里，含左右两栏），页脚在 <main> 之外、单独收一次。
+   ========================================================================== */
+
+html.sss-switch main,
+html.sss-switch .main-layout,
+html.sss-switch .site-footer{
+    opacity:0;
+}
+
+html.sss-switch-in main,
+html.sss-switch-in .main-layout,
+html.sss-switch-in .site-footer{
+    opacity:1;
+    animation:sss-content-in 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes sss-content-in{
+    from{ opacity:0 }
+    to  { opacity:1 }
+}
+
+@media (prefers-reduced-motion: reduce){
+    html.sss-switch-in main,
+    html.sss-switch-in .main-layout,
+    html.sss-switch-in .site-footer{
+        animation:none;
+    }
+}
+
 @supports not (view-transition-name: none){
 
     @keyframes page-fade-in{

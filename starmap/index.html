@@ -22,6 +22,23 @@
             if (force || !booted) {
                 document.documentElement.className += ' sss-boot';
             }
+
+            // 站内跳转进来的（referrer 与本页同源）：先把内容藏起来，等字体就绪再淡入。
+            // 背景画布与导航栏全站一致，所以只让内容参与过渡 —— 看起来就是
+            // 「外壳常驻、内容替换」，顺带把字体解码那 0.3–0.7 秒的空窗盖住。
+            // 必须在这里同步决定（首次绘制前），否则会先把内容画出来再藏、闪一下。
+            var fromSite = false;
+            try {
+                fromSite = !!document.referrer && new URL(document.referrer).origin === location.origin;
+            } catch (e) {}
+            if (fromSite) {
+                document.documentElement.classList.add('sss-switch');
+                // 兜底：万一 boot.js 没跑起来，5 秒后也得把内容放出来
+                window.setTimeout(function () {
+                    document.documentElement.classList.remove('sss-switch');
+                    document.documentElement.classList.add('sss-switch-in');
+                }, 5000);
+            }
         })();
     </script>
     <!-- 首帧保护：预渲染被提前激活时（悬停后就点），浏览器可能先画一帧"样式表还在路上"的

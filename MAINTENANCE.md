@@ -335,8 +335,21 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
     静态资源默认值），等于**每次用字体都要回源校验一次**。想把这 0.3–0.7 秒压下去，
     可以给 `/assets/fonts/*` 加长缓存（Cloudflare 的 Cache Rule，或资源目录里的 `_headers`）
 - **背景**：`background.js` 在 `<div class="background">` 里绘制星野 + 六边形网格 +
-  鼠标附近的激活区特效；星图页用 `starmap-bg.js` 覆盖了这套参数
-- **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪
+  鼠标附近的激活区特效；星图页用 `starmap-bg.js` 覆盖了这套参数。
+  ⚠️ **星星必须用固定种子生成**（`newStar()` 里的 `starRnd`），**不要用 `Math.random()`**：
+  背景要在各页面之间长得一模一样，否则每次翻页星位重排、切换时那片星空会跳一下，
+  「外壳常驻、只换内容」的跨页过渡立刻露馅。六边形网格与星云本来就是确定的，只有星星是随机的；
+  换一片星空就改那个种子
+- **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪；
+   navbar 是共享元素（`view-transition-name:site-navbar`），所以它"钉住"不动。
+  另有「内容先藏、字体就绪再淡入」这一层（`sss-switch` / `sss-switch-in`）：
+  · 各页 `<head>` 里同步判断这次是不是**站内跳转**（`document.referrer` 同源），是就给
+    `<html>` 挂 `sss-switch` —— 只让内容区（`main` / `.main-layout` / `.site-footer`）透明，
+    **背景画布与顶栏完全不参与**，于是看起来就是"外壳不动、内容淡入"
+  · `assets/js/boot.js` 末尾那个独立 IIFE 等同一批字面就绪后换成 `sss-switch-in` 淡入，
+    随后把两个类都摘掉；`<head>` 里另有 5 秒兜底，脚本没跑起来也不会把内容永久藏着
+  · 这一层顺带把字体解码那 0.3–0.7 秒的空窗盖住了 —— 它是上面「字体载入策略」的配套
+  · 加新页面时内容容器要能被上面那三个选择器覆盖到（要么用 `<main>`，要么用 `.main-layout`）
 - **首屏加载屏**（**全站每页都有**）：资源还没进缓存时（首次访问 / 缓存被清掉）显示，
   等就绪后上下两扇门滑开、露出页面；已就绪的页面不显示。
   · 判断在**各页 `<head>` 里那段内联脚本**（必须同步、首次绘制前决定，否则会闪一下）：

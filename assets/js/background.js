@@ -559,16 +559,31 @@
     }
   }
 
+  /* 星星用**固定种子**生成，不要用 Math.random()。
+     背景要在各页面之间长得一模一样 —— 六边形网格与星云本来就是确定的，只有星星是随机的；
+     星位每次重排，页面切换时那片星空就会跳一下，"外壳常驻、只换内容"的跨页过渡立刻露馅。
+     换一片星空：改下面的种子即可。 */
+  var starRnd = (function (seed) {
+    var a = seed >>> 0;
+    return function () {                       // mulberry32：小、快、够用
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  })(20250101);
+
   function newStar() {
-    var r = Math.random();
+    var r = starRnd();
     return {
-      x: Math.random() * vw,
-      y: Math.random() * vh,
+      x: starRnd() * vw,
+      y: starRnd() * vh,
       rad: 0.4 + r * r * 1.5,             // 多数是小星点
-      bright: 0.22 + Math.random() * 0.78,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.5 + Math.random() * 1.5,
-      warm: Math.random() < 0.3           // 部分星星偏金
+      bright: 0.22 + starRnd() * 0.78,
+      phase: starRnd() * Math.PI * 2,
+      speed: 0.5 + starRnd() * 1.5,
+      warm: starRnd() < 0.3               // 部分星星偏金
     };
   }
 

@@ -14,6 +14,21 @@
  * 页面里只需要一个空的 <div class="boot" id="boot"></div>，
  * 里面的结构由这里生成 —— 8 个页面不用重复那一段。
  * ========================================================================== */
+
+/* 这一趟要等哪些字面。
+   按各页实际会渲染到的来：界面与正文是 Sarasa（Regular / Bold）；主页面渲染出来的
+   Markdown 正文用 Sarasa Mono（global.css 里 .markdown-body 那条），页面上有它才多等一份。
+   斜体不在这里等 —— 用得极少，而每多一份就是 5–8 MB。
+   加载屏与跨页切换（文件末尾那个 IIFE）共用这一份清单，不在两处各写一遍。 */
+function sssFontFaces() {
+    var faces = ['400 16px "Sarasa"', '700 16px "Sarasa"'];
+    if (document.querySelector('.markdown-body')) {
+        faces.push('400 16px "Sarasa Mono"');
+        faces.push('700 16px "Sarasa Mono"');
+    }
+    return faces;
+}
+
 (function () {
     'use strict';
 
@@ -106,13 +121,8 @@
     //    实测（无头 Chrome 量过）那一刻还没有任何字体进入加载流程，ready 是个
     //    已完成的 promise，.then 立刻就跑，这个读数等于形同虚设：门开在字体前面，
     //    露出来的就是"回退字体 → 真实字体"的突变。
-    //    字面按各页实际用到的来：界面/正文是 Sarasa，主页面渲染出的 Markdown 正文
-    //    用 Sarasa Mono（global.css 里 .markdown-body 那条），有它才多等一份。
-    var faces = ['400 16px "Sarasa"', '700 16px "Sarasa"'];
-    if (document.querySelector('.markdown-body')) {
-        faces.push('400 16px "Sarasa Mono"');
-        faces.push('700 16px "Sarasa Mono"');
-    }
+    //    字面清单见文件开头的 sssFontFaces()
+    var faces = sssFontFaces();
     if (document.fonts && document.fonts.load) {
         Promise.all(faces.map(function (face) {
             // 单个字面失败（例如字体文件缺失）不该把人卡住
@@ -137,4 +147,52 @@
     window.setTimeout(function () { mark('ready'); }, CAP_ALL);
 
     window.setTimeout(open, CAP_ALL);       // 兜底：无论如何都放人进去
+})();
+
+/* =============================================================================
+ * 跨页切换：内容"先藏住、字体就绪再淡入"
+ * -----------------------------------------------------------------------------
+ * 背景画布与顶栏在每个页面都是同一套，所以页面之间其实只有内容在变。各页 <head> 里
+ * 判断"这次是不是站内跳转"（referrer 同源）并给 <html> 挂上 sss-switch —— 内容先藏住；
+ * 这里等上面同一批字面加载完成，再换成 sss-switch-in 让它淡入（样式见 global.css）。
+ * 于是字体解码那 0.3–0.7 秒的空窗被这段过渡盖住：看到的是"外壳不动、内容淡入"，
+ * 而不是"先画回退字体、再换成真字体"的突变。
+ *
+ * 必须单独一个 IIFE：上面那个在不需要加载屏时会提前 return，写在里面就被跳过了
+ * （与 seamless.js 末尾的页脚年份同一套路）。
+ * ========================================================================== */
+(function () {
+    'use strict';
+
+    var root = document.documentElement;
+    if (!root.classList.contains('sss-switch')) return;    // 这一趟不是站内跳转
+
+    var MIN_MS = 120;      // 太快会像闪一下，留一点点停顿
+    var CAP_MS = 3000;     // 兜底：字体出问题也不能把内容一直藏着
+    var t0 = Date.now();
+    var done = false;
+
+    function reveal() {
+        if (done) return;
+        done = true;
+
+        window.setTimeout(function () {
+            root.classList.remove('sss-switch');
+            root.classList.add('sss-switch-in');
+            // 动画放完就把类摘干净，免得 animation 的填充值一直压着 opacity
+            window.setTimeout(function () { root.classList.remove('sss-switch-in'); }, 600);
+        }, Math.max(0, MIN_MS - (Date.now() - t0)));
+    }
+
+    if (document.fonts && document.fonts.load) {
+        Promise.all(sssFontFaces().map(function (face) {
+            return document.fonts.load(face).catch(function () {});
+        }))
+            .then(function () { return document.fonts.ready; })
+            .then(reveal)
+            .catch(reveal);
+    } else {
+        reveal();
+    }
+    window.setTimeout(reveal, CAP_MS);
 })();
