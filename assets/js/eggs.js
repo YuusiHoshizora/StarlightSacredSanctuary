@@ -146,21 +146,28 @@
     var CSS = [
         '.egg-row{display:flex;align-items:center;gap:14px;padding:11px 0;',
         '  border-top:1px solid rgba(255,255,255,0.06)}',
-        '.egg-row__name{flex:1 1 auto;min-width:0;font-size:14px;letter-spacing:1px;',
-        '  color:rgba(255,255,255,0.88);text-decoration:none;',
-        '  border-bottom:1px solid rgba(255,215,0,0.28);transition:var(--ctl-transition)}',
-        '.egg-row__name:hover,.egg-row__name:focus-visible{color:var(--ctl-fg-hover);',
-        '  border-bottom-color:currentColor}',
+        /* 名字：这里**不要下划线**。关于页的 .about-card a 自带 text-decoration:underline，
+           我又画了一条 border-bottom，两条叠在一起就是"双下划线"。
+           所以用 .about-card .egg-row__name 提高权重压掉那一条，自己也不画线 ——
+           hover/聚焦只用颜色（转金）表示可点。 */
+        '.about-card .egg-row__name{flex:1 1 auto;min-width:0;font-size:14px;letter-spacing:1px;',
+        '  color:rgba(255,255,255,0.88);text-decoration:none;transition:var(--ctl-transition)}',
+        '.about-card .egg-row__name:hover,.about-card .egg-row__name:focus-visible{',
+        '  color:var(--ctl-fg-hover);text-decoration:none}',
         '.egg-row__acts{display:inline-flex;align-items:center;gap:10px;flex:0 0 auto}',
-        /* 开关 */
+        /* 开关：跟全站控件同一套 —— 小方角（--ctl-radius）+ 1px 淡描边 + 玻璃底；
+           "开"就是强调态：金色描边 + 淡金底 + 金色方块，方块带一点辉光，
+           呼应加载屏里"这一步已完成"那个小金点。别改成胶囊，那不是这个站的语言。 */
         '.egg-switch{position:relative;width:44px;height:24px;flex:0 0 auto;padding:0;',
-        '  background:var(--ctl-bg);border:1px solid var(--ctl-border);border-radius:999px;',
-        '  cursor:pointer;transition:var(--ctl-transition)}',
-        '.egg-switch__knob{position:absolute;top:50%;left:3px;width:16px;height:16px;margin-top:-8px;',
-        '  border-radius:50%;background:rgba(255,255,255,0.55);',
-        '  transition:left 0.25s var(--ctl-ease), background-color 0.25s var(--ctl-ease)}',
+        '  background:var(--ctl-bg);border:1px solid var(--ctl-border);',
+        '  border-radius:var(--ctl-radius);cursor:pointer;transition:var(--ctl-transition)}',
+        '.egg-switch__knob{position:absolute;top:50%;left:4px;width:12px;height:12px;margin-top:-6px;',
+        '  border-radius:1px;background:rgba(255,255,255,0.5);',
+        '  transition:left 0.25s var(--ctl-ease), background-color 0.25s var(--ctl-ease),',
+        '             box-shadow 0.25s var(--ctl-ease)}',
         '.egg-switch.is-on{border-color:var(--ctl-border-hover);background:var(--ctl-bg-strong)}',
-        '.egg-switch.is-on .egg-switch__knob{left:23px;background:#FFD700}',
+        '.egg-switch.is-on .egg-switch__knob{left:26px;background:#FFD700;',
+        '  box-shadow:0 0 8px rgba(255,215,0,0.8)}',
         '.egg-switch:focus-visible{outline:2px solid rgba(255,215,0,0.55);outline-offset:2px}',
         /* 按钮 */
         '.egg-btn{min-height:30px;padding:5px 12px;font:inherit;font-size:12px;letter-spacing:1px;',
