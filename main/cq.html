@@ -477,7 +477,15 @@
         var morse = document.getElementById('cq-audio');
         if (!stage || !btn || !audio || !box || !lamp || !codeEl || !textEl || !canvas) return;
 
-        var LEAD_MS = 300, LINE_MS = 150, LINES = 240;
+        /* 300ms leader 之后还有 4 行空白行（每行全是 1900Hz，没有图像内容），
+           图像从第 5 个同步头才开始 —— 证据：文件 36.91s = 300 + 600 + 240×150，
+           且与 QSL.png 做互相关最优在 dy = −4。 */
+        var SKIP_LINES = 4;
+        /* 行起点整体再 +10ms：实测把"同步头起点"定早了 10ms —— 逐毫秒的峰值频率剖面显示，
+           真正的 1200Hz 行同步在 10–18ms、休止在 19–21ms、Y 扫描从 22ms 才开始。
+           早这 10ms 的后果是把同步/休止当成图像读，于是最左侧出现"黑亮度 + 极端色度"的绿带
+           （10.2ms ÷ 0.275ms/像素 ≈ 37 像素，与同 QSL.png 互相关测出的 dx = −37 吻合）。 */
+        var LEAD_MS = 300 + SKIP_LINES * 150 + 10, LINE_MS = 150, LINES = 240;
         var T_SYNC = 9, T_PORCH = 3, T_Y = 88, T_SEP = 4.5, T_CHROMA = 44;
         var W = 320, CW = 320, H = 240;      // 亮度、色度都是横向 320 点；色度只与邻行共用（纵向 2:1）
         var F0 = 1900;                       // 基带中心频率
