@@ -39,7 +39,7 @@
     var LIST = [
         {
             id: 'cq',
-            name: 'CQ · 未知信号',
+            name: '神秘信号',
             href: '/main/cq.html',
             entry: '#cq-dot',
             resetKeys: ['sss.cq-dot']

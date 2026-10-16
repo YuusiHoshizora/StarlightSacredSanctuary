@@ -205,11 +205,10 @@
             <!-- 解码完成后：先出「解析已完成」，再出解出来的那张图。
                  点这张图会弹出原始卡片与下载按钮，并宣告彩蛋完成（见页面末尾的脚本）。 -->
             <div class="cq-result" id="cq-screen" hidden>
-                <p class="cq-line cq-step" id="cq-done">解析已完成</p>
+                <p class="cq-line cq-step" id="cq-done">异常信号已全部解析</p>
                 <figure class="cq-screen cq-step" id="cq-shot">
                     <img id="cq-decoded" tabindex="0" role="button"
                          alt="从这段 SSTV 音频逐像素解出来的 QSL 卡片（点击查看原始卡片）">
-                    <figcaption>ROBOT 36 · 320 × 240 —— 由上面那段音频逐像素解出（点图看原始卡片）</figcaption>
                 </figure>
             </div>
 
@@ -815,10 +814,11 @@
     <div class="cq-modal" id="cq-modal" hidden>
         <div class="cq-modal__panel" role="dialog" aria-modal="true" aria-label="原始 QSL 卡片">
             <button type="button" class="cq-modal__close" id="cq-modal-close" aria-label="关闭">×</button>
-            <h2 class="cq-modal__title">原始 QSL 卡片</h2>
+            <h2 class="cq-modal__title">QSL卡片</h2>
             <img class="cq-modal__img" src="../assets/img/QSL.png" alt="原始的 QSL 卡片">
-            <p class="cq-modal__note">上面那张是这段音频逐像素解出来的；这一张是它的原始图，对比着看。</p>
-            <a class="cq-modal__dl" id="cq-download" href="../assets/img/QSL.png" download="QSL.png">下载原始图片</a>
+            <p class="cq-modal__note">上图为 SSTV（Robot 36）实收画面，本图为原始卡面。
+                QSL 卡片是业余无线电的联络确认凭证 —— 收到即回卡，73！</p>
+            <a class="cq-modal__dl" id="cq-download" href="../assets/img/QSL.png" download="QSL.png">下载</a>
         </div>
     </div>
 
@@ -844,12 +844,16 @@
         var announced = false;
 
         function announce() {
+            if (announced) return;        // 提示只弹一次：发现之后再点图就只是开弹窗
+            announced = true;
             toast.classList.add('is-in');
             window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
-            if (announced) return;
-            announced = true;
+            /* 这一刻才算发现 */
             var eggs = window.SSS_EGGS;
             if (eggs && eggs.findWhenActive) eggs.findWhenActive('cq');
+            /* 既然已经找到了，就别再摆 320×240 的解码产物 —— 换回高清的原始卡面 */
+            shot.src = '../assets/img/QSL.png';
+            shot.alt = '原始 QSL 卡片';
         }
 
         function open() {
