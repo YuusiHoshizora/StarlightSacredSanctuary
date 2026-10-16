@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CQ · 星光圣域</title>
+
+    <!-- 站点图标：SVG，跟随浏览器主题切换黑/白描边 -->
+    <link rel="icon" type="image/svg+xml" href="../assets/img/logo_SSS.svg">
+
+    <!-- 加载屏：只有「资源还没进缓存」时才显示（首次访问 / 缓存被清掉）。
+         判断必须在这里同步做 —— 首次绘制前就要决定，否则会先画出页面再盖上、闪一下。
+         结构与逻辑见 assets/js/boot.js，样式见 assets/css/boot.css。 -->
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator)) return;      // 没有 SW，就没有"缓存全部资源"这回事
+            if (location.protocol === 'file:') return;        // 本地双击打开时 SW 注册不了，别把页面卡住
+            var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
+            var booted = false;
+            try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
+            // 只有「这台浏览器还没走过加载流程」才显示：首次访问把资源缓存下来，之后各页无缝
+            if (force || !booted) {
+                document.documentElement.className += ' sss-boot';
+            }
+
+            // 站内跳转进来的（referrer 与本页同源）：先把内容藏起来，等字体就绪再淡入。
+            // 背景画布与导航栏全站一致，所以只让内容参与过渡 —— 看起来就是
+            // 「外壳常驻、内容替换」，顺带把字体解码那 0.3–0.7 秒的空窗盖住。
+            // 必须在这里同步决定（首次绘制前），否则会先把内容画出来再藏、闪一下。
+            var fromSite = false;
+            try {
+                fromSite = !!document.referrer && new URL(document.referrer).origin === location.origin;
+            } catch (e) {}
+            if (fromSite) {
+                document.documentElement.classList.add('sss-switch');
+                // 兜底：万一 boot.js 没跑起来，5 秒后也得把内容放出来
+                window.setTimeout(function () {
+                    document.documentElement.classList.remove('sss-switch');
+                    document.documentElement.classList.add('sss-switch-in');
+                }, 5000);
+            }
+        })();
+    </script>
+    <!-- 首帧保护：预渲染被提前激活时（悬停后就点），浏览器可能先画一帧"样式表还在路上"的
+         裸 HTML（正常导航不会 —— 样式表本身阻塞渲染）。这里在解析阶段先把内容藏起来，
+         等样式表就位（或 2s 兜底）再放行；禁用 JS 时不加 js 类，等于没这段。 -->
+    <style>
+        /* 底色只能挂在"加载中"这个状态下：html 一旦有背景，body 的黑色就不再传播到画布，
+           负 z-index 的背景层（.hex-bg 等）会被 body 盖住 —— 背景就没了。
+           所以两条都限定在 js 且未 css-ready 时，样式一到就撤销、传播恢复。 */
+        html.js:not(.css-ready) { background: black; }
+        html.js:not(.css-ready) body { visibility: hidden; }
+    </style>
+    <script>
+        (function () {
+            var h = document.documentElement;
+            h.classList.add('js');
+            window.setTimeout(function () { h.classList.add('css-ready'); }, 2000);
+        })();
+    </script>
+    <link rel="stylesheet" href="../assets/css/boot.css">
+    <script defer src="../assets/js/boot.js"></script>
+
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/main/cq.css">
+    <script defer src="../assets/js/background.js"></script>
+    <script defer src="../assets/js/notice.js"></script>
+
+    <script defer src="../assets/js/seamless.js"></script>
+    <script defer src="../assets/js/navtoggle.js"></script>
+    <!-- 彩蛋登记：本页 body 上的 data-egg 会被 eggs.js 读到，自动记下"这个彩蛋被发现过"
+         （关于页那张「已发现的彩蛋」卡片据此展示） -->
+    <script defer src="../assets/js/eggs.js"></script>
+    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": "nav a" },
+                            { "not": { "href_matches": "/" } }
+                        ]
+                    },
+                    "eagerness": "moderate"
+                }
+            ],
+            "prefetch": [
+                { "where": { "selector_matches": "nav a" }, "eagerness": "conservative" }
+            ]
+        }
+    </script>
+    <!-- 样式表就位后放行（这行内联脚本会被它前面的样式表阻塞，所以执行时样式一定已经应用） -->
+    <script>document.documentElement.classList.add('css-ready');</script>
+</head>
+
+<!-- data-egg：本页是哪个彩蛋。assets/js/eggs.js 见到它就自动登记"已发现" -->
+<body data-egg="cq">
+
+    <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
+    <div class="boot" id="boot"></div>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo__mark" aria-hidden="true"></span>
+            星光圣域
+        </div>
+        <nav id="site-nav">
+            <a href="..">首页</a>
+            <a href="../starmap/">星图</a>
+            <a href="../fleet/">舰队</a>
+            <a href="../tool/">工具</a>
+            <a href="../archive/">档案</a>
+            <a href="../about/">关于</a>
+        </nav>
+
+        <!-- 折叠按钮：窄屏才出现（桌面 display:none），是 .navbar 自己的子元素，
+             所以和 logo 一样是栏内的一行；放进 nav 里会被那块竖排面板当成一个条目 -->
+        <button class="navbar__toggle" type="button" aria-label="导航菜单" aria-controls="site-nav" aria-expanded="false">
+            <span class="navbar__toggle__bars" aria-hidden="true"></span>
+        </button>
+
+    </header>
+
+    <main>
+        <section class="cq-section">
+
+            <header class="cq-head">
+                <h1>CQ</h1>
+                <p class="cq-sub">UNKNOWN SIGNAL · 未知信号</p>
+            </header>
+
+            <div class="cq-card">
+                <p class="cq-text">
+                    你在一个没人用的频段上收到了一段呼叫。它不属于任何一条已知航线，
+                    也没有出现在任何一份档案里 —— 既然你能读到这一页，说明你已经在正确的地方了。
+                </p>
+
+                <div class="cq-actions">
+                    <button type="button" class="cq-btn" id="cq-call" aria-pressed="false">接收呼叫</button>
+                    <button type="button" class="cq-btn" id="cq-sstv" aria-pressed="false">开始解码 SSTV</button>
+                </div>
+
+                <p class="cq-status" id="cq-status">静默。等待接收。</p>
+            </div>
+
+            <!-- 解码走完才显示（hidden 由下面的脚本摘掉） -->
+            <figure class="cq-screen" id="cq-screen" hidden>
+                <img src="../assets/img/QSL.png" alt="通过 SSTV 慢扫描电视传回来的 QSL 卡片"
+                     width="2854" height="2008" loading="lazy" decoding="async">
+                <figcaption>QSL · 2854 × 2008 —— 由 SSTV 慢扫描电视逐行传回</figcaption>
+            </figure>
+
+            <!-- preload="none"：这两段音频加起来 5 MB，不进预缓存，点了才下 -->
+            <audio id="cq-audio-call" src="../assets/audio/cq.wav" preload="none"></audio>
+            <audio id="cq-audio-sstv" src="../assets/audio/QSL-sstv.wav" preload="none"></audio>
+
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../about/">关于本站</a>
+    </footer>
+
+    <script>
+    /* 接收机：两段音频各配一个按钮，同一时刻只放一段；
+       SSTV 那段放完才把 QSL 卡片放出来 —— 那才是"收到一张卡片"的过程。 */
+    (function () {
+        'use strict';
+
+        var call = document.getElementById('cq-audio-call');
+        var sstv = document.getElementById('cq-audio-sstv');
+        var btnCall = document.getElementById('cq-call');
+        var btnSstv = document.getElementById('cq-sstv');
+        var status = document.getElementById('cq-status');
+        var screen = document.getElementById('cq-screen');
+        if (!call || !sstv || !btnCall || !btnSstv || !status || !screen) return;
+
+        function say(text) { status.textContent = text; }
+
+        function bind(audio, btn, playingText, idleText) {
+            function sync() {
+                var on = !audio.paused && !audio.ended;
+                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                btn.textContent = on ? '暂停' : idleText;
+            }
+
+            btn.addEventListener('click', function () {
+                if (audio.paused || audio.ended) {
+                    // 同一时刻只放一段，另一段直接掐掉
+                    if (audio === call) { sstv.pause(); } else { call.pause(); }
+                    var p = audio.play();
+                    if (p && p.catch) {
+                        p.catch(function () { say('浏览器拦下了自动播放，再点一次就好。'); });
+                    }
+                    say(playingText);
+                } else {
+                    audio.pause();
+                    say('已暂停。');
+                }
+            });
+
+            audio.addEventListener('play', sync);
+            audio.addEventListener('pause', sync);
+            audio.addEventListener('ended', sync);
+            sync();
+        }
+
+        bind(call, btnCall, '正在接收呼叫……', '接收呼叫');
+        bind(sstv, btnSstv, '正在解码 SSTV……（约 37 秒）', '开始解码 SSTV');
+
+        sstv.addEventListener('ended', function () {
+            if (!screen.hidden) return;
+            screen.hidden = false;
+            say('解码完成：收到一张 QSL 卡片。');
+            try { screen.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+        });
+    })();
+    </script>
+
+</body>
+</html>

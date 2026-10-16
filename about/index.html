@@ -67,6 +67,8 @@
     <script defer src="../assets/js/notice.js"></script>
     <script defer src="../assets/js/seamless.js"></script>
     <script defer src="../assets/js/navtoggle.js"></script>
+    <!-- 彩蛋登记册：负责填下面那张「已发现的彩蛋」卡片（一个都没发现时整张不显示） -->
+    <script defer src="../assets/js/eggs.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
         {
@@ -213,6 +215,14 @@
                     <a href="https://github.com/YuusiHoshizora" rel="noopener noreferrer" target="_blank">GitHub</a>
                     <a href="https://space.bilibili.com/449672301" rel="noopener noreferrer" target="_blank">Bilibili</a>
                 </p>
+            </div>
+
+            <!-- 已发现的彩蛋：内容与计数由 assets/js/eggs.js 填。
+                 一个都没发现时这里保持 hidden，整张卡片不会出现。放在最后一张。 -->
+            <div class="about-card" id="about-eggs" hidden>
+                <h2>已发现的彩蛋</h2>
+                <p class="about-note" data-eggs-count></p>
+                <ul data-eggs-list></ul>
             </div>
 
         </section>

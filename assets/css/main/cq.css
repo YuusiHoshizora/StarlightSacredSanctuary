@@ -1,0 +1,139 @@
+/* ==========================================================================
+   CQ（彩蛋页）
+   --------------------------------------------------------------------------
+   站点里唯一一个没有入口的页面 —— 知道地址才会来。所以这里不放任何导航之外
+   的入口，只有一台"接收机"。
+   样式沿用全站那套：玻璃面板 + 金色强调 + --ctl-* 令牌，不引入新颜色。
+   ========================================================================== */
+
+.cq-section {
+    /* 宽度写死 100% 再 max-width：body/main 是竖排 flex 容器，
+       带 margin:auto 的 flex 项在交叉轴上不会被拉伸、会退化成 fit-content。
+       高度交给 flex（flex:1 1 auto），不写死 100vh，否则页脚会被挤出视口。 */
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 120px 24px 80px;      /* 顶栏 72px + 呼吸 */
+    flex: 1 1 auto;
+}
+
+.cq-head {
+    margin-bottom: 28px;
+}
+
+.cq-head h1 {
+    font-size: 34px;
+    font-weight: 400;
+    letter-spacing: 8px;
+    color: #FFD700;
+}
+
+.cq-sub {
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 接收机面板 */
+.cq-card {
+    padding: 26px 28px;
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+.cq-text {
+    margin: 0 0 20px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.cq-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* 按钮走全站控件令牌：默认玻璃态，hover / 键盘聚焦转金 */
+.cq-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;              /* 手指点得着 */
+    padding: 10px 20px;
+
+    font-size: 14px;
+    letter-spacing: 1px;
+
+    color: var(--ctl-fg);
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    border-radius: var(--ctl-radius);
+    cursor: pointer;
+    transition: var(--ctl-transition);
+}
+
+.cq-btn:hover,
+.cq-btn:focus-visible {
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+}
+
+/* 正在播放的那一个：常驻强调态（金色只用于强调，这里就是"选中"） */
+.cq-btn[aria-pressed="true"] {
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+}
+
+.cq-status {
+    margin: 18px 0 0;
+    min-height: 1.6em;             /* 文案换来换去也不跳高度 */
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* SSTV 收到的画面：解码走完之前整块不显示（hidden 由脚本摘掉） */
+.cq-screen {
+    margin: 26px 0 0;
+}
+
+.cq-screen img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--ctl-panel-radius);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.cq-screen figcaption {
+    margin-top: 12px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+    .cq-section {
+        padding: 92px 16px 60px;
+    }
+
+    .cq-head h1 {
+        font-size: 26px;
+        letter-spacing: 5px;
+    }
+
+    .cq-card {
+        padding: 20px 18px;
+    }
+
+    .cq-btn {
+        flex: 1 1 auto;            /* 窄屏两个按钮各占一行，好点 */
+    }
+}

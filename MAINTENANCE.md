@@ -17,6 +17,7 @@
 ├── MIGRATION-CLOUDFLARE.md     迁往 Cloudflare 的迁移手册（收尾完成后可删）
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
+├── main/cq.html                彩蛋：CQ（无入口页，见「设计约定 · 彩蛋」）
 ├── starmap/index.html          星图（刻意没有页脚）
 ├── fleet/index.html            舰队
 ├── tool/index.html             工具
@@ -30,6 +31,7 @@
 │   │   ├── error.css           错误页
 │   │   ├── archive.css         档案页
 │   │   ├── main/mainpage.css   主页面
+│   │   ├── main/cq.css         彩蛋页 CQ
 │   │   ├── starmap/index.css   星图页
 │   │   ├── fleet/index.css     舰队页
 │   │   ├── tool/index.css      工具页
@@ -39,6 +41,8 @@
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
+│   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
+│   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
 │   │   ├── main.js             首页打字机效果
 │   │   ├── tool.js             工具页（拾色器 + 时间转换）
 │   │   ├── starmap-data.js     星系数据（STARMAP_DATA）
@@ -48,6 +52,8 @@
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
+│   │                           QSL.png（彩蛋页用，2854×2008）
+│   ├── audio/                  彩蛋页用的两段 WAV（cq.wav / QSL-sstv.wav，共约 5 MB）
 │   └── post/                   事件正文 .md + 自动生成的 index.json
 │
 └── .github/workflows/generate-post-index.yml
@@ -373,6 +379,19 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   · **想对所有人再弹一次：把 `NOTICE.id` 改成新值** —— 「已读」是按 id 记的，换 id 就是一条新公告
   · 首次访问若加载屏还盖着，它会等 `sss:booted` 再弹（否则公告藏在加载屏后面）
   · 自动化环境不弹：`navigator.webdriver` 为真、或页面里设了 `window.__SSS_NO_NOTICE = true`
+- **彩蛋**：站点里藏着**不与导航相连**的页面，靠知道地址才会来。目前只有一个：
+  `main/cq.html`（业余无线电：呼号音频 + SSTV 解码出 QSL 卡片）。
+  · 清单在 `assets/js/eggs.js` 的 `LIST` 里（id / name / href / desc）。
+    **加新彩蛋**：① 往 LIST 加一条；② 在那个页面的 `<body>` 上写 `data-egg="同样的 id"`
+    —— eggs.js 见到就自动登记「已发现」，别的什么都不用做
+  · 「已发现」按 id 存在 localStorage 的 `sss.eggs` 里。⚠️ **id 一旦发布就别改**，改 id 等于
+    把所有人的进度清零；清掉站点数据也会一并清掉
+  · 登记走 `findWhenActive()`：预渲染中的页面（speculation rules 悬停即渲染）要等真正
+    激活才记，否则"鼠标扫过去"就算发现了
+  · 「关于」页最下面那张「已发现的彩蛋」卡片写在 `about/index.html` 里、**默认 `hidden`**，
+    由 eggs.js 填内容并放行；**一个都没发现时它就保持 hidden，整张卡片不出现**
+  · 彩蛋页的音频与图片体积都不小（约 5 MB + 10 MB），**故意不进 SW 预缓存**，
+    点了才下（`preload="none"` + `loading="lazy"`）；页面的 HTML/CSS/JS 照常进预缓存
 - **首帧保护（防"闪一帧裸 HTML"）**：预渲染被提前激活时（悬停后马上点击），浏览器可能先把
   「样式表还在路上」的页面画出来。各页 `<head>` 里因此有两段内联脚本：
   · 前面那段：给 `<html>` 加 `js`，并留一个 2s 兜底（`html{background:black}` 让这段空窗

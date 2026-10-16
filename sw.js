@@ -25,7 +25,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.7';
+const CACHE_VERSION = 'v5.8';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
@@ -47,6 +47,7 @@ const PRECACHE_URLS = [
     '/about/',
     '/about/index.html',
     '/main/mainpage.html',
+    '/main/cq.html',
     '/404.html',
     // 样式
     '/assets/css/global.css',
@@ -54,6 +55,7 @@ const PRECACHE_URLS = [
     '/assets/css/error.css',
     '/assets/css/archive.css',
     '/assets/css/main/mainpage.css',
+    '/assets/css/main/cq.css',
     '/assets/css/starmap/index.css',
     '/assets/css/fleet/index.css',
     '/assets/css/tool/index.css',
@@ -63,6 +65,7 @@ const PRECACHE_URLS = [
     // 脚本
     '/assets/js/seamless.js',
     '/assets/js/navtoggle.js',
+    '/assets/js/eggs.js',
     '/assets/js/boot.js',
     '/assets/js/notice.js',
     '/assets/js/tool.js',
