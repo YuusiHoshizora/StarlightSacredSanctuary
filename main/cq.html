@@ -144,10 +144,19 @@
         <section class="cq-section">
 
             <p class="cq-line">发现异常信号，准备进行解析。</p>
-            <p class="cq-line">准备已完成，随时可以开始。</p>
 
-            <div class="cq-actions">
-                <button type="button" class="cq-btn" id="cq-start" aria-pressed="false">开始</button>
+            <!-- 准备过程：假装跑一遍解析器的自检。逐行打出来，打完**折叠**起来，
+                 再渲染下面那句"准备已完成"。内容由页面脚本写进去。 -->
+            <div class="cq-boot" id="cq-boot">
+                <div class="cq-log" id="cq-log"></div>
+            </div>
+
+            <p class="cq-line cq-pending" id="cq-ready">准备已完成，随时可以开始。</p>
+
+            <div class="cq-actions cq-pending" id="cq-actions">
+                <!-- 这一页是世界观里的"额外页面"，不必处处套站内那套控件：
+                     「开始」就是个简单的 <a>，没有按钮壳子 -->
+                <a class="cq-start" id="cq-start" href="#" role="button" aria-pressed="false">开始</a>
             </div>
 
             <!-- 控制台：按下「开始」才出现。里面的进度**完全由音频的 currentTime 驱动**，
@@ -179,6 +188,75 @@
     <footer class="site-footer">
         © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../about/">关于本站</a>
     </footer>
+
+    <script>
+    /* 准备过程：逐行打自检日志 → 折叠那块 → 放行"准备已完成"与「开始」
+       ----------------------------------------------------------------------------
+       纯演出。时长是固定的（不掷随机数，免得每次刷新节奏都不一样），
+       总共约 1.8 秒；prefers-reduced-motion 时直接给终态。 */
+    (function () {
+        'use strict';
+
+        var boot = document.getElementById('cq-boot');
+        var log = document.getElementById('cq-log');
+        var ready = document.getElementById('cq-ready');
+        var actions = document.getElementById('cq-actions');
+        if (!boot || !log || !ready || !actions) return;
+
+        var LINES = [
+            ['ok',   'sss-dsp 已启动 · 接收链路 /dev/dsp0'],
+            ['ok',   '采样 44100 Hz · 单声道 · 16 bit'],
+            ['ok',   '噪声基底 −62 dBm'],
+            ['ok',   '载波锁定 700 Hz'],
+            ['ok',   '测速 20 WPM · 键控点 60 ms'],
+            ['ok',   '摩斯码表已载入 (A–Z 0–9)'],
+            ['warn', '信号偏弱 · 增益 +9 dB'],
+            ['ok',   '解析器就绪'],
+            ['ok',   '缓冲区 0 / 375 单元']
+        ];
+        var TAGS = { ok: '[  ok  ]', warn: '[ warn ]', run: '[  ..  ]' };
+        var reduced = false;
+        try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+        var caret = document.createElement('span');
+        caret.className = 'cq-log__caret';
+
+        function lineFor(item) {
+            var row = document.createElement('div');
+            row.className = 'cq-log__line';
+            var tag = document.createElement('span');
+            tag.className = 'cq-log__tag cq-log__tag--' + item[0];
+            tag.textContent = TAGS[item[0]] || TAGS.run;
+            row.appendChild(tag);
+            row.appendChild(document.createTextNode(' ' + item[1]));
+            row.appendChild(caret);                 // 光标跟着挪到最新一行
+            return row;
+        }
+
+        function showReady() {
+            boot.classList.add('is-folded');        // 折叠
+            ready.classList.add('is-in');
+            actions.classList.add('is-in');
+            window.setTimeout(function () {
+                boot.setAttribute('aria-hidden', 'true');   // 折完了就别让读屏念了
+            }, 520);
+        }
+
+        if (reduced) { showReady(); return; }
+
+        var i = 0;
+        (function next() {
+            if (i >= LINES.length) {
+                window.setTimeout(showReady, 460);
+                return;
+            }
+            log.appendChild(lineFor(LINES[i]));
+            i++;
+            // 固定但参差的节奏：比等间隔更像真的在跑
+            window.setTimeout(next, 86 + ((i * 37) % 62));
+        })();
+    })();
+    </script>
 
     <script>
     /* CQ 电码解析台
@@ -312,7 +390,8 @@
 
         audio.volume = VOLUME;
 
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            if (e && e.preventDefault) e.preventDefault();   // 是个 <a href="#">，别让它跳走
             if (audio.paused || audio.ended) {
                 if (audio.ended) audio.currentTime = 0;   // 播完了再按就是从头再来
                 var p = audio.play();

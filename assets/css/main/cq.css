@@ -1,9 +1,11 @@
 /* ==========================================================================
    CQ（彩蛋页）
    --------------------------------------------------------------------------
-   站点里唯一一个没有入口的页面 —— 知道地址才会来。这一页是一台"解析台"：
-   两行状态文字 + 一个「开始」按钮 + 一块接收控制台。
-   样式沿用全站那套：玻璃面板 + 金色强调 + --ctl-* 令牌，不引入新颜色。
+   世界观里这算一张"额外页面"，所以不必处处套站内那套控件语言：
+   这里可以出现终端日志、可以折叠、可以有朴素链接。
+   但底色与强调色仍沿用全站那套（深蓝黑 + 金色 + --ctl-* 令牌），别跳出这个站。
+   ⚠️ --ctl-ease 是**时长**（0.25s），不是缓动函数 —— 写进 transition 简写里
+      会变成"延迟"，要缓动就显式写 ease / ease-out。
    ========================================================================== */
 
 .cq-section {
@@ -26,48 +28,123 @@
     color: rgba(255, 255, 255, 0.82);
 }
 
+/* 「准备已完成」与「开始」都要等日志跑完、折起来之后才出现 */
+.cq-pending {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+
+.cq-pending.is-in {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.45s ease, visibility 0s;
+}
+
+/* --------------------------------------------------------------------------
+   准备过程的自检日志：跑完折叠起来（脚本加 .is-folded）
+   -------------------------------------------------------------------------- */
+.cq-boot {
+    overflow: hidden;
+    max-height: 380px;             /* 展开态的上限，够装下所有行 */
+    margin: 18px 0 8px;
+    padding-left: 14px;
+    border-left: 1px solid rgba(255, 215, 0, 0.28);
+    transition: max-height 0.44s ease, opacity 0.3s ease, margin 0.44s ease,
+                padding 0.44s ease;
+}
+
+.cq-boot.is-folded {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+}
+
+.cq-log {
+    /* 终端读数用**系统**等宽栈：不引 Sarasa Mono（5 MB，正是加载屏要等的资源） */
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 12px;
+    line-height: 1.85;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.cq-log__line {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.cq-log__tag {
+    color: rgba(255, 255, 255, 0.28);
+}
+
+.cq-log__tag--ok {
+    color: rgba(255, 215, 0, 0.75);          /* 金色在这站上就是"强调/通过" */
+}
+
+.cq-log__tag--warn {
+    color: var(--ctl-err);
+}
+
+/* 打字光标：跟着最新一行走 */
+.cq-log__caret {
+    display: inline-block;
+    width: 0.6em;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: -0.15em;
+    background: rgba(255, 215, 0, 0.8);
+    animation: cq-caret 1.05s steps(1, end) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   「开始」：就一个朴素 <a>，没有按钮壳子
+   -------------------------------------------------------------------------- */
 .cq-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 22px;
 }
 
-/* 按钮走全站控件令牌：默认玻璃态，hover / 键盘聚焦 / 选中转金 */
-.cq-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;              /* 手指点得着 */
-    padding: 10px 20px;
+.cq-start {
+    display: inline-block;
+    padding: 2px 0;
 
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 14px;
-    letter-spacing: 1px;
+    letter-spacing: 3px;
 
-    color: var(--ctl-fg);
-    background: var(--ctl-bg);
-    border: 1px solid var(--ctl-border);
-    border-radius: var(--ctl-radius);   /* 4px 小方角 —— 全站控件都是这个，别改成胶囊 */
+    color: rgba(255, 255, 255, 0.78);
+    text-decoration: none;                   /* 平时不画线，只在 hover 时出现一条 */
+    border-bottom: 1px solid transparent;
     cursor: pointer;
-    transition: var(--ctl-transition);
+    transition: color 0.25s ease, border-color 0.25s ease;
 }
 
-.cq-btn:hover,
-.cq-btn:focus-visible {
-    color: var(--ctl-fg-hover);
-    background: var(--ctl-bg-strong);
-    border-color: var(--ctl-border-hover);
+.cq-start:hover,
+.cq-start:focus-visible {
+    color: #FFD700;
+    border-bottom-color: rgba(255, 215, 0, 0.55);
+    outline: none;
 }
 
-/* 正在解析时（按钮变成"暂停"）：常驻强调态 —— 金色只用于强调，这里就是"选中" */
-.cq-btn[aria-pressed="true"] {
-    color: var(--ctl-fg-hover);
-    background: var(--ctl-bg-strong);
-    border-color: var(--ctl-border-hover);
+.cq-start:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 5px;
 }
 
-/* 解析控制台：按下「开始」才出现。
-   ⚠️ 可见性交给 hidden 属性，所以这里**不要**写 display（会盖掉 [hidden] 的 display:none） */
+/* 正在解析时（文案变"暂停"）：常驻金色 */
+.cq-start[aria-pressed="true"] {
+    color: #FFD700;
+    border-bottom-color: rgba(255, 215, 0, 0.55);
+}
+
+/* --------------------------------------------------------------------------
+   解析控制台：按下「开始」才出现
+   ⚠️ 可见性交给 hidden 属性，所以这里**不要**写 display（会盖掉 [hidden] 的 display:none）
+   -------------------------------------------------------------------------- */
 .cq-console {
     margin-top: 26px;
     padding: 16px 18px;
@@ -75,9 +152,6 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--ctl-panel-radius);
 
-    /* 等宽用**系统**等宽栈：不要引 Sarasa Mono —— 那是 5 MB 的字体，
-       正是加载屏要等的资源，不该为了一块读数把它拖下来。
-       （boot.css 里加载屏的中间读数也是同样的处理） */
     font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 13px;
     line-height: 1.9;
@@ -97,7 +171,7 @@
     flex: 0 0 auto;
     border-radius: 1px;
     background: rgba(255, 255, 255, 0.16);
-    transition: var(--ctl-transition);
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .cq-console__lamp.is-on {
@@ -150,8 +224,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .cq-log__caret,
     .cq-console__caret {
         animation: none;
+    }
+
+    .cq-boot {
+        transition: none;
     }
 }
 
@@ -185,12 +264,12 @@
         font-size: 14px;
     }
 
+    .cq-log {
+        font-size: 11px;
+    }
+
     .cq-console {
         padding: 14px 14px;
         font-size: 12px;
-    }
-
-    .cq-btn {
-        flex: 1 1 auto;            /* 窄屏独占一行，好点 */
     }
 }

@@ -163,8 +163,8 @@
         '  border-radius:var(--ctl-radius);cursor:pointer;transition:var(--ctl-transition)}',
         '.egg-switch__knob{position:absolute;top:50%;left:4px;width:12px;height:12px;margin-top:-6px;',
         '  border-radius:1px;background:rgba(255,255,255,0.5);',
-        '  transition:left 0.25s var(--ctl-ease), background-color 0.25s var(--ctl-ease),',
-        '             box-shadow 0.25s var(--ctl-ease)}',
+        /* --ctl-ease 是**时长**(0.25s)不是缓动函数，写进简写会变成"延迟" —— 这里显式写 ease */
+        '  transition:left 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease}',
         '.egg-switch.is-on{border-color:var(--ctl-border-hover);background:var(--ctl-bg-strong)}',
         '.egg-switch.is-on .egg-switch__knob{left:26px;background:#FFD700;',
         '  box-shadow:0 0 8px rgba(255,215,0,0.8)}',
