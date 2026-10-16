@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CQ · 星光圣域</title>
+    <title>未知信号 · 星光圣域</title>
 
     <!-- 站点图标：SVG，跟随浏览器主题切换黑/白描边 -->
     <link rel="icon" type="image/svg+xml" href="../assets/img/logo_SSS.svg">
@@ -143,26 +143,26 @@
     <main>
         <section class="cq-section">
 
-            <header class="cq-head">
-                <h1>CQ</h1>
-                <p class="cq-sub">UNKNOWN SIGNAL · 未知信号</p>
-            </header>
+            <p class="cq-line">发现异常信号，准备进行解析。</p>
+            <p class="cq-line">准备已完成，随时可以开始。</p>
 
-            <div class="cq-card">
-                <p class="cq-text">
-                    你在一个没人用的频段上收到了一段呼叫。它不属于任何一条已知航线，
-                    也没有出现在任何一份档案里 —— 既然你能读到这一页，说明你已经在正确的地方了。
-                </p>
-
-                <div class="cq-actions">
-                    <button type="button" class="cq-btn" id="cq-call" aria-pressed="false">接收呼叫</button>
-                    <button type="button" class="cq-btn" id="cq-sstv" aria-pressed="false">开始解码 SSTV</button>
-                </div>
-
-                <p class="cq-status" id="cq-status">静默。等待接收。</p>
+            <div class="cq-actions">
+                <button type="button" class="cq-btn" id="cq-start" aria-pressed="false">开始</button>
             </div>
 
-            <!-- 解码走完才显示（hidden 由下面的脚本摘掉） -->
+            <!-- 控制台：按下「开始」才出现。里面的进度**完全由音频的 currentTime 驱动**，
+                 所以音频一暂停解析就停在原处 —— 不是另起一个计时器在对暗号。
+                 做得像接收端：信号灯 + 收到的点划 + 解出来的明文。 -->
+            <div class="cq-console" id="cq-console" hidden>
+                <div class="cq-console__head">
+                    <span class="cq-console__lamp" id="cq-lamp" aria-hidden="true"></span>
+                    <span class="cq-console__meta">20 WPM · 摩斯电码</span>
+                </div>
+                <div class="cq-console__code" id="cq-code"><span class="cq-console__caret"></span></div>
+                <div class="cq-console__text" id="cq-text"><span class="cq-console__caret"></span></div>
+            </div>
+
+            <!-- 下一段（SSTV / QSL 卡片）用：这一段先不接触发，留着结构与样式 -->
             <figure class="cq-screen" id="cq-screen" hidden>
                 <img src="../assets/img/QSL.png" alt="通过 SSTV 慢扫描电视传回来的 QSL 卡片"
                      width="2854" height="2008" loading="lazy" decoding="async">
@@ -170,7 +170,7 @@
             </figure>
 
             <!-- preload="none"：这两段音频加起来 5 MB，不进预缓存，点了才下 -->
-            <audio id="cq-audio-call" src="../assets/audio/cq.wav" preload="none"></audio>
+            <audio id="cq-audio" src="../assets/audio/cq.wav" preload="none"></audio>
             <audio id="cq-audio-sstv" src="../assets/audio/QSL-sstv.wav" preload="none"></audio>
 
         </section>
@@ -181,58 +181,151 @@
     </footer>
 
     <script>
-    /* 接收机：两段音频各配一个按钮，同一时刻只放一段；
-       SSTV 那段放完才把 QSL 卡片放出来 —— 那才是"收到一张卡片"的过程。 */
+    /* CQ 电码解析台
+       ----------------------------------------------------------------------------
+       音频 cq.wav 实测就是 20 WPM 的等幅报：点 60ms、划 185ms、单元 60ms，
+       103 个音、首音在 0ms、末音结束于 22450ms —— 与下面按标准算出的时间轴一致
+       （375 单元 × 60ms = 22.5s）。
+       整套显示**只读 audio.currentTime**，不另设计时器：
+       音频一暂停时间就不走，解析自然停在原处 —— "同步暂停"是结果，不是第二套逻辑。 */
     (function () {
         'use strict';
 
-        var call = document.getElementById('cq-audio-call');
-        var sstv = document.getElementById('cq-audio-sstv');
-        var btnCall = document.getElementById('cq-call');
-        var btnSstv = document.getElementById('cq-sstv');
-        var status = document.getElementById('cq-status');
-        var screen = document.getElementById('cq-screen');
-        if (!call || !sstv || !btnCall || !btnSstv || !status || !screen) return;
+        var btn = document.getElementById('cq-start');
+        var audio = document.getElementById('cq-audio');
+        var box = document.getElementById('cq-console');
+        var lamp = document.getElementById('cq-lamp');
+        var codeEl = document.getElementById('cq-code');
+        var textEl = document.getElementById('cq-text');
+        if (!btn || !audio || !box || !lamp || !codeEl || !textEl) return;
 
-        function say(text) { status.textContent = text; }
+        var VOLUME = 0.35;         // 比彩蛋入口那次（0.16）大，但仍算小声
+        var UNIT_MS = 60;          // 20 WPM：标准 PARIS，1 单元 = 1200 / 20
+        var PLAIN = 'CQ CQ CQ DE BG7LPF BG7LPF BG7LPF K';
 
-        function bind(audio, btn, playingText, idleText) {
-            function sync() {
-                var on = !audio.paused && !audio.ended;
-                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-                btn.textContent = on ? '暂停' : idleText;
-            }
+        var MORSE = (function () {
+            var src = 'A.- B-... C-.-. D-.. E. F..-. G--. H.... I.. J.--- K-.- L.-.. M-- N-. O--- ' +
+                      'P.--. Q--.- R.-. S... T- U..- V...- W.-- X-..- Y-.-- Z--.. ' +
+                      '0----- 1.---- 2..--- 3...-- 4....- 5..... 6-.... 7--... 8---.. 9----.';
+            var m = {};
+            src.split(' ').forEach(function (t) { m[t.charAt(0)] = t.slice(1); });
+            return m;
+        })();
 
-            btn.addEventListener('click', function () {
-                if (audio.paused || audio.ended) {
-                    // 同一时刻只放一段，另一段直接掐掉
-                    if (audio === call) { sstv.pause(); } else { call.pause(); }
-                    var p = audio.play();
-                    if (p && p.catch) {
-                        p.catch(function () { say('浏览器拦下了自动播放，再点一次就好。'); });
+        /* 按标准时长把明文铺成时间轴：点 1、划 3、元素间 1、字符间 3、词间 7（单位都是"单元"） */
+        function buildTimeline(text) {
+            var chars = [];
+            var words = text.split(' ');
+            var u = 0;
+            for (var w = 0; w < words.length; w++) {
+                if (w > 0) u += 7;                             // 词间
+                var word = words[w];
+                for (var i = 0; i < word.length; i++) {
+                    if (i > 0) u += 3;                         // 字符间
+                    var ch = word.charAt(i);
+                    var code = MORSE[ch];
+                    if (!code) continue;
+                    var els = [];
+                    for (var k = 0; k < code.length; k++) {
+                        if (k > 0) u += 1;                     // 元素间
+                        var s = u;
+                        u += code.charAt(k) === '-' ? 3 : 1;
+                        els.push({ mark: code.charAt(k), start: s * UNIT_MS, end: u * UNIT_MS });
                     }
-                    say(playingText);
-                } else {
-                    audio.pause();
-                    say('已暂停。');
+                    chars.push({
+                        /* space 只用来"解出来的明文"里补词间空格 ——
+                           第一个词前面不能补，否则整行会多一个前导空格 */
+                        ch: ch, code: code, els: els, space: i === 0 && w > 0, end: u * UNIT_MS
+                    });
                 }
-            });
-
-            audio.addEventListener('play', sync);
-            audio.addEventListener('pause', sync);
-            audio.addEventListener('ended', sync);
-            sync();
+            }
+            return { chars: chars, totalMs: u * UNIT_MS };
         }
 
-        bind(call, btnCall, '正在接收呼叫……', '接收呼叫');
-        bind(sstv, btnSstv, '正在解码 SSTV……（约 37 秒）', '开始解码 SSTV');
+        var TL = buildTimeline(PLAIN);
 
-        sstv.addEventListener('ended', function () {
-            if (!screen.hidden) return;
-            screen.hidden = false;
-            say('解码完成：收到一张 QSL 卡片。');
-            try { screen.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+        function caret(cls) {
+            var s = document.createElement('span');
+            s.className = 'cq-console__caret' + (cls ? ' ' + cls : '');
+            return s;
+        }
+
+        function render(t) {
+            /* 信号灯：这一刻音频在不在发声 */
+            var on = false;
+            for (var i = 0; i < TL.chars.length && !on; i++) {
+                var els = TL.chars[i].els;
+                for (var j = 0; j < els.length; j++) {
+                    if (t >= els[j].start && t < els[j].end) { on = true; break; }
+                }
+            }
+            lamp.className = 'cq-console__lamp' + (on ? ' is-on' : '');
+
+            /* 明文：收满一个字符才落笔（跟真的接收端一样） */
+            var out = '';
+            var current = null;
+            for (var c = 0; c < TL.chars.length; c++) {
+                if (TL.chars[c].end <= t) out += (TL.chars[c].space ? ' ' : '') + TL.chars[c].ch;
+                else { current = TL.chars[c]; break; }
+            }
+
+            /* 点划：正在收的那个字符，收到哪几个就画哪几个 */
+            var marks = '';
+            if (current) {
+                for (var m = 0; m < current.els.length; m++) {
+                    if (current.els[m].end <= t) marks += current.els[m].mark;
+                }
+            } else if (TL.chars.length) {
+                marks = TL.chars[TL.chars.length - 1].code;
+            }
+
+            codeEl.textContent = marks;
+            codeEl.appendChild(caret(on ? 'is-live' : ''));
+            textEl.textContent = out;
+            if (t < TL.totalMs) textEl.appendChild(caret(''));
+        }
+
+        /* 只读音频的播放位置来画：音频暂停 → rAF 停 → 解析停在原处 */
+        var raf = 0;
+        function tick() {
+            render(audio.currentTime * 1000);
+            raf = window.requestAnimationFrame(tick);
+        }
+        function stopLoop() {
+            if (!raf) return;
+            window.cancelAnimationFrame(raf);
+            raf = 0;
+        }
+
+        function sync() {
+            var playing = !audio.paused && !audio.ended;
+            btn.textContent = playing ? '暂停' : '开始';
+            btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
+            if (playing) {
+                box.hidden = false;
+                if (!raf) raf = window.requestAnimationFrame(tick);
+            } else {
+                stopLoop();
+                render(audio.currentTime * 1000);   // 停在原处，画面保持最后那一帧
+            }
+        }
+
+        audio.volume = VOLUME;
+
+        btn.addEventListener('click', function () {
+            if (audio.paused || audio.ended) {
+                if (audio.ended) audio.currentTime = 0;   // 播完了再按就是从头再来
+                var p = audio.play();
+                if (p && p.catch) p.catch(function () { /* 被浏览器拦下就保持现状 */ });
+            } else {
+                audio.pause();
+            }
         });
+
+        audio.addEventListener('play', sync);
+        audio.addEventListener('pause', sync);
+        audio.addEventListener('ended', sync);
+        sync();
     })();
     </script>
 

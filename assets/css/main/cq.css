@@ -1,8 +1,8 @@
 /* ==========================================================================
    CQ（彩蛋页）
    --------------------------------------------------------------------------
-   站点里唯一一个没有入口的页面 —— 知道地址才会来。所以这里不放任何导航之外
-   的入口，只有一台"接收机"。
+   站点里唯一一个没有入口的页面 —— 知道地址才会来。这一页是一台"解析台"：
+   两行状态文字 + 一个「开始」按钮 + 一块接收控制台。
    样式沿用全站那套：玻璃面板 + 金色强调 + --ctl-* 令牌，不引入新颜色。
    ========================================================================== */
 
@@ -17,47 +17,23 @@
     flex: 1 1 auto;
 }
 
-.cq-head {
-    margin-bottom: 28px;
-}
-
-.cq-head h1 {
-    font-size: 34px;
-    font-weight: 400;
-    letter-spacing: 8px;
-    color: #FFD700;
-}
-
-.cq-sub {
-    margin-top: 10px;
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.35);
-}
-
-/* 接收机面板 */
-.cq-card {
-    padding: 26px 28px;
-    background: rgba(20, 20, 50, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
-}
-
-.cq-text {
-    margin: 0 0 20px;
-    font-size: 14px;
+/* 状态文字：就是两行字，不再是"标题 + 副标题" */
+.cq-line {
+    margin: 0 0 6px;
+    font-size: 15px;
     line-height: 1.9;
-    color: rgba(255, 255, 255, 0.78);
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .cq-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+    margin-top: 24px;
 }
 
-/* 按钮走全站控件令牌：默认玻璃态，hover / 键盘聚焦转金 */
+/* 按钮走全站控件令牌：默认玻璃态，hover / 键盘聚焦 / 选中转金 */
 .cq-btn {
     display: inline-flex;
     align-items: center;
@@ -71,7 +47,7 @@
     color: var(--ctl-fg);
     background: var(--ctl-bg);
     border: 1px solid var(--ctl-border);
-    border-radius: var(--ctl-radius);
+    border-radius: var(--ctl-radius);   /* 4px 小方角 —— 全站控件都是这个，别改成胶囊 */
     cursor: pointer;
     transition: var(--ctl-transition);
 }
@@ -83,22 +59,103 @@
     border-color: var(--ctl-border-hover);
 }
 
-/* 正在播放的那一个：常驻强调态（金色只用于强调，这里就是"选中"） */
+/* 正在解析时（按钮变成"暂停"）：常驻强调态 —— 金色只用于强调，这里就是"选中" */
 .cq-btn[aria-pressed="true"] {
     color: var(--ctl-fg-hover);
     background: var(--ctl-bg-strong);
     border-color: var(--ctl-border-hover);
 }
 
-.cq-status {
-    margin: 18px 0 0;
-    min-height: 1.6em;             /* 文案换来换去也不跳高度 */
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.45);
+/* 解析控制台：按下「开始」才出现。
+   ⚠️ 可见性交给 hidden 属性，所以这里**不要**写 display（会盖掉 [hidden] 的 display:none） */
+.cq-console {
+    margin-top: 26px;
+    padding: 16px 18px;
+    background: rgba(8, 10, 24, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-panel-radius);
+
+    /* 等宽用**系统**等宽栈：不要引 Sarasa Mono —— 那是 5 MB 的字体，
+       正是加载屏要等的资源，不该为了一块读数把它拖下来。
+       （boot.css 里加载屏的中间读数也是同样的处理） */
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 13px;
+    line-height: 1.9;
 }
 
-/* SSTV 收到的画面：解码走完之前整块不显示（hidden 由脚本摘掉） */
+.cq-console__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* 信号灯：跟加载屏里"这一步已完成"那个小金点同一套（小方块 + 金色 + 辉光） */
+.cq-console__lamp {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+    border-radius: 1px;
+    background: rgba(255, 255, 255, 0.16);
+    transition: var(--ctl-transition);
+}
+
+.cq-console__lamp.is-on {
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+}
+
+.cq-console__meta {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 已收到的点划 */
+.cq-console__code {
+    min-height: 1.9em;
+    letter-spacing: 4px;
+    color: #FFD700;
+    word-break: break-all;
+}
+
+/* 已解出的明文 */
+.cq-console__text {
+    margin-top: 2px;
+    min-height: 1.9em;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.86);
+    word-break: break-word;
+}
+
+/* 光标（块状）。正在发声时闪得快一些，像真的在收报 */
+.cq-console__caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: -0.15em;
+    background: rgba(255, 215, 0, 0.7);
+    animation: cq-caret 1.05s steps(1, end) infinite;
+}
+
+.cq-console__caret.is-live {
+    background: #FFD700;
+    animation-duration: 0.45s;
+}
+
+@keyframes cq-caret {
+    0%, 50%      { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cq-console__caret {
+        animation: none;
+    }
+}
+
+/* SSTV 收到的画面：下一段用，解码走完之前整块不显示（hidden 由脚本摘掉） */
 .cq-screen {
     margin: 26px 0 0;
 }
@@ -124,16 +181,16 @@
         padding: 92px 16px 60px;
     }
 
-    .cq-head h1 {
-        font-size: 26px;
-        letter-spacing: 5px;
+    .cq-line {
+        font-size: 14px;
     }
 
-    .cq-card {
-        padding: 20px 18px;
+    .cq-console {
+        padding: 14px 14px;
+        font-size: 12px;
     }
 
     .cq-btn {
-        flex: 1 1 auto;            /* 窄屏两个按钮各占一行，好点 */
+        flex: 1 1 auto;            /* 窄屏独占一行，好点 */
     }
 }
