@@ -99,46 +99,43 @@
 }
 
 /* --------------------------------------------------------------------------
-   「开始」：就一个朴素 <a>，没有按钮壳子
+   「开始」：外观与一般正文**没有区别** —— 只有一条下划线，hover / 聚焦才变色。
+   所以这里不用等宽、不加字距、不加内边距，字号与颜色都跟正文一致；
+   下划线用 text-decoration（而不是 border-bottom），这样跟正文里的链接一样。
    -------------------------------------------------------------------------- */
 .cq-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 22px;
+    margin-top: 20px;
+    font-size: 15px;              /* 与 .cq-line 逐项对齐：字号、字距、行高、颜色 */
+    letter-spacing: 1px;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .cq-start {
-    display: inline-block;
-    padding: 2px 0;
-
-    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
-    font-size: 14px;
-    letter-spacing: 3px;
-
-    color: rgba(255, 255, 255, 0.78);
-    text-decoration: none;                   /* 平时不画线，只在 hover 时出现一条 */
-    border-bottom: 1px solid transparent;
+    color: inherit;                                   /* 就是正文那支色 */
+    text-decoration: underline;                       /* 唯一的外观区别 */
+    text-decoration-color: rgba(255, 215, 0, 0.35);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
     cursor: pointer;
-    transition: color 0.25s ease, border-color 0.25s ease;
+    transition: color 0.25s ease, text-decoration-color 0.25s ease;
 }
 
 .cq-start:hover,
 .cq-start:focus-visible {
-    color: #FFD700;
-    border-bottom-color: rgba(255, 215, 0, 0.55);
-    outline: none;
+    color: #FFD700;                                   /* 另一个区别：hover / 聚焦变色 */
+    text-decoration-color: currentColor;              /* 下划线跟着变金 */
 }
 
 .cq-start:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
-    outline-offset: 5px;
+    outline: 2px solid rgba(255, 215, 0, 0.55);       /* 纯键盘可达性，平时看不见 */
+    outline-offset: 4px;
 }
 
 /* 正在解析时（文案变"暂停"）：常驻金色 */
 .cq-start[aria-pressed="true"] {
     color: #FFD700;
-    border-bottom-color: rgba(255, 215, 0, 0.55);
+    text-decoration-color: currentColor;
 }
 
 /* --------------------------------------------------------------------------
@@ -260,7 +257,8 @@
         padding: 92px 16px 60px;
     }
 
-    .cq-line {
+    .cq-line,
+    .cq-actions {
         font-size: 14px;
     }
 
