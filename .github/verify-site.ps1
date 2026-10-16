@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     站点 URL 契约自检 —— 迁移到 Cloudflare 前后都用它。
 
@@ -88,6 +88,7 @@ Write-Host ""
 Test-Path-Code '/'            @(200) '首页'
 Test-Path-Code '/about/'      @(200) '关于页'
 Test-Path-Code '/archive/'    @(200) '档案页'
+Test-Path-Code '/archive/organization/' @(200) '组织档案页'
 Test-Path-Code '/tool/'       @(200) '工具页'
 Test-Path-Code '/starmap/'    @(200) '星图页'
 Test-Path-Code '/fleet/'      @(200) '舰队页'

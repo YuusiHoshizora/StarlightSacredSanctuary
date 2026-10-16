@@ -21,7 +21,8 @@
 ├── starmap/index.html          星图（刻意没有页脚）
 ├── fleet/index.html            舰队
 ├── tool/index.html             工具
-├── archive/index.html          档案
+├── archive/index.html          档案（分类导航）
+├── archive/organization/index.html  组织档案（组织名录导航：官方 / 半官方 / 非官方三类，目前只有官方组织有内容）
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
@@ -30,6 +31,7 @@
 │   │   ├── index.css           首页
 │   │   ├── error.css           错误页
 │   │   ├── archive.css         档案页
+│   │   ├── archive/organization.css  组织档案页
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── main/cq.css         彩蛋页 CQ
 │   │   ├── starmap/index.css   星图页
@@ -231,7 +233,8 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 
 - **「关于」页**（`about/index.html`）—— 面向读者的正式说明：授权条款 + 第三方致谢。
   改授权口径以这页为准
-- **每页底部的 `.site-footer`** —— index / main / fleet / tool / archive / error 共 6 个页面。
+- **每页底部的 `.site-footer`** —— index / main / fleet / tool / archive（含 archive/organization）/ about / error
+  共 8 个页面。
   **星图页刻意不放页脚**（整屏地图要沉浸感，页脚 HTML 里留了注释说明）；
   样式在 `assets/css/global.css` 的 `.site-footer`
 - 仓库根目录 **`LICENSE`** —— 协议全文 + 不在授权范围内的内容说明

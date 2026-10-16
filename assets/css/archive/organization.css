@@ -1,0 +1,359 @@
+/* ==========================================================================
+   组织档案（archive/organization/）—— 组织名录导航页
+   --------------------------------------------------------------------------
+   版式：面包屑 + 页标题 → 分类标题（官方组织 / 半官方组织 / 非官方组织）→
+   官方组织里「最高权力机构」单独置顶一块，下面接 15 个第一层分支权力机构的卡片网格；
+   另两类暂时只有一块虚线占位（.org-empty），等有内容再换成同样的卡片网格。
+   视觉沿用站内那套：玻璃面板（半透明底 + 1px 淡描边 + 面板圆角），
+   金色只当强调态（hover / 键盘聚焦）与标题色（见 DESIGN.md 第三节），不做大块填色。
+   控件圆角与颜色一律取 global.css 的 --ctl-* 令牌，不另立新值。
+   ========================================================================== */
+
+.org-section {
+    position: relative;
+    z-index: 1;
+
+    /* 同 .archive-section：main 是竖排 flex 容器，带 auto margin 的 flex 项
+       不会被拉伸、宽度会退化成 fit-content；写死 100% 才是
+       「铺满可用宽度、超过上限才居中」。 */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 60px 80px;
+}
+
+/* ── 面包屑：回到「档案」总览 ──
+   它是 <nav>，所以 global.css 的 `nav{display:flex;gap:40px}` 会跟过来，
+   这里显式收掉那个 40px 间距；`nav a` 的 opacity 也一并盖掉（不然会叠一层淡）。 */
+.org-crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.org-crumb a {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: var(--ctl-transition);
+}
+
+.org-crumb a:hover,
+.org-crumb a:focus-visible {
+    color: var(--ctl-fg-hover);
+}
+
+.org-crumb__sep {
+    color: rgba(255, 215, 0, 0.35);
+}
+
+.org-crumb__here {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── 页标题 ── */
+.org-head {
+    margin-bottom: 34px;
+}
+
+.org-head h1 {
+    margin: 0;
+    font-size: 30px;
+    letter-spacing: 6px;
+    color: #FFD700;
+}
+
+.org-sub {
+    margin: 8px 0 0;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.org-lead {
+    margin: 18px 0 0;
+    max-width: 720px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── 最高权力机构：单独置顶一块 ──
+   和下面 15 张卡片同一种玻璃面板，只靠「标签 + 更大的尺寸 + 金色标题」拉开层级；
+   不靠默认态的金色描边/金色底（那正是 DESIGN.md 里说的"金色不做默认态"）。 */
+.org-supreme {
+    display: block;
+    position: relative;
+    padding: 34px 32px;
+    margin-bottom: 46px;
+    color: #fff;
+    text-decoration: none;
+
+    background: rgba(20, 20, 50, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+
+    transition: var(--ctl-transition),
+                box-shadow 0.3s ease;
+}
+
+.org-supreme__tag {
+    display: inline-block;
+    padding: 3px 9px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--ctl-radius);
+}
+
+.org-supreme__name {
+    margin: 16px 0 0;
+    font-size: 26px;
+    letter-spacing: 4px;
+    color: #FFD700;
+}
+
+.org-supreme__en {
+    margin: 8px 0 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.org-supreme__desc {
+    margin: 14px 0 0;
+    max-width: 720px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* 「查看档案 ›」：卡片上唯一的一句提示，只在最高权力机构这块出现 */
+.org-card__go {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
+    transition: var(--ctl-transition);
+}
+
+.org-supreme:hover .org-card__go,
+.org-supreme:focus-visible .org-card__go {
+    color: #FFD700;
+}
+
+/* ── 分类标题：官方组织 / 半官方组织 / 非官方组织 ──
+   一条细分隔线 + 金色标题，是这一页最外层的分组。
+   第一类紧跟在页头后面，用相邻选择器压掉那条上间距。 */
+.org-group-head {
+    margin: 56px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 20px;
+    letter-spacing: 5px;
+    color: #FFD700;
+}
+
+.org-head + .org-group-head {
+    margin-top: 0;
+}
+
+.org-group-head__en {
+    margin-left: 14px;
+    font-size: 12px;
+    font-weight: 400;               /* h2 本身是 700，英文名跟着细一档 */
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── 层级小标题：第一层分支权力机构 ──
+   比分类标题弱一档（不加金色、不画线），给下面的卡片网格当标签用。 */
+.org-tier-head {
+    margin: 0 0 18px;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.org-tier-head__en {
+    margin-left: 12px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.32);
+}
+
+/* ── 预留的空分类：虚线框，一眼看出「这里还没内容」，不会被误当成卡片 ── */
+.org-empty {
+    padding: 32px 28px;
+    text-align: center;
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: var(--ctl-panel-radius);
+}
+
+.org-empty__title {
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.org-empty__desc {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.org-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.org-card {
+    position: relative;
+    display: block;
+    padding: 26px 24px;
+
+    color: #fff;
+    text-decoration: none;          /* 整块可点，别在标题上再画一条下划线 */
+
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+
+    transition: var(--ctl-transition),
+                box-shadow 0.3s ease;
+}
+
+/* 强调态：金色描边 + 阴影加深，不做位移
+   （全站可点击卡片统一如此 —— 档案主页的 .archive-card 就只有描边/阴影，见 DESIGN.md 第五节）。
+   键盘聚焦给同等的强调，另加一圈金色轮廓。 */
+.org-card:hover,
+.org-card:focus-visible,
+.org-supreme:hover,
+.org-supreme:focus-visible {
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.org-card:focus-visible,
+.org-supreme:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+/* 部门代号：右上角的小读数（RES / ADM / …），等宽字体（design 里"读数"那一类） */
+.org-card__no {
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.28);
+    transition: var(--ctl-transition);
+}
+
+.org-card:hover .org-card__no,
+.org-card:focus-visible .org-card__no {
+    color: var(--ctl-fg-hover);
+}
+
+.org-card h4 {
+    margin: 0 0 10px;
+    padding-right: 34px;            /* 给右上角的代号让位 */
+    font-size: 17px;
+    letter-spacing: 2px;
+}
+
+.org-card__en {
+    margin: 0 0 12px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.org-card__desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* 「减少动态效果」：不要过渡 */
+@media (prefers-reduced-motion: reduce) {
+    .org-card,
+    .org-supreme,
+    .org-card__no,
+    .org-card__go,
+    .org-crumb a {
+        transition: none;
+    }
+}
+
+/* ── 移动端：单列、收窄内边距 ── */
+@media (max-width: 768px) {
+
+    .org-section {
+        padding: 96px 18px 56px;
+    }
+
+    .org-head {
+        margin-bottom: 26px;
+    }
+
+    .org-head h1 {
+        font-size: 24px;
+        letter-spacing: 4px;
+    }
+
+    .org-supreme {
+        padding: 26px 20px;
+        margin-bottom: 34px;
+    }
+
+    .org-supreme__name {
+        margin-top: 14px;
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
+    .org-group-head {
+        margin: 44px 0 20px;
+        font-size: 17px;
+        letter-spacing: 4px;
+    }
+
+    .org-tier-head {
+        font-size: 13px;
+    }
+
+    .org-empty {
+        padding: 26px 18px;
+    }
+
+    .org-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .org-card {
+        padding: 22px 18px;
+    }
+
+    .org-card__no {
+        top: 18px;
+        right: 18px;
+    }
+}
