@@ -413,13 +413,93 @@ nav a:hover{
 }
 
 /* ==========================================================================
-   移动端适配（全站共用部分）
+   导航栏折叠（移动端）
    --------------------------------------------------------------------------
-   桌面样式完全不受影响：下面只在窄屏生效。
-   导航栏在手机上要放得下「logo（含图标）+ 6 个链接」，所以缩小字号与间距，
-   并留出刘海屏安全区；链接加大可点区域（手指点得着）。
+   桌面样式完全不受影响 —— 下面全部只在窄屏生效。
+
+   背景：6 个链接在手机上即使缩到 12px 也还是"一字排开"，一行塞不下、
+   有的机型会挤到贴边。所以窄屏改成：栏里只留「logo + 折叠按钮」，
+   链接收进一块从栏下缘展开的面板（就是那个 <nav> 本身）。
+
+   约定与注意：
+     · 折叠按钮写在 <nav> 里（见各页 <header class="navbar">），
+       6 个链接仍是真实 <a> —— 禁用 JS 时按钮不出现，导航恢复成一行（跟改前一样），
+       不会出现"点了没反应"的死按钮。
+     · 展开/收起是 CSS 属性动画，JS（assets/js/navtoggle.js）只负责切换
+       navbar 上的 .is-menu-open 和 aria-expanded，不碰内联样式。
+     · 面板是 fixed、从导航栏下缘（top:100%）铺到屏幕底部，所以内容不会被推下去；
+       关着时整块被 clip-path 剪掉，也就不会挡住页面上的点击。
+     · 配色只用站内那三样：玻璃底、金色强调、紫色点缀（见「设计约定」）。
    ========================================================================== */
+
+/* ── 折叠按钮：桌面隐藏；窄屏在下面恢复成 flex ── */
+.navbar__toggle{
+    display:none;                          /* 桌面不显示，也就不进 Tab 顺序 */
+    flex:0 0 auto;
+    align-items:center;
+    justify-content:center;
+    width:44px;                            /* 手指点得着 */
+    height:44px;
+    padding:0;
+    background:none;
+    border:none;
+    color:#fff;                            /* 三条杠用 currentColor，hover 时整体转金 */
+    cursor:pointer;
+}
+
+/* 三条杠：按钮中心那一条用自身背景画，上下两条用伪元素 */
+.navbar__toggle__bars,
+.navbar__toggle__bars::before,
+.navbar__toggle__bars::after{
+    display:block;
+    width:20px;
+    height:2px;
+    border-radius:1px;
+    background:currentColor;
+    transition:var(--ctl-transition), transform 0.28s var(--ctl-ease);
+}
+
+.navbar__toggle__bars{
+    position:relative;
+}
+
+.navbar__toggle__bars::before,
+.navbar__toggle__bars::after{
+    content:"";
+    position:absolute;
+    left:0;
+}
+
+.navbar__toggle__bars::before{ top:-6px }
+.navbar__toggle__bars::after { top: 6px }
+
+/* hover / 键盘聚焦：跟站内其它控件一样转金（底色仍是玻璃态，只提一点亮度） */
+.navbar__toggle:hover,
+.navbar__toggle:focus-visible{
+    color:var(--ctl-fg-hover);
+    background:var(--ctl-bg);
+    border-radius:var(--ctl-radius);
+}
+
+.navbar__toggle:focus-visible{
+    outline:2px solid rgba(255, 215, 0, 0.55);
+    outline-offset:2px;
+}
+
+/* 展开成 × ：上下两条并到中线各转 45°，中间那条淡出 */
+.navbar.is-menu-open .navbar__toggle__bars{ background:transparent }
+.navbar.is-menu-open .navbar__toggle__bars::before{ top:0; transform:rotate(45deg) }
+.navbar.is-menu-open .navbar__toggle__bars::after { top:0; transform:rotate(-45deg) }
+
 @media (max-width: 768px){
+
+    /* 导航栏高度：折叠面板要按它算高度（写一处，改了这里面板跟着变） */
+    .navbar{
+        --navbar-h:60px;
+        height:var(--navbar-h);
+        padding-left:max(14px, env(safe-area-inset-left));
+        padding-right:max(14px, env(safe-area-inset-right));
+    }
 
     /* 手机浏览器地址栏会占掉一部分 vh：整屏高度改用 svh（页脚也算在里面） */
     body{
@@ -432,51 +512,205 @@ nav a:hover{
         line-height:1.6;
     }
 
-    .navbar{
-        height: 60px;
-        padding-left: max(14px, env(safe-area-inset-left));
-        padding-right: max(14px, env(safe-area-inset-right));
-    }
-
     .logo{
-        font-size: 18px;
-        letter-spacing: 2px;
-        gap: 8px;              /* 图标与文字的间距：窄屏收一点，给导航腾地方 */
+        font-size:18px;
+        letter-spacing:2px;
+        gap:8px;
     }
 
-    nav{
-        gap: 11px;             /* 原本 14px —— 多了「关于」一栏和 logo 图标，要收紧 */
+    .navbar__toggle{
+        display:flex;
     }
 
-    nav a{
-        font-size: 13px;
-        padding: 8px 2px;
+    /* ── 折叠面板：就是顶栏里那个 <nav id="site-nav"> 本身 ──
+       关着 = 从下缘整块剪掉（不可见、也点不到）；开着 = 剪裁归零。
+       用 clip-path 而不是 display，才能让它平滑展开、收起。
+       这里一律写 #site-nav，别写成裸的 nav —— 主页面左栏还有一块
+       <nav class="vertical-nav">，裸 nav 会把那块也一起变成全屏面板。 */
+    #site-nav{
+        /* 用 absolute（不是 fixed）：.navbar 带 backdrop-filter，它本身就是
+           定位包含块 —— 无论 fixed 还是 absolute，"top:100%" 都相对导航栏算。
+           但 absolute 不会踩到 fixed 那条"bottom 相对包含块（60px 高）"的坑：
+           fixed + bottom:0 时面板高度会塌成 0，只剩内容高度。 */
+        position:absolute;
+        top:100%;                              /* 紧贴导航栏下缘 */
+        left:0;
+        right:0;
+        /* 从栏下缘铺到屏幕底部。必须显式给高度：面板的包含块是导航栏本身（60px），
+           只写 top/bottom 会让它塌掉。用 --navbar-h 与栏高保持同步。 */
+        height:calc(100vh - var(--navbar-h));
+        height:calc(100svh - var(--navbar-h));  /* 有 svh 的浏览器用它，避开地址栏 */
+
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:4px;                               /* 原本是横向的 40px 间距 */
+
+        /* 铺满屏幕的高面板要够实，星野背景才不会透过来把字糊掉 */
+        background:linear-gradient(
+            to bottom,
+            rgba(10, 10, 30, 0.97),
+            rgba(10, 10, 30, 0.90)
+        );
+
+        /* 面板顶上留一道极淡的分光，接住导航栏的下边缘 */
+        box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                   0 20px 50px rgba(0, 0, 0, 0.55);
+
+        padding:14px max(14px, env(safe-area-inset-right))
+                calc(20px + env(safe-area-inset-bottom))
+                max(14px, env(safe-area-inset-left));
+
+        overflow-y:auto;                       /* 横屏等很矮的视口里也能滚到最后一栏 */
+        -webkit-overflow-scrolling:touch;
+
+        clip-path:inset(0 0 100% 0);
+        visibility:hidden;
+        pointer-events:none;
+        transition:clip-path 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
+                   visibility 0s linear 0.32s;
+    }
+
+    /* 没有 clip-path 的老内核（Chrome < 55 等）退化成纯透明度开合：
+       至少别出现"点开却什么都看不见"。支持 clip-path 的浏览器走不到这里。 */
+    @supports not (clip-path: inset(0)){
+        #site-nav{
+            opacity:0;
+            transition:opacity 0.28s var(--ctl-ease), visibility 0s linear 0.28s;
+        }
+        .navbar.is-menu-open #site-nav{
+            opacity:1;
+            transition:opacity 0.28s var(--ctl-ease), visibility 0s;
+        }
+    }
+
+    .navbar.is-menu-open #site-nav{
+        clip-path:inset(0 0 0 0);
+        visibility:visible;
+        pointer-events:auto;
+        transition:clip-path 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
+                   visibility 0s;
+    }
+
+    /* 一栏一行：字号回到正文尺寸、可点区域整行，手指不用瞄 */
+    #site-nav a{
+        position:relative;                     /* 给「当前页」那道金色竖条（::before）当定位基准 */
+        display:block;
+        flex:0 0 auto;
+        padding:13px 14px;
+        font-size:15px;
+        letter-spacing:1px;
+        opacity:0.75;
+
+        border:1px solid transparent;
+        border-radius:var(--ctl-radius);
+        background:rgba(255, 255, 255, 0.03);
+    }
+
+    /* 强调态沿用站内那套：金色描边 + 淡金底 + 金色文字 */
+    #site-nav a:hover,
+    #site-nav a:focus-visible{
+        opacity:1;
+        color:var(--ctl-fg-hover);
+        background:var(--ctl-bg-strong);
+        border-color:var(--ctl-border-hover);
+    }
+
+    #site-nav a:focus-visible{
+        outline:none;                          /* 金色描边已经是焦点态，不再叠系统轮廓 */
+    }
+
+    /* 当前所在页：金色 + 左侧一道金色标记，跟主页面左栏的分类选中样式一致。
+       标记由 navtoggle.js 按页面的真实路径算出来（`aria-current="page"`），
+       因为各页的相对路径写法不同（`.` / `..` / `starmap/` …），
+       靠 [href="..."] 去猜会同时命中首页与子目录页的父目录链接。
+       竖条用伪元素画，不占文字的位置 —— 否则「当前页」那一条的文字会比别的往右挪。 */
+    #site-nav a::before{
+        content:"";
+        position:absolute;
+        left:0;
+        top:6px;
+        bottom:6px;
+        width:3px;
+        border-radius:0 2px 2px 0;
+        background:var(--ctl-border-hover);
+        opacity:0;
+        transition:var(--ctl-transition);
+    }
+
+    #site-nav a[aria-current]::before{
+        opacity:1;
+    }
+
+    #site-nav a[aria-current]{
+        opacity:1;
+        color:var(--ctl-fg-hover);
+        background:var(--ctl-bg-strong);
+        border-color:rgba(255, 215, 0, 0.35);
+    }
+
+    /* 逐条错开入场（只在展开方向加延迟；收起时不留延迟）。
+       这里刻意只动 transform，不动 opacity —— 入场动画的填充值（both）会盖住
+       基础不透明度，若在这里改 opacity，快速"开→关"时那些还没轮到入场的条目
+       会先弹回 0.75 再随面板收起，闪一下。改成只做位移就没有这个冲突。 */
+    .navbar.is-menu-open #site-nav a{
+        animation:nav-item-in 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    .navbar.is-menu-open #site-nav a:nth-child(1){ animation-delay:0.02s }
+    .navbar.is-menu-open #site-nav a:nth-child(2){ animation-delay:0.05s }
+    .navbar.is-menu-open #site-nav a:nth-child(3){ animation-delay:0.08s }
+    .navbar.is-menu-open #site-nav a:nth-child(4){ animation-delay:0.11s }
+    .navbar.is-menu-open #site-nav a:nth-child(5){ animation-delay:0.14s }
+    .navbar.is-menu-open #site-nav a:nth-child(6){ animation-delay:0.17s }
+
+    @keyframes nav-item-in{
+        from{ transform:translateY(-6px) }
+        to  { transform:translateY(0) }
     }
 }
 
+/* 更窄的屏幕（320–380px）：标题与三条杠各收一档 */
 @media (max-width: 380px){
 
     .navbar{
-        padding-left: max(10px, env(safe-area-inset-left));
-        padding-right: max(10px, env(safe-area-inset-right));
+        padding-left:max(10px, env(safe-area-inset-left));
+        padding-right:max(10px, env(safe-area-inset-right));
     }
 
     .logo{
-        font-size: 16px;
-        letter-spacing: 1px;
-        gap: 6px;
+        font-size:16px;
+        letter-spacing:1px;
+        gap:6px;
     }
 
     .logo__mark{
-        width: 1.1em;          /* 320px 上下再收一档，免得把导航挤到贴边 */
+        width:1.1em;
     }
 
-    nav{
-        gap: 7px;
+    .navbar__toggle{
+        width:40px;
     }
 
-    nav a{
-        font-size: 12px;
-        letter-spacing: 0;
+    .navbar__toggle__bars,
+    .navbar__toggle__bars::before,
+    .navbar__toggle__bars::after{
+        width:18px;
+    }
+}
+
+/* 「减少动态效果」：展开/收起与逐条入场都几乎瞬时完成 */
+@media (prefers-reduced-motion: reduce){
+
+    #site-nav,
+    .navbar.is-menu-open #site-nav,
+    .navbar__toggle__bars,
+    .navbar__toggle__bars::before,
+    .navbar__toggle__bars::after{
+        transition-duration:0.001s !important;
+    }
+
+    .navbar.is-menu-open #site-nav a{
+        animation:none;
     }
 }

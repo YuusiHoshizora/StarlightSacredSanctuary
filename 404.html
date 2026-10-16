@@ -51,7 +51,7 @@
     <link rel="stylesheet" href="/assets/css/error.css">
     <script defer src="/assets/js/background.js"></script>
     <script defer src="/assets/js/seamless.js"></script>
-
+    <script defer src="/assets/js/navtoggle.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
         {
@@ -83,7 +83,7 @@
             <span class="logo__mark" aria-hidden="true"></span>
             星光圣域
         </div>
-        <nav>
+        <nav id="site-nav">
             <a href="/">首页</a>
             <a href="/starmap/">星图</a>
             <a href="/fleet/">舰队</a>
@@ -91,6 +91,13 @@
             <a href="/archive/">档案</a>
             <a href="/about/">关于</a>
         </nav>
+
+        <!-- 折叠按钮：窄屏才出现（桌面 display:none），是 .navbar 自己的子元素，
+             所以和 logo 一样是栏内的一行；放进 nav 里会被那块竖排面板当成一个条目 -->
+        <button class="navbar__toggle" type="button" aria-label="导航菜单" aria-controls="site-nav" aria-expanded="false">
+            <span class="navbar__toggle__bars" aria-hidden="true"></span>
+        </button>
+
     </header>
 
     <!-- ===== 错误内容（统一页面） ===== -->

@@ -191,6 +191,32 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 字体文件（7 个 woff2、约 43 MB）是故意不放进预缓存清单的，第一次真正用到时才缓存 ——
 所以一个页面只会下载它实际用到的字面（例如文章正文用等宽，就只拉 Mono 的 Regular + Bold）。
 
+### ⚠️ `.html` 地址 + Service Worker 的重定向坑（踩过，真机复现过）
+
+**症状**：首页点 **ENTER** 进不去主页面，浏览器报「无法访问此网站」（`chrome-error://chromewebdata/`），
+但把地址栏里的 `.html` 去掉、手打 `/main/mainpage` 就能进。
+
+**成因**（两段叠加）：
+
+1. **Cloudflare 静态资源会把 `.html` 地址 307 到不带扩展名的规范地址**：
+   `/main/mainpage.html` → `307` → `/main/mainpage` → `200`。这是托管方的默认行为
+   （`wrangler.jsonc` 没写 `html_handling`，走默认值）。直接请求没问题，浏览器会自动跟。
+2. `sw.js` 的**预缓存**当时用裸的 `cache.put(url, response)` 存盘（绕过了 `putSafely` 里
+   `response.redirected` 的检查），于是把「跟过 307 的响应」原样存进了缓存。
+   而 **fetch 规范禁止用 `response.redirected === true` 的响应满足导航请求** ——
+   一旦这么返回，整次导航直接失败，连站内 404 页都出不来，只有浏览器自己的错误页。
+
+**修法**：`sw.js` 里的 `asDirectResponse()` —— 用 `new Response(response.body, {status, statusText, headers})`
+重建一份等价但 `redirected === false` 的响应，出入缓存前后各洗一次（对没被重定向的响应是空操作）。
+`putSafely` 也要**先 clone 再洗**，否则会把调用方那份的 body 抽走。
+
+**改这里时要一起想的事**：
+
+- 任何往缓存里写响应的地方（预缓存循环、`putSafely`）都必须过一遍 `asDirectResponse`
+- 任何把响应交给导航请求的出口（`handleNavigate` 的 cached / network 两条路）也要过一遍
+- 修完记得升 `CACHE_VERSION`：老访客的旧缓存里有被污染的条目，只有换缓存名才会被 `activate` 清掉
+- 只动 `sw.js` 的注释不影响发布，但**动了逻辑就要升版本号**，否则老访客的 SW 永远不会更新
+
 ---
 
 ## 授权声明放在哪
@@ -208,7 +234,7 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   `<span class="copyright-years" data-since="2025">` 里，**结束年由 `assets/js/seamless.js` 末尾那段自动改成当年**。
   另外 `LICENSE` 的 `Copyright (c)` 行和 `README.md` 里的年份是纯文本、**不会自动更新**，跨年时要手动改这两处
 
-### 加新页面时要一起做的六件事
+### 加新页面时要一起做的七件事
 
 1. `<head>` 里加加载屏三件套：那段内联判断脚本 + `<link ... boot.css>` + `<script defer ... boot.js>`
    （路径按页面深度调整），`<body>` 开头放一个空的 `<div class="boot" id="boot"></div>`
@@ -216,10 +242,13 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
    （根目录页 `assets/img/…`、子目录页 `../assets/img/…`、`error.html` 用绝对路径 `/assets/img/…`）
 3. 导航栏 logo：`<span class="logo__mark" aria-hidden="true"></span>` 放在「星光圣域」前面
    （它是个 CSS mask，颜色自动跟随文字，不用管图本身是什么颜色）
-4. 导航栏的 `<nav>` 里加链接（注意各页相对路径不同：根目录页用 `about/`，子目录页用 `../about/`，
-   错误页用绝对路径 `/about/`）
-5. 页脚：拷一份 `.site-footer`，把「关于本站」链接改成正确的相对路径
-6. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS（否则离线访问那一页会漏）
+4. 导航栏的 `<nav id="site-nav">` 里加链接（注意各页相对路径不同：根目录页用 `about/`，子目录页用 `../about/`，
+   错误页用绝对路径 `/about/`）。**`id="site-nav"` 不能漏**，窄屏的折叠面板就是这块 `<nav>` 本身
+5. 导航栏的折叠按钮：在 `</nav>` **之后**、`</header>` 之前插一份 `<button class="navbar__toggle">`
+   （见任何一页的现成写法），并在 `<head>` 里加 `<script defer src="…/assets/js/navtoggle.js"></script>`。
+   ⚠️ 按钮必须是 `.navbar` 自己的子元素 —— **放进 `<nav>` 里就会被那块竖排面板当成一个条目**
+6. 页脚：拷一份 `.site-footer`，把「关于本站」链接改成正确的相对路径
+7. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS/JS（否则离线访问那一页会漏）
 
 ### 工具页左栏的两个测试入口
 
@@ -231,7 +260,7 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 不想要了，就把左栏那两个 `.tool-entry` 和 `tool/index.html` 末尾那段脚本一起删掉
 （`?boot=1` 这个开关本身可以留着，它就是个调试入口）。
 
-### 两个已经踩过的布局坑
+### 三个已经踩过的布局坑
 
 - **页脚高度算在 `body` 的竖排 flex 里**，所以页面主体不要再写死 `height: 100vh`
   （页脚会被挤出视口）。要撑满就写 `flex: 1 1 auto` —— 首页 `.hero`、舰队 `.fleet-section`、
@@ -240,6 +269,45 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   档案 `.archive-section`、工具 `.tool-layout`、关于 `.about-section`）。
   它们是 `body` / `main` 这个竖排 flex 容器的 flex 项，而 flex 项在交叉轴上带 auto margin 时
   **不会被拉伸**、宽度会退化成 fit-content —— 主页面「打开文章整栏突然变窄」就是这么来的。
+- **`backdrop-filter` 会让元素成为 fixed 后代的定位包含块**。顶栏 `.navbar` 带
+  `backdrop-filter:blur(12px)`，所以窄屏折叠面板（`.navbar` 里的 `#site-nav`）无论写
+  `fixed` 还是 `absolute`，`top:100%` 都是相对那 60px 高的导航栏算的 ——
+  写 `fixed + bottom:0` 高度会**塌成 0**（只剩内容高度）。现在的写法是
+  `position:absolute; top:100%; height:calc(100svh - var(--navbar-h))`，
+  栏高由 `--navbar-h`（`global.css` 的 ≤768px 块里定义）统一给出。
+
+### 窄屏导航折叠（`assets/js/navtoggle.js`）
+
+≤768px 时 6 个链接会跟 logo 挤在同一行，所以窄屏把它们收进一块从栏下缘铺到屏底的面板。
+结构（每页都要有，见「加新页面时」第 4、5 条）：
+
+```html
+<header class="navbar">
+    <div class="logo">…</div>
+    <nav id="site-nav">…6 条链接…</nav>
+    <button class="navbar__toggle" type="button" aria-label="导航菜单"
+            aria-controls="site-nav" aria-expanded="false">
+        <span class="navbar__toggle__bars" aria-hidden="true"></span>
+    </button>
+</header>
+```
+
+- **外观全在 CSS**（`global.css` 的 ≤768px 块）：按钮桌面 `display:none`（所以不进 Tab 顺序）、
+  窄屏 `display:flex`；`#site-nav` 变成竖排面板，靠 `.navbar` 上的 `.is-menu-open`
+  用 `clip-path` 开合。**别再给 `#site-nav` 写 `position:fixed + bottom:0`**（见上一个坑）。
+- **所有选择器都写 `#site-nav`，别写裸的 `nav`**：主页面左栏还有 `<nav class="vertical-nav">`，
+  裸 `nav` 会把那块也一起变成全屏面板。
+- **按钮必须是 `.navbar` 自己的子元素**：放进 `<nav>` 里就会被那块竖排面板当成一个条目。
+- **JS 只做三件事**：切 `.is-menu-open` 与 `aria-expanded`；展开时锁 `body` 滚动，
+  并在点链接 / 按 Esc（焦点还给按钮）/ 窗口拉宽回桌面时收起；按当前地址给命中的那条链接加
+  `aria-current="page"`（面板里那条显示金色竖条）。路径比较用 `URL` 解析 + 归一化，
+  **不要用 `[href="…"]` 去猜** —— 各页写法不同（`.` / `..` / `starmap/` / `/about/`），
+  字符串比会同时命中首页和子目录页的父级链接。
+- 禁 JS 时按钮不出现（HTML 里没有 `hidden`，显隐由 CSS 控制），导航退化成改前那样的一行，
+  不会出现「点了没反应」的死按钮。
+- ⚠️ **写 HTML 注释务必用 `-->` 结尾**。曾把 `-->` 误写成 `*/`，整段 `<button>` 就被当成
+  注释内容吃掉了：页面上按钮消失、`document.querySelectorAll('button').length` 为 0，
+  但 `outerHTML` 里还能搜到 `navbar__toggle` 字样 —— 静态检查与构建都不会报，只有真浏览器看得出。
 
 ---
 

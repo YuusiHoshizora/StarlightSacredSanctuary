@@ -10,6 +10,12 @@
  *               没有网络时回退到缓存页面 / 离线页。
  *   · 静态资源：stale-while-revalidate（先给缓存，再后台刷新）。
  *
+ * 重定向响应的处理（踩过的坑，见 asDirectResponse）：
+ *   站点的 .html 地址在 Cloudflare 上会先 307 到不带扩展名的规范地址，
+ *   于是预缓存 .html 页面拿到的是"被重定向过"的响应。这种响应不能直接用于
+ *   导航请求（浏览器会拒绝，整页显示"无法访问此网站"），所以出入缓存前后
+ *   都统一洗成等价的普通响应。
+ *
  * 更新机制：seamless.js 每次加载页面都会检查 /sw.js 是否有新版本；
  *           新版本安装完成后立即接管（skipWaiting + clients.claim），
  *           下一次跳转就用到最新页面，不必手动清缓存。
@@ -19,7 +25,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.2';
+const CACHE_VERSION = 'v5.5';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
@@ -56,6 +62,7 @@ const PRECACHE_URLS = [
 
     // 脚本
     '/assets/js/seamless.js',
+    '/assets/js/navtoggle.js',
     '/assets/js/boot.js',
     '/assets/js/notice.js',
     '/assets/js/tool.js',
@@ -79,6 +86,28 @@ const PRECACHE_URLS = [
    看起来就像"改动没生效"。部署到真实域名后自动走下面的正常缓存策略。 */
 const DEV_HOST = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|::1|\[::1\])$/.test(self.location.hostname);
 
+/* 把"跟随过重定向"的响应洗成一份等价的普通响应。
+   ----------------------------------------------------------------------------
+   为什么必须有它：浏览器禁止用「重定向过的响应」满足导航请求（fetch 规范里
+   response.redirected 为真时不能用于 navigate），一旦这么做了，整次导航直接失败，
+   访问者看到的是浏览器自己的「无法访问此网站」，连站内 404 页都出不来。
+
+   而站点的 .html 地址在 Cloudflare 静态资源上会先 307 到不带扩展名的规范地址
+   （/main/mainpage.html → /main/mainpage），所以预缓存 /main/mainpage.html 时
+   拿到的正是这种 redirected === true 的响应 —— 它被原样存进缓存后，
+   下次点首页的 ENTER 就必炸。这个坑真机复现过。
+
+   用 new Response(...) 重建一份，status / statusText / headers 原样保留，
+   但新响应的 redirected 一定是 false，于是既能安全缓存、也能安全用于导航。 */
+function asDirectResponse(response) {
+    if (!response || !response.redirected) return response;
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+    });
+}
+
 /* ------------------------------- 安装：预缓存 ------------------------------- */
 
 self.addEventListener('install', (event) => {
@@ -95,7 +124,9 @@ self.addEventListener('install', (event) => {
             try {
                 const response = await fetch(new Request(url, { cache: 'reload' }));
                 if (response && response.ok) {
-                    await cache.put(url, response);
+                    // 必须洗一遍再存：.html 页面在这条链上是被 307 过的
+                    //（见 asDirectResponse 的注释，存原样会让导航整页失败）
+                    await cache.put(url, asDirectResponse(response));
                 }
             } catch (err) {
                 console.log('[SW] 预缓存跳过：', url, err && err.message);
@@ -163,11 +194,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(staleWhileRevalidate(request));
 });
 
-/** 把成功的同源响应写入缓存（重定向响应与部分响应跳过，失败也不影响页面） */
+/** 把成功的同源响应写入缓存（跳过部分响应，失败也不影响页面）
+    被重定向过的响应先洗一遍再存：它本身内容是对的（307 的目标页），
+    但带着 redirect 标记存下来，将来就没法用于导航（见 asDirectResponse）。
+    注意先 clone 再洗 —— asDirectResponse 会抽走 body，不能影响调用方那一份。 */
 async function putSafely(cache, request, response) {
-    if (!response || !response.ok || response.type !== 'basic' || response.redirected) return;
+    if (!response || !response.ok || response.type !== 'basic') return;
     try {
-        await cache.put(request, response.clone());
+        await cache.put(request, asDirectResponse(response.clone()));
     } catch (err) {
         console.log('[SW] 写入缓存失败：', request.url, err && err.message);
     }
@@ -186,10 +220,12 @@ async function handleNavigate(request) {
         })
         .catch(() => null);
 
-    if (cached) return cached;
+    // 缓存里那份可能是旧版本存下的"被重定向过的"响应，直接交出去会让整次导航失败，
+    // 所以出口处统一洗一遍（对没被重定向的响应是零成本的空操作）
+    if (cached) return asDirectResponse(cached);
 
     const response = await network;
-    if (response) return response;
+    if (response) return asDirectResponse(response);
 
     const offline = await cache.match(OFFLINE_URL);
     if (offline) return offline;
@@ -212,7 +248,7 @@ async function staleWhileRevalidate(request) {
         })
         .catch(() => null);
 
-    if (cached) return cached;
+    if (cached) return asDirectResponse(cached);
 
     const response = await network;
     if (response) return response;
