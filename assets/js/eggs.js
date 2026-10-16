@@ -3,24 +3,26 @@
  * -----------------------------------------------------------------------------
  * 站点里藏着不与导航相连的页面（彩蛋）。这个文件做三件事：
  *
- * 1) 记下「这台浏览器发现过哪些彩蛋」—— 按 id 存在 localStorage 里。
+ * 1) 记下「这台浏览器发现过哪些彩蛋」—— 按 id 存在 localStorage 里，**数组顺序就是发现先后**。
  *    彩蛋页只要在 <body> 上写 data-egg="cq"，本文件就会自动登记（见文件末尾）。
  *    ⚠️ id 一旦发布就别改：「已发现」按 id 记，改 id 等于把所有人的进度清零。
  *    ⚠️ 预渲染保护：speculation rules 会在鼠标悬停时提前渲染目标页，
  *       所以等页面真正激活（prerenderingchange）才登记 —— 否则"悬停一下"就算发现了。
  *
- * 2) 「关于」页里那张「已发现的彩蛋」卡片：把找到的列出来，每条后面带两个操作：
- *    · 关闭入口 —— 把对应的入口元素从站点上撤掉（比如首页左下角那个点），
- *      记在 sss.eggs.off 里；再点一次是「恢复入口」。关掉之后就不显示了，但
- *      「已发现」还留着，卡片里仍然能看到自己找到过什么。
- *    · 重置 —— 把这条彩蛋完全忘掉：清掉「已发现」「关闭」以及它自己的状态
- *      （见清单里的 resetKeys），于是又变回一个没被发现的彩蛋。要点两下确认。
- *    一个都没发现时整张卡片保持 hidden（不显示）。
+ * 2) 「关于」页里那张「已发现的彩蛋」卡片，做成一个**设置页面**的样子：
+ *    · 顶上只报数：全发现 → 「所有彩蛋已发现」；否则 → 「目前已发现彩蛋数：X」
+ *      （X 与"全部"都从清单长度算，写死不了）
+ *    · 下面按**发现先后**列出来，每条一行：名字（可点进彩蛋页）+ 一个开关 + 一个重置
+ *      · 开关：开 = 入口正常显示；关 = 把入口从站点上撤掉（记 sss.eggs.off）。
+ *        关掉之后入口彻底不出现（连扫描也扫不出来），但「已发现」还留着
+ *      · 重置：**一键生效、不用二次确认** —— 只清这一条
+ *    · 列表最下面：「重置所有彩蛋」—— 这个**需要二次确认**（点两下）
+ *    · 一个都没发现时整张卡片保持 hidden（不显示）
  *
- * 3) 样式由本文件注入（跟着 notice.js 的套路），所以「关于」页只要引这一行脚本。
+ * 3) 样式由本文件注入（跟着 notice.js 的套路），「关于」页只要引这一行脚本。
  *
  * ── localStorage 键一览（改之前先看这里） ──
- *   sss.eggs      已发现的 id 数组
+ *   sss.eggs      已发现的 id 数组（顺序 = 发现先后）
  *   sss.eggs.off  入口被关闭的 id 数组
  *   其余按彩蛋各自记（例如 CQ 的"点已经被扫出来过"是 sss.cq-dot，见 resetKeys）
  * ========================================================================== */
@@ -32,14 +34,13 @@
 
     /* 彩蛋清单。href 从站点根写起，这样以后把彩蛋页挪到哪一层都不用改。
        加新彩蛋：往这里加一条，再到那个页面的 <body> 上写 data-egg="同样的 id"。
-       · entry：入口元素的选择器（「关闭入口」靠它撤掉；没有入口就不写）
+       · entry：入口元素的选择器（开关"关"时靠它撤掉；没有入口就不写）
        · resetKeys：重置时要一并清掉的、这个彩蛋自己的 localStorage 键 */
     var LIST = [
         {
             id: 'cq',
             name: 'CQ · 未知信号',
             href: '/main/cq.html',
-            desc: '一段没人应答的呼叫，和一张用 SSTV 慢扫描电视传回来的 QSL 卡片。',
             entry: '#cq-dot',
             resetKeys: ['sss.cq-dot']
         }
@@ -66,15 +67,23 @@
         return null;
     }
 
+    function clearEggKeys(egg) {
+        var keys = (egg && egg.resetKeys) || [];
+        for (var i = 0; i < keys.length; i++) {
+            try { localStorage.removeItem(keys[i]); } catch (e) { /* 忽略 */ }
+        }
+    }
+
     var API = {
         list: LIST,
 
-        /** 已经发现的彩蛋（按清单顺序返回对象） */
+        /** 已经发现的彩蛋 —— **按发现先后**返回（数组顺序就是发现顺序，不是清单顺序） */
         found: function () {
             var ids = readArr(KEY);
             var out = [];
-            for (var i = 0; i < LIST.length; i++) {
-                if (ids.indexOf(LIST[i].id) >= 0) out.push(LIST[i]);
+            for (var i = 0; i < ids.length; i++) {
+                var egg = byId(ids[i]);
+                if (egg) out.push(egg);
             }
             return out;
         },
@@ -84,7 +93,7 @@
         /** 登记一个彩蛋；重复登记没有任何副作用 */
         find: function (id) {
             var ids = readArr(KEY);
-            if (ids.indexOf(id) < 0) { ids.push(id); writeArr(KEY, ids); }
+            if (ids.indexOf(id) < 0) { ids.push(id); writeArr(KEY, ids); }   // 追加 = 记下发现先后
         },
 
         /** 预渲染安全地登记：预渲染中的页面先等真正激活再记（见文件头注释） */
@@ -106,15 +115,18 @@
             else if (!hide && at >= 0) { ids.splice(at, 1); writeArr(KEY_OFF, ids); }
         },
 
-        /** 完全忘掉这条彩蛋：已发现 / 已关闭 / 它自己的状态键，全部清掉 */
+        /** 完全忘掉这一条：已发现 / 已关闭 / 它自己的状态键，全清掉 */
         reset: function (id) {
             writeArr(KEY, readArr(KEY).filter(function (x) { return x !== id; }));
             writeArr(KEY_OFF, readArr(KEY_OFF).filter(function (x) { return x !== id; }));
-            var egg = byId(id);
-            if (!egg || !egg.resetKeys) return;
-            for (var i = 0; i < egg.resetKeys.length; i++) {
-                try { localStorage.removeItem(egg.resetKeys[i]); } catch (e) { /* 忽略 */ }
-            }
+            clearEggKeys(byId(id));
+        },
+
+        /** 完全忘掉所有彩蛋（连没发现过的一并清干净它的状态键） */
+        resetAll: function () {
+            writeArr(KEY, []);
+            writeArr(KEY_OFF, []);
+            for (var i = 0; i < LIST.length; i++) clearEggKeys(LIST[i]);
         }
     };
 
@@ -129,10 +141,28 @@
     if (!card) return;                          // 不是关于页
 
     /* 样式跟 notice.js 一样由脚本注入：关于页只需引这一行脚本，不用再动它的样式表。
-       按钮走全站控件令牌（--ctl-*），「重置」用站内那支错误红（--ctl-err）表示"这个会清掉东西"。 */
+       开关走全站控件令牌；"开"用金色（站内金色只用于强调/选中，这正是选中态）；
+       "重置"用站里已有的错误红 --ctl-err 表示"这个会清掉东西"。没有引入新颜色。 */
     var CSS = [
-        '.egg-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-bottom:10px}',
-        '.egg-row__acts{display:inline-flex;flex-wrap:wrap;gap:8px;margin-left:auto}',
+        '.egg-row{display:flex;align-items:center;gap:14px;padding:11px 0;',
+        '  border-top:1px solid rgba(255,255,255,0.06)}',
+        '.egg-row__name{flex:1 1 auto;min-width:0;font-size:14px;letter-spacing:1px;',
+        '  color:rgba(255,255,255,0.88);text-decoration:none;',
+        '  border-bottom:1px solid rgba(255,215,0,0.28);transition:var(--ctl-transition)}',
+        '.egg-row__name:hover,.egg-row__name:focus-visible{color:var(--ctl-fg-hover);',
+        '  border-bottom-color:currentColor}',
+        '.egg-row__acts{display:inline-flex;align-items:center;gap:10px;flex:0 0 auto}',
+        /* 开关 */
+        '.egg-switch{position:relative;width:44px;height:24px;flex:0 0 auto;padding:0;',
+        '  background:var(--ctl-bg);border:1px solid var(--ctl-border);border-radius:999px;',
+        '  cursor:pointer;transition:var(--ctl-transition)}',
+        '.egg-switch__knob{position:absolute;top:50%;left:3px;width:16px;height:16px;margin-top:-8px;',
+        '  border-radius:50%;background:rgba(255,255,255,0.55);',
+        '  transition:left 0.25s var(--ctl-ease), background-color 0.25s var(--ctl-ease)}',
+        '.egg-switch.is-on{border-color:var(--ctl-border-hover);background:var(--ctl-bg-strong)}',
+        '.egg-switch.is-on .egg-switch__knob{left:23px;background:#FFD700}',
+        '.egg-switch:focus-visible{outline:2px solid rgba(255,215,0,0.55);outline-offset:2px}',
+        /* 按钮 */
         '.egg-btn{min-height:30px;padding:5px 12px;font:inherit;font-size:12px;letter-spacing:1px;',
         '  color:var(--ctl-fg-dim);background:var(--ctl-bg);border:1px solid var(--ctl-border);',
         '  border-radius:var(--ctl-radius);cursor:pointer;transition:var(--ctl-transition)}',
@@ -140,63 +170,85 @@
         '  border-color:var(--ctl-border-hover)}',
         '.egg-btn--reset:hover,.egg-btn--reset:focus-visible{color:var(--ctl-err);',
         '  border-color:var(--ctl-err);background:rgba(255,107,107,0.10)}',
-        '@media (max-width:768px){.egg-row__acts{margin-left:0;width:100%}}'
+        /* 底部：重置所有彩蛋 */
+        '.egg-foot{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);',
+        '  display:flex;justify-content:flex-end}',
+        '@media (max-width:768px){.egg-row{gap:10px}.egg-btn{padding:5px 10px}}'
     ].join('');
 
     var style = document.createElement('style');
     style.textContent = CSS;
     document.head.appendChild(style);
 
+    function el(tag, cls, text) {
+        var n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+    }
+
     function button(label, cls, onClick) {
-        var b = document.createElement('button');
+        var b = el('button', 'egg-btn' + (cls ? ' ' + cls : ''), label);
         b.type = 'button';
-        b.className = 'egg-btn' + (cls ? ' ' + cls : '');
-        b.textContent = label;
         b.addEventListener('click', onClick);
         return b;
     }
 
+    /* 开关：开 = 入口正常显示；关 = 入口撤掉（入口元素自己会读同一个标记） */
+    function switchFor(egg) {
+        var on = !API.isHidden(egg.id);
+        var sw = el('button', 'egg-switch' + (on ? ' is-on' : ''));
+        sw.type = 'button';
+        sw.setAttribute('role', 'switch');
+        sw.setAttribute('aria-checked', on ? 'true' : 'false');
+        sw.setAttribute('aria-label', '显示「' + egg.name + '」的入口');
+        sw.appendChild(el('span', 'egg-switch__knob'));
+        sw.addEventListener('click', function () {
+            API.setHidden(egg.id, on);      // 当前是开 → 关掉；当前是关 → 打开
+            render();
+        });
+        return sw;
+    }
+
     function rowFor(egg) {
-        var li = document.createElement('li');
-        li.className = 'egg-row';
+        var li = el('li', 'egg-row');
 
-        var a = document.createElement('a');
+        var a = el('a', 'egg-row__name', egg.name);
         a.href = egg.href;
-        a.textContent = egg.name;
         li.appendChild(a);
-        if (egg.desc) li.appendChild(document.createTextNode(' —— ' + egg.desc));
 
-        var acts = document.createElement('span');
-        acts.className = 'egg-row__acts';
+        var acts = el('span', 'egg-row__acts');
+        acts.appendChild(switchFor(egg));
+        // 单条重置：一键生效，不做二次确认
+        acts.appendChild(button('重置', 'egg-btn--reset', function () {
+            API.reset(egg.id);
+            render();
+        }));
+        li.appendChild(acts);
+        return li;
+    }
 
-        if (egg.entry) {
-            var closed = API.isHidden(egg.id);
-            acts.appendChild(button(closed ? '恢复入口' : '关闭入口', '', function () {
-                API.setHidden(egg.id, !API.isHidden(egg.id));
-                render();
-            }));
-        }
-
-        /* 重置要点两下：彩蛋不好找，清掉进度得是明确的动作（不用原生 confirm，太跳） */
+    /* 底部「重置所有彩蛋」：这个要二次确认（点两下） */
+    function footFor() {
+        var foot = el('div', 'egg-foot');
         var armed = false;
-        var reset = button('重置', 'egg-btn--reset', function () {
+        var all;
+        all = button('重置所有彩蛋', 'egg-btn--reset', function () {
             if (!armed) {
                 armed = true;
-                reset.textContent = '确认重置？';
+                all.textContent = '确认重置全部？';
                 window.setTimeout(function () {
                     if (!armed) return;
                     armed = false;
-                    reset.textContent = '重置';
-                }, 3000);
+                    all.textContent = '重置所有彩蛋';
+                }, 4000);
                 return;
             }
-            API.reset(egg.id);
+            API.resetAll();
             render();
         });
-        acts.appendChild(reset);
-
-        li.appendChild(acts);
-        return li;
+        foot.appendChild(all);
+        return foot;
     }
 
     function render() {
@@ -208,15 +260,21 @@
 
         var count = card.querySelector('[data-eggs-count]');
         if (count) {
-            count.textContent = '已发现 ' + found.length + ' / ' + LIST.length +
-                (found.length < LIST.length ? ' —— 还有没被翻出来的。' : ' —— 全都找到了。');
+            // 两个数字都从清单长度算，"全发现"不写死
+            count.textContent = found.length >= LIST.length
+                ? '所有彩蛋已发现'
+                : '目前已发现彩蛋数：' + found.length;
         }
 
         var list = card.querySelector('[data-eggs-list]');
         if (list) {
-            list.textContent = '';              // 清空重画（操作后就靠它刷新按钮文案）
+            list.textContent = '';              // 清空重画（操作后靠它刷新开关与开关文案）
             for (var i = 0; i < found.length; i++) list.appendChild(rowFor(found[i]));
         }
+
+        var old = card.querySelector('.egg-foot');
+        if (old) old.parentNode.removeChild(old);
+        card.appendChild(footFor());
 
         card.hidden = false;
     }
