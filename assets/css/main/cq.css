@@ -104,7 +104,7 @@
    下划线用 text-decoration（而不是 border-bottom），这样跟正文里的链接一样。
    -------------------------------------------------------------------------- */
 .cq-actions {
-    margin-top: 20px;
+    margin-top: 0;                /* 不留空行：紧跟上文，只差上一行自己的 6px 行距 */
     font-size: 15px;              /* 与 .cq-line 逐项对齐：字号、字距、行高、颜色 */
     letter-spacing: 1px;
     line-height: 1.9;
@@ -136,6 +136,14 @@
 .cq-start[aria-pressed="true"] {
     color: #FFD700;
     text-decoration-color: currentColor;
+}
+
+/* 解析完成：文案定格，不再是可点的链接 */
+.cq-start[aria-disabled="true"] {
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration-color: rgba(255, 255, 255, 0.2);
+    cursor: default;
+    pointer-events: none;         /* 连 hover 变色也一并收掉 */
 }
 
 /* --------------------------------------------------------------------------

@@ -358,7 +358,8 @@
             }
 
             codeEl.textContent = marks;
-            codeEl.appendChild(caret(on ? 'is-live' : ''));
+            /* 收完了就不再画光标 —— 解析完成之后还闪着一个块，像还在收报 */
+            if (t < TL.totalMs) codeEl.appendChild(caret(on ? 'is-live' : ''));
             textEl.textContent = out;
             if (t < TL.totalMs) textEl.appendChild(caret(''));
         }
@@ -375,7 +376,19 @@
             raf = 0;
         }
 
+        /* 解析完成：文案定格成「解析完成」，并且不再可点 */
+        function finish() {
+            btn.textContent = '解析完成';
+            btn.setAttribute('aria-disabled', 'true');
+            btn.setAttribute('tabindex', '-1');
+            btn.setAttribute('aria-pressed', 'false');
+            stopLoop();
+            box.hidden = false;
+            render(audio.currentTime * 1000);   // 画面停在"整段都解出来"
+        }
+
         function sync() {
+            if (audio.ended) { finish(); return; }   // 播完了就不再是"开始/暂停"了
             var playing = !audio.paused && !audio.ended;
             btn.textContent = playing ? '暂停' : '开始';
             btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
@@ -392,6 +405,7 @@
 
         btn.addEventListener('click', function (e) {
             if (e && e.preventDefault) e.preventDefault();   // 是个 <a href="#">，别让它跳走
+            if (btn.getAttribute('aria-disabled') === 'true') return;   // 解析完成之后不再响应
             if (audio.paused || audio.ended) {
                 if (audio.ended) audio.currentTime = 0;   // 播完了再按就是从头再来
                 var p = audio.play();
