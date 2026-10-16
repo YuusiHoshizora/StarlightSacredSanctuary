@@ -50,6 +50,19 @@
         }
     }
 
+    /* 入口是不是被人在「关于」页的彩蛋卡片里关掉了（eggs.js 写的同一个键）。
+       关掉之后这个点就彻底不出现，连扫也不扫出来。 */
+    function entryClosed() {
+        var raw = get('sss.eggs.off');
+        if (!raw) return false;
+        try {
+            var ids = JSON.parse(raw);
+            return Object.prototype.toString.call(ids) === '[object Array]' && ids.indexOf('cq') >= 0;
+        } catch (e) {
+            return false;
+        }
+    }
+
     /* 判定半径：优先用背景真正在用的那个（这样"看到的扫描"和"判定"永远是同一个数） */
     function scanRadius() {
         try {
@@ -84,6 +97,7 @@
     /* 页面任意处按下：背景会在原地画一圈扩散到 scanRadius() 的波纹，
        这里用同一个半径判断"这个点有没有被扫到"。 */
     document.addEventListener('pointerdown', function (e) {
+        if (entryClosed()) return;                                                // 入口已关闭：永不现身
         if (e.target && e.target.closest && e.target.closest('#cq-dot')) return;  // 点在点上，交给链接自己
 
         var r = dot.getBoundingClientRect();
@@ -97,8 +111,9 @@
         show(true);                                                              // 只在"扫出来"那一次出声
     });
 
-    /* 之前已经扫出来过（或已经发现过）：这一趟直接显示，不用再扫 */
-    if (revealed || name() === '73') {
+    /* 之前已经扫出来过（或已经发现过）：这一趟直接显示，不用再扫。
+       但入口被关掉时什么都不做 —— 关掉之后就不再显示了。 */
+    if (!entryClosed() && (revealed || name() === '73')) {
         revealed = true;
         show(false);
     }
