@@ -102,8 +102,27 @@
     window.setTimeout(function () { mark('cache'); }, CAP_CACHE);
 
     // ② 字体
-    if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(function () { mark('fonts'); });
+    //    必须**显式**要求加载具体字面，不能只 await document.fonts.ready ——
+    //    实测（无头 Chrome 量过）那一刻还没有任何字体进入加载流程，ready 是个
+    //    已完成的 promise，.then 立刻就跑，这个读数等于形同虚设：门开在字体前面，
+    //    露出来的就是"回退字体 → 真实字体"的突变。
+    //    字面按各页实际用到的来：界面/正文是 Sarasa，主页面渲染出的 Markdown 正文
+    //    用 Sarasa Mono（global.css 里 .markdown-body 那条），有它才多等一份。
+    var faces = ['400 16px "Sarasa"', '700 16px "Sarasa"'];
+    if (document.querySelector('.markdown-body')) {
+        faces.push('400 16px "Sarasa Mono"');
+        faces.push('700 16px "Sarasa Mono"');
+    }
+    if (document.fonts && document.fonts.load) {
+        Promise.all(faces.map(function (face) {
+            // 单个字面失败（例如字体文件缺失）不该把人卡住
+            return document.fonts.load(face).catch(function () {});
+        }))
+            // 再挂一次 ready，兜住页面上其它字面（斜体等）；
+            // 放在 loads 之后才可信 —— 这时确实有字体在加载它才会等。
+            .then(function () { return document.fonts.ready; })
+            .then(function () { mark('fonts'); })
+            .catch(function () { mark('fonts'); });
     } else {
         mark('fonts');
     }

@@ -48,13 +48,28 @@
     color:#C0C0C0
 }
 
+/* ==========================================================================
+   字体载入策略：一律 font-display: block（别改回 swap）
+   --------------------------------------------------------------------------
+   swap ＝ 先用回退字体把字画出来、字体到位后再换掉 —— 那就是用户看得见的
+   「字体突变」。而这份 Sarasa 是 8 MB 级的 CJK 字体，实测**每个页面文档都要
+   重新解码一次**，即使 HTTP 缓存命中也要 0.3–0.5 秒（再叠一次回源校验），
+   所以只要用 swap，每次翻页都会突变一下。
+
+   block ＝ 文字先不显示（最多 3 秒的 block 期），等字体就绪再一起出现 ——
+   没有字形替换，也就没有突变。代价是这段时间文字是空的：
+     · 首次访问：这段被加载屏盖住（见 assets/js/boot.js，它会真的等字体）
+     · 之后各页：页面骨架/背景/图形先出现，文字稍后浮现
+   实测字体在 0.3–0.5 秒内就绪，远小于 3 秒，所以正常网络下不会退化成回退字体。
+   ========================================================================== */
+
 @font-face {
     /* 正文 / 标题：Sarasa Gothic SC —— Regular / Bold / Italic 三个真实字面 */
     font-family: "Sarasa";
     src: url("../fonts/SarasaGothicSC-Regular.woff2") format("woff2");
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -62,7 +77,7 @@
     src: url("../fonts/SarasaGothicSC-Bold.woff2") format("woff2");
     font-weight: 700;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -70,7 +85,7 @@
     src: url("../fonts/SarasaGothicSC-Italic.woff2") format("woff2");
     font-weight: 400;
     font-style: italic;
-    font-display: swap;
+    font-display: block;
 }
 
 /* ── Markdown 正文：Sarasa Mono SC（等宽）──
@@ -81,7 +96,7 @@
     src: url("../fonts/SarasaMonoSC-Regular.woff2") format("woff2");
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -89,7 +104,7 @@
     src: url("../fonts/SarasaMonoSC-Bold.woff2") format("woff2");
     font-weight: 700;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -97,7 +112,7 @@
     src: url("../fonts/SarasaMonoSC-Italic.woff2") format("woff2");
     font-weight: 400;
     font-style: italic;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -105,7 +120,7 @@
     src: url("../fonts/SarasaMonoSC-BoldItalic.woff2") format("woff2");
     font-weight: 700;
     font-style: italic;
-    font-display: swap;
+    font-display: block;
 }
 
 /* ── 粗体：用真实的 Bold 字面 ──

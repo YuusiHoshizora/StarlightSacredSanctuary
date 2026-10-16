@@ -323,6 +323,17 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   全站 `font-synthesis-weight: none`，粗体一律走真实 Bold 字面，
   不允许浏览器合成（合成粗细在不同浏览器差别很大，文字被选中时还会变）。
   界面原先还单独用了一份 "Sarasa UI" 字面（等于每页多下 8 MB），已去掉，全站统一 Gothic。
+- **字体载入策略：`@font-face` 一律 `font-display: block`，别改回 `swap`**。
+  `swap` 是「先用回退字体把字画出来、字体到位再换掉」—— 那正是肉眼可见的**字体突变**；
+  而 Sarasa 是 8 MB 级 CJK 字体，实测**每个页面文档都要重新解码一次**（HTTP 缓存命中
+  也还要 0.3–0.7 秒，再叠一次回源校验），所以用 `swap` 就是每次翻页都突变。
+  `block` 让文字先不显示、等字体就绪再一起出现，没有字形替换过程。
+  · 首次访问这段由加载屏盖住；之后各页是「骨架先出现、文字稍后浮现」
+  · **别用 `document.fonts.check()` 判断"字体在不在缓存里"**：实测缓存命中也返回 `false`
+    （`FontFace` 只要没真正 load 过就是 `unloaded`），拿它做判断会每次导航都误弹加载屏
+  · ⚠️ 线上字体响应头是 `Cache-Control: public, max-age=0, must-revalidate`（Cloudflare
+    静态资源默认值），等于**每次用字体都要回源校验一次**。想把这 0.3–0.7 秒压下去，
+    可以给 `/assets/fonts/*` 加长缓存（Cloudflare 的 Cache Rule，或资源目录里的 `_headers`）
 - **背景**：`background.js` 在 `<div class="background">` 里绘制星野 + 六边形网格 +
   鼠标附近的激活区特效；星图页用 `starmap-bg.js` 覆盖了这套参数
 - **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪
@@ -336,6 +347,11 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
     页面里只放一个空的 `<div class="boot" id="boot"></div>`（内容由 boot.js 生成，8 页不用重复）
   · 三个读数都是真实事件，且各有上限（SW 预缓存失败也不会把人卡住）；
     `main.js` 的打字机等 `sss:booted` 事件 —— 否则动画会在加载屏后面白白播完
+  · ⚠️ **「载入字体」这个读数必须用 `document.fonts.load('400 16px "Sarasa"')` 显式去要**，
+    不能只 `await document.fonts.ready`：实测那一刻还没有任何字体进入加载流程，
+    `ready` 是个**已完成的 promise**，`.then` 立刻就跑 —— 读数形同虚设，门会开在字体前面，
+    露出的正是字体突变。现在它会在字体真正加载完成后 4ms 内才打勾。
+    字面按页取：界面/正文是 Sarasa，页面上有 `.markdown-body`（主页面）才多等 Sarasa Mono
   · 收尾必须 `classList.remove('sss-boot','boot-open')`：**用字符串 `replace` 会漏掉开头那个类**，
     而 `html.sss-boot main{ opacity:.5 }` 会一直生效（页面永久半透明）
 - **公告**：第一次访问自动弹一次（关掉后同一浏览器不再弹），「关于」页的「站点公告」卡片可随时重看。
