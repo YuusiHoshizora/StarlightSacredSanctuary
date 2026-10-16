@@ -28,14 +28,14 @@
     color: rgba(255, 255, 255, 0.82);
 }
 
-/* 「准备已完成」与「开始」都要等日志跑完、折起来之后才出现 */
-.cq-pending {
+/* 逐条出现：默认藏着，脚本按顺序加 .is-in（日志块那一步见页面的 runSteps） */
+.cq-step {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.45s ease, visibility 0s linear 0.45s;
 }
 
-.cq-pending.is-in {
+.cq-step.is-in {
     opacity: 1;
     visibility: visible;
     transition: opacity 0.45s ease, visibility 0s;

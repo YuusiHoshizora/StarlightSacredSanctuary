@@ -143,17 +143,17 @@
     <main>
         <section class="cq-section">
 
-            <p class="cq-line">发现异常信号，准备进行解析。</p>
+            <p class="cq-line cq-step">发现异常信号，准备进行解析。</p>
 
             <!-- 准备过程：假装跑一遍解析器的自检。逐行打出来，打完**折叠**起来，
                  再渲染下面那句"准备已完成"。内容由页面脚本写进去。 -->
-            <div class="cq-boot" id="cq-boot">
+            <div class="cq-boot cq-step" id="cq-boot" data-log="morse">
                 <div class="cq-log" id="cq-log"></div>
             </div>
 
-            <p class="cq-line cq-pending" id="cq-ready">准备已完成，随时可以开始。</p>
+            <p class="cq-line cq-step" id="cq-ready">准备已完成，随时可以开始。</p>
 
-            <div class="cq-actions cq-pending" id="cq-actions">
+            <div class="cq-actions cq-step" id="cq-actions">
                 <!-- 这一页是世界观里的"额外页面"，不必处处套站内那套控件：
                      「开始」就是个简单的 <a>，没有按钮壳子 -->
                 <a class="cq-start" id="cq-start" href="#" role="button" aria-pressed="false">开始</a>
@@ -174,11 +174,18 @@
             <!-- 第二阶段：SSTV（Robot 36）。摩斯那段解析完才出现（hidden 由脚本摘掉）。
                  结构与上面那段一模一样，只是解析内容从点划/明文换成了帧结构与每行的分隔标记 -->
             <div class="cq-sstv" id="cq-sstv" hidden>
-                <p class="cq-line">异常信号解析完成。</p>
-                <p class="cq-line">发现额外的附属信息，准备进行解析。</p>
-                <p class="cq-line">准备已完成，随时可以开始。</p>
+                <p class="cq-line cq-step">异常信号解析完成。</p>
+                <p class="cq-line cq-step">发现额外的附属信息，准备进行解析。</p>
 
-                <div class="cq-actions">
+                <!-- 这一段也来一次"准备"演出：先逐行打日志，再折叠起来，
+                     然后才渲染下一句 —— 与上面那段同一套机制（见页面脚本的 runSteps） -->
+                <div class="cq-boot cq-step" id="cq-sstv-boot" data-log="sstv">
+                    <div class="cq-log" id="cq-sstv-log"></div>
+                </div>
+
+                <p class="cq-line cq-step">准备已完成，随时可以开始。</p>
+
+                <div class="cq-actions cq-step">
                     <a class="cq-start" id="cq-sstv-start" href="#" role="button" aria-pressed="false">开始</a>
                 </div>
 
@@ -187,9 +194,9 @@
                         <span class="cq-console__lamp" id="cq-sstv-lamp" aria-hidden="true"></span>
                         <span class="cq-console__meta">ROBOT 36 · 320×240 · 150 ms/行</span>
                     </div>
-                    <canvas class="cq-console__canvas" id="cq-sstv-canvas" width="320" height="240"></canvas>
                     <div class="cq-console__code" id="cq-sstv-code"></div>
                     <div class="cq-console__text cq-console__text--scroll" id="cq-sstv-text"></div>
+                    <canvas class="cq-console__canvas" id="cq-sstv-canvas" width="320" height="240"></canvas>
                 </div>
             </div>
 
@@ -213,71 +220,105 @@
     </footer>
 
     <script>
-    /* 准备过程：逐行打自检日志 → 折叠那块 → 放行"准备已完成"与「开始」
+    /* 逐条出现 + “准备”演出
        ----------------------------------------------------------------------------
-       纯演出。时长是固定的（不掷随机数，免得每次刷新节奏都不一样），
-       总共约 1.8 秒；prefers-reduced-motion 时直接给终态。 */
+       所有文字（连按钮）按 DOM 顺序**一条一条**出现；其中“日志块”这一步会先逐行
+       打字、再折叠起来，然后才轮到下一条。两段解析台共用这一套。
+       节奏固定（不掷随机数，每次刷新一致）；prefers-reduced-motion 直接给终态。 */
     (function () {
         'use strict';
 
-        var boot = document.getElementById('cq-boot');
-        var log = document.getElementById('cq-log');
-        var ready = document.getElementById('cq-ready');
-        var actions = document.getElementById('cq-actions');
-        if (!boot || !log || !ready || !actions) return;
-
-        var LINES = [
-            ['ok',   'sss-dsp 已启动 · 接收链路 /dev/dsp0'],
-            ['ok',   '采样 44100 Hz · 单声道 · 16 bit'],
-            ['ok',   '噪声基底 −62 dBm'],
-            ['ok',   '载波锁定 700 Hz'],
-            ['ok',   '测速 20 WPM · 键控点 60 ms'],
-            ['ok',   '摩斯码表已载入 (A–Z 0–9)'],
-            ['warn', '信号偏弱 · 增益 +9 dB'],
-            ['ok',   '解析器就绪'],
-            ['ok',   '缓冲区 0 / 375 单元']
-        ];
-        var TAGS = { ok: '[  ok  ]', warn: '[ warn ]', run: '[  ..  ]' };
+        var STEP_MS = 520;      // 两条文字之间的间隔
+        var FOLD_MS = 480;      // 折叠动画时长（与 CSS 的 transition 对齐）
         var reduced = false;
         try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
-        var caret = document.createElement('span');
-        caret.className = 'cq-log__caret';
+        var LOGS = {
+            morse: [
+                ['ok', "sss-dsp 已启动 · 接收链路 /dev/dsp0"],
+                ['ok', "采样 44100 Hz · 单声道 · 16 bit"],
+                ['ok', "噪声基底 −62 dBm"],
+                ['ok', "载波锁定 700 Hz"],
+                ['ok', "测速 20 WPM · 键控点 60 ms"],
+                ['ok', "摩斯码表已载入 (A–Z 0–9)"],
+                ['warn', "信号偏弱 · 增益 +9 dB"],
+                ['ok', "解析器就绪"],
+                ['ok', "缓冲区 0 / 375 单元"]
+            ],
+            sstv: [
+                ['ok', "sstv-dsp 已启动 · 输入 /dev/dsp1"],
+                ['ok', "检测到行同步 1200 Hz"],
+                ['ok', "行周期 150 ms · 共 240 行"],
+                ['ok', "模式识别 ROBOT 36 · 320×240"],
+                ['ok', "亮度 1500–2300 Hz"],
+                ['ok', "色度 4:2:0 · 偶数行 Cr、奇数行 Cb"],
+                ['warn', "色度信噪比偏低 · 启用横向平滑"],
+                ['ok', "解码器就绪"]
+            ]
+        };
 
-        function lineFor(item) {
-            var row = document.createElement('div');
-            row.className = 'cq-log__line';
-            var tag = document.createElement('span');
-            tag.className = 'cq-log__tag cq-log__tag--' + item[0];
-            tag.textContent = TAGS[item[0]] || TAGS.run;
-            row.appendChild(tag);
-            row.appendChild(document.createTextNode(' ' + item[1]));
-            row.appendChild(caret);                 // 光标跟着挪到最新一行
-            return row;
-        }
+        var TAGS = { ok: '[  ok  ]', warn: '[ warn ]', run: '[  ..  ]' };
 
-        function showReady() {
-            boot.classList.add('is-folded');        // 折叠
-            ready.classList.add('is-in');
-            actions.classList.add('is-in');
-            window.setTimeout(function () {
-                boot.setAttribute('aria-hidden', 'true');   // 折完了就别让读屏念了
-            }, 520);
-        }
-
-        if (reduced) { showReady(); return; }
-
-        var i = 0;
-        (function next() {
-            if (i >= LINES.length) {
-                window.setTimeout(showReady, 460);
+        /* 把日志逐行打出来 → 折叠 → 交回给调用方 */
+        function playLog(box, logEl, lines, done) {
+            if (reduced) {
+                box.classList.add('is-folded');
+                done();
                 return;
             }
-            log.appendChild(lineFor(LINES[i]));
-            i++;
-            // 固定但参差的节奏：比等间隔更像真的在跑
-            window.setTimeout(next, 86 + ((i * 37) % 62));
-        })();
+            var caret = document.createElement('span');
+            caret.className = 'cq-log__caret';
+            var i = 0;
+            (function next() {
+                if (i >= lines.length) { window.setTimeout(fold, 420); return; }
+                var item = lines[i];
+                var row = document.createElement('div');
+                row.className = 'cq-log__line';
+                var tag = document.createElement('span');
+                tag.className = 'cq-log__tag cq-log__tag--' + item[0];
+                tag.textContent = TAGS[item[0]] || TAGS.run;
+                row.appendChild(tag);
+                row.appendChild(document.createTextNode(' ' + item[1]));
+                row.appendChild(caret);
+                logEl.appendChild(row);
+                i++;
+                window.setTimeout(next, 86 + ((i * 37) % 62));   // 固定但参差的节奏
+            })();
+            function fold() {
+                box.classList.add('is-folded');
+                window.setTimeout(done, FOLD_MS);
+            }
+        }
+
+        /* 某个容器里所有 .cq-step 依序出现；日志块那一步特殊处理 */
+        function runSteps(steps) {
+            var i = 0;
+            (function next() {
+                if (i >= steps.length) return;
+                var el = steps[i++];
+                el.classList.add('is-in');
+                if (el.classList.contains('cq-boot')) {
+                    var logEl = el.querySelector('.cq-log');
+                    playLog(el, logEl, LOGS[el.getAttribute('data-log')] || [], next);
+                } else {
+                    window.setTimeout(next, reduced ? 0 : STEP_MS);
+                }
+            })();
+        }
+
+        /* 取某个阶段里的步骤；exclude 用来把另一阶段的排除掉（第二段一开始是 hidden） */
+        function stepsIn(root, exclude) {
+            return [].slice.call(root.querySelectorAll('.cq-step')).filter(function (el) {
+                return !(exclude && el.closest && el.closest(exclude));
+            });
+        }
+
+        window.__cqRunSteps = runSteps;
+        window.__cqStepsIn = stepsIn;
+
+        /* 第一段：进页面就开始 */
+        var section = document.querySelector('.cq-section');
+        if (section) runSteps(stepsIn(section, '#cq-sstv'));
     })();
     </script>
 
@@ -401,6 +442,9 @@
 
         /* 解析完成：文案定格成「解析完成」，并且不再可点 */
         function finish() {
+            /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
+               不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
+            if (btn.getAttribute('aria-disabled') === 'true') return;
             btn.textContent = '解析完成';
             btn.setAttribute('aria-disabled', 'true');
             btn.setAttribute('tabindex', '-1');
@@ -410,7 +454,10 @@
             render(audio.currentTime * 1000);   // 画面停在"整段都解出来"
             // 摩斯解析完 → 放出第二段（SSTV）那三行字与「开始」
             var sstv = document.getElementById('cq-sstv');
-            if (sstv) sstv.hidden = false;
+            if (sstv) {
+                sstv.hidden = false;
+                window.__cqRunSteps(window.__cqStepsIn(sstv));
+            }
         }
 
         function sync() {
@@ -698,6 +745,9 @@
         function stopLoop() { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } }
 
         function finish() {
+            /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
+               不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
+            if (btn.getAttribute('aria-disabled') === 'true') return;
             btn.textContent = '解析完成';
             btn.setAttribute('aria-disabled', 'true');
             btn.setAttribute('tabindex', '-1');
