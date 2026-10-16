@@ -150,13 +150,18 @@ function sssFontFaces() {
 })();
 
 /* =============================================================================
- * 跨页切换：内容"先藏住、字体就绪再淡入"
+ * 跨页切换：内容"先藏一瞬、骨架就绪就淡入"
  * -----------------------------------------------------------------------------
  * 背景画布与顶栏在每个页面都是同一套，所以页面之间其实只有内容在变。各页 <head> 里
  * 判断"这次是不是站内跳转"（referrer 同源）并给 <html> 挂上 sss-switch —— 内容先藏住；
- * 这里等上面同一批字面加载完成，再换成 sss-switch-in 让它淡入（样式见 global.css）。
- * 于是字体解码那 0.3–0.7 秒的空窗被这段过渡盖住：看到的是"外壳不动、内容淡入"，
- * 而不是"先画回退字体、再换成真字体"的突变。
+ * 这里等**页面骨架就绪**（DOMContentLoaded + 下一帧）就换成 sss-switch-in 让它淡入
+ * （样式见 global.css）。
+ *
+ * ⚠️ 千万别改成"等字体就绪再揭幕"。字体要解码 0.3–0.7 秒（见 global.css 的字体载入策略），
+ * 而 sss-switch 藏的是**整块内容**（main / .main-layout / .site-footer），不只是文字 ——
+ * 等字体的话整页内容会空掉整整一个字体周期，看起来就是一次黑屏。
+ * 文字那边已经由 font-display: block 管着了：字体没到就不显示文字，
+ * 骨架（卡片、边框、背景）照常立刻出现。所以这里只管骨架，不管字体。
  *
  * 必须单独一个 IIFE：上面那个在不需要加载屏时会提前 return，写在里面就被跳过了
  * （与 seamless.js 末尾的页脚年份同一套路）。
@@ -168,7 +173,7 @@ function sssFontFaces() {
     if (!root.classList.contains('sss-switch')) return;    // 这一趟不是站内跳转
 
     var MIN_MS = 120;      // 太快会像闪一下，留一点点停顿
-    var CAP_MS = 3000;     // 兜底：字体出问题也不能把内容一直藏着
+    var CAP_MS = 1500;     // 兜底：无论如何都要把内容放出来
     var t0 = Date.now();
     var done = false;
 
@@ -184,15 +189,13 @@ function sssFontFaces() {
         }, Math.max(0, MIN_MS - (Date.now() - t0)));
     }
 
-    if (document.fonts && document.fonts.load) {
-        Promise.all(sssFontFaces().map(function (face) {
-            return document.fonts.load(face).catch(function () {});
-        }))
-            .then(function () { return document.fonts.ready; })
-            .then(reveal)
-            .catch(reveal);
+    // 骨架就绪（DOM 解析完 + 下一帧，保证布局已经算出来）就揭幕
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            window.requestAnimationFrame(reveal);
+        }, { once: true });
     } else {
-        reveal();
+        window.requestAnimationFrame(reveal);
     }
     window.setTimeout(reveal, CAP_MS);
 })();
