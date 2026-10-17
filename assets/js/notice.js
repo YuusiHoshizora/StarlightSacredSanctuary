@@ -130,6 +130,12 @@
       if (!items.length) return;
       const first = items[0];
       const last = items[items.length - 1];
+      /* 焦点还在弹窗容器上（刚打开时就是这样）：第一次 Tab 进弹窗内部的第一个按钮 */
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        e.preventDefault();
+        first.focus();
+        return;
+      }
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();
@@ -150,6 +156,10 @@
     wrap.setAttribute("role", "dialog");
     wrap.setAttribute("aria-modal", "true");
     wrap.setAttribute("aria-labelledby", "sss-notice-title");
+    /* 可编程聚焦（-1）：把焦点收进弹窗，但**不落到「了解」按钮上** ——
+       自动弹的公告不该一出来就让人看见某个按钮"被选中"。
+       容器没有 :focus-visible 样式，所以不会画出焦点框。 */
+    wrap.tabIndex = -1;
 
     const card = document.createElement("div");
     card.className = "sss-notice__card";
@@ -208,10 +218,9 @@
     document.documentElement.style.overflow = "hidden";   // 弹窗期间禁止背景滚动
     document.body.appendChild(dialog);
     document.addEventListener("keydown", onKeydown, true);
-    const ok = dialog.querySelector(".sss-notice__ok");
-    if (ok) {
-      try { ok.focus(); } catch (err) { /* 忽略 */ }
-    }
+    /* 焦点收进弹窗容器，而不是「了解」按钮：公告是自动弹的，按钮一出现就带焦点
+       会看起来像"已经选中了"。容器聚焦既能挡住背景、又不会画出任何焦点框。 */
+    try { dialog.focus(); } catch (err) { /* 忽略 */ }
   }
 
   function activate() {

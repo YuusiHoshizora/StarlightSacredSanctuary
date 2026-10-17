@@ -174,14 +174,12 @@
         '.egg-switch__knob{position:absolute;top:50%;left:4px;width:12px;height:12px;margin-top:-6px;',
         '  border-radius:1px;background:rgba(255,255,255,0.5);',
         /* --ctl-ease 是**时长**(0.25s)不是缓动函数，写进简写会变成"延迟" —— 这里显式写缓动。
-           末尾一点点回弹（cubic-bezier 的 y 超过 1）让"滑过去"看得出来，别写成 linear。 */
-        '  transition:left 0.3s cubic-bezier(0.34, 1.32, 0.64, 1),',
-        '             background-color 0.3s ease, box-shadow 0.3s ease}',
+           就用普通 ease：全站没有弹性/回弹这一路动效（可点卡片连 hover 都不做位移），
+           滑块从一头平顺滑到另一头就够了。 */
+        '  transition:left 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease}',
         '.egg-switch.is-on{border-color:var(--ctl-border-hover);background:var(--ctl-bg-strong)}',
         '.egg-switch.is-on .egg-switch__knob{left:26px;background:#FFD700;',
         '  box-shadow:0 0 8px rgba(255,215,0,0.8)}',
-        /* 按下去时滑块先压扁一点，松手再弹回来 —— 只在这一下手感里用，不占布局 */
-        '.egg-switch:active .egg-switch__knob{width:16px}',
         '.egg-switch:focus-visible{outline:2px solid rgba(255,215,0,0.55);outline-offset:2px}',
         /* 用户要求减少动态效果：不做滑动，状态直接切 */
         '@media (prefers-reduced-motion:reduce){',
