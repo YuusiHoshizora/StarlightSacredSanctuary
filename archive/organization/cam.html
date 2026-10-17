@@ -175,37 +175,42 @@
                 <h2 class="org-block__head">成员<span class="org-block__en">Members</span></h2>
                 <p>议会由 12 名议员组成：科研与管理舰队、工业与收集舰队、主防御舰队各 4 名。每名议员均由相应舰队选出，每隔 1 年重新选举一次，无连任限制。</p>
 
-                <!-- 议员之间是平等的：不编号、不排序，竖排一行一位。
-                     姓名是索引项 —— 点一下本该打开那个人的人员档案，但人员数据库数据损坏、
-                     拒绝访问，所以由 assets/js/org-member.js 弹「错误：成员数据库拒绝访问：数据损坏」。 -->
-                <div class="org-crew">
-                    <h3 class="org-tier-head">科研与管理舰队 <span class="org-tier-head__en">Research and Administration Fleet</span></h3>
-                    <ul class="org-roster">
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">余事星空</span><span class="org-roster__role">科研部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">阮文恩</span><span class="org-roster__role">管理部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">细山真吾</span><span class="org-roster__role">资料部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">奥雷里奥·“星”·格洛瑞亚</span><span class="org-roster__role">情报部部长</span></button></li>
-                    </ul>
-                </div>
+                <!-- 议员之间是平等的：不编号、不排序。3 列 × 4 位，一列一支舰队，每人一张卡。
+                     人名卡是索引项 —— 点一下本该打开那个人的人员档案，但人员数据库数据损坏、
+                     拒绝访问，所以由 assets/js/org-member.js 从底部弹提示条：
+                     「错误：成员数据库拒绝访问：数据损坏」。 -->
+                <div class="org-crews">
 
-                <div class="org-crew">
-                    <h3 class="org-tier-head">工业与收集舰队 <span class="org-tier-head__en">Industrial and Collection Fleet</span></h3>
-                    <ul class="org-roster">
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">余事月夜</span><span class="org-roster__role">工业部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">薇薇安·斯达尔</span><span class="org-roster__role">后勤部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">约翰·布什·欧若拉</span><span class="org-roster__role">工业部副部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">李重明</span><span class="org-roster__role">收集部部长</span></button></li>
-                    </ul>
-                </div>
+                    <div class="org-crew">
+                        <h3 class="org-tier-head">科研与管理舰队 <span class="org-tier-head__en">Research and Administration Fleet</span></h3>
+                        <ul class="org-cards">
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">余事星空</span><span class="org-member__role">科研部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">阮文恩</span><span class="org-member__role">管理部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">细山真吾</span><span class="org-member__role">资料部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">奥雷里奥·“星”·格洛瑞亚</span><span class="org-member__role">情报部部长</span></button></li>
+                        </ul>
+                    </div>
 
-                <div class="org-crew">
-                    <h3 class="org-tier-head">主防御舰队 <span class="org-tier-head__en">Primary Defense Fleet</span></h3>
-                    <ul class="org-roster">
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">娜奥米·凯恩</span><span class="org-roster__role">战术战略部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">爱丽丝·格林希尔</span><span class="org-roster__role">舰队后勤部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">阿莱克西·伊蒙宁</span><span class="org-roster__role">规划部部长</span></button></li>
-                        <li><button type="button" class="org-roster__item" data-member><span class="org-roster__name">特拉维斯·奥古斯特森</span><span class="org-roster__role">战术战略部副部长</span></button></li>
-                    </ul>
+                    <div class="org-crew">
+                        <h3 class="org-tier-head">工业与收集舰队 <span class="org-tier-head__en">Industrial and Collection Fleet</span></h3>
+                        <ul class="org-cards">
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">余事月夜</span><span class="org-member__role">工业部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">薇薇安·斯达尔</span><span class="org-member__role">后勤部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">约翰·布什·欧若拉</span><span class="org-member__role">工业部副部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">李重明</span><span class="org-member__role">收集部部长</span></button></li>
+                        </ul>
+                    </div>
+
+                    <div class="org-crew">
+                        <h3 class="org-tier-head">主防御舰队 <span class="org-tier-head__en">Primary Defense Fleet</span></h3>
+                        <ul class="org-cards">
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">娜奥米·凯恩</span><span class="org-member__role">战术战略部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">爱丽丝·格林希尔</span><span class="org-member__role">舰队后勤部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">阿莱克西·伊蒙宁</span><span class="org-member__role">规划部部长</span></button></li>
+                            <li><button type="button" class="org-member" data-member><span class="org-member__name">特拉维斯·奥古斯特森</span><span class="org-member__role">战术战略部副部长</span></button></li>
+                        </ul>
+                    </div>
+
                 </div>
             </section>
 

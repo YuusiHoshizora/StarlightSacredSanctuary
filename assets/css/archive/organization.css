@@ -283,8 +283,8 @@
    若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（窄一档），
    所以页头、间距与总览页完全同源。
    分区里的内容用普通 <p> / <ul> / <ol>（样式在下面 .org-block 里统一给），
-   成员名录用 .org-crew（分组）+ .org-roster（竖排名录，整行可点），
-   点了弹「成员数据库拒绝访问」的小窗（.org-modal，逻辑在 assets/js/org-member.js）。
+   成员名录用 .org-crews（3 列，一列一支舰队）+ .org-cards/.org-member（每人一张卡，整卡可点），
+   点了从底部弹「成员数据库拒绝访问」的提示条（.org-toast，逻辑在 assets/js/org-member.js）。
    新页面的骨架阶段可以先用 .org-ph 占位块把位置占住。
    ========================================================================== */
 
@@ -396,151 +396,149 @@
     margin: 22px 0 14px;
 }
 
-/* ── 成员名录：竖排，一行一位 ──
-   议员之间是平等的，所以**不编号、不排序**：整行就是一个“名称索引”，
-   点一下本该打开那个人的人员档案；hover / 键盘聚焦时名字转金。
-   人员数据库当前数据损坏、拒绝访问，点了会弹错误小窗（见下面 .org-modal）。 */
+/* ── 成员名录：3 列 × 4 位，一列一支舰队 ──
+   议员之间是平等的（不编号、不排序），每人一张卡：姓名在上、职务在下。
+   卡是一个“名称索引”，点一下本该打开那个人的人员档案；hover / 键盘聚焦时姓名转金。
+   人员数据库当前数据损坏、拒绝访问，点了会从底部弹出错误提示（见下面 .org-toast）。 */
+.org-crews {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 22px;
+}
+
 .org-crew {
-    margin: 0 0 26px;
+    min-width: 0;                    /* 允许列内的长名字换行，别把列撑宽 */
 }
 
-.org-crew:last-child {
-    margin-bottom: 0;
+/* 列头：舰队名在上、英文名另起一行（列窄，挤在一行会折得很难看） */
+.org-crews .org-tier-head {
+    margin: 0 0 14px;
 }
 
-/* 覆盖 .org-block ul/li 那套正文列表样式：这里是名录，不是正文列表 */
-.org-block .org-roster {
+.org-crews .org-tier-head__en {
+    display: block;
+    margin: 4px 0 0;
+}
+
+/* 覆盖 .org-block ul/li 那套正文列表样式：这里是卡片列，不是正文列表 */
+.org-block .org-cards {
     margin: 0;
     padding: 0;
     list-style: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.org-block .org-roster li {
-    margin: 0;
+.org-block .org-cards li {
+    margin: 0 0 10px;
     padding: 0;
 }
 
-/* 一行 = 姓名（左）+ 职务（右）；整行可点 */
-.org-roster__item {
+.org-block .org-cards li:last-child {
+    margin-bottom: 0;
+}
+
+/* 一张人名卡 */
+.org-member {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
 
     width: 100%;
     margin: 0;
-    padding: 10px 12px;
+    padding: 13px 15px;
 
-    font: inherit;                  /* 盖掉按钮的 UA 字体/字号 */
+    font: inherit;                   /* 盖掉按钮的 UA 字体/字号 */
     text-align: left;
     color: inherit;
-    background: none;
-    border: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
     cursor: pointer;
-    transition: background-color 0.25s ease;
+
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-radius);
+    transition: var(--ctl-transition), background-color 0.25s ease;
 }
 
-.org-roster__item:hover,
-.org-roster__item:focus-visible {
-    background: rgba(255, 255, 255, 0.03);
+/* 强调态：描边转金 + 底色微亮，不做位移（全站可点卡片统一如此） */
+.org-member:hover,
+.org-member:focus-visible {
+    background: rgba(255, 215, 0, 0.05);
+    border-color: rgba(255, 215, 0, 0.4);
 }
 
-.org-roster__item:focus-visible {
+.org-member:focus-visible {
     outline: 2px solid rgba(255, 215, 0, 0.55);
     outline-offset: 2px;
 }
 
-.org-roster__name {
+.org-member__name {
     font-size: 14px;
+    line-height: 1.6;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.9);
     transition: color 0.25s ease;
 }
 
-/* 「名称索引亮起」：hover / 键盘聚焦时转金 */
-.org-roster__item:hover .org-roster__name,
-.org-roster__item:focus-visible .org-roster__name {
+/* 「名称索引亮起」：hover / 键盘聚焦时姓名转金 */
+.org-member:hover .org-member__name,
+.org-member:focus-visible .org-member__name {
     color: #FFD700;
 }
 
-.org-roster__role {
-    flex: 0 0 auto;
+.org-member__role {
     font-size: 12px;
+    line-height: 1.6;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.45);
 }
 
-/* ── 错误小窗 ──
-   点成员名字时弹（人员数据库拒绝访问）。DOM 与行为在 assets/js/org-member.js，
-   这里只管样子 —— 与彩蛋页那个 .cq-modal 同一套：暗底 + 模糊 + 玻璃面板。 */
-.org-modal {
+/* ── 错误提示：从底部弹起的小窗 ──
+   点成员名字时弹（人员数据库拒绝访问）。DOM 与行为在 assets/js/org-member.js；
+   形式照彩蛋页那个「彩蛋已发现」的提示条（同位置、同动效：从下往上 14px 淡入，
+   圆角玻璃面板 + 小方点），只是强调色换成错误红 —— 这条是报错，不是报喜。 */
+.org-toast {
     position: fixed;
-    inset: 0;
-    z-index: 200;                   /* 顶栏是 100，要压住它 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: rgba(4, 6, 16, 0.82);
-    backdrop-filter: blur(6px);
-}
+    left: 50%;
+    bottom: 28px;
+    z-index: 210;
 
-/* 显式写这一条：[hidden] 的 display:none 会被上面的 display:flex 盖掉 */
-.org-modal[hidden] {
-    display: none;
-}
+    max-width: calc(100vw - 48px);
+    padding: 12px 20px;
 
-.org-modal__panel {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    padding: 28px 26px 26px;
-    text-align: center;
-    background: rgba(18, 18, 42, 0.97);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--ctl-panel-radius);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* 报错那行用错误红（--ctl-err），与「拒绝访问 / 数据损坏」是同一支语义 */
-.org-modal__msg {
-    margin: 0;
-    padding: 0 16px;
     font-size: 13px;
-    line-height: 1.9;
+    line-height: 1.8;
     letter-spacing: 1px;
     color: var(--ctl-err);
+
+    background: rgba(18, 18, 42, 0.97);
+    border: 1px solid rgba(255, 107, 107, 0.4);
+    border-radius: var(--ctl-panel-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 14px);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
 }
 
-.org-modal__close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    font-size: 16px;
-    line-height: 1;
-    color: var(--ctl-fg-dim);
-    background: var(--ctl-bg);
-    border: 1px solid var(--ctl-border);
-    border-radius: var(--ctl-radius);
-    cursor: pointer;
-    transition: var(--ctl-transition);
+.org-toast.is-in {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s;
 }
 
-.org-modal__close:hover,
-.org-modal__close:focus-visible {
-    color: var(--ctl-fg-hover);
-    background: var(--ctl-bg-strong);
-    border-color: var(--ctl-border-hover);
-}
-
-/* 小窗开着时锁住背景滚动 */
-html.org-modal-open {
-    overflow: hidden;
+/* 小方点：与加载屏"这一步已完成"、彩蛋提示条那个金点是同一套，这里换成错误红 */
+.org-toast__dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 8px;
+    border-radius: 1px;
+    background: var(--ctl-err);
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.85);
+    vertical-align: 1px;
 }
 
 /* ── 移动端：单列、收窄内边距 ── */
@@ -617,18 +615,18 @@ html.org-modal-open {
         letter-spacing: 1.5px;
     }
 
-    .org-crew {
-        margin-bottom: 20px;
+    /* 窄屏：三列拆成一列一列地往下排（每支舰队一块） */
+    .org-crews {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        margin-top: 18px;
     }
 
-    .org-roster__item {
-        align-items: baseline;
-        flex-wrap: wrap;             /* 窄屏上职务会占满半行，允许换到姓名下面 */
-        gap: 10px;
-        padding: 9px 8px;
+    .org-member {
+        padding: 12px 14px;
     }
 
-    .org-roster__name {
+    .org-member__name {
         font-size: 13px;
         letter-spacing: 0.5px;
     }
@@ -640,5 +638,12 @@ html.org-modal-open {
     .org-ph {
         min-height: 72px;
         padding: 16px 14px;
+    }
+
+    /* 提示条：窄屏上贴边一点，别顶到屏幕两侧 */
+    .org-toast {
+        bottom: 18px;
+        max-width: calc(100vw - 24px);
+        padding: 11px 16px;
     }
 }

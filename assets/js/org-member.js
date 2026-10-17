@@ -1,61 +1,57 @@
 /* =============================================================================
- * org-member.js — 「成员数据库拒绝访问」小窗
+ * org-member.js — 「成员数据库拒绝访问」提示条
  * -----------------------------------------------------------------------------
- * 组织详情页里的成员名录，姓名是**索引项**：点一下本该打开那个人的人员档案。
- * 但人员数据库（「档案 → 人员档案」那一类）当前数据损坏、拒绝访问 ——
+ * 组织详情页里的成员名录，每张人名卡是一个**索引项**：点一下本该打开那个人的
+ * 人员档案。但人员数据库（「档案 → 人员档案」那一类）当前数据损坏、拒绝访问 ——
  * 所以点了只能报错，全站这一套口径统一由这里出。
  *
- * 用法：在要触发的那一行上加 data-member，并在页面里引入本脚本：
- *     <button type="button" class="org-roster__item" data-member>…</button>
+ * 用法：在要触发的元素上加 data-member，并在页面里引入本脚本：
+ *     <button type="button" class="org-member" data-member>…</button>
  *     <script defer src="../../assets/js/org-member.js"></script>
  *
- * 小窗的 DOM 由脚本生成（页面不用写 markup），样式在
- * assets/css/archive/organization.css 的「错误小窗」一节（.org-modal）。
+ * 提示条的形式照彩蛋页那个「彩蛋已发现」的提示条：从底部往上 14px 淡入的
+ * 圆角玻璃面板 + 小方点（强调色换成错误红）。DOM 由脚本生成，页面不用写 markup；
+ * 样式在 assets/css/archive/organization.css 的「错误提示」一节（.org-toast）。
  * ========================================================================== */
 (function () {
     'use strict';
 
     var MSG = '错误：成员数据库拒绝访问：数据损坏';
-    var modal = null;
-    var lastFocus = null;
+    var HOLD_MS = 5200;          // 与彩蛋提示条一样：停 5.2 秒自己收起来
+    var toast = null;
+    var timer = 0;
 
-    function close() {
-        if (!modal || modal.hidden) return;
-        modal.hidden = true;
-        document.documentElement.classList.remove('org-modal-open');
-        /* 焦点还给刚才点的那一行，键盘用户不会走丢 */
-        if (lastFocus && lastFocus.focus) lastFocus.focus();
-        lastFocus = null;
+    function hide() {
+        if (!toast) return;
+        window.clearTimeout(timer);
+        timer = 0;
+        toast.classList.remove('is-in');
     }
 
     function build() {
-        modal = document.createElement('div');
-        modal.className = 'org-modal';
-        modal.hidden = true;
-        modal.innerHTML =
-            '<div class="org-modal__panel" role="dialog" aria-modal="true" aria-label="错误">' +
-                '<button type="button" class="org-modal__close" aria-label="关闭">×</button>' +
-                '<p class="org-modal__msg"></p>' +
-            '</div>';
-        modal.querySelector('.org-modal__msg').textContent = MSG;
-        document.body.appendChild(modal);
+        toast = document.createElement('div');
+        toast.className = 'org-toast';
+        toast.setAttribute('role', 'status');       // 读屏会念出来，但不抢焦点
+        var dot = document.createElement('span');
+        dot.className = 'org-toast__dot';
+        dot.setAttribute('aria-hidden', 'true');
+        toast.appendChild(dot);
+        toast.appendChild(document.createTextNode(MSG));
+        document.body.appendChild(toast);
 
-        modal.querySelector('.org-modal__close').addEventListener('click', close);
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) close();          // 点暗底也关
-        });
+        /* 点提示条本身也可以收起；ESC 同样收起（键盘用户不用等） */
+        toast.addEventListener('click', hide);
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && modal && !modal.hidden) close();
+            if (e.key === 'Escape') hide();
         });
-        return modal;
+        return toast;
     }
 
-    function open(trigger) {
-        var m = modal || build();
-        lastFocus = trigger || null;
-        m.hidden = false;
-        document.documentElement.classList.add('org-modal-open');
-        m.querySelector('.org-modal__close').focus();
+    function show() {
+        var t = toast || build();
+        window.clearTimeout(timer);
+        t.classList.add('is-in');
+        timer = window.setTimeout(hide, HOLD_MS);   // 连点会重新计时
     }
 
     /* 一个委托监听就够：以后加成员、加页面都不用再绑 */
@@ -63,6 +59,6 @@
         var el = e.target && e.target.closest ? e.target.closest('[data-member]') : null;
         if (!el) return;
         e.preventDefault();
-        open(el);
+        show();
     });
 })();
