@@ -38,6 +38,13 @@
                 document.documentElement.className += ' sss-boot';
             }
 
+            // ④ CQ 这个彩蛋已经发现过（用户点开过解出来的图）：给 <html> 打个标记，
+            //    这一页直接给终态、不再走一遍流程 —— 样式见 cq.css 的 html.cq-restored，
+            //    逻辑见页面末尾的脚本。要在这里同步决定，否则会先闪一下流程界面。
+            var cqFound = false;
+            try { cqFound = (localStorage.getItem('sss.eggs') || '').indexOf('cq') >= 0; } catch (e) {}
+            if (cqFound) document.documentElement.className += ' cq-restored';
+
             // 站内跳转进来的（referrer 与本页同源）：先把内容藏起来，等字体就绪再淡入。
             // 背景画布与导航栏全站一致，所以只让内容参与过渡 —— 看起来就是
             // 「外壳常驻、内容替换」，顺带把字体解码那 0.3–0.7 秒的空窗盖住。
@@ -322,9 +329,25 @@
         window.__cqRunSteps = runSteps;
         window.__cqStepsIn = stepsIn;
 
-        /* 第一段：进页面就开始 */
         var section = document.querySelector('.cq-section');
-        if (section) runSteps(stepsIn(section, '#cq-sstv, #cq-screen'));
+
+        if (document.documentElement.classList.contains('cq-restored')) {
+            /* 已经发现过了：跳过两段"准备"演出与两次解析，直接给终态 ——
+               只剩收尾那句与高清原始卡面（其余由 cq.css 的 html.cq-restored 藏掉） */
+            var shot0 = document.getElementById('cq-decoded');
+            var result0 = document.getElementById('cq-screen');
+            if (shot0) {
+                shot0.src = '../assets/img/QSL.png';
+                shot0.alt = '原始 QSL 卡片';
+            }
+            if (result0) {
+                result0.hidden = false;
+                var kept = stepsIn(result0);
+                for (var k = 0; k < kept.length; k++) kept[k].classList.add('is-in');
+            }
+        } else if (section) {
+            runSteps(stepsIn(section, '#cq-sstv, #cq-screen'));
+        }
     })();
     </script>
 
@@ -841,7 +864,9 @@
         var toast = document.getElementById('cq-toast');
         if (!shot || !modal || !closeBtn || !toast) return;
 
+        /* 已经发现过（比如刷新回来）：进来就当作"已宣告过"，不再弹提示、不再重复登记 */
         var announced = false;
+        try { announced = (localStorage.getItem('sss.eggs') || '').indexOf('cq') >= 0; } catch (e) {}
 
         function announce() {
             if (announced) return;        // 提示只弹一次：发现之后再点图就只是开弹窗
