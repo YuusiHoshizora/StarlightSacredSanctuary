@@ -3,7 +3,8 @@
    --------------------------------------------------------------------------
    版式：面包屑 + 页标题 → 分类标题（官方组织 / 半官方组织 / 非官方组织）→
    官方组织里「最高权力机构」单独置顶一块，下面接 15 个第一层分支权力机构的卡片网格；
-   另两类暂时只有一块虚线占位（.org-empty），等有内容再换成同样的卡片网格。
+   另两类（半官方 / 非官方）的名录其实齐全，只是这份本地缓存损坏、又连不上星域网重新取，
+   所以那两块是「数据损坏」（.org-broken，错误红标题），等修好再换成同样的卡片网格。
    视觉沿用站内那套：玻璃面板（半透明底 + 1px 淡描边 + 面板圆角），
    金色只当强调态（hover / 键盘聚焦）与标题色（见 DESIGN.md 第三节），不做大块填色。
    控件圆角与颜色一律取 global.css 的 --ctl-* 令牌，不另立新值。
@@ -190,27 +191,33 @@
     color: rgba(255, 255, 255, 0.32);
 }
 
-/* ── 预留的空分类：虚线框，一眼看出「这里还没内容」，不会被误当成卡片 ── */
-.org-empty {
-    padding: 32px 28px;
+/* ── 数据损坏的分类：内容其实都有，只是这份本地缓存坏了、又连不上星域网重新取 ──
+   所以它不是「空」而是「读不出来」：实线面板 + 错误红标题（与「档案」总览页的
+   「拒绝访问」同一支颜色语义），说明压淡。
+   修好/连上之后：把这块换成 <div class="org-grid"> + 若干 .org-card
+   （照官方组织那 15 张的样子抄），需要分层就在网格前面再补一个 .org-tier-head 小标题。 */
+.org-broken {
+    padding: 26px 24px;
     text-align: center;
-    border: 1px dashed rgba(255, 255, 255, 0.14);
+
+    background: rgba(20, 20, 50, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--ctl-panel-radius);
 }
 
-.org-empty__title {
+.org-broken__title {
     margin: 0;
-    font-size: 14px;
-    letter-spacing: 4px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--ctl-err);
 }
 
-.org-empty__desc {
-    margin: 10px 0 0;
+.org-broken__desc {
+    margin: 8px 0 0;
     font-size: 12px;
     line-height: 1.8;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.45);
 }
 
 .org-grid {
@@ -339,8 +346,8 @@
         font-size: 13px;
     }
 
-    .org-empty {
-        padding: 26px 18px;
+    .org-broken {
+        padding: 24px 18px;
     }
 
     .org-grid {

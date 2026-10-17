@@ -151,7 +151,8 @@
                 <p class="org-sub">Organization Archives</p>
                 <p class="org-lead">
                     星光圣域的组织分为官方组织、半官方组织与非官方组织三类。<br>
-                    目前共收录 16 个官方组织，其中 1 个为最高权力机构，15 个为第 1 层分支权力机构。
+                    无法连接至星域网，本页只能读取本地缓存 —— 官方组织已载入 16 条
+                    （1 个最高权力机构、15 个第 1 层分支权力机构）；半官方组织与非官方组织的数据已损坏，未能载入。
                 </p>
             </header>
 
@@ -296,22 +297,22 @@
             </div>
 
             <!-- ══ 半官方组织 ══
-                 预留空间：这一类暂时没有内容，先在页面上留出位置。
-                 以后要加条目：把下面那个 .org-empty 换成 <div class="org-grid"> + 若干 .org-card
+                 名录其实是齐全的，只是这份本地缓存坏了、又连不上星域网重新取。
+                 修好/连上之后：把这块 .org-broken 换成 <div class="org-grid"> + 若干 .org-card
                  （照官方组织那 15 张的样子抄），需要分层就在网格前面再补一个 .org-tier-head 小标题。 -->
             <h2 class="org-group-head">半官方组织 <span class="org-group-head__en">Semi-Official Organizations</span></h2>
 
-            <div class="org-empty">
-                <p class="org-empty__title">尚未收录</p>
-                <p class="org-empty__desc">该分类的组织档案仍在整理中。</p>
+            <div class="org-broken">
+                <p class="org-broken__title">数据损坏</p>
+                <p class="org-broken__desc">本地缓存中的该分类名录已损坏，且无法连接至星域网重新获取。</p>
             </div>
 
-            <!-- ══ 非官方组织 ══（同上：预留空间，加条目时把 .org-empty 换成卡片网格） -->
+            <!-- ══ 非官方组织 ══（同上：数据损坏，改成卡片网格的方法见上一条注释） -->
             <h2 class="org-group-head">非官方组织 <span class="org-group-head__en">Unofficial Organizations</span></h2>
 
-            <div class="org-empty">
-                <p class="org-empty__title">尚未收录</p>
-                <p class="org-empty__desc">该分类的组织档案仍在整理中。</p>
+            <div class="org-broken">
+                <p class="org-broken__title">数据损坏</p>
+                <p class="org-broken__desc">本地缓存中的该分类名录已损坏，且无法连接至星域网重新获取。</p>
             </div>
 
         </section>
