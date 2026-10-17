@@ -50,7 +50,14 @@
     function show() {
         var t = toast || build();
         window.clearTimeout(timer);
-        t.classList.add('is-in');
+        if (!t.classList.contains('is-in')) {
+            /* ⚠️ 先让它按"没进来"的初态上屏，下一帧再加 is-in ——
+               插入与加类同一帧的话浏览器会跳过过渡，等于没有动画 */
+            void t.offsetWidth;
+            window.requestAnimationFrame(function () {
+                t.classList.add('is-in');
+            });
+        }
         timer = window.setTimeout(hide, HOLD_MS);   // 连点会重新计时
     }
 

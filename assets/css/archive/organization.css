@@ -283,7 +283,7 @@
    若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（窄一档），
    所以页头、间距与总览页完全同源。
    分区里的内容用普通 <p> / <ul> / <ol>（样式在下面 .org-block 里统一给），
-   成员名录用 .org-crews（3 列，一列一支舰队）+ .org-cards/.org-member（每人一张卡，整卡可点），
+   成员名录用 .org-crews（一张 grid，3 列 × 4 行，一列一支舰队）+ .org-member（每人一张卡，整卡可点），
    点了从底部弹「成员数据库拒绝访问」的提示条（.org-toast，逻辑在 assets/js/org-member.js）。
    新页面的骨架阶段可以先用 .org-ph 占位块把位置占住。
    ========================================================================== */
@@ -398,22 +398,27 @@
 
 /* ── 成员名录：3 列 × 4 位，一列一支舰队 ──
    议员之间是平等的（不编号、不排序），每人一张卡：姓名在上、职务在下。
+   ⚠️ 用的是**一张** grid，而不是三个列容器：列头 + 4 行卡片都写在同一张网格里，
+   `grid-auto-flow: column` 按列填（一列 5 个），行高由该行最高的那一格决定 ——
+   于是三列的列头、第一张卡、第二张卡…天然在同一水平线上，
+   不会因为"某列英文名折成两行 / 某个名字更长"而错位。
    卡是一个“名称索引”，点一下本该打开那个人的人员档案；hover / 键盘聚焦时姓名转金。
    人员数据库当前数据损坏、拒绝访问，点了会从底部弹出错误提示（见下面 .org-toast）。 */
 .org-crews {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    grid-template-rows: auto repeat(4, auto);
+    grid-auto-flow: column;
+    gap: 12px 20px;
     margin-top: 22px;
 }
 
-.org-crew {
-    min-width: 0;                    /* 允许列内的长名字换行，别把列撑宽 */
-}
-
-/* 列头：舰队名在上、英文名另起一行（列窄，挤在一行会折得很难看） */
+/* 列头：舰队名在上、英文名另起一行（列窄，挤一行会折得很难看）。
+   align-self:start 让三列的列头都从该行的顶边开始 —— 于是三个中文舰队名在同一水平线上，
+   英文名折成两行的那一列只是把行撑高，下面的第一张卡照样三列对齐。 */
 .org-crews .org-tier-head {
-    margin: 0 0 14px;
+    margin: 0;
+    align-self: start;
 }
 
 .org-crews .org-tier-head__en {
@@ -421,23 +426,7 @@
     margin: 4px 0 0;
 }
 
-/* 覆盖 .org-block ul/li 那套正文列表样式：这里是卡片列，不是正文列表 */
-.org-block .org-cards {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.org-block .org-cards li {
-    margin: 0 0 10px;
-    padding: 0;
-}
-
-.org-block .org-cards li:last-child {
-    margin-bottom: 0;
-}
-
-/* 一张人名卡 */
+/* 一张人名卡（按钮）：它直接是网格项，所以同一行的卡片高度自动一致 */
 .org-member {
     display: flex;
     flex-direction: column;
@@ -495,8 +484,8 @@
 
 /* ── 错误提示：从底部弹起的小窗 ──
    点成员名字时弹（人员数据库拒绝访问）。DOM 与行为在 assets/js/org-member.js；
-   形式照彩蛋页那个「彩蛋已发现」的提示条（同位置、同动效：从下往上 14px 淡入，
-   圆角玻璃面板 + 小方点），只是强调色换成错误红 —— 这条是报错，不是报喜。 */
+   形式照彩蛋页那个「彩蛋已发现」的提示条（同位置、同动画、同玻璃面板与配色），
+   只是把金色换成错误红：描边、小方点转红，文字仍是提示条那支亮白。 */
 .org-toast {
     position: fixed;
     left: 50%;
@@ -509,10 +498,10 @@
     font-size: 13px;
     line-height: 1.8;
     letter-spacing: 1px;
-    color: var(--ctl-err);
+    color: rgba(255, 255, 255, 0.9);      /* 与彩蛋提示条同一支文字色 */
 
     background: rgba(18, 18, 42, 0.97);
-    border: 1px solid rgba(255, 107, 107, 0.4);
+    border: 1px solid rgba(255, 107, 107, 0.4);   /* 彩蛋提示条是金描边，这里换成错误红 */
     border-radius: var(--ctl-panel-radius);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 
@@ -539,6 +528,14 @@
     background: var(--ctl-err);
     box-shadow: 0 0 8px rgba(255, 107, 107, 0.85);
     vertical-align: 1px;
+}
+
+/* 「减少动态效果」：提示条不滑动，直接出现 */
+@media (prefers-reduced-motion: reduce) {
+    .org-toast,
+    .org-toast.is-in {
+        transition: none;
+    }
 }
 
 /* ── 移动端：单列、收窄内边距 ── */
@@ -615,11 +612,21 @@
         letter-spacing: 1.5px;
     }
 
-    /* 窄屏：三列拆成一列一列地往下排（每支舰队一块） */
+    /* 窄屏：三列拆成一列（列头 + 4 张卡，按舰队一块一块往下排） */
     .org-crews {
         grid-template-columns: 1fr;
-        gap: 18px;
+        grid-template-rows: none;
+        grid-auto-flow: row;
+        gap: 10px;
         margin-top: 18px;
+    }
+
+    .org-crews .org-tier-head {
+        margin-top: 10px;
+    }
+
+    .org-crews .org-tier-head:first-child {
+        margin-top: 0;
     }
 
     .org-member {
