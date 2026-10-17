@@ -413,6 +413,8 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   · 自动化环境不弹：`navigator.webdriver` 为真、或页面里设了 `window.__SSS_NO_NOTICE = true`
 - **彩蛋**：站点里藏着**不与导航相连**的页面，靠知道地址才会来。目前只有一个：
   `main/cq.html`（业余无线电：呼号音频 + SSTV 解码出 QSL 卡片）。
+  · ⚠️ **别在「关于」页这类公开页面写彩蛋页的名字或实现细节**（公告、致谢、友链都算）——
+    那是剧透。致谢只写公开的资源名 + 「用途 · 许可证」，能署名的照常署名。
   · 清单在 `assets/js/eggs.js` 的 `LIST` 里（id / name / href / desc）。
     **加新彩蛋**：① 往 LIST 加一条；② 在那个页面的 `<body>` 上写 `data-egg="同样的 id"`
     —— eggs.js 见到就自动登记「已发现」，别的什么都不用做

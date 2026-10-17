@@ -206,25 +206,25 @@
             </div>
             <div class="about-card">
                 <h2>致谢</h2>
-                <p>本站使用了以下开放资源，在此致谢：</p>
-                <ul>
+                <p>本站使用了以下开放资源（排名不分先后），在此致谢：</p>
+                <!-- 每条两行，格式统一：第一行「名称（作者）」，第二行「用途 · 许可证」。
+                     写的时候只写公开的资源名 —— 别写内部页面名或实现细节（那是剧透）。 -->
+                <ul class="about-credits">
                     <li>
-                        <a href="https://github.com/be5invis/Sarasa-Gothic" rel="noopener noreferrer" target="_blank">Sarasa Gothic 更纱黑体</a>
-                        （作者 Belleve Invis）—— 全站字体（含等宽的 Sarasa Mono），SIL Open Font License 1.1
+                        <a href="https://github.com/be5invis/Sarasa-Gothic" rel="noopener noreferrer" target="_blank">Sarasa Gothic 更纱黑体</a>（Belleve Invis）
+                        <span class="about-credit__meta">全站字体（含等宽的 Sarasa Mono）· SIL OFL 1.1</span>
                     </li>
                     <li>
-                        <a href="https://github.com/markedjs/marked" rel="noopener noreferrer" target="_blank">marked</a>
-                        —— 主页面渲染 Markdown，MIT
+                        <a href="https://github.com/markedjs/marked" rel="noopener noreferrer" target="_blank">marked</a>（Christopher Jeffrey）
+                        <span class="about-credit__meta">主页面 Markdown 渲染 · MIT</span>
                     </li>
                     <li>
                         <a href="https://creativecommons.org/" rel="noopener noreferrer" target="_blank">Creative Commons</a>
-                        —— 本站使用的 CC BY 4.0 协议文本由其释出
+                        <span class="about-credit__meta">协议文本 · CC BY 4.0</span>
                     </li>
                     <li>
-                        <a href="https://github.com/jasonherald/slowrx.rs" rel="noopener noreferrer" target="_blank">slowrx</a>
-                        （原作者 Oona Räisänen，Rust 移植 Jason Herald）—— CQ 彩蛋页的 Robot 36 解码器
-                        按其 <code>mode_robot.rs</code> 的信道布局实现：偶数行是 Cr、奇数行是 Cb，
-                        色度横向取满 320 点、只与邻行共用（垂直 2:1）；ISC 许可
+                        <a href="https://github.com/jasonherald/slowrx.rs" rel="noopener noreferrer" target="_blank">slowrx</a>（Oona Räisänen 原作，Jason Herald 移植）
+                        <span class="about-credit__meta">参考实现 · ISC</span>
                     </li>
                 </ul>
             </div>
