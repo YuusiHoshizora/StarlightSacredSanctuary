@@ -82,6 +82,8 @@
     <script defer src="../../assets/js/notice.js"></script>
     <script defer src="../../assets/js/seamless.js"></script>
     <script defer src="../../assets/js/navtoggle.js"></script>
+    <!-- 隐藏入口：三张部门卡拖到议会卡上解锁 DGAM（彩蛋，未解锁时什么都不显示） -->
+    <script defer src="../../assets/js/org-secret.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
         {
@@ -160,21 +162,39 @@
                  目前只有这一类有内容：1 个最高权力机构 + 15 个第一层分支权力机构。 -->
             <h2 class="org-group-head">官方组织 <span class="org-group-head__en">Official Organizations</span></h2>
 
-            <!-- ── 最高权力机构：单独置顶一块，和下面的分支机构拉开层级 ── -->
-            <a class="org-supreme" href="cam">
-                <span class="org-supreme__tag">最高权力机构</span>
-                <h3 class="org-supreme__name">星光圣域管理成员议会</h3>
-                <p class="org-supreme__en">Starlight Sacred Sanctuary Council of Administrative Members</p>
-                <p class="org-supreme__desc">星光圣域管理成员议会负责解决无法通过星光圣域成员集体投票所解决的争议问题。</p>
-                <span class="org-card__go">查看档案 ›</span>
-            </a>
+            <!-- ── 最高权力机构：单独置顶一块，和下面的分支机构拉开层级 ──
+                 外面这层 .org-supreme-slot 只为一件事：让「讨论组」那张卡与议会卡叠在同一格里，
+                 并把切换按钮摆在卡片右侧。两张卡谁露脸由 org-secret.js 控制。 -->
+            <div class="org-supreme-slot" data-org-slot>
+                <a class="org-supreme" href="cam" data-org="cam">
+                    <span class="org-supreme__tag">最高权力机构</span>
+                    <h3 class="org-supreme__name">星光圣域管理成员议会</h3>
+                    <p class="org-supreme__en">Starlight Sacred Sanctuary Council of Administrative Members</p>
+                    <p class="org-supreme__desc">星光圣域管理成员议会负责解决无法通过星光圣域成员集体投票所解决的争议问题。</p>
+                    <span class="org-card__go">查看档案 ›</span>
+                </a>
+
+                <!-- 机密那一页的卡：默认不显示，靠三张部门卡拖到上面解锁（见 org-secret.js） -->
+                <a class="org-supreme org-supreme--dgam" href="dgam" data-org="dgam" hidden>
+                    <span class="org-supreme__tag">机密</span>
+                    <h3 class="org-supreme__name">星光圣域管理成员讨论组</h3>
+                    <p class="org-supreme__en">Starlight Sacred Sanctuary Discussing Group of Administrative Members</p>
+                    <p class="org-supreme__desc">由星光圣域的初始管理员所组成的核心，在星光圣域管理成员议会无法得出结论时负责解决问题。</p>
+                    <span class="org-card__go">查看档案 ›</span>
+                </a>
+
+                <button class="org-switch" type="button" hidden aria-pressed="false"
+                        aria-label="切换到星光圣域管理成员讨论组" title="切换到星光圣域管理成员讨论组">
+                    <span class="org-switch__glyph" aria-hidden="true">↔</span>
+                </button>
+            </div>
 
             <h3 class="org-tier-head">第一层分支权力机构 <span class="org-tier-head__en">First-Level Branch Authorities</span></h3>
 
             <div class="org-grid">
 
                 <!-- 01 -->
-                <a class="org-card" href="#">
+                <a class="org-card" href="#" draggable="true" data-dept="res" data-color="#50F2E0">
                     <span class="org-card__no">RES</span>
                     <h4>科研部</h4>
                     <p class="org-card__en">Department of Research</p>
@@ -206,7 +226,7 @@
                 </a>
 
                 <!-- 05 -->
-                <a class="org-card" href="#">
+                <a class="org-card" href="#" draggable="true" data-dept="ind" data-color="#EB7B25">
                     <span class="org-card__no">IND</span>
                     <h4>工业部</h4>
                     <p class="org-card__en">Department of Industry</p>
@@ -286,7 +306,7 @@
                 </a>
 
                 <!-- 15 -->
-                <a class="org-card" href="#">
+                <a class="org-card" href="#" draggable="true" data-dept="tas" data-color="#EE0034">
                     <span class="org-card__no">TAS</span>
                     <h4>战术战略部</h4>
                     <p class="org-card__en">Department of Tactics & Strategy</p>

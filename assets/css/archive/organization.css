@@ -117,6 +117,104 @@
     color: #FFD700;
 }
 
+/* ── 隐藏入口（彩蛋）：议会卡 + 讨论组卡 + 右侧小切换按钮 ──
+   两张卡叠在同一格里：谁不 hidden 谁露脸，格子的高度由露脸那张决定。
+   拖部门卡经过时，卡片边缘按被拖部门的颜色高亮（--drag-color，不是金色）。 */
+.org-supreme-slot {
+    position: relative;
+    display: grid;
+    margin-bottom: 46px;
+}
+
+.org-supreme-slot .org-supreme {
+    grid-area: 1 / 1;
+    margin-bottom: 0;               /* 间距挪到 slot 上，按钮才能居中于卡片 */
+}
+
+.org-supreme[hidden] {
+    display: none;
+}
+
+/* 讨论组那张：标签用错误红，提示这是机密条目 */
+.org-supreme--dgam .org-supreme__tag {
+    color: rgba(255, 107, 107, 0.75);
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+/* 拖动经过：描边 + 外发光都用那个部门的颜色 */
+.org-supreme-slot.is-drag-over .org-supreme {
+    border-color: var(--drag-color, rgba(255, 255, 255, 0.3));
+    box-shadow: 0 0 0 1px var(--drag-color, rgba(255, 255, 255, 0.3)),
+                0 0 26px -8px var(--drag-color, rgba(255, 255, 255, 0.3));
+}
+
+/* 小切换按钮：贴在卡片右侧（半个压在边缘上） */
+.org-switch {
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    z-index: 2;
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+
+    font-size: 13px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(18, 18, 42, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    transition: var(--ctl-transition);
+    animation: org-switch-in 0.35s ease;
+}
+
+.org-switch:hover,
+.org-switch:focus-visible {
+    color: #FFD700;
+    border-color: rgba(255, 215, 0, 0.55);
+}
+
+.org-switch:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+/* [hidden] 的 display:none 会被上面的 display:flex 盖掉，显式写一条 */
+.org-switch[hidden] {
+    display: none;
+}
+
+@keyframes org-switch-in {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.7);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+/* 已经拖上去过的部门卡：描边与代号转成该部门的颜色，作为"收到了"的痕迹 */
+.org-card.is-collected {
+    border-color: var(--dept-color, rgba(255, 255, 255, 0.16));
+}
+
+.org-card.is-collected .org-card__no {
+    color: var(--dept-color, rgba(255, 255, 255, 0.5));
+}
+
+.org-card.is-dragging {
+    opacity: 0.55;
+}
+
 /* ── 分类标题：官方组织 / 半官方组织 / 非官方组织 ──
    一条细分隔线 + 金色标题，是这一页最外层的分组。
    第一类紧跟在页头后面，用相邻选择器压掉那条上间距。 */
