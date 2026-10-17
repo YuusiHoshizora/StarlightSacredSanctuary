@@ -329,9 +329,54 @@
         window.__cqRunSteps = runSteps;
         window.__cqStepsIn = stepsIn;
 
+        /* 一次性摆好某一段里的所有步骤（恢复中途状态时用：不再走逐条演出）。
+           日志块一并折叠 —— 恢复时不会重打一遍日志，留着展开的空框不好看。 */
+        function showAll(root, exclude) {
+            var els = stepsIn(root, exclude);
+            for (var i = 0; i < els.length; i++) {
+                els[i].classList.add('is-in');
+                if (els[i].classList.contains('cq-boot')) els[i].classList.add('is-folded');
+            }
+            return els;
+        }
+        window.__cqShowAll = showAll;
+
+        /* ── 中途状态：sss.cq.flow ──────────────────────────────────────────
+           退出再进来接着上次的地方。只用一个键，记三个字段：
+             s  0 没按过第一个「开始」；1 摩斯段进行中；2 摩斯已完（第二段演出中 / 待按第二个「开始」）；
+                3 SSTV 段进行中；4 全解完
+             t  这一段音频的位置（秒）
+             playing  退出那一刻还在播 —— 这种情况下位置来不及记（见下面按 s 分派）
+           ⚠️ 写入点是两段各自的 sync() 与 finish()，**没按过「开始」不写**
+           （两段脚本里的 started 标志挡住初始化时那一次 sync()）。 */
+        var FLOW_KEY = 'sss.cq.flow';
+        window.__cqFlow = {
+            read: function () {
+                try {
+                    var v = JSON.parse(localStorage.getItem(FLOW_KEY) || 'null');
+                    if (!v || typeof v.s !== 'number' || v.s < 1 || v.s > 4) return null;
+                    return {
+                        s: v.s,
+                        t: (typeof v.t === 'number' && isFinite(v.t) && v.t > 0) ? v.t : 0,
+                        playing: !!v.playing
+                    };
+                } catch (e) { return null; }      // 无痕模式 / 存的东西坏了：当作没存过
+            },
+            write: function (s, t, playing) {
+                try {
+                    localStorage.setItem(FLOW_KEY, JSON.stringify({
+                        s: s, t: Math.max(0, +t || 0), playing: !!playing
+                    }));
+                } catch (e) { /* 同上，忽略 */ }
+            },
+            clear: function () { try { localStorage.removeItem(FLOW_KEY); } catch (e) { /* 忽略 */ } }
+        };
+
         var section = document.querySelector('.cq-section');
 
         if (document.documentElement.classList.contains('cq-restored')) {
+            /* 中途状态到这个份上就没用了（这一页直接给终态），顺手清掉 */
+            window.__cqFlow.clear();
             /* 已经发现过了：跳过两段"准备"演出与两次解析，直接给终态 ——
                只剩收尾那句与高清原始卡面（其余由 cq.css 的 html.cq-restored 藏掉） */
             var shot0 = document.getElementById('cq-decoded');
@@ -342,11 +387,17 @@
             }
             if (result0) {
                 result0.hidden = false;
-                var kept = stepsIn(result0);
-                for (var k = 0; k < kept.length; k++) kept[k].classList.add('is-in');
+                showAll(result0);
             }
         } else if (section) {
-            runSteps(stepsIn(section, '#cq-sstv, #cq-screen'));
+            var back = window.__cqFlow.read();
+            if (back) {
+                /* 从第一个「开始」之后的某个落点回来：第一段（连「开始」按钮）一次摆好，
+                   两段控制台与进度由下面摩斯 / SSTV 两个脚本按同一份状态接着摆 */
+                showAll(section, '#cq-sstv, #cq-screen');
+            } else {
+                runSteps(stepsIn(section, '#cq-sstv, #cq-screen'));
+            }
         }
     })();
     </script>
@@ -372,6 +423,9 @@
 
         var VOLUME = 0.35;         // 比彩蛋入口那次（0.16）大，但仍算小声
         var UNIT_MS = 60;          // 20 WPM：标准 PARIS，1 单元 = 1200 / 20
+        var flow = window.__cqFlow;      // 中途状态（见页面第一段脚本）
+        var started = false;             // 这一次进来按过「开始」没有 —— 没按过就不记状态
+        var done = false;                // 这一段的解析已经完成（之后 sync() 不再改文案、也不再记状态）
         var PLAIN = 'CQ CQ CQ DE BG7LPF BG7LPF BG7LPF K';
 
         var MORSE = (function () {
@@ -469,18 +523,40 @@
             raf = 0;
         }
 
-        /* 解析完成：文案定格成「解析完成」，并且不再可点 */
-        function finish() {
-            /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
-               不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
-            if (btn.getAttribute('aria-disabled') === 'true') return;
+        /* 「意料之外的退出」那行错误（恢复时写进控制台）。
+           按「开始」重新解析之前要把它收掉 —— class 不移除的话解出来的明文会一直红着，
+           字不清掉的话它又会挂在明文前面 */
+        var errorShown = false;
+        function clearError() {
+            if (!errorShown) return;
+            errorShown = false;
+            codeEl.classList.remove('is-error');
+            textEl.classList.remove('is-error');
+            codeEl.textContent = '';
+            textEl.textContent = '';
+        }
+
+        /* 解析完成的样子：文案定格成「解析完成」，并且不再可点。
+           单独抽出来是因为"恢复"也要摆这个终态，但**不能**顺带把第二段放出来 */
+        function setDone(t) {
+            done = true;
             btn.textContent = '解析完成';
             btn.setAttribute('aria-disabled', 'true');
             btn.setAttribute('tabindex', '-1');
             btn.setAttribute('aria-pressed', 'false');
             stopLoop();
+            clearError();
             box.hidden = false;
-            render(audio.currentTime * 1000);   // 画面停在"整段都解出来"
+            render(t);                          // 画面停在"整段都解出来"
+        }
+
+        function finish() {
+            /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
+               不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
+            if (done) return;
+            setDone(audio.currentTime * 1000);
+            /* 中途状态：摩斯收完 → 2（第二段演出中 / 待按第二个「开始」） */
+            if (flow) flow.write(2, audio.currentTime, false);
             // 摩斯解析完 → 放出第二段（SSTV）那三行字与「开始」
             var sstv = document.getElementById('cq-sstv');
             if (sstv) {
@@ -501,15 +577,32 @@
                 stopLoop();
                 render(audio.currentTime * 1000);   // 停在原处，画面保持最后那一帧
             }
+            /* 中途状态：play / pause 各记一次。
+               ⚠️ 没按过「开始」就不记 —— 初始化那次 sync() 也会走到这里 */
+            if (flow && started && !done) flow.write(1, audio.currentTime, playing);
         }
 
         audio.volume = VOLUME;
 
+        /* 恢复到一个暂停的位置：音频是 preload="none"，设 currentTime 那一刻它多半还没加载，
+           那次赋值只是被记成"起始播放位置"。所以按「开始」前再补一次 ——
+           这时若元数据已经到位，它就是一次真正的 seek（play() 会等它完成）。 */
+        var resumeAt = null;
+
+        function readyToPlay() {
+            if (resumeAt === null) return;
+            try { audio.currentTime = resumeAt; } catch (e) { /* 设不进去就按浏览器默认来 */ }
+            resumeAt = null;
+        }
+
         btn.addEventListener('click', function (e) {
             if (e && e.preventDefault) e.preventDefault();   // 是个 <a href="#">，别让它跳走
             if (btn.getAttribute('aria-disabled') === 'true') return;   // 解析完成之后不再响应
+            started = true;                   // 这一刻起才记中途状态
+            clearError();
             if (audio.paused || audio.ended) {
                 if (audio.ended) audio.currentTime = 0;   // 播完了再按就是从头再来
+                readyToPlay();
                 var p = audio.play();
                 if (p && p.catch) p.catch(function () { /* 被浏览器拦下就保持现状 */ });
             } else {
@@ -520,7 +613,34 @@
         audio.addEventListener('play', sync);
         audio.addEventListener('pause', sync);
         audio.addEventListener('ended', sync);
-        sync();
+
+        /* ── 恢复中途状态 ──────────────────────────────────────────────────
+           没存过（包括"没按过第一个「开始」"）：照旧 sync() 一次，把按钮摆成「开始」，
+           上面那段逐条演出已经在走。
+           存过：第一段的文字与按钮已经由页面开头那段脚本一次性摆好，这里只管控制台。 */
+        var back = flow ? flow.read() : null;
+        if (back && back.s >= 2) {
+            /* 摩斯已经解完（第二段正在演出 / 正在解析 / 都解完了）：摆成"解析完成"那个样子。
+               第二段由下一个脚本按同一份状态放出来 */
+            setDone(TL.totalMs);
+        } else if (back && back.s === 1) {
+            box.hidden = false;
+            if (back.playing) {
+                /* 上次是"还在播"的时候退出的：那一刻的位置没记下来（只记了"在播"），
+                   所以这次报一句意料之外的退出；按「开始」＝从头重新解析 */
+                codeEl.textContent = '';
+                textEl.textContent = '错误：意料之外的退出，状态未保存';
+                textEl.classList.add('is-error');
+                errorShown = true;
+            } else {
+                /* 上次是暂停着退出的：画面停在原处，按「开始」接着往下走 */
+                resumeAt = back.t;
+                try { audio.currentTime = back.t; } catch (e) { /* 同上，按开始前还会再补一次 */ }
+                render(back.t * 1000);            // 摩斯这段不依赖 PCM，直接画回那一帧
+            }
+        } else {
+            sync();
+        }
     })();
     </script>
 
@@ -554,6 +674,10 @@
         var morse = document.getElementById('cq-audio');
         if (!stage || !btn || !audio || !box || !lamp || !codeEl || !textEl || !canvas) return;
 
+        var flow = window.__cqFlow;      // 中途状态（见页面第一段脚本）
+        var started = false;             // 这一次进来按过「开始」没有 —— 没按过就不记状态
+        var done = false;                // 这一段的解析已经完成（之后 sync() 不再改文案、也不再记状态）
+
         /* 300ms leader 之后还有 4 行空白行（每行全是 1900Hz，没有图像内容），
            图像从第 5 个同步头才开始 —— 证据：文件 36.91s = 300 + 600 + 240×150，
            且与 QSL.png 做互相关最优在 dy = −4。 */
@@ -577,8 +701,20 @@
 
         /* ---------------- 取 PCM ---------------- */
         var pcm = null, sr = 44100, loading = false, failed = false;
-        function loadPcm() {
-            if (pcm || loading) return;
+        /* 取完样本要通知谁：恢复进度、以及"全解完"那次静默补解，都要等 PCM 到位。
+           按下「开始」时只是让它开始取（不传回调），取回来由主循环接着画。 */
+        var pcmWaiters = [];
+        function flushPcm() {
+            var list = pcmWaiters;
+            pcmWaiters = [];
+            for (var i = 0; i < list.length; i++) list[i]();
+        }
+        function loadPcm(cb) {
+            if (typeof cb === 'function') {
+                if (pcm || failed) { cb(); return; }     // 已经取回来了 / 取不回来：直接往下走
+                pcmWaiters.push(cb);
+            }
+            if (pcm || loading || failed) return;
             loading = true;
             fetch(audio.getAttribute('src'))
                 .then(function (r) { return r.arrayBuffer(); })
@@ -590,8 +726,12 @@
                     sr = ab.sampleRate;
                     pcm = ab.getChannelData(0);
                     loading = false;
+                    flushPcm();
                 })
-                .catch(function () { loading = false; failed = true; });
+                .catch(function () {
+                    loading = false; failed = true;
+                    flushPcm();          // 取不到也让等着的调用方往下走（render 会报"样本取回失败"）
+                });
         }
 
         /* ---------------- 解调 ---------------- */
@@ -773,16 +913,52 @@
         function tick() { render(audio.currentTime * 1000); raf = window.requestAnimationFrame(tick); }
         function stopLoop() { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } }
 
-        function finish() {
-            /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
-               不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
-            if (btn.getAttribute('aria-disabled') === 'true') return;
+        /* 恢复进度：位置先记下来（音频多半还没加载），按「开始」前再补设一次；
+           PCM 到位之前画不出那一帧，所以还留一个"欠一帧"的标记 */
+        var resumeAt = null, resumePending = false;
+
+        function readyToPlay() {
+            resumePending = false;
+            if (resumeAt === null) return;
+            try { audio.currentTime = resumeAt; } catch (e) { /* 设不进去就按浏览器默认来 */ }
+            resumeAt = null;
+        }
+
+        /* 「意料之外的退出」那行错误（恢复时写进控制台2）。
+           按「开始」重新解析前先收掉它 —— 连那行字一起清掉：不清的话它会一直挂在
+           240 行日志的最上面（SSTV 这段的 render 只在往回拖时才清空列表） */
+        var errorShown = false;
+        function clearError() {
+            if (!errorShown) return;
+            errorShown = false;
+            codeEl.classList.remove('is-error');
+            textEl.classList.remove('is-error');
+            codeEl.textContent = '';
+            textEl.textContent = '';
+        }
+
+        /* 解析完成的样子（恢复也要摆这个终态，但**不能**顺带把收尾那块放出来）。
+           t 显式传进来：恢复时音频停在 0，按 currentTime 画会把整幅清掉 */
+        function setDone(t) {
+            done = true;
             btn.textContent = '解析完成';
             btn.setAttribute('aria-disabled', 'true');
             btn.setAttribute('tabindex', '-1');
             btn.setAttribute('aria-pressed', 'false');
             stopLoop();
-            render(audio.currentTime * 1000);
+            clearError();
+            box.hidden = false;
+            render(t);
+        }
+
+        function finish(t) {
+            /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
+               不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
+            if (done) return;
+            setDone(typeof t === 'number' ? t : audio.currentTime * 1000);
+            /* 中途状态：整段解完 → 4（收尾）。到这里进度就不用再记了 ——
+               点开那张图才算发现，那一刻会把键清掉 */
+            if (flow) flow.write(4, audio.currentTime, false);
             /* 把解出来的这张放出来（不是原始图）：canvas → data URL 塞进 <img> */
             var shot = document.getElementById('cq-decoded');
             if (screen && shot) {
@@ -801,12 +977,16 @@
             btn.textContent = playing ? '暂停' : '开始';
             btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
             if (playing) {
+                resumePending = false;        // 已经在播了：恢复欠的那一帧不用再补画
                 box.hidden = false;
                 if (!raf) raf = window.requestAnimationFrame(tick);
             } else {
                 stopLoop();
                 render(audio.currentTime * 1000);
             }
+            /* 中途状态：play / pause 各记一次。
+               ⚠️ 没按过「开始」就不记 —— 初始化那次 sync() 也会走到这里 */
+            if (flow && started && !done) flow.write(3, audio.currentTime, playing);
         }
 
         audio.volume = 0.35;
@@ -814,8 +994,11 @@
         btn.addEventListener('click', function (e) {
             if (e && e.preventDefault) e.preventDefault();
             if (btn.getAttribute('aria-disabled') === 'true') return;
+            started = true;                            // 这一刻起才记中途状态
+            clearError();
             if (audio.paused || audio.ended) {
                 loadPcm();                             // 第一次点开始才去取样本
+                readyToPlay();
                 if (morse) morse.pause();
                 var p = audio.play();
                 if (p && p.catch) p.catch(function () {});
@@ -828,7 +1011,55 @@
         audio.addEventListener('pause', sync);
         audio.addEventListener('ended', sync);
         audio.addEventListener('seeked', function () { render(audio.currentTime * 1000); });
-        sync();
+
+        /* ── 恢复中途状态 ──────────────────────────────────────────────────
+           第二段那一整块归这里摆；第一段（含摩斯控制台）由前面两个脚本管。
+           没存过 / 存的是 1：这一段还没轮到，照旧 sync() 一次就够。 */
+        var back = flow ? flow.read() : null;
+        if (back && back.s === 2) {
+            /* 摩斯刚解完就退出了：从「异常信号解析完成。」之后接着走 ——
+               那一行直接摆好，其余照原来的逐条演出 */
+            stage.hidden = false;
+            var steps2 = window.__cqStepsIn(stage);
+            if (steps2.length) {
+                steps2[0].classList.add('is-in');
+                window.__cqRunSteps(steps2.slice(1));
+            }
+        } else if (back && back.s === 3) {
+            stage.hidden = false;
+            if (window.__cqShowAll) window.__cqShowAll(stage);
+            box.hidden = false;
+            if (back.playing) {
+                /* 上次是"还在播"的时候退出的：位置没记下来 → 报意料之外的退出；
+                   按「开始」＝这一段从头重新解析 */
+                codeEl.textContent = '';
+                textEl.textContent = '错误：意料之外的退出，状态未保存';
+                textEl.classList.add('is-error');
+                errorShown = true;
+            } else {
+                /* 暂停着退出的：画面要等 PCM 到位才画得出来 */
+                resumeAt = back.t;
+                resumePending = true;
+                try { audio.currentTime = back.t; } catch (e) { /* 按开始前还会再补一次 */ }
+                loadPcm(function () {
+                    if (resumePending && !done) render(back.t * 1000);
+                });
+                render(back.t * 1000);       // 样本还没到时先顶上「取回样本中……」
+            }
+        } else if (back && back.s === 4) {
+            /* 全解完了、只是还没点开那张图：把画面静默补出来（不重放音频），
+               收尾那句与那张卡照走 */
+            stage.hidden = false;
+            if (window.__cqShowAll) window.__cqShowAll(stage);
+            box.hidden = false;
+            loadPcm(function () {
+                if (done) return;
+                render(99999);       // 一次性把 240 行全解出来（i 会被夹到 LINES）
+                finish(99999);
+            });
+        } else {
+            sync();
+        }
     })();
     </script>
 
@@ -876,6 +1107,9 @@
             /* 这一刻才算发现 */
             var eggs = window.SSS_EGGS;
             if (eggs && eggs.findWhenActive) eggs.findWhenActive('cq');
+            /* 发现之后这一页就是终态了（cq-restored）：中途状态没用了，清掉 ——
+               这样在「关于」页重置这条彩蛋之后是从头再来，而不是接在"全解完"上 */
+            if (window.__cqFlow) window.__cqFlow.clear();
             /* 既然已经找到了，就别再摆 320×240 的解码产物 —— 换回高清的原始卡面 */
             shot.src = '../assets/img/QSL.png';
             shot.alt = '原始 QSL 卡片';

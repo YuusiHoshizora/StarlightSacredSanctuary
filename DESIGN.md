@@ -216,6 +216,7 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 | `sss.eggs` | 已发现的彩蛋 id（**数组顺序 = 发现先后**）|
 | `sss.eggs.off` | 入口被关闭的彩蛋 id |
 | `sss.cq-dot` | （CQ 彩蛋自己的状态）首页那个点已经被扫出来过 |
+| `sss.cq.flow` | （CQ 彩蛋自己的状态）两段解析的中途进度 `{s,t,playing}`，见 `main/cq.html` |
 
 彩蛋机制见 `assets/js/eggs.js`：清单里加一条 + 那个页面 `<body>` 写
 `data-egg="同样的 id"` 就自动登记；也可以不写 `data-egg`、改由脚本在

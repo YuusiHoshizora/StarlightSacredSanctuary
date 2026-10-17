@@ -207,6 +207,15 @@
     word-break: break-word;
 }
 
+/* 意料之外的退出（上次还在播就关了页面，位置没来得及记）：
+   那一行改成错误文案，用站里的错误红 —— 与上面自检日志的 [ warn ] 同一个语义。
+   字号/等宽都随控制台，只把字距收回来（默认 2–4px 的等宽字距排中文太散） */
+.cq-console__code.is-error,
+.cq-console__text.is-error {
+    color: var(--ctl-err);
+    letter-spacing: 1px;
+}
+
 /* 光标（块状）。正在发声时闪得快一些，像真的在收报 */
 .cq-console__caret {
     display: inline-block;

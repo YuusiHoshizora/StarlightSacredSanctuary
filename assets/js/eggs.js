@@ -42,7 +42,7 @@
             name: '神秘信号',
             href: '/main/cq.html',
             entry: '#cq-dot',
-            resetKeys: ['sss.cq-dot']
+            resetKeys: ['sss.cq-dot', 'sss.cq.flow']
         }
     ];
 
