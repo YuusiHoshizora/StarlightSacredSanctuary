@@ -282,8 +282,9 @@
    版式：面包屑 → 页头（机构类别小标签 + 金色标题 + 英文名 + 一句简介）→
    若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（窄一档），
    所以页头、间距与总览页完全同源。
-   内容还没写的分区先用 .org-ph / .org-seat 占位（虚线 + 淡字）：它们只是占住位置，
-   填内容时把占位块整块换成真内容即可。
+   分区里的内容用普通 <p> / <ul> / <ol>（样式在下面 .org-block 里统一给），
+   成员名录用 .org-crew（分组）+ .org-seats/.org-seat（议席卡）。
+   新页面的骨架阶段可以先用 .org-ph 占位块把位置占住。
    ========================================================================== */
 
 /* 详情页容器：比总览页窄一档，读长段落舒服些 */
@@ -332,8 +333,8 @@
     color: rgba(255, 255, 255, 0.35);
 }
 
-/* 占位块：这一节的内容还没写，先用虚线占住位置。
-   ⚠️ 填内容时把 <p class="org-ph">…</p> 整块换成真内容（段落 / 列表 / 卡片网格）。 */
+/* 占位块：**新页面骨架阶段**用 —— 这一节还没写内容时先用虚线占住位置。
+   CAM 页已经填满；后面各部详情页先摆这个，写完再把整块换成真内容（段落 / 列表 / 卡片网格）。 */
 .org-ph {
     margin: 0;
     display: flex;
@@ -353,25 +354,84 @@
     border-radius: var(--ctl-radius);
 }
 
-/* 议席占位：数量与成员待补，先按卡片网格把位置占住 */
+/* ── 分区里的正文 / 列表 / 说明 ── */
+.org-block p {
+    margin: 0 0 1em;
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.org-block p:last-child {
+    margin-bottom: 0;
+}
+
+/* 全站 `*` 规则把 padding 清零了，列表缩进要补回来 */
+.org-block ul,
+.org-block ol {
+    margin: 0;
+    padding-left: 1.4em;
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.org-block li {
+    margin-bottom: 6px;
+}
+
+.org-block li:last-child {
+    margin-bottom: 0;
+}
+
+.org-block li::marker {
+    color: rgba(255, 215, 0, 0.5);
+}
+
+/* 分区里的二级小标题（例如「流程」）：上面留点空，别贴着上一段 */
+.org-block .org-tier-head {
+    margin: 22px 0 14px;
+}
+
+/* 一句补充说明：比正文淡一档（例：议员档案所在的人员数据库拒绝访问） */
+.org-note {
+    margin: 18px 0 0;
+    font-size: 12px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── 成员名录：一舰队一组（组标题 + 4 张议席卡） ── */
+.org-crew {
+    margin: 0 0 26px;
+}
+
+.org-crew:last-child {
+    margin-bottom: 0;
+}
+
 .org-seats {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 16px;
 }
 
+/* 议席卡：名录里的一行（编号 + 姓名 + 职务） */
 .org-seat {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: 140px;
+    gap: 6px;
+    min-height: 108px;
     padding: 16px 14px;
 
     text-align: center;
-    background: rgba(255, 255, 255, 0.012);
-    border: 1px dashed rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--ctl-radius);
 }
 
@@ -383,10 +443,20 @@
     color: rgba(255, 255, 255, 0.28);
 }
 
-.org-seat__ph {
-    font-size: 12px;
+.org-seat__name {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.org-seat__role {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.6;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── 移动端：单列、收窄内边距 ── */
@@ -403,6 +473,11 @@
     .org-head h1 {
         font-size: 24px;
         letter-spacing: 4px;
+    }
+
+    /* 详情页的英文全名很长，窄屏上把 4px 字距收到 2px，不然会碎成两行 */
+    .org-section--doc .org-sub {
+        letter-spacing: 2px;
     }
 
     .org-supreme {
@@ -464,7 +539,21 @@
     }
 
     .org-seat {
-        min-height: 110px;
+        min-height: 96px;
+        padding: 14px 10px;
+    }
+
+    .org-seat__name {
+        font-size: 13px;
+        letter-spacing: 0.5px;
+    }
+
+    .org-crew {
+        margin-bottom: 20px;
+    }
+
+    .org-block .org-tier-head {
+        margin: 18px 0 12px;
     }
 
     .org-ph {
