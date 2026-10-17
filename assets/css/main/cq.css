@@ -62,9 +62,14 @@
     padding-left: 0;
 }
 
-.cq-log {
-    /* 终端读数用**系统**等宽栈：不引 Sarasa Mono（5 MB，正是加载屏要等的资源） */
-    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+/* ⚠️ 必须连后代一起写（`.cq-log *`）：global.css 顶部那条
+   `* { font-family: "Sarasa" }` 给**每个元素**都直接指定了 Gothic，
+   只写在容器上等于只改了容器自己的文字节点 —— 里面的 .cq-log__line
+   还是 Gothic（而且这样等宽字面根本不会被下载）。与 `.markdown-body` 同一套写法。 */
+.cq-log, .cq-log * {
+    /* 终端读数用站的等宽字面 Sarasa Mono SC（@font-face 见 assets/css/global.css）；
+       页面里给它加了一句 preload —— 字体策略是 font-display: block，取晚了这段会是空的 */
+    font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 12px;
     line-height: 1.85;
     color: rgba(255, 255, 255, 0.42);
@@ -156,8 +161,13 @@
     background: rgba(8, 10, 24, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--ctl-panel-radius);
+}
 
-    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+/* ⚠️ 同样要连后代一起写：见上面 .cq-log 那条注释（global.css 的 `*` 规则）。
+   字号/行高也一起给，读数 / 点划 / 明文 / 行日志都对齐在同一套上
+   （.cq-console__meta 是 11px，它自己的规则在后面，权重相同、会盖掉这里） */
+.cq-console, .cq-console * {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 13px;
     line-height: 1.9;
 }
@@ -289,13 +299,11 @@
 
 
 /* --------------------------------------------------------------------------
-   彩蛋已经发现过：这一页直接给终态
+   彩蛋已经发现过（html.cq-restored）
    --------------------------------------------------------------------------
-   只留收尾那句与那张卡 —— 两段"准备"演出、两次解析、控制台、「开始」全都不再出现。
-   标记在 <head> 里就打上，所以首次绘制前就生效，不会先闪一下流程界面。 */
-html.cq-restored .cq-section > :not(.cq-result) {
-    display: none;
-}
+   这里**不再隐藏**任何东西：整页都摆成"全解完"的样子（历史记录都留着，
+   往上滚还能看回去），页面脚本只把那张解出来的卡滚到视口正中。
+   标记在 <head> 里同步打上，所以首次绘制前就生效，不会先闪一下"从头走一遍"的界面。 */
 
 /* --------------------------------------------------------------------------
    收尾：解析完成 → 解出来的图（可点）
@@ -318,6 +326,12 @@ html.cq-restored .cq-section > :not(.cq-result) {
     font-size: 12px;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.35);
+}
+
+/* 补在卡后面的空白：平时 0 高，页面脚本在"要把它滚到视口正中"时按需设高度
+   （页面不够长的话，滚到页底就被夹住，正中就到不了）。见 main/cq.html 的 __cqCenterShot */
+.cq-shot-pad {
+    height: 0;
 }
 
 /* --------------------------------------------------------------------------

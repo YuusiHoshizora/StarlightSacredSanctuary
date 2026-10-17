@@ -327,8 +327,9 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 - **控件**：按钮与输入框统一使用 `global.css` 里 `:root` 的 `--ctl-*` 令牌
   （背景、描边、圆角、过渡），不要在页面样式里另写一套
 - **字体**：正文、标题与界面都用 Sarasa Gothic SC 的三个真实字面（Regular / Bold / Italic），
-  **主页面渲染出来的 Markdown 文章内容整体用 Sarasa Mono SC（等宽）**
+  **等宽的地方用 Sarasa Mono SC**：主页面渲染出来的 Markdown 文章内容整体用它
   —— 见 `global.css` 里「Markdown 正文字体」那段（`.markdown-body, .markdown-body *`）；
+  CQ 彩蛋页的两段控制台与准备日志（`.cq-console` / `.cq-log`）也用它。
   全站 `font-synthesis-weight: none`，粗体一律走真实 Bold 字面，
   不允许浏览器合成（合成粗细在不同浏览器差别很大，文字被选中时还会变）。
   界面原先还单独用了一份 "Sarasa UI" 字面（等于每页多下 8 MB），已去掉，全站统一 Gothic。
@@ -338,6 +339,9 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   也还要 0.3–0.7 秒，再叠一次回源校验），所以用 `swap` 就是每次翻页都突变。
   `block` 让文字先不显示、等字体就绪再一起出现，没有字形替换过程。
   · 首次访问这段由加载屏盖住；之后各页是「骨架先出现、文字稍后浮现」
+  · 用到大字面的那一页要在 `<head>` 里自己写 `<link rel="preload" as="font" crossorigin>`
+    （目前只有 CQ 页给 `SarasaMonoSC-Regular.woff2` 写了一条）：`block` 期内文字是空的，
+    等 CSS 决定要用字体才开下，往往就晚了半拍 —— 控制台日志会先空一下
   · **别用 `document.fonts.check()` 判断"字体在不在缓存里"**：实测缓存命中也返回 `false`
     （`FontFace` 只要没真正 load 过就是 `unloaded`），拿它做判断会每次导航都误弹加载屏
   · ⚠️ 线上字体响应头是 `Cache-Control: public, max-age=0, must-revalidate`（Cloudflare
@@ -485,9 +489,12 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 - **写入点**：两段的 `sync()`（play / pause 各记一次；⚠️ **没按过「开始」就不记** ——
   用一个 `started` 标志挡住初始化时那一次 `sync()` 调用，解析完再由 `done` 挡一次）；
   摩斯 `finish()` 记 `2`；SSTV `finish()` 记 `4`；两个点击回调里把 `started` 置真
-- **读取点**（页面加载时）：`html.cq-restored`（已发现）优先级最高，命中时顺手 `clear()`；
-  否则按 `s` 分派 —— 第一段（文字 + 「开始」按钮）由第一段脚本一次性摆好（`window.__cqShowAll`），
-  两个控制台与各自的进度由摩斯 / SSTV 两个脚本按同一份状态接着摆
+- **读取点**（页面加载时）：第一段脚本先算出一个 `window.__cqBack`（`null` = 从头走一遍），
+  两段脚本只吃它、不各自读一遍 storage —— 免得 `cq-restored` 与流里的 `s` 打架
+  - `html.cq-restored`（已发现）优先：直接当 `s = 4` 用，并把流 `clear()` 掉
+  - 否则看 `sss.cq.flow`
+  - 有 `back`：第一段（文字 + 「开始」按钮）**一次性摆好**（`window.__cqShowAll`），
+    两个控制台与各自的进度由摩斯 / SSTV 两个脚本接着摆；没有：从头走逐条演出
   - `s >= 1`：第一段的文字与按钮**一次性摆好**，不再走逐条演出
   - `s === 1`：摩斯段 `box.hidden = false`；`playing` → 控制台那行改成错误文案
     （`.is-error` + `--ctl-err`）；否则 `audio.currentTime = t` + `render(t * 1000)`
@@ -496,6 +503,15 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   - `s === 3`：第二段整块与其步骤一次性摆好；控制台2 同上（错误文案 / 恢复进度）
   - `s === 4`：先静默解一遍把画面补出来，再走收尾：
     `loadPcm(function () { render(99999); finish(99999); })`
+- **"全解完"那一屏不删历史**：已发现过（`cq-restored`）与 `s === 4` 都是把整页摆成
+  解完的样子 —— 两段文字、两个控制台、240 行行日志全留着 —— 然后用
+  `window.__cqCenterShot()` 把那张卡滚到视口正中（往上滚还能看回前面的记录）。
+  页面里跑到完（SSTV `finish()`）也一样：等那两句/图摆好（约 800 ms）再平滑滚过去；
+  `prefers-reduced-motion` 时不滚动画。滚之前先等图 `load` 与 `document.fonts.ready`，
+  否则上面的文字换字面之后高度会变，位置就偏了。
+  · ⚠️ 页面底下那条收尾基本就是最后一屏：**不补空白，"正中"根本到不了**（滚到页底会被
+    夹住）。所以 `.cq-shot-pad` 平时 0 高，`__cqCenterShot()` 量出卡下方缺多少就补多少
+  · 已发现过的页面按 `s = 4` 摆，但**不把 `s = 4` 写回** storage（那种页面不该再留这个键）
 - 四处踩过的坑（代码里都有注释）：
   · `loadPcm()` 收一个完成回调（恢复进度与 `s === 4` 的静默补解都要等 PCM 到位）
   · **站上这两段音频在线上不能 seek**：静态响应没有 `Accept-Ranges`（Range 请求一律回

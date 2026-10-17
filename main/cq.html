@@ -38,9 +38,10 @@
                 document.documentElement.className += ' sss-boot';
             }
 
-            // ④ CQ 这个彩蛋已经发现过（用户点开过解出来的图）：给 <html> 打个标记，
-            //    这一页直接给终态、不再走一遍流程 —— 样式见 cq.css 的 html.cq-restored，
-            //    逻辑见页面末尾的脚本。要在这里同步决定，否则会先闪一下流程界面。
+            // ④ CQ 这个彩蛋已经发现过（用户点开过解出来的图）：给 <html> 打个标记。
+            //    这一页整页摆成"全解完"的样子（历史记录都留着），只把那张卡滚到正中 ——
+            //    逻辑见页面末尾的脚本（按 s = 4 恢复）。要在这里同步决定，
+            //    否则会先闪一下"从头走一遍"的流程界面。
             var cqFound = false;
             try { cqFound = (localStorage.getItem('sss.eggs') || '').indexOf('cq') >= 0; } catch (e) {}
             if (cqFound) document.documentElement.className += ' cq-restored';
@@ -82,6 +83,11 @@
     </script>
     <link rel="stylesheet" href="../assets/css/boot.css">
     <script defer src="../assets/js/boot.js"></script>
+
+    <!-- 控制台用的等宽字面（Sarasa Mono SC，5 MB）：页面一开就取，别等日志打出来才开始下。
+         字体策略是全站 font-display: block（见 global.css），取晚了那段日志会是空的。
+         全站只有这一页用等宽读数，所以它故意不进 sw.js 的预缓存清单。 -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="../assets/fonts/SarasaMonoSC-Regular.woff2">
 
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/main/cq.css">
@@ -218,6 +224,11 @@
                          alt="从这段 SSTV 音频逐像素解出来的 QSL 卡片（点击查看原始卡片）">
                 </figure>
             </div>
+
+            <!-- 把解出来的那张卡滚到视口正中时要用：页面不够长的话"正中"到不了（滚到页底
+                 就被夹住），所以脚本按需给这块设高度 —— 平时是 0，看不见也不占位。
+                 见页面脚本的 window.__cqCenterShot。 -->
+            <div class="cq-shot-pad" id="cq-shot-pad" aria-hidden="true"></div>
 
             <!-- preload="none"：这两段音频加起来 5 MB，不进预缓存，点了才下 -->
             <audio id="cq-audio" src="../assets/audio/cq.wav" preload="none"></audio>
@@ -374,31 +385,63 @@
 
         var section = document.querySelector('.cq-section');
 
-        if (document.documentElement.classList.contains('cq-restored')) {
-            /* 中途状态到这个份上就没用了（这一页直接给终态），顺手清掉 */
-            window.__cqFlow.clear();
-            /* 已经发现过了：跳过两段"准备"演出与两次解析，直接给终态 ——
-               只剩收尾那句与高清原始卡面（其余由 cq.css 的 html.cq-restored 藏掉） */
-            var shot0 = document.getElementById('cq-decoded');
-            var result0 = document.getElementById('cq-screen');
-            if (shot0) {
-                shot0.src = '../assets/img/QSL.png';
-                shot0.alt = '原始 QSL 卡片';
-            }
-            if (result0) {
-                result0.hidden = false;
-                showAll(result0);
-            }
-        } else if (section) {
-            var back = window.__cqFlow.read();
+        /* ── 这一次进来要摆成什么样 ──────────────────────────────────────────
+           · 已经发现过（html.cq-restored）：等于"全解完" —— 整页都摆出来
+             （两段文字、两段控制台、240 行行日志都留着），只把那张解出来的卡
+             滚到视口正中；往上滚还能看到前面的记录。
+           · 否则按中途状态 sss.cq.flow 的 s 分派。
+           两段脚本不各自读 storage，只吃这里的 window.__cqBack —— 既免得读三遍，
+           也免得 cq-restored 与流里的 s 打架。 */
+        var restored = document.documentElement.classList.contains('cq-restored');
+        var back = restored ? { s: 4, t: 0, playing: false } : window.__cqFlow.read();
+        if (restored) window.__cqFlow.clear();     // 走到这一步，中途状态没用了
+        window.__cqBack = back;
+        window.__cqRestored = restored;
+
+        if (section) {
             if (back) {
-                /* 从第一个「开始」之后的某个落点回来：第一段（连「开始」按钮）一次摆好，
-                   两段控制台与进度由下面摩斯 / SSTV 两个脚本按同一份状态接着摆 */
+                /* 从某个落点回来：第一段（连「开始」按钮）一次摆好，
+                   两段控制台与进度由下面摩斯 / SSTV 两个脚本按 window.__cqBack 接着摆 */
                 showAll(section, '#cq-sstv, #cq-screen');
             } else {
                 runSteps(stepsIn(section, '#cq-sstv, #cq-screen'));
             }
         }
+
+        /* 把解出来的那张卡滚到视口正中。历史记录一条没删，往上滚就能看回来。
+           smooth：平滑滚动；图还没加载完就先等 load —— 高度为 0 时算出来的位置是错的。 */
+        window.__cqCenterShot = function (smooth) {
+            var img = document.getElementById('cq-decoded');
+            var box = document.getElementById('cq-shot');
+            var pad = document.getElementById('cq-shot-pad');
+            if (!img || !box) return;
+            var done = false;
+            function go() {
+                if (done) return;
+                done = true;
+                var vh = window.innerHeight;
+                var r = box.getBoundingClientRect();
+                var top = r.top + (window.pageYOffset || document.documentElement.scrollTop || 0);
+                /* 页面不够长时"正中"到不了（滚到页底会被夹住）：先量出卡下方还有多少
+                   可滚空间，只把差的那一点补在卡后面 —— 不多留空白 */
+                if (pad) {
+                    pad.style.height = '0px';
+                    var below = document.documentElement.scrollHeight - (top + r.height);
+                    var need = Math.max(0, (vh - r.height) / 2);
+                    var extra = Math.round(need - below);
+                    pad.style.height = (extra > 0 ? extra : 0) + 'px';
+                }
+                var y = Math.max(0, Math.round(top - (vh - r.height) / 2));
+                try {
+                    window.scrollTo({ top: y, behavior: smooth && !reduced ? 'smooth' : 'auto' });
+                } catch (e) {
+                    window.scrollTo(0, y);          // 老浏览器不认 options 对象
+                }
+            }
+            if (img.complete && img.naturalHeight) { go(); return; }
+            img.addEventListener('load', go, { once: true });
+            window.setTimeout(go, 1500);            // 兜底：图挂了也得滚过去
+        };
     })();
     </script>
 
@@ -654,7 +697,7 @@
            没存过（包括"没按过第一个「开始」"）：照旧 sync() 一次，把按钮摆成「开始」，
            上面那段逐条演出已经在走。
            存过：第一段的文字与按钮已经由页面开头那段脚本一次性摆好，这里只管控制台。 */
-        var back = flow ? flow.read() : null;
+        var back = window.__cqBack || null;
         if (back && back.s >= 2) {
             /* 摩斯已经解完（第二段正在演出 / 正在解析 / 都解完了）：摆成"解析完成"那个样子。
                第二段由下一个脚本按同一份状态放出来 */
@@ -1038,8 +1081,9 @@
             if (done) return;
             setDone(typeof t === 'number' ? t : audio.currentTime * 1000);
             /* 中途状态：整段解完 → 4（收尾）。到这里进度就不用再记了 ——
-               点开那张图才算发现，那一刻会把键清掉 */
-            if (flow) flow.write(4, audio.currentTime, false);
+               点开那张图才算发现，那一刻会把键清掉。
+               恢复出来的那一屏（页面上已有 cq-restored）也不写回：那种页面不该再留这个键 */
+            if (flow && !window.__cqRestored) flow.write(4, audio.currentTime, false);
             /* 把解出来的这张放出来（不是原始图）：canvas → data URL 塞进 <img> */
             var shot = document.getElementById('cq-decoded');
             if (screen && shot) {
@@ -1049,6 +1093,11 @@
                 if (window.__cqRunSteps && window.__cqStepsIn) {
                     window.__cqRunSteps(window.__cqStepsIn(screen));
                 }
+                /* 等那句与图都摆出来（两步、约 340ms）再把卡滚到正中 ——
+                   前面的解析记录一条都不删，往上滚就能看 */
+                window.setTimeout(function () {
+                    if (window.__cqCenterShot) window.__cqCenterShot(true);
+                }, 800);
             }
         }
 
@@ -1100,7 +1149,7 @@
         /* ── 恢复中途状态 ──────────────────────────────────────────────────
            第二段那一整块归这里摆；第一段（含摩斯控制台）由前面两个脚本管。
            没存过 / 存的是 1：这一段还没轮到，照旧 sync() 一次就够。 */
-        var back = flow ? flow.read() : null;
+        var back = window.__cqBack || null;
         if (back && back.s === 2) {
             /* 摩斯刚解完就退出了：从「异常信号解析完成。」之后接着走 ——
                那一行直接摆好，其余照原来的逐条演出 */
@@ -1132,8 +1181,8 @@
                 render(back.t * 1000);       // 样本还没到时先顶上「取回样本中……」
             }
         } else if (back && back.s === 4) {
-            /* 全解完了、只是还没点开那张图：把画面静默补出来（不重放音频），
-               收尾那句与那张卡照走 */
+            /* 全解完了（或者这个彩蛋已经发现过）：把画面静默补出来（不重放音频），
+               收尾那句与那张卡照走，最后把卡滚到视口正中 —— 前面的记录一条没删 */
             stage.hidden = false;
             if (window.__cqShowAll) window.__cqShowAll(stage);
             box.hidden = false;
@@ -1141,6 +1190,20 @@
                 if (done) return;
                 render(99999);       // 一次性把 240 行全解出来（i 会被夹到 LINES）
                 finish(99999);
+                /* 已经发现过：换回高清原始卡面（与点开图那一刻的处理一致） */
+                if (window.__cqRestored) {
+                    var im = document.getElementById('cq-decoded');
+                    if (im) { im.src = '../assets/img/QSL.png'; im.alt = '原始 QSL 卡片'; }
+                }
+                /* 等字体就位再滚：等宽字面到位之后上面那些文字的高度会变，早滚就偏了 */
+                function center() {
+                    if (window.__cqCenterShot) window.__cqCenterShot(false);
+                }
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(function () { window.setTimeout(center, 120); });
+                } else {
+                    window.setTimeout(center, 400);
+                }
             });
         } else {
             sync();
