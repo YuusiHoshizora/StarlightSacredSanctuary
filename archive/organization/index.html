@@ -140,10 +140,11 @@
     <main>
         <section class="org-section">
 
-            <nav class="org-crumb" aria-label="位置">
+            <!-- 面包屑：样式在 global.css 的 .crumb（档案各页共用） -->
+            <nav class="crumb" aria-label="位置">
                 <a href="../">档案</a>
-                <span class="org-crumb__sep" aria-hidden="true">/</span>
-                <span class="org-crumb__here">组织档案</span>
+                <span class="crumb__sep" aria-hidden="true">/</span>
+                <span class="crumb__here">组织档案</span>
             </nav>
 
             <header class="org-head">
@@ -303,7 +304,7 @@
 
             <div class="org-broken">
                 <p class="org-broken__title">数据损坏</p>
-                <p class="org-broken__desc">本地缓存中的该分类名录已损坏，且无法连接至星域网重新获取。</p>
+                <p class="org-broken__desc">本地储存设备部分损坏，该分类数据库拒绝访问。</p>
             </div>
 
             <!-- ══ 非官方组织 ══（同上：数据损坏，改成卡片网格的方法见上一条注释） -->
@@ -311,7 +312,7 @@
 
             <div class="org-broken">
                 <p class="org-broken__title">数据损坏</p>
-                <p class="org-broken__desc">本地缓存中的该分类名录已损坏，且无法连接至星域网重新获取。</p>
+                <p class="org-broken__desc">本地储存设备部分损坏，该分类数据库拒绝访问。</p>
             </div>
 
         </section>

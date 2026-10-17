@@ -140,6 +140,14 @@
     <main>
         <section class="archive-section">
 
+            <!-- 面包屑：样式在 global.css 的 .crumb（档案各页共用）。
+                 总览页是「首页 / 档案」，再往下的子页从「档案」起算（例如「档案 / 组织档案」）。 -->
+            <nav class="crumb" aria-label="位置">
+                <a href="..">首页</a>
+                <span class="crumb__sep" aria-hidden="true">/</span>
+                <span class="crumb__here">档案</span>
+            </nav>
+
             <header class="archive-head">
                 <h1>档案</h1>
                 <p class="archive-sub">Archives</p>

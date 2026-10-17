@@ -310,6 +310,57 @@ nav a:hover{
 }
 
 /* ==========================================================================
+   面包屑（「档案」各页共用）
+   --------------------------------------------------------------------------
+   结构：
+     <nav class="crumb" aria-label="位置">
+         <a href="..">首页</a>
+         <span class="crumb__sep" aria-hidden="true">/</span>
+         <span class="crumb__here">档案</span>
+     </nav>
+   档案总览页是「首页 / 档案」，再往下的子页从「档案」起算（例如「档案 / 组织档案」）——
+   所以它总有两项，不会只剩一个孤零零的当前位置。
+   ⚠️ 它是 <nav>，会被上面那两条 `nav{display:flex;gap:40px}` / `nav a{opacity:.75}` 波及：
+   这里显式收掉 40px 间距、把 opacity 还给 1。
+   ========================================================================== */
+
+.crumb{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:22px;
+
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+.crumb a{
+    opacity:1;                        /* 盖掉 nav a 的 .75 */
+    color:rgba(255,255,255,0.5);
+    text-decoration:none;
+    transition:var(--ctl-transition);
+}
+
+.crumb a:hover,
+.crumb a:focus-visible{
+    color:var(--ctl-fg-hover);
+}
+
+/* 当前位置：比可点的上一级亮一档 */
+.crumb__here{
+    color:rgba(255,255,255,0.75);
+}
+
+/* 分隔符：金色只取很淡的一档，不抢标题 */
+.crumb__sep{
+    color:rgba(255,215,0,0.35);
+}
+
+@media (prefers-reduced-motion: reduce){
+    .crumb a{ transition:none }
+}
+
+/* ==========================================================================
    无缝页面切换（Seamless Navigation）
    --------------------------------------------------------------------------
    1) 跨文档 View Transitions（Chrome/Edge 126+、Safari 18.2+）

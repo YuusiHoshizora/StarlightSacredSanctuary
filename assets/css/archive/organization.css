@@ -23,38 +23,6 @@
     padding: 120px 60px 80px;
 }
 
-/* ── 面包屑：回到「档案」总览 ──
-   它是 <nav>，所以 global.css 的 `nav{display:flex;gap:40px}` 会跟过来，
-   这里显式收掉那个 40px 间距；`nav a` 的 opacity 也一并盖掉（不然会叠一层淡）。 */
-.org-crumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 22px;
-    font-size: 12px;
-    letter-spacing: 2px;
-}
-
-.org-crumb a {
-    opacity: 1;
-    color: rgba(255, 255, 255, 0.5);
-    text-decoration: none;
-    transition: var(--ctl-transition);
-}
-
-.org-crumb a:hover,
-.org-crumb a:focus-visible {
-    color: var(--ctl-fg-hover);
-}
-
-.org-crumb__sep {
-    color: rgba(255, 215, 0, 0.35);
-}
-
-.org-crumb__here {
-    color: rgba(255, 255, 255, 0.75);
-}
-
 /* ── 页标题 ── */
 .org-head {
     margin-bottom: 34px;
@@ -303,8 +271,7 @@
     .org-card,
     .org-supreme,
     .org-card__no,
-    .org-card__go,
-    .org-crumb a {
+    .org-card__go {
         transition: none;
     }
 }
