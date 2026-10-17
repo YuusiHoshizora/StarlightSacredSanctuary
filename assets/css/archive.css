@@ -5,8 +5,8 @@
    单卡结构与「组织档案」的 .org-card 是同一套：玻璃面板（半透明底 + 1px 淡描边 +
    面板圆角 --ctl-panel-radius），标题白、英文副题与说明淡一档；
    强调态只做「描边转金 / 阴影加深」，**不做位移**（见 DESIGN.md 第五节）。
-   尚未开放的分类不是可点卡片：虚线框 + 「尚未开放」，与组织档案页的 .org-empty
-   是同一套占位语言。
+   三种卡片状态：已开放（可点）/ 未建立（可点、href 先指 #）/ 拒绝访问（.is-locked，
+   内容都在线上、暂时打不开，卡片自身不可点，底部写明原因）。
    颜色、圆角、过渡一律取 global.css 的 --ctl-* 令牌，不另立新值；
    字体只写尺寸/字距 —— 字体族由 global.css 的 `*` 规则统一给。
    ========================================================================== */
@@ -126,34 +126,36 @@ a.archive-card:focus-visible {
     outline-offset: 3px;
 }
 
-/* ── 尚未开放的分类：不是可点卡片 ──
-   虚线框 + 整体淡一档 + 没有 hover、没有手型光标，与 .org-empty 的占位语言一致。
-   以后开放某一类：把 <div class="archive-card is-soon"> 换成
-   <a class="archive-card" href="…/">，并把 .archive-card__state 换成 .archive-card__go。 */
-.archive-card.is-soon {
-    background: rgba(255, 255, 255, 0.014);
-    border: 1px dashed rgba(255, 255, 255, 0.14);
+/* ── 拒绝访问的分类：内容其实都在线上，只是暂时打不开 ──
+   所以卡片本身仍是正常一块（实线描边，**不是**虚线的占位）：只把文字压淡、去掉 hover
+   与手型光标，右下角那行写明「拒绝访问：正在进行修复」。
+   以后修复完：把 <div class="archive-card is-locked"> 换成 <a class="archive-card" href="…/">，
+   并把 .archive-card__state 换成 .archive-card__go。 */
+.archive-card.is-locked {
+    background: rgba(20, 20, 50, 0.3);
+    border-color: rgba(255, 255, 255, 0.06);
     cursor: default;
 }
 
-.archive-card.is-soon h2 {
-    color: rgba(255, 255, 255, 0.62);
+.archive-card.is-locked h2 {
+    color: rgba(255, 255, 255, 0.72);
 }
 
-.archive-card.is-soon .archive-card__en {
-    color: rgba(255, 255, 255, 0.25);
+.archive-card.is-locked .archive-card__en {
+    color: rgba(255, 255, 255, 0.3);
 }
 
-.archive-card.is-soon .archive-card__desc {
-    color: rgba(255, 255, 255, 0.4);
+.archive-card.is-locked .archive-card__desc {
+    color: rgba(255, 255, 255, 0.45);
 }
 
+/* 状态行：贴在卡片底部，与「查看档案 ›」同一位置 */
 .archive-card__state {
-    margin: auto 0 0;              /* 贴底，与 .archive-card__go 对齐 */
+    margin: auto 0 0;
     padding-top: 18px;
     font-size: 12px;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
 }
 
 /* 「减少动态效果」：不要过渡 */

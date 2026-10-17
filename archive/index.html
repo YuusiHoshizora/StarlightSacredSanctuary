@@ -145,35 +145,38 @@
                 <p class="archive-sub">Archives</p>
                 <p class="archive-lead">
                     星光圣域的公开档案按类别归档，以下为全部类别。<br>
-                    标注「部分损坏」的类别仍在修复 —— 目前只有「组织档案」可以调阅。
+                    各部分内容均已完善并上线；标有「拒绝访问」的分类正在进行修复，暂时无法调阅。
                 </p>
             </header>
 
             <div class="archive-grid">
 
-                <!-- 尚未开放的分类：不可点，虚线 + 「尚未开放」（和组织档案页的 .org-empty 同一套语言）。
-                     以后开放某一类：把 <div class="archive-card is-soon"> 换成
-                     <a class="archive-card" href="…/">，并把 .archive-card__state 换成 .archive-card__go。 -->
+                <!-- 三种状态（改卡片时照这三种挑一种）：
+                     · 已开放   —— <a class="archive-card" href="…/">   + <span class="archive-card__go">查看档案 ›</span>
+                     · 未建立   —— <a class="archive-card" href="#">     + <span class="archive-card__go">查看档案 ›</span>
+                                    （入口先留着，点了回页顶；做好之后把 href 换成真地址）
+                     · 拒绝访问 —— <div class="archive-card is-locked">  + <p class="archive-card__state">拒绝访问：正在进行修复</p>
+                                    （内容其实都在线上，只是暂时不对访客开放；卡本身不可点） -->
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>人员档案</h2>
                     <p class="archive-card__en">Personnel Archives</p>
-                    <p class="archive-card__desc">星光圣域成员数据库 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域成员数据库 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>舰队档案</h2>
                     <p class="archive-card__en">Fleet Archives</p>
-                    <p class="archive-card__desc">星光圣域舰队数据库 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域舰队数据库 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>研究档案</h2>
                     <p class="archive-card__en">Research Archives</p>
-                    <p class="archive-card__desc">星光圣域研究数据库 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域研究数据库 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
                 <a href="organization/" class="archive-card">
@@ -183,40 +186,41 @@
                     <span class="archive-card__go">查看档案 ›</span>
                 </a>
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>文件档案</h2>
                     <p class="archive-card__en">Document Archives</p>
-                    <p class="archive-card__desc">星光圣域文件数据库 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域文件数据库 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>装备档案</h2>
                     <p class="archive-card__en">Equipment Archives</p>
-                    <p class="archive-card__desc">星光圣域装备数据库 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域装备数据库 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>生物档案</h2>
                     <p class="archive-card__en">Biological Archives</p>
-                    <p class="archive-card__desc">星光圣域生物名录 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域生物名录 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
-                <div class="archive-card is-soon">
+                <div class="archive-card is-locked">
                     <h2>深空设施档案</h2>
                     <p class="archive-card__en">Deep-Space Facility Archives</p>
-                    <p class="archive-card__desc">星光圣域深空设施档案 / 部分损坏</p>
-                    <p class="archive-card__state">尚未开放</p>
+                    <p class="archive-card__desc">星光圣域深空设施档案 / 完整</p>
+                    <p class="archive-card__state">拒绝访问：正在进行修复</p>
                 </div>
 
-                <div class="archive-card is-soon">
+                <!-- 唯一一个"还没做"的分类：入口照常给，点了先回页顶 -->
+                <a href="#" class="archive-card">
                     <h2>未归类档案</h2>
                     <p class="archive-card__en">Uncategorized Archives</p>
                     <p class="archive-card__desc">未归类档案 / 本地</p>
-                    <p class="archive-card__state">尚未开放</p>
-                </div>
+                    <span class="archive-card__go">查看档案 ›</span>
+                </a>
 
             </div>
         </section>
