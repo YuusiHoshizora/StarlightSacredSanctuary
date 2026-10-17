@@ -496,10 +496,15 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   - `s === 3`：第二段整块与其步骤一次性摆好；控制台2 同上（错误文案 / 恢复进度）
   - `s === 4`：先静默解一遍把画面补出来，再走收尾：
     `loadPcm(function () { render(99999); finish(99999); })`
-- 三处踩过的坑（代码里都有注释）：
+- 四处踩过的坑（代码里都有注释）：
   · `loadPcm()` 收一个完成回调（恢复进度与 `s === 4` 的静默补解都要等 PCM 到位）
-  · 恢复时音频是 `preload="none"`，`currentTime` 多半只是被记成"起始播放位置" ——
-    按「开始」前要再补设一次（`readyToPlay()`）
+  · **站上这两段音频在线上不能 seek**：静态响应没有 `Accept-Ranges`（Range 请求一律回
+    `200` + 全量文件），浏览器就把这条流当"不可 seek"的流 —— 赋 `currentTime` 直接被丢掉。
+    本地 python http.server 反而能用（一口气下完就能跳），**这个坑本地测不出来**，
+    是拿部署后的真站跑冒烟才发现的。所以"恢复进度"改成：按「开始」那一刻先把这一段
+    取回来做成 `blob:` URL 再挂上去（`seekableSource()`）—— blob 一定可 seek，
+    而且这一段本来就要播放。SSTV 那段与 PCM 共用同一个请求（`fetchAudio()`），
+    注意 `decodeAudioData` 会 detach 传进去的 ArrayBuffer，所以给它的是 `buf.slice(0)`
   · SSTV 的 `finish()` 会按 `audio.currentTime` 重画，恢复时它是 0、直接调会把整幅清掉 ——
     所以 `finish(t)` 多收一个显式的渲染位置
 - 清键的两处：点开那张图（= 彩蛋发现）时清掉；`eggs.js` 里这条彩蛋的 `resetKeys`

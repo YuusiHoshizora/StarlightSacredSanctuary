@@ -584,15 +584,48 @@
 
         audio.volume = VOLUME;
 
-        /* 恢复到一个暂停的位置：音频是 preload="none"，设 currentTime 那一刻它多半还没加载，
-           那次赋值只是被记成"起始播放位置"。所以按「开始」前再补一次 ——
-           这时若元数据已经到位，它就是一次真正的 seek（play() 会等它完成）。 */
-        var resumeAt = null;
+        /* ── 恢复进度要真的"跳到 t"，可这条流不一定能 seek ─────────────────────
+           ⚠️ 部署站的静态响应没有 Accept-Ranges（Range 请求一律回 200 全量文件），
+           浏览器于是把这条音频当"不可 seek"的流：赋 currentTime 也不会动 —— 线上实测
+           就是这样（本地 python http.server 因为一口气下完反而能用，很容易漏测）。
+           所以手里有恢复位置时，按下「开始」先把这一段整个取回来做成 blob: URL 再挂上去
+           —— blob 一定可 seek，而且这一段本来就要播放（1.9 MB）。 */
+        var SRC = audio.getAttribute('src');     // 原始地址（换成 blob 之后 audio.src 会变）
+        var seekWant = null;                     // 待恢复的位置（秒）；null = 没有
+        var seekSrc = null;                      // 换好的 blob URL
 
-        function readyToPlay() {
-            if (resumeAt === null) return;
-            try { audio.currentTime = resumeAt; } catch (e) { /* 设不进去就按浏览器默认来 */ }
-            resumeAt = null;
+        function seekableSource(done) {
+            if (seekSrc) { done(); return; }
+            fetch(SRC)
+                .then(function (r) { return r.arrayBuffer(); })
+                .then(function (buf) {
+                    seekSrc = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+                    audio.src = seekSrc;
+                    audio.load();
+                    done();
+                })
+                .catch(function () {
+                    seekWant = null;             // 取不到就退回流式：从 0 开始播，但页面别坏
+                    done();
+                });
+        }
+
+        /* 把位置设下去。元数据没到之前这句只是"记下起始播放位置"，所以到 loadedmetadata
+           再补一次 —— 换成 blob 源之后那时一定可 seek，跳过去了就把待办消掉 */
+        function applyWant() {
+            if (seekWant === null) return;
+            try { audio.currentTime = seekWant; } catch (e) { /* 不可 seek 的流上会被忽略 */ }
+        }
+
+        audio.addEventListener('loadedmetadata', function () {
+            if (seekWant === null) return;
+            var sk = audio.seekable;
+            if (sk.length && sk.end(0) > seekWant) { applyWant(); seekWant = null; }
+        });
+
+        function startPlay() {
+            var p = audio.play();
+            if (p && p.catch) p.catch(function () { /* 被浏览器拦下就保持现状 */ });
         }
 
         btn.addEventListener('click', function (e) {
@@ -602,9 +635,12 @@
             clearError();
             if (audio.paused || audio.ended) {
                 if (audio.ended) audio.currentTime = 0;   // 播完了再按就是从头再来
-                readyToPlay();
-                var p = audio.play();
-                if (p && p.catch) p.catch(function () { /* 被浏览器拦下就保持现状 */ });
+                if (seekWant !== null) {
+                    /* 恢复到一半的位置：先换成可 seek 的源，再跳过去播 */
+                    seekableSource(function () { applyWant(); startPlay(); });
+                } else {
+                    startPlay();
+                }
             } else {
                 audio.pause();
             }
@@ -633,9 +669,9 @@
                 textEl.classList.add('is-error');
                 errorShown = true;
             } else {
-                /* 上次是暂停着退出的：画面停在原处，按「开始」接着往下走 */
-                resumeAt = back.t;
-                try { audio.currentTime = back.t; } catch (e) { /* 同上，按开始前还会再补一次 */ }
+                /* 上次是暂停着退出的：画面停在原处，按「开始」接着往下走。
+                   位置交给 seekWant —— 按下去那一刻才换成可 seek 的源（见上面那段） */
+                seekWant = back.t;
                 render(back.t * 1000);            // 摩斯这段不依赖 PCM，直接画回那一帧
             }
         } else {
@@ -701,6 +737,18 @@
 
         /* ---------------- 取 PCM ---------------- */
         var pcm = null, sr = 44100, loading = false, failed = false;
+        /* 原始地址：换成 blob 源之后 audio.src 会指向 blob，所以先记下来 */
+        var SRC = audio.getAttribute('src');
+        /* 这一段音频整个取回来的字节。PCM 解码与"换成可 seek 的源"共用同一个请求 ——
+           两件事要的是同一份数据，没必要下两遍 */
+        var audioBuf = null, audioFetch = null;
+        function fetchAudio() {
+            if (audioFetch) return audioFetch;
+            audioFetch = fetch(SRC)
+                .then(function (r) { return r.arrayBuffer(); })
+                .then(function (buf) { audioBuf = buf; return buf; });
+            return audioFetch;
+        }
         /* 取完样本要通知谁：恢复进度、以及"全解完"那次静默补解，都要等 PCM 到位。
            按下「开始」时只是让它开始取（不传回调），取回来由主循环接着画。 */
         var pcmWaiters = [];
@@ -716,11 +764,12 @@
             }
             if (pcm || loading || failed) return;
             loading = true;
-            fetch(audio.getAttribute('src'))
-                .then(function (r) { return r.arrayBuffer(); })
+            fetchAudio()
                 .then(function (buf) {
                     var AC = window.AudioContext || window.webkitAudioContext;
-                    return new AC().decodeAudioData(buf);
+                    /* slice：decodeAudioData 会把传进去的 ArrayBuffer 拿走（detach），
+                       可同一份字节还要留着拼 blob，所以给它一份拷贝 */
+                    return new AC().decodeAudioData(buf.slice(0));
                 })
                 .then(function (ab) {
                     sr = ab.sampleRate;
@@ -913,15 +962,47 @@
         function tick() { render(audio.currentTime * 1000); raf = window.requestAnimationFrame(tick); }
         function stopLoop() { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } }
 
-        /* 恢复进度：位置先记下来（音频多半还没加载），按「开始」前再补设一次；
-           PCM 到位之前画不出那一帧，所以还留一个"欠一帧"的标记 */
-        var resumeAt = null, resumePending = false;
+        /* ── 恢复进度要真的"跳到 t"，可这条流不一定能 seek ─────────────────────
+           ⚠️ 部署站的静态响应没有 Accept-Ranges（Range 请求一律回 200 全量文件），
+           浏览器于是把这条音频当"不可 seek"的流：赋 currentTime 也不会动（线上实测，
+           本地服务器反而能用）。所以按「开始」时若手里有恢复位置，先把这一段做成
+           blob: URL 再挂上去 —— blob 一定可 seek；字节和 PCM 共用一个请求 */
+        var seekWant = null;                     // 待恢复的位置（秒）；null = 没有
+        var seekSrc = null;                      // 换好的 blob URL
+        /* PCM 到位之前画不出恢复那一帧：算"还欠一次 render" */
+        var resumePending = false;
 
-        function readyToPlay() {
-            resumePending = false;
-            if (resumeAt === null) return;
-            try { audio.currentTime = resumeAt; } catch (e) { /* 设不进去就按浏览器默认来 */ }
-            resumeAt = null;
+        function seekableSource(done) {
+            if (seekSrc) { done(); return; }
+            fetchAudio()
+                .then(function (buf) {
+                    seekSrc = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+                    audio.src = seekSrc;
+                    audio.load();
+                    done();
+                })
+                .catch(function () {
+                    seekWant = null;             // 取不到就退回流式：从 0 开始播，但页面别坏
+                    done();
+                });
+        }
+
+        /* 把位置设下去。元数据没到之前这句只是"记下起始播放位置"，所以到 loadedmetadata
+           再补一次 —— 换成 blob 源之后那时一定可 seek，跳过去了就把待办消掉 */
+        function applyWant() {
+            if (seekWant === null) return;
+            try { audio.currentTime = seekWant; } catch (e) { /* 不可 seek 的流上会被忽略 */ }
+        }
+
+        audio.addEventListener('loadedmetadata', function () {
+            if (seekWant === null) return;
+            var sk = audio.seekable;
+            if (sk.length && sk.end(0) > seekWant) { applyWant(); seekWant = null; }
+        });
+
+        function startPlay() {
+            var p = audio.play();
+            if (p && p.catch) p.catch(function () {});
         }
 
         /* 「意料之外的退出」那行错误（恢复时写进控制台2）。
@@ -998,10 +1079,14 @@
             clearError();
             if (audio.paused || audio.ended) {
                 loadPcm();                             // 第一次点开始才去取样本
-                readyToPlay();
+                resumePending = false;
                 if (morse) morse.pause();
-                var p = audio.play();
-                if (p && p.catch) p.catch(function () {});
+                if (seekWant !== null) {
+                    /* 恢复到一半的位置：先换成可 seek 的源，再跳过去播 */
+                    seekableSource(function () { applyWant(); startPlay(); });
+                } else {
+                    startPlay();
+                }
             } else {
                 audio.pause();
             }
@@ -1037,10 +1122,10 @@
                 textEl.classList.add('is-error');
                 errorShown = true;
             } else {
-                /* 暂停着退出的：画面要等 PCM 到位才画得出来 */
-                resumeAt = back.t;
+                /* 暂停着退出的：画面要等 PCM 到位才画得出来；位置交给 seekWant
+                   （按「开始」那一刻才换成可 seek 的源，见上面那段） */
+                seekWant = back.t;
                 resumePending = true;
-                try { audio.currentTime = back.t; } catch (e) { /* 按开始前还会再补一次 */ }
                 loadPcm(function () {
                     if (resumePending && !done) render(back.t * 1000);
                 });
