@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理成员讨论组·星光圣域</title>
+
+    <!-- 站点图标：SVG，跟随浏览器主题切换黑/白描边 -->
+    <link rel="icon" type="image/svg+xml" href="../../assets/img/logo_SSS.svg">
+
+    <!-- 加载屏：只有「资源还没进缓存」时才显示（首次访问 / 缓存被清掉）。
+         判断必须在这里同步做 —— 首次绘制前就要决定，否则会先画出页面再盖上、闪一下。
+         结构与逻辑见 assets/js/boot.js，样式见 assets/css/boot.css。 -->
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator)) return;      // 没有 SW，就没有"缓存全部资源"这回事
+            if (location.protocol === 'file:') return;        // 本地双击打开时 SW 注册不了，别把页面卡住
+            var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
+            var booted = false;
+            try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
+
+            // ① 这一次不是从 SW 缓存里拿的 → 该弹加载屏。controller 为空意味着：首次访问、
+            //    Ctrl+F5 硬刷新（硬刷新会连 Service Worker 一起绕过）、或站点数据被清过。
+            //    光看 sss-booted 标记不够 —— 它只记「这台浏览器走过加载流程」，
+            //    硬刷新时「标记还在」与「资源确实没走缓存」会分叉。
+            var cold = !navigator.serviceWorker.controller;
+
+            // ② 刚部署过新版本：seamless.js 在新 SW 接管（controllerchange）时留下的标记，
+            //    说明缓存整个换过一轮，这一趟补弹一次。读走即清，只补一次。
+            var afterUpdate = false;
+            try {
+                afterUpdate = localStorage.getItem('sss-boot-next') === '1';
+                if (afterUpdate) localStorage.removeItem('sss-boot-next');
+            } catch (e) {}
+
+            // ③ 其余情况（站内正常导航）：不弹，切换才不会闪
+            if (force || !booted || cold || afterUpdate) {
+                document.documentElement.className += ' sss-boot';
+            }
+
+            // 站内跳转进来的（referrer 与本页同源）：先把内容藏起来，等字体就绪再淡入。
+            // 背景画布与导航栏全站一致，所以只让内容参与过渡 —— 看起来就是
+            // 「外壳常驻、内容替换」，顺带把字体解码那 0.3–0.7 秒的空窗盖住。
+            // 必须在这里同步决定（首次绘制前），否则会先把内容画出来再藏、闪一下。
+            var fromSite = false;
+            try {
+                fromSite = !!document.referrer && new URL(document.referrer).origin === location.origin;
+            } catch (e) {}
+            if (fromSite) {
+                document.documentElement.classList.add('sss-switch');
+                // 兜底：万一 boot.js 没跑起来，5 秒后也得把内容放出来
+                window.setTimeout(function () {
+                    document.documentElement.classList.remove('sss-switch');
+                    document.documentElement.classList.add('sss-switch-in');
+                }, 5000);
+            }
+        })();
+    </script>
+    <!-- 首帧保护：预渲染被提前激活时（悬停后就点），浏览器可能先画一帧"样式表还在路上"的
+         裸 HTML（正常导航不会 —— 样式表本身阻塞渲染）。这里在解析阶段先把内容藏起来，
+         等样式表就位（或 2s 兜底）再放行；禁用 JS 时不加 js 类，等于没这段。 -->
+    <style>
+        /* 底色只能挂在"加载中"这个状态下：html 一旦有背景，body 的黑色就不再传播到画布，
+           负 z-index 的背景层（.hex-bg 等）会被 body 盖住 —— 背景就没了。
+           所以两条都限定在 js 且未 css-ready 时，样式一到就撤销、传播恢复。 */
+        html.js:not(.css-ready) { background: black; }
+        html.js:not(.css-ready) body { visibility: hidden; }
+    </style>
+    <script>
+        (function () {
+            var h = document.documentElement;
+            h.classList.add('js');
+            window.setTimeout(function () { h.classList.add('css-ready'); }, 2000);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../assets/css/boot.css">
+    <script defer src="../../assets/js/boot.js"></script>
+
+    <link rel="stylesheet" href="../../assets/css/global.css">
+    <link rel="stylesheet" href="../../assets/css/archive/organization.css">
+    <script defer src="../../assets/js/background.js"></script>
+    <script defer src="../../assets/js/notice.js"></script>
+    <script defer src="../../assets/js/seamless.js"></script>
+    <script defer src="../../assets/js/navtoggle.js"></script>
+    <!-- 成员名录：点名字弹「无法从机密页面快捷跳转」（小窗 DOM 与行为都在这个脚本里） -->
+    <script defer src="../../assets/js/org-member.js"></script>
+    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": "nav a" },
+                            { "not": { "href_matches": "/" } }
+                        ]
+                    },
+                    "eagerness": "moderate"
+                }
+            ],
+            "prefetch": [
+                { "where": { "selector_matches": "nav a" }, "eagerness": "conservative" }
+            ]
+        }
+    </script>
+    <!-- 样式表就位后放行（这行内联脚本会被它前面的样式表阻塞，所以执行时样式一定已经应用） -->
+    <script>document.documentElement.classList.add('css-ready');</script>
+</head>
+
+<!-- data-member-msg：本页所有成员卡被点时弹的提示条文案。
+     彩蛋页不连向站内其它页面，所以这里是「无法从机密页面快捷跳转」，
+     而不是别处的「成员数据库拒绝访问」。 -->
+<body data-member-msg="错误：无法从机密页面快捷跳转">
+
+    <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
+    <div class="boot" id="boot"></div>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <header class="navbar">
+
+        <div class="logo">
+            <span class="logo__mark" aria-hidden="true"></span>
+            星光圣域
+        </div>
+
+        <nav id="site-nav">
+            <a href="../..">首页</a>
+            <a href="../../starmap/">星图</a>
+            <a href="../../fleet/">舰队</a>
+            <a href="../../tool/">工具</a>
+            <a href="../">档案</a>
+            <a href="../../about/">关于</a>
+        </nav>
+
+        <!-- 折叠按钮：窄屏才出现（桌面 display:none），是 .navbar 自己的子元素，
+              所以和 logo 一样是栏内的一行；放进 nav 里会被那块竖排面板当成一个条目 -->
+        <button class="navbar__toggle" type="button" aria-label="导航菜单" aria-controls="site-nav" aria-expanded="false">
+            <span class="navbar__toggle__bars" aria-hidden="true"></span>
+        </button>
+
+    </header>
+
+    <main>
+        <!-- ══ 星光圣域管理成员讨论组（SSS DGAM）══
+             设定里的机密内容，按彩蛋页处理：**不做任何入口**，也没有任何站内跳转。
+             位置与「管理成员议会」并列（archive/organization/dgam），因为它同样没有下属组织。
+             正文取自设定文档：简介 / 组成成员 / 保密那几节，措辞基本都是原句。 -->
+        <section class="org-section org-section--doc">
+
+            <nav class="crumb" aria-label="位置">
+                <a href="../">档案</a>
+                <span class="crumb__sep" aria-hidden="true">/</span>
+                <a href="./">组织档案</a>
+                <span class="crumb__sep" aria-hidden="true">/</span>
+                <span class="crumb__here">管理成员讨论组</span>
+            </nav>
+
+            <header class="org-head">
+                <span class="org-tag">机密</span>
+                <h1>星光圣域管理成员讨论组</h1>
+                <p class="org-sub">Starlight Sacred Sanctuary Discussing Group of Administrative Members</p>
+                <p class="org-lead">由星光圣域的初始管理员所组成的核心，在星光圣域管理成员议会无法得出结论时负责解决问题。</p>
+            </header>
+
+            <section class="org-block">
+                <h2 class="org-block__head">概要<span class="org-block__en">Overview</span></h2>
+                <p>星光圣域管理成员讨论组（Starlight Sacred Sanctuary Discussing Group of Administrative Members，SSS DGAM）是由星光圣域的初始管理员所组成的核心。</p>
+                <p>与星光圣域管理成员议会不同，星光圣域管理成员讨论组不受任何约束 —— 其唯一目的便是维护星光圣域，让其能够在各势力之间的斗争中存在。</p>
+                <p>星光圣域管理成员讨论组能够直接干涉 Astra 及星辰矩阵的数据库，从而让 Astra 及星辰矩阵能够按照星光圣域管理成员讨论组的想法输出信息。</p>
+            </section>
+
+            <section class="org-block">
+                <h2 class="org-block__head">成员<span class="org-block__en">Members</span></h2>
+                <p>讨论组由 6 名成员组成，分别来自 6 支舰队 —— 这里按实际编制并列排列。</p>
+
+                <!-- 一张 grid，按列填：每列两支舰队，各占一格（列头 + 卡，共四行）。
+                     六支舰队在此并列，不按名义上的隶属关系嵌套。 -->
+                <div class="org-crews org-crews--pairs">
+                    <h3 class="org-tier-head">科研与管理舰队 <span class="org-tier-head__en">Research and Administration Fleet</span></h3>
+                    <button type="button" class="org-member" data-member><span class="org-member__name">余事星空</span></button>
+
+                    <h3 class="org-tier-head">高级研究舰队 <span class="org-tier-head__en">Advanced Research Fleet</span></h3>
+                    <button type="button" class="org-member" data-member><span class="org-member__name">科迪·冯·兰德马克</span></button>
+
+                    <h3 class="org-tier-head">工业与收集舰队 <span class="org-tier-head__en">Industrial and Collection Fleet</span></h3>
+                    <button type="button" class="org-member" data-member><span class="org-member__name">余事月夜</span></button>
+
+                    <h3 class="org-tier-head">精密制造舰队 <span class="org-tier-head__en">Precision Manufacturing Fleet</span></h3>
+                    <button type="button" class="org-member" data-member><span class="org-member__name">伊利莎丽娅·克利娅</span></button>
+
+                    <h3 class="org-tier-head">主防御舰队 <span class="org-tier-head__en">Primary Defense Fleet</span></h3>
+                    <button type="button" class="org-member" data-member><span class="org-member__name">娜奥米·凯恩</span></button>
+
+                    <h3 class="org-tier-head">主动防御舰队 <span class="org-tier-head__en">Active Defense Fleet</span></h3>
+                    <button type="button" class="org-member" data-member><span class="org-member__name">哈里顿·卡冈诺维奇·纳乌莫夫</span></button>
+                </div>
+            </section>
+
+            <section class="org-block">
+                <h2 class="org-block__head">职权<span class="org-block__en">Powers</span></h2>
+                <ul>
+                    <li><strong>最终解决</strong>：在星光圣域管理成员议会无法得出结论时，由讨论组负责解决问题。</li>
+                    <li><strong>不受约束</strong>：讨论组的行动不受星光圣域任何规章的约束，只以"维护星光圣域"为目的。</li>
+                    <li><strong>数据库干涉</strong>：可直接干涉 Astra 及星辰矩阵的数据库，使其按照讨论组的想法输出信息。</li>
+                </ul>
+            </section>
+
+            <section class="org-block">
+                <h2 class="org-block__head">行动准则<span class="org-block__en">Conduct</span></h2>
+                <ul>
+                    <li>讨论组截至目前为止并未运用其权限。</li>
+                    <li>直到紫色警报响起前，讨论组都不会作出行动。</li>
+                </ul>
+            </section>
+
+            <section class="org-block">
+                <h2 class="org-block__head">保密<span class="org-block__en">Confidentiality</span></h2>
+                <p>星光圣域管理成员讨论组的存在为星光圣域机密之一，仅有星光圣域管理成员议会的议员知晓其存在。</p>
+                <p>除讨论组本身之外，高级研究舰队、精密制造舰队与主动防御舰队的形成与存在同样为星光圣域机密之一。</p>
+                <p>出于星光圣域管理需要，在未来很长一段时间内，星光圣域管理成员讨论组的存在都是必要且机密的。</p>
+            </section>
+
+        </section>
+    </main>
+
+    <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
+    <footer class="site-footer">
+        © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../../about/">关于本站</a>
+    </footer>
+
+</body>
+</html>

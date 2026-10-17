@@ -40,7 +40,7 @@
         {
             id: 'cq',
             name: '神秘信号',
-            href: '/main/cq.html',
+            href: '/main/cq',
             entry: '#cq-dot',
             resetKeys: ['sss.cq-dot', 'sss.cq.flow']
         }
