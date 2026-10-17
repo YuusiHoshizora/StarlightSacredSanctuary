@@ -43,6 +43,16 @@
             href: '/main/cq',
             entry: '#cq-dot',
             resetKeys: ['sss.cq-dot', 'sss.cq.flow']
+        },
+        {
+            /* 组织档案页那个隐藏入口解锁出来的机密页。入口是三张部门卡拖到议会卡之后
+               浮出的切换按钮（.org-switch，见 assets/js/org-secret.js）；
+               解锁标记 sss-dgam 一并交给"重置"清掉，重置后要重新拖一次。 */
+            id: 'dgam',
+            name: '星光圣域机密组织DGAM',
+            href: '/archive/organization/dgam',
+            entry: '.org-switch',
+            resetKeys: ['sss-dgam']
         }
     ];
 

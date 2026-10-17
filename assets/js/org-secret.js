@@ -106,9 +106,25 @@
 
     /* ── 三张都到位：右侧浮出切换按钮，并记下解锁状态 ── */
     function unlock() {
+        if (entryClosed()) return;                   // 入口被人在「关于」页关掉了：不给按钮
         if (!switchBtn.hidden) return;
         switchBtn.hidden = false;
         try { localStorage.setItem(STORE, '1'); } catch (e) {}
+    }
+
+    /* 入口是不是被人在「关于」页的彩蛋卡片里关掉了（eggs.js 写的同一个键，id = dgam）。
+       关掉之后这个按钮永远不出现 —— 与首页那个 CQ 点是同一套语义。
+       这里直接读 localStorage，不依赖 eggs.js 的加载顺序与 API。 */
+    function entryClosed() {
+        try {
+            var raw = localStorage.getItem('sss.eggs.off');
+            if (!raw) return false;
+            var ids = JSON.parse(raw);
+            return Object.prototype.toString.call(ids) === '[object Array]' &&
+                   ids.indexOf('dgam') >= 0;
+        } catch (e) {
+            return false;
+        }
     }
 
     /* ── 切换：两张卡叠在同一格里，谁不 hidden 谁露脸 ── */
@@ -157,8 +173,8 @@
         }
     }, true);
 
-    /* ── 上次已经解开过：按钮直接留着 ── */
+    /* ── 上次已经解开过：按钮直接留着（入口被关掉就不留） ── */
     try {
-        if (localStorage.getItem(STORE) === '1') switchBtn.hidden = false;
+        if (localStorage.getItem(STORE) === '1' && !entryClosed()) switchBtn.hidden = false;
     } catch (e) {}
 })();

@@ -415,8 +415,9 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   · **想对所有人再弹一次：把 `NOTICE.id` 改成新值** —— 「已读」是按 id 记的，换 id 就是一条新公告
   · 首次访问若加载屏还盖着，它会等 `sss:booted` 再弹（否则公告藏在加载屏后面）
   · 自动化环境不弹：`navigator.webdriver` 为真、或页面里设了 `window.__SSS_NO_NOTICE = true`
-- **彩蛋**：站点里藏着**不与导航相连**的页面，靠知道地址才会来。目前只有一个：
-  `main/cq.html`（业余无线电：呼号音频 + SSTV 解码出 QSL 卡片）。
+- **彩蛋**：站点里藏着**不与导航相连**的页面，靠知道地址才会来。目前两个：
+  · `main/cq.html` —— 业余无线电：呼号音频 + SSTV 解码出 QSL 卡片（id `cq`）
+  · `archive/organization/dgam.html` —— 机密组织 DGAM，入口是组织档案页的隐藏手势（id `dgam`，见下）
   · ⚠️ **别在「关于」页这类公开页面写彩蛋页的名字或实现细节**（公告、致谢、友链都算）——
     那是剧透。致谢只写公开的资源名 + 「用途 · 许可证」，能署名的照常署名。
   · 清单在 `assets/js/eggs.js` 的 `LIST` 里（id / name / href / desc）。
@@ -430,6 +431,19 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
     由 eggs.js 填内容并放行；**一个都没发现时它就保持 hidden，整张卡片不出现**
   · 彩蛋页的音频与图片体积都不小（约 5 MB + 10 MB），**故意不进 SW 预缓存**，
     点了才下（`preload="none"` + `loading="lazy"`）；页面的 HTML/CSS/JS 照常进预缓存
+  · **入口（DGAM 那个）**：组织档案页（`archive/organization/index.html`）里，把**科研部（RES）、
+    工业部（IND）、战术战略部（TAS）**三张部门卡依次拖到「星光圣域管理成员议会」那张卡上
+    （顺序无关，拖动时指针靠近视口上下边缘会自动滚动）。三张都到位后议会卡右侧浮出一个小圆形
+    切换按钮（`.org-switch`），按一下卡片就换成 DGAM 那张，再按一下换回来。
+    · 拖动经过议会卡时，卡片边缘用**被拖那个部门的颜色**高亮（不是金色）：
+      科研部 `#50F2E0` / 工业部 `#EB7B25` / 战术战略部 `#EE0034`（写在各卡 `data-color` 上，
+      经 `--drag-color` 交给 CSS）
+    · 逻辑在 `assets/js/org-secret.js`；解锁状态记在 `sss-dgam`（`resetKeys` 里挂着，
+      「关于」页重置这条彩蛋会一并清掉，重置后要重新拖一次）
+    · 进来（DGAM 页）就算发现：页面底部弹「彩蛋已发现：星光圣域机密组织DGAM」，
+      金色那支 `.org-toast--egg`（报错才用红）；登记照旧靠 `<body data-egg="dgam">`
+    · 入口被「关于」页那个开关关掉后（`sss.eggs.off` 含 `dgam`），切换按钮永远不出现 ——
+      `org-secret.js` 直接读这个键，与 `cq-entry.js` 读的是同一套
   · **入口**（CQ 那个）：首页左下角藏一个点（`index.html` 的 `#cq-dot`），默认不可见、也点不到，
     名字 `???`。在首页任意处**点一下**，背景会画一圈扩散到 `CFG.RADIUS` 的金色波纹；
     `assets/js/cq-entry.js` 用**同一个半径**做判定（半径从 `window.SSSHex.cfg.RADIUS` 现读，

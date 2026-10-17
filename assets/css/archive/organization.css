@@ -634,6 +634,17 @@
     vertical-align: 1px;
 }
 
+/* 彩蛋提示条（DGAM 页那种「彩蛋已发现：…」）：同一条提示条、同一套动画，
+   只把强调色换回金色 —— 发现彩蛋是好事，报错才是红的那一支。 */
+.org-toast--egg {
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.org-toast--egg .org-toast__dot {
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+}
+
 /* 「减少动态效果」：提示条不滑动，直接出现 */
 @media (prefers-reduced-motion: reduce) {
     .org-toast,

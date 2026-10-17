@@ -82,6 +82,8 @@
     <script defer src="../../assets/js/notice.js"></script>
     <script defer src="../../assets/js/seamless.js"></script>
     <script defer src="../../assets/js/navtoggle.js"></script>
+    <!-- 彩蛋登记册：本页 body 上的 data-egg 会被它读到，自动记下"这个彩蛋被发现过" -->
+    <script defer src="../../assets/js/eggs.js"></script>
     <!-- 成员名录：点名字弹「无法从机密页面快捷跳转」（小窗 DOM 与行为都在这个脚本里） -->
     <script defer src="../../assets/js/org-member.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
@@ -110,7 +112,7 @@
 <!-- data-member-msg：本页所有成员卡被点时弹的提示条文案。
      彩蛋页不连向站内其它页面，所以这里是「无法从机密页面快捷跳转」，
      而不是别处的「成员数据库拒绝访问」。 -->
-<body data-member-msg="错误：无法从机密页面快捷跳转">
+<body data-member-msg="错误：无法从机密页面快捷跳转" data-egg="dgam">
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -229,6 +231,58 @@
     <footer class="site-footer">
         © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../../about/">关于本站</a>
     </footer>
+
+    <!-- 彩蛋提示条：进本页就算发现（与「神秘信号」同一套口径）。
+         金色的那支 —— 报错才用红（见 organization.css 的 .org-toast--egg）。 -->
+    <div class="org-toast org-toast--egg" id="dgam-toast" role="status">
+        <span class="org-toast__dot" aria-hidden="true"></span>彩蛋已发现：星光圣域机密组织DGAM
+    </div>
+
+    <script>
+    /* 进本页 = 发现这个彩蛋
+       ----------------------------------------------------------------------------
+       与「神秘信号」同一个口径：**提示条一弹出来**才算发现。
+       「已发现」的登记交给 eggs.js（<body data-egg="dgam"> 走 findWhenActive()），
+       这里只负责：第一次进来弹一次提示条；已经发现过（刷新 / 从「关于」页点进来）
+       就什么都不做。加载屏还盖着的时候先别弹，等外壳就绪。 */
+    (function () {
+        'use strict';
+
+        var toast = document.getElementById('dgam-toast');
+        if (!toast) return;
+
+        var announced = false;
+        try { announced = (localStorage.getItem('sss.eggs') || '').indexOf('dgam') >= 0; } catch (e) {}
+        if (announced) return;
+
+        var done = false;
+
+        function play() {
+            if (done) return;
+            done = true;
+            void toast.offsetWidth;          /* 先按初态上屏，下一帧再加 is-in，动画才会真的跑 */
+            window.requestAnimationFrame(function () { toast.classList.add('is-in'); });
+            window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
+        }
+
+        /* 加载屏还在的话，等它收起来再弹（否则提示条会盖在加载屏上面） */
+        function whenReady(fn) {
+            if (!document.documentElement.classList.contains('sss-boot')) { fn(); return; }
+            var timer = window.setInterval(function () {
+                if (document.documentElement.classList.contains('sss-boot')) return;
+                window.clearInterval(timer);
+                fn();
+            }, 200);
+            window.setTimeout(function () { window.clearInterval(timer); fn(); }, 8000);
+        }
+
+        if (document.prerendering) {
+            document.addEventListener('prerenderingchange', function () { whenReady(play); }, { once: true });
+        } else {
+            whenReady(play);
+        }
+    })();
+    </script>
 
 </body>
 </html>

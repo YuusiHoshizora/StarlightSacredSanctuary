@@ -65,6 +65,10 @@
 
     function show(msg) {
         var t = toast || build();
+        /* 页面上若还挂着彩蛋提示条（DGAM 那种「彩蛋已发现」），先收起来，
+           别和报错叠在同一条位置上 */
+        var egg = document.querySelector('.org-toast--egg');
+        if (egg && egg !== t) egg.classList.remove('is-in');
         if (textNode.nodeValue !== msg) textNode.nodeValue = msg;
         window.clearTimeout(timer);
         if (!t.classList.contains('is-in')) {
