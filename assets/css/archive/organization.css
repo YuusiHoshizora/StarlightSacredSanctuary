@@ -276,6 +276,119 @@
     }
 }
 
+/* ==========================================================================
+   组织详情页（archive/organization/cam.html 及以后各部自己的页）
+   --------------------------------------------------------------------------
+   版式：面包屑 → 页头（机构类别小标签 + 金色标题 + 英文名 + 一句简介）→
+   若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（窄一档），
+   所以页头、间距与总览页完全同源。
+   内容还没写的分区先用 .org-ph / .org-seat 占位（虚线 + 淡字）：它们只是占住位置，
+   填内容时把占位块整块换成真内容即可。
+   ========================================================================== */
+
+/* 详情页容器：比总览页窄一档，读长段落舒服些 */
+.org-section--doc {
+    max-width: 960px;
+}
+
+/* 机构类别小标签（最高权力机构 / 第一层分支权力机构 …），与 .org-supreme__tag 同款 */
+.org-tag {
+    display: inline-block;
+    padding: 3px 9px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--ctl-radius);
+}
+
+/* 一个分区 = 一块面板（标题 + 内容），与「关于」页的卡片同一套材质 */
+.org-block {
+    padding: 26px 28px;
+    margin-bottom: 18px;
+
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+.org-block:last-child {
+    margin-bottom: 0;
+}
+
+.org-block__head {
+    margin: 0 0 16px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: #FFD700;
+}
+
+.org-block__en {
+    margin-left: 12px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 占位块：这一节的内容还没写，先用虚线占住位置。
+   ⚠️ 填内容时把 <p class="org-ph">…</p> 整块换成真内容（段落 / 列表 / 卡片网格）。 */
+.org-ph {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 88px;
+    padding: 18px 20px;
+
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.32);
+
+    background: rgba(255, 255, 255, 0.012);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: var(--ctl-radius);
+}
+
+/* 议席占位：数量与成员待补，先按卡片网格把位置占住 */
+.org-seats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.org-seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 140px;
+    padding: 16px 14px;
+
+    text-align: center;
+    background: rgba(255, 255, 255, 0.012);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: var(--ctl-radius);
+}
+
+/* 席位编号：等宽读数那一路（Sarasa Mono），与部门代号 .org-card__no 同一个意思 */
+.org-seat__no {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.28);
+}
+
+.org-seat__ph {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
 /* ── 移动端：单列、收窄内边距 ── */
 @media (max-width: 768px) {
 
@@ -329,5 +442,33 @@
     .org-card__no {
         top: 18px;
         right: 18px;
+    }
+
+    .org-tag {
+        margin-bottom: 12px;
+    }
+
+    .org-block {
+        padding: 22px 18px;
+        margin-bottom: 14px;
+    }
+
+    .org-block__head {
+        font-size: 15px;
+        letter-spacing: 1.5px;
+    }
+
+    .org-seats {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .org-seat {
+        min-height: 110px;
+    }
+
+    .org-ph {
+        min-height: 72px;
+        padding: 16px 14px;
     }
 }

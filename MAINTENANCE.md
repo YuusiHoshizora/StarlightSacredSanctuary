@@ -23,6 +23,7 @@
 ├── tool/index.html             工具
 ├── archive/index.html          档案（分类导航）
 ├── archive/organization/index.html  组织档案（组织名录导航：官方 / 半官方 / 非官方三类，目前只有官方组织有内容）
+├── archive/organization/cam.html    管理成员议会（最高权力机构；详情页骨架，各分区先用占位块占住）
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
