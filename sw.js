@@ -25,11 +25,15 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.50';
+const CACHE_VERSION = 'v5.51';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
 const OFFLINE_URL = '/404.html';
+
+// 文章索引：由 .github/workflows/generate-post-index.yml 在每次文章变动后重写，
+// 所以它是"每次都可能变"的文件 —— 走网络优先，别让新文章晚一次访问才出现
+const POST_INDEX_PATH = '/assets/post/index.json';
 
 // 预缓存清单：全部页面 + 全站共用资源（体积都很小）
 const PRECACHE_URLS = [
@@ -198,6 +202,13 @@ self.addEventListener('fetch', (event) => {
     // Range 请求（部分下载）交给网络，避免缓存返回不完整内容
     if (request.headers.has('range')) return;
 
+    // 文章索引：网络优先（它由 GitHub Action 在每次文章变动后重写，
+    // 缓存优先会让新文章晚一次访问才出现在列表里）
+    if (url.pathname === POST_INDEX_PATH) {
+        event.respondWith(networkFirst(request));
+        return;
+    }
+
     if (request.mode === 'navigate') {
         event.respondWith(handleNavigate(request));
         return;
@@ -205,6 +216,20 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(staleWhileRevalidate(request));
 });
+
+/** 网络优先：先要最新的，网络不通再退回缓存 */
+async function networkFirst(request) {
+    const cache = await caches.open(CACHE_NAME);
+    try {
+        const response = await fetch(request);
+        await putSafely(cache, request, response);   // putSafely 自己会 clone，不影响返回的那份
+        return response;
+    } catch (err) {
+        const cached = await cache.match(request, { ignoreSearch: true });
+        if (cached) return cached;
+        throw err;
+    }
+}
 
 /** 把成功的同源响应写入缓存（跳过部分响应，失败也不影响页面）
     被重定向过的响应先洗一遍再存：它本身内容是对的（307 的目标页），

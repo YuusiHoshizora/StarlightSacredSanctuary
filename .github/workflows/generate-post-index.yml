@@ -1,14 +1,28 @@
 name: Generate Post Index
 
+# 文章有变动 → 重排 assets/post/index.json 并提交回去。
+#
+# ⚠️ 这个工作流的提交消息**不能带 `[skip ci]`**：Cloudflare Pages 见到 `[skip ci]`
+#    会**跳过部署**（不只是跳过 GitHub Actions），于是仓库里的 index.json 更新了、
+#    线上那份却一直是旧的 —— 表现就是"文章列表不自动更新"。（踩过，见 MAINTENANCE。）
+#    要防自己触发自己，靠下面 job 上的 `if:` 判断 actor，而不是提交消息里的标记。
+
 on:
   push:
     paths:
       - 'assets/post/**'
   workflow_dispatch:
 
+# 同一时间只跑一个，避免两次推送同时改 index.json 撞车
+concurrency:
+  group: post-index
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 由本工作流自己推上来的那次提交不用再跑一遍
+    if: "github.actor != 'github-actions[bot]'"
     permissions:
       contents: write
 
@@ -53,5 +67,10 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add assets/post/index.json
-          git diff --cached --quiet || git commit -m "chore: update post index [skip ci]"
-          git push
+          if git diff --cached --quiet; then
+            echo "index.json 没有变化，不用提交"
+            exit 0
+          fi
+          git commit -m "chore: update post index"
+          # 万一这期间有人推了别的提交，先 rebase 再推
+          git push || { git pull --rebase --autostash origin master && git push; }

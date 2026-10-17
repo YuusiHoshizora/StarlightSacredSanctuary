@@ -156,8 +156,17 @@ Redirect Rule 301 过来，见下）。
   `assets/post/.obsidian` —— 它在 cwd 里，哪天用本地 `wrangler deploy` 会整个传上去
 - 后台「设置 → 构建」：**构建命令「无」**、部署命令 `npx wrangler deploy`、根目录 `/`；
   推送到 `master` 自动构建部署（每次约 30–50 秒）
-- ⚠️ 带 `[skip ci]` 的提交（Actions 那个 index.json 自动提交）**会跳过部署** ——
-  Netlify 与 Cloudflare 都是这个行为
+- ⚠️ **带 `[skip ci]` 的提交会跳过部署**（Netlify 与 Cloudflare 都是这个行为，实测踩过）。
+  2026-10 的现场：`Generate Post Index` 那个动作把 index.json 提交回去时用了
+  `chore: update post index [skip ci]` —— Actions 确实跑了、也确实把提交推上去了，
+  但**这一次推送没有触发部署**：仓库里的 index.json 是新的，线上那份一直是旧的，
+  表现就是「文章列表不自动更新」，而 Actions 那边还显示 success（每个 step 都成功）。
+  现在那个工作流不再用任何 skip 标记，改成在 job 上加
+  `if: github.actor != 'github-actions[bot]'` 来防止自己触发自己
+  （`.github/workflows/generate-post-index.yml`）
+- 文章索引 `assets/post/index.json` 在 SW 里走**网络优先**（其余静态资源是
+  stale-while-revalidate）：它每次文章变动都会被重写，缓存优先会让新文章晚一次访问
+  才出现在列表里；网络不通时再退回缓存（离线照样能看列表）
 - 错误页只有一份 `404.html`（原先 `error.html` + `404.html` 两份内容相同，已合并成一份）：
   CF 的 404 页与 SW 的离线页都用它；自检脚本会把线上 404 响应与它逐字比对（不一致报 WARN）
 - 自检：`powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1`
