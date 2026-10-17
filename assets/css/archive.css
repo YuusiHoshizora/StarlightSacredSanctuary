@@ -1,93 +1,186 @@
+/* ==========================================================================
+   档案（archive/index.html）—— 档案分类总览
+   --------------------------------------------------------------------------
+   版式：页头（金色 H1 + 英文副题 + 一行说明）→ 分类卡片网格。
+   单卡结构与「组织档案」的 .org-card 是同一套：玻璃面板（半透明底 + 1px 淡描边 +
+   面板圆角 --ctl-panel-radius），标题白、英文副题与说明淡一档；
+   强调态只做「描边转金 / 阴影加深」，**不做位移**（见 DESIGN.md 第五节）。
+   尚未开放的分类不是可点卡片：虚线框 + 「尚未开放」，与组织档案页的 .org-empty
+   是同一套占位语言。
+   颜色、圆角、过渡一律取 global.css 的 --ctl-* 令牌，不另立新值；
+   字体只写尺寸/字距 —— 字体族由 global.css 的 `*` 规则统一给。
+   ========================================================================== */
+
 .archive-section {
     position: relative;
     z-index: 1;
-    /* 同 .main-layout：main 是竖排 flex 容器，带 auto margin 的项不会被拉伸，
-       宽度会退化成 fit-content；写死 100% 才是「铺满可用宽度、超过上限才居中」。 */
+
+    /* 同 .about-section / .org-section：main 是竖排 flex 容器，带 auto margin 的
+       flex 项不会被拉伸、宽度会退化成 fit-content；写死 100% 才是
+       「铺满可用宽度、超过上限才居中」。高度交给 flex，不写 100vh。 */
     width: 100%;
-    padding: 120px 60px 80px;
-    max-width: 1400px;
+    max-width: 1200px;             /* 与组织档案页同一个阅读宽度 */
     margin: 0 auto;
+    padding: 120px 60px 80px;
+    flex: 1 1 auto;
 }
 
+/* ── 页头：与「关于」「组织档案」同一套 ── */
+.archive-head {
+    margin-bottom: 34px;
+}
+
+.archive-head h1 {
+    margin: 0;
+    font-size: 30px;
+    letter-spacing: 6px;
+    color: #FFD700;
+}
+
+.archive-sub {
+    margin: 8px 0 0;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.archive-lead {
+    margin: 18px 0 0;
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── 卡片网格 ── */
 .archive-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 32px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
 }
 
+/* 一张卡片 = 一类档案。整块可点，所以标题上不再画下划线。
+   flex 列是为了让「查看档案 ›」/「尚未开放」贴底 —— 同一行卡片高度不齐时也对得齐。 */
 .archive-card {
     position: relative;
-    display: block;
-    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 26px 24px;
+
+    color: #fff;
     text-decoration: none;
+
     background: rgba(20, 20, 50, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 32px 28px;
+    border-radius: var(--ctl-panel-radius);
     backdrop-filter: blur(8px);
-    transition: all 0.35s ease;
-    overflow: hidden;
+
+    transition: var(--ctl-transition),
+                box-shadow 0.3s ease;
 }
 
-.archive-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    border-radius: inherit;
-    pointer-events: none;
+.archive-card h2 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    letter-spacing: 2px;
 }
 
-.archive-card:hover {
+.archive-card__en {
+    margin: 0 0 12px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.archive-card__desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* 已开放：贴底的「查看档案 ›」（与 .org-card__go 一致） */
+.archive-card__go {
+    margin-top: auto;
+    padding-top: 18px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
+    transition: var(--ctl-transition);
+}
+
+/* 强调态：金色描边 + 阴影加深，不做位移；键盘聚焦另加一圈金色轮廓 */
+a.archive-card:hover,
+a.archive-card:focus-visible {
     border-color: rgba(255, 215, 0, 0.4);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-.archive-card:hover::before {
-    opacity: 1;
+a.archive-card:hover .archive-card__go,
+a.archive-card:focus-visible .archive-card__go {
+    color: #FFD700;
 }
 
-.archive-card h2 {
-    font-size: 22px;
-    font-weight: 500;
+a.archive-card:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+/* ── 尚未开放的分类：不是可点卡片 ──
+   虚线框 + 整体淡一档 + 没有 hover、没有手型光标，与 .org-empty 的占位语言一致。
+   以后开放某一类：把 <div class="archive-card is-soon"> 换成
+   <a class="archive-card" href="…/">，并把 .archive-card__state 换成 .archive-card__go。 */
+.archive-card.is-soon {
+    background: rgba(255, 255, 255, 0.014);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    cursor: default;
+}
+
+.archive-card.is-soon h2 {
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.archive-card.is-soon .archive-card__en {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.archive-card.is-soon .archive-card__desc {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.archive-card__state {
+    margin: auto 0 0;              /* 贴底，与 .archive-card__go 对齐 */
+    padding-top: 18px;
+    font-size: 12px;
     letter-spacing: 2px;
-    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.3);
 }
 
-.archive-card .english {
-    font-size: 13px;
-    opacity: 0.6;
-    letter-spacing: 1px;
-    margin-bottom: 14px;
+/* 「减少动态效果」：不要过渡 */
+@media (prefers-reduced-motion: reduce) {
+    .archive-card,
+    .archive-card__go {
+        transition: none;
+    }
 }
 
-.archive-card .desc {
-    font-size: 15px;
-    opacity: 0.8;
-    line-height: 1.7;
-}
-
-.archive-card .count {
-    display: inline-block;
-    margin-top: 18px;
-    font-size: 13px;
-    opacity: 0.5;
-    letter-spacing: 1px;
-}
-
-/* 响应式 */
+/* 窄屏 */
 @media (max-width: 768px) {
     .archive-section {
-        padding: 96px 24px 60px;
+        padding: 96px 18px 56px;
+    }
+
+    .archive-head {
+        margin-bottom: 24px;
+    }
+
+    .archive-head h1 {
+        font-size: 24px;
+        letter-spacing: 4px;
     }
 
     .archive-grid {
         grid-template-columns: 1fr;
-        gap: 24px;
-    }
-
-    .archive-card {
-        padding: 24px 20px;
+        gap: 16px;
     }
 }
