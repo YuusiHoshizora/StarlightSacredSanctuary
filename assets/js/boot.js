@@ -16,15 +16,22 @@
  * ========================================================================== */
 
 /* 这一趟要等哪些字面。
-   按各页实际会渲染到的来：界面与正文是 Sarasa（Regular / Bold）；主页面渲染出来的
-   Markdown 正文用 Sarasa Mono（global.css 里 .markdown-body 那条），页面上有它才多等一份。
+   按各页实际会渲染到的来：界面与正文是 Sarasa（Regular / Bold）；等宽的地方用
+   Sarasa Mono —— 主页面渲染出来的 Markdown 正文（global.css 里 .markdown-body 那条），
+   以及**加载屏自己的读数**（boot.css 的 .boot__inner）：加载屏是第一次绘制，
+   字体没到的话 `font-display: block` 会让读数空着，所以显示加载屏时把它一起等。
    斜体不在这里等 —— 用得极少，而每多一份就是 5–8 MB。
    加载屏与跨页切换（文件末尾那个 IIFE）共用这一份清单，不在两处各写一遍。 */
 function sssFontFaces() {
     var faces = ['400 16px "Sarasa"', '700 16px "Sarasa"'];
+    var want = [];
+    if (document.documentElement.classList.contains('sss-boot')) want.push('400 16px "Sarasa Mono"');
     if (document.querySelector('.markdown-body')) {
-        faces.push('400 16px "Sarasa Mono"');
-        faces.push('700 16px "Sarasa Mono"');
+        want.push('400 16px "Sarasa Mono"');
+        want.push('700 16px "Sarasa Mono"');
+    }
+    for (var i = 0; i < want.length; i++) {
+        if (faces.indexOf(want[i]) < 0) faces.push(want[i]);
     }
     return faces;
 }

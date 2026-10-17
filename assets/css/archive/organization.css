@@ -253,12 +253,12 @@
     outline-offset: 3px;
 }
 
-/* 部门代号：右上角的小读数（RES / ADM / …），等宽字体（design 里"读数"那一类） */
+/* 部门代号：右上角的小读数（RES / ADM / …），等宽 —— 用站的 Sarasa Mono（design 里"读数"那一类） */
 .org-card__no {
     position: absolute;
     top: 20px;
     right: 22px;
-    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 12px;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.28);

@@ -327,9 +327,19 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
 - **控件**：按钮与输入框统一使用 `global.css` 里 `:root` 的 `--ctl-*` 令牌
   （背景、描边、圆角、过渡），不要在页面样式里另写一套
 - **字体**：正文、标题与界面都用 Sarasa Gothic SC 的三个真实字面（Regular / Bold / Italic），
-  **等宽的地方用 Sarasa Mono SC**：主页面渲染出来的 Markdown 文章内容整体用它
-  —— 见 `global.css` 里「Markdown 正文字体」那段（`.markdown-body, .markdown-body *`）；
-  CQ 彩蛋页的两段控制台与准备日志（`.cq-console` / `.cq-log`）也用它。
+  **全站等宽只有一支：Sarasa Mono SC**（`assets/fonts/SarasaMonoSC-*.woff2`，@font-face 见
+  `global.css`）—— 凡是要等宽的地方一律写 `"Sarasa Mono", "Sarasa", monospace`，
+  别再退到系统等宽栈（`ui-monospace` / `Consolas` / `Courier New` / `Cascadia Mono` 都已清掉）：
+  · Markdown 正文与行内代码：`global.css` 的 `.markdown-body, .markdown-body *` +
+    `mainpage.css` 的 `.markdown-body code`
+  · CQ 彩蛋页的控制台与准备日志：`main/cq.css` 的 `.cq-console, .cq-console *`、`.cq-log, .cq-log *`
+  · 组织档案页右上角的部门代号：`archive/organization.css` 的 `.org-card__no`
+  · 加载屏的读数：`boot.css` 的 `.boot__inner, .boot__inner *`
+  ⚠️ **写法上要连后代一起写**：`global.css` 顶部那条 `* { font-family: "Sarasa" }` 给
+  **每个元素**都直接指定了 Gothic，只写在容器上等于只改了容器自己的文字节点，里面的元素
+  还是 Gothic —— 而且这样等宽字面根本不会被下载（`document.fonts` 里一直 `unloaded`）。
+  与 `.markdown-body` 同一套路。`font-size` / `line-height` 这种别跟着写成 `X *`，
+  每条规则只管一件事。
   全站 `font-synthesis-weight: none`，粗体一律走真实 Bold 字面，
   不允许浏览器合成（合成粗细在不同浏览器差别很大，文字被选中时还会变）。
   界面原先还单独用了一份 "Sarasa UI" 字面（等于每页多下 8 MB），已去掉，全站统一 Gothic。
@@ -342,6 +352,8 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
   · 用到大字面的那一页要在 `<head>` 里自己写 `<link rel="preload" as="font" crossorigin>`
     （目前只有 CQ 页给 `SarasaMonoSC-Regular.woff2` 写了一条）：`block` 期内文字是空的，
     等 CSS 决定要用字体才开下，往往就晚了半拍 —— 控制台日志会先空一下
+  · **加载屏的读数本身也是 Sarasa Mono**：那是第一次绘制、又赶上 `block`，所以
+    `boot.js` 在**要显示加载屏时**把这一份加进 `sssFontFaces()` 一起等（不显示加载屏就不等）
   · **别用 `document.fonts.check()` 判断"字体在不在缓存里"**：实测缓存命中也返回 `false`
     （`FontFace` 只要没真正 load 过就是 `unloaded`），拿它做判断会每次导航都误弹加载屏
   · ⚠️ 线上字体响应头是 `Cache-Control: public, max-age=0, must-revalidate`（Cloudflare

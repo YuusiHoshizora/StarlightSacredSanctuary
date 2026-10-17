@@ -189,7 +189,9 @@
     padding: 0.15em 0.45em;
     font-size: 13px;
     color: rgba(255, 215, 0, 0.7);
-    font-family: 'Courier New', Courier, monospace;
+    /* 行内代码也用站的等宽字面（原来写死 Courier New，与正文的 Sarasa Mono 不是一支，
+       而且这条权重比 `.markdown-body *` 高，会把正文那支盖掉） */
+    font-family: "Sarasa Mono", "Sarasa", monospace;
     letter-spacing: 0;
 }
 

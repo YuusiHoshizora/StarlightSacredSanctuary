@@ -80,7 +80,11 @@ html.sss-boot .boot {
 }
 .boot.is-open .boot__seam { opacity: 0; }
 
-/* 中间读数：等宽，用系统等宽字体，不去等 Sarasa Mono（那正是它要等的资源） */
+/* 中间读数：用站的等宽字面 Sarasa Mono（全站等宽只有这一支，见 global.css 的 @font-face）。
+   ⚠️ 分成两条：布局那条只给 .boot__inner，字体那条要连后代一起给 —— 加载屏的文字
+   全在子元素里（.boot__title / .boot__step span / .boot__hint），而 global.css 顶部那条
+   `* { font-family: "Sarasa" }` 会直接盖到每个元素上，只写容器等于没改。
+   字体本身由 boot.js 的 sssFontFaces() 在显示加载屏时一起等（否则 block 期里读数会是空的）。 */
 .boot__inner {
     position: absolute;
     inset: 0;
@@ -90,8 +94,12 @@ html.sss-boot .boot {
     justify-content: center;
     padding: 24px;
     text-align: center;
-    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
     transition: opacity 0.26s ease, transform 0.26s ease;
+}
+
+.boot__inner,
+.boot__inner * {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
 }
 .boot.is-open .boot__inner { opacity: 0; transform: scale(0.98); }
 
