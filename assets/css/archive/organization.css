@@ -283,7 +283,8 @@
    若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（窄一档），
    所以页头、间距与总览页完全同源。
    分区里的内容用普通 <p> / <ul> / <ol>（样式在下面 .org-block 里统一给），
-   成员名录用 .org-crew（分组）+ .org-seats/.org-seat（议席卡）。
+   成员名录用 .org-crew（分组）+ .org-roster（竖排名录，整行可点），
+   点了弹「成员数据库拒绝访问」的小窗（.org-modal，逻辑在 assets/js/org-member.js）。
    新页面的骨架阶段可以先用 .org-ph 占位块把位置占住。
    ========================================================================== */
 
@@ -395,16 +396,10 @@
     margin: 22px 0 14px;
 }
 
-/* 一句补充说明：比正文淡一档（例：议员档案所在的人员数据库拒绝访问） */
-.org-note {
-    margin: 18px 0 0;
-    font-size: 12px;
-    line-height: 1.9;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.35);
-}
-
-/* ── 成员名录：一舰队一组（组标题 + 4 张议席卡） ── */
+/* ── 成员名录：竖排，一行一位 ──
+   议员之间是平等的，所以**不编号、不排序**：整行就是一个“名称索引”，
+   点一下本该打开那个人的人员档案；hover / 键盘聚焦时名字转金。
+   人员数据库当前数据损坏、拒绝访问，点了会弹错误小窗（见下面 .org-modal）。 */
 .org-crew {
     margin: 0 0 26px;
 }
@@ -413,50 +408,139 @@
     margin-bottom: 0;
 }
 
-.org-seats {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-}
-
-/* 议席卡：名录里的一行（编号 + 姓名 + 职务） */
-.org-seat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 108px;
-    padding: 16px 14px;
-
-    text-align: center;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--ctl-radius);
-}
-
-/* 席位编号：等宽读数那一路（Sarasa Mono），与部门代号 .org-card__no 同一个意思 */
-.org-seat__no {
-    font-family: "Sarasa Mono", "Sarasa", monospace;
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.28);
-}
-
-.org-seat__name {
+/* 覆盖 .org-block ul/li 那套正文列表样式：这里是名录，不是正文列表 */
+.org-block .org-roster {
     margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.org-block .org-roster li {
+    margin: 0;
+    padding: 0;
+}
+
+/* 一行 = 姓名（左）+ 职务（右）；整行可点 */
+.org-roster__item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+
+    width: 100%;
+    margin: 0;
+    padding: 10px 12px;
+
+    font: inherit;                  /* 盖掉按钮的 UA 字体/字号 */
+    text-align: left;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+.org-roster__item:hover,
+.org-roster__item:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.org-roster__item:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+.org-roster__name {
     font-size: 14px;
-    line-height: 1.6;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.9);
+    transition: color 0.25s ease;
 }
 
-.org-seat__role {
-    margin: 0;
+/* 「名称索引亮起」：hover / 键盘聚焦时转金 */
+.org-roster__item:hover .org-roster__name,
+.org-roster__item:focus-visible .org-roster__name {
+    color: #FFD700;
+}
+
+.org-roster__role {
+    flex: 0 0 auto;
     font-size: 12px;
-    line-height: 1.6;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── 错误小窗 ──
+   点成员名字时弹（人员数据库拒绝访问）。DOM 与行为在 assets/js/org-member.js，
+   这里只管样子 —— 与彩蛋页那个 .cq-modal 同一套：暗底 + 模糊 + 玻璃面板。 */
+.org-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;                   /* 顶栏是 100，要压住它 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(4, 6, 16, 0.82);
+    backdrop-filter: blur(6px);
+}
+
+/* 显式写这一条：[hidden] 的 display:none 会被上面的 display:flex 盖掉 */
+.org-modal[hidden] {
+    display: none;
+}
+
+.org-modal__panel {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    padding: 28px 26px 26px;
+    text-align: center;
+    background: rgba(18, 18, 42, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--ctl-panel-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 报错那行用错误红（--ctl-err），与「拒绝访问 / 数据损坏」是同一支语义 */
+.org-modal__msg {
+    margin: 0;
+    padding: 0 16px;
+    font-size: 13px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: var(--ctl-err);
+}
+
+.org-modal__close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--ctl-fg-dim);
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    border-radius: var(--ctl-radius);
+    cursor: pointer;
+    transition: var(--ctl-transition);
+}
+
+.org-modal__close:hover,
+.org-modal__close:focus-visible {
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+}
+
+/* 小窗开着时锁住背景滚动 */
+html.org-modal-open {
+    overflow: hidden;
 }
 
 /* ── 移动端：单列、收窄内边距 ── */
@@ -533,23 +617,20 @@
         letter-spacing: 1.5px;
     }
 
-    .org-seats {
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .org-seat {
-        min-height: 96px;
-        padding: 14px 10px;
-    }
-
-    .org-seat__name {
-        font-size: 13px;
-        letter-spacing: 0.5px;
-    }
-
     .org-crew {
         margin-bottom: 20px;
+    }
+
+    .org-roster__item {
+        align-items: baseline;
+        flex-wrap: wrap;             /* 窄屏上职务会占满半行，允许换到姓名下面 */
+        gap: 10px;
+        padding: 9px 8px;
+    }
+
+    .org-roster__name {
+        font-size: 13px;
+        letter-spacing: 0.5px;
     }
 
     .org-block .org-tier-head {

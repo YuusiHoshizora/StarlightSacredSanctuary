@@ -45,6 +45,7 @@
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
+│   │   ├── org-member.js       组织详情页的成员名录：点名字弹「成员数据库拒绝访问」小窗
 │   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
 │   │   ├── main.js             首页打字机效果
 │   │   ├── tool.js             工具页（拾色器 + 时间转换）
