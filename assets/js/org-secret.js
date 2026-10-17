@@ -6,14 +6,21 @@
  * 议会卡右侧浮出一个小切换按钮；按一下，卡片就换成
  * 「星光圣域管理成员讨论组」（DGAM）那张，再按一下换回来。
  *
- * 细节：
+ * 三张部门卡的高亮分三种状态（对应彩蛋的三种状态）：
+ *   ① 还没发现（sss.eggs 里没有 dgam）：拖上去一张，那一张就留下该部门颜色的描边，
+ *      一直保持（刷新也还在，记在 sss-dgam 里；拖动过程中抓起来的那张同样高亮）
+ *   ② 已经发现（进过 DGAM 页）：三张一起保持高亮
+ *   ③ 入口被关掉（「关于」页那个开关 → sss.eggs.off 里有 dgam）：
+ *      三张都不高亮、draggable 也摘掉 —— 拖到议会卡上**毫无反应**，
+ *      和其他不能拖的部门卡完全一样
+ *
+ * 其他细节：
  * · 拖动经过议会卡时，卡片**边缘**用被拖的那个部门的颜色高亮，不是金色：
  *     科研部 #50F2E0 / 工业部 #EB7B25 / 战术战略部 #EE0034
- *   （颜色写在各卡的 data-color 上，脚本把它塞进 --drag-color 交给 CSS）
- * · 战术战略部那张在页面靠下，所以拖动时指针靠近视口上下边缘会自动滚动，
- *   不用先手动滚回顶部再把卡"拖出屏幕"。
- * · 收集到的部门卡会留下痕迹（描边与代号转成该部门色，见 .org-card.is-collected）。
- * · 解锁状态记在 localStorage 的 sss-dgam 里，下次进来按钮还在。
+ *   （颜色写在各卡的 data-color 上，脚本把它塞进 --drag-color / --dept-color 交给 CSS）
+ * · 战术战略部那张在页面靠下，所以拖动时指针靠近视口上下边缘会自动滚动。
+ * · sss-dgam 存的是"拖上去过的部门 key 数组"（老版本的 '1' 当作三张都拖过）；
+ *   「关于」页重置这条彩蛋会把这个键一并清掉。
  *
  * 结构见 archive/organization/index.html，样式见
  * assets/css/archive/organization.css 的「隐藏入口」一节。
@@ -41,15 +48,82 @@
     var dir = 0;                 // -1 上滚 / +1 下滚 / 0 不动
     var speed = 0;
 
-    /* ── 三张可拖的部门卡 ── */
+    /* ── 先认三张卡，把各自的颜色挂成 --dept-color ── */
     Array.prototype.forEach.call(document.querySelectorAll('[data-dept]'), function (el) {
         var key = el.getAttribute('data-dept');
         cards[key] = el;
         el.style.setProperty('--dept-color', el.getAttribute('data-color') || '');
+    });
+
+    /* 「关于」页那两个开关的状态（eggs.js 写的同一个键）；直接读 localStorage，
+       不依赖 eggs.js 的加载顺序与 API。 */
+    function readIds(key) {
+        try {
+            var raw = localStorage.getItem(key);
+            if (!raw) return [];
+            var ids = JSON.parse(raw);
+            return Object.prototype.toString.call(ids) === '[object Array]' ? ids : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    /* 拖上去过哪几张（老版本存的是 '1'，当作三张都拖过） */
+    function readStore() {
+        try {
+            var raw = localStorage.getItem(STORE);
+            if (!raw) return [];
+            if (raw === '1') return NEED.slice();
+            var ids = JSON.parse(raw);
+            return Object.prototype.toString.call(ids) === '[object Array]' ? ids : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    var collected = readStore();                                // 之前拖上去过的
+    var found = readIds('sss.eggs').indexOf('dgam') >= 0;        // 彩蛋已经发现过
+    var closed = readIds('sss.eggs.off').indexOf('dgam') >= 0;   // 入口被关掉了
+
+    /* ── ③ 入口被关掉：三张都不高亮、也不能拖，整个入口等于不存在 ── */
+    if (closed) {
+        NEED.forEach(function (key) {
+            var el = cards[key];
+            if (!el) return;
+            el.classList.remove('is-collected');
+            el.classList.remove('is-dragging');
+            el.removeAttribute('draggable');       // 连拖都起不来，和别的部门卡一模一样
+        });
+        switchBtn.hidden = true;
+        secretCard.hidden = true;
+        hideCard.hidden = false;
+        return;                                     // 后面的拖放逻辑一律不装
+    }
+
+    /* ── 进来先把"已经拖过的"点亮：① 阶段一张一张攒，② 阶段三张一起亮 ── */
+    function mark(key) {
+        got[key] = true;
+        if (cards[key]) cards[key].classList.add('is-collected');
+    }
+
+    if (found) {
+        NEED.forEach(mark);                        // ② 发现之后：三张都保持高亮
+        switchBtn.hidden = false;
+    } else {
+        NEED.forEach(function (key) {
+            if (collected.indexOf(key) >= 0) mark(key);   // ① 只点亮之前拖过的那几张
+        });
+        if (NEED.every(function (k) { return got[k]; })) switchBtn.hidden = false;
+    }
+
+    /* ── 拖放：三张卡 + 议会卡那一块 ── */
+    NEED.forEach(function (key) {
+        var el = cards[key];
+        if (!el) return;
 
         el.addEventListener('dragstart', function (e) {
             dragging = key;
-            el.classList.add('is-dragging');
+            el.classList.add('is-dragging');        // 抓起来的那张也高亮
             if (e.dataTransfer) {
                 e.dataTransfer.effectAllowed = 'copy';
                 try { e.dataTransfer.setData('text/plain', key); } catch (err) {}
@@ -65,12 +139,6 @@
         });
     });
 
-    function colorOf(key) {
-        var el = cards[key];
-        return el ? (el.getAttribute('data-color') || '') : '';
-    }
-
-    /* ── 议会卡这一块：拖进来就高亮，松手就收下 ── */
     function over(e) {
         if (!dragging) return;
         e.preventDefault();                              // 不 preventDefault 就不让放下
@@ -96,35 +164,24 @@
         collect(key);
     });
 
-    /* ── 收下一张 ── */
+    function colorOf(key) {
+        var el = cards[key];
+        return el ? (el.getAttribute('data-color') || '') : '';
+    }
+
+    /* ── 收下一张：① 阶段就是这里一张一张攒高亮 ── */
     function collect(key) {
         if (NEED.indexOf(key) < 0 || got[key]) return;
-        got[key] = true;
-        if (cards[key]) cards[key].classList.add('is-collected');
+        mark(key);
+        if (collected.indexOf(key) < 0) collected.push(key);
+        try { localStorage.setItem(STORE, JSON.stringify(collected)); } catch (e) {}
         if (NEED.every(function (k) { return got[k]; })) unlock();
     }
 
-    /* ── 三张都到位：右侧浮出切换按钮，并记下解锁状态 ── */
+    /* ── 三张都到位：右侧浮出切换按钮 ── */
     function unlock() {
-        if (entryClosed()) return;                   // 入口被人在「关于」页关掉了：不给按钮
         if (!switchBtn.hidden) return;
         switchBtn.hidden = false;
-        try { localStorage.setItem(STORE, '1'); } catch (e) {}
-    }
-
-    /* 入口是不是被人在「关于」页的彩蛋卡片里关掉了（eggs.js 写的同一个键，id = dgam）。
-       关掉之后这个按钮永远不出现 —— 与首页那个 CQ 点是同一套语义。
-       这里直接读 localStorage，不依赖 eggs.js 的加载顺序与 API。 */
-    function entryClosed() {
-        try {
-            var raw = localStorage.getItem('sss.eggs.off');
-            if (!raw) return false;
-            var ids = JSON.parse(raw);
-            return Object.prototype.toString.call(ids) === '[object Array]' &&
-                   ids.indexOf('dgam') >= 0;
-        } catch (e) {
-            return false;
-        }
     }
 
     /* ── 切换：两张卡叠在同一格里，谁不 hidden 谁露脸 ── */
@@ -172,9 +229,4 @@
             dir = 0;
         }
     }, true);
-
-    /* ── 上次已经解开过：按钮直接留着（入口被关掉就不留） ── */
-    try {
-        if (localStorage.getItem(STORE) === '1' && !entryClosed()) switchBtn.hidden = false;
-    } catch (e) {}
 })();

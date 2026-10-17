@@ -202,17 +202,22 @@
     }
 }
 
-/* 已经拖上去过的部门卡：描边与代号转成该部门的颜色，作为"收到了"的痕迹 */
-.org-card.is-collected {
+/* 隐藏入口的三张部门卡：高亮 = 描边（+一点辉光）转成该部门自己的颜色。
+   · is-dragging —— 正被抓着拖的那一张
+   · is-collected —— 已经拖上去过的那一张（彩蛋发现前一张一张攒；发现后三张都亮）
+   都带上 :hover 的同款写法：否则会输给下面 .org-card:hover 的金色描边，
+   指针划过高亮卡时颜色会跳成金色。 */
+.org-card.is-dragging,
+.org-card.is-dragging:hover,
+.org-card.is-collected,
+.org-card.is-collected:hover {
     border-color: var(--dept-color, rgba(255, 255, 255, 0.16));
+    box-shadow: 0 0 22px -12px var(--dept-color, rgba(255, 255, 255, 0.16));
 }
 
+.org-card.is-dragging .org-card__no,
 .org-card.is-collected .org-card__no {
     color: var(--dept-color, rgba(255, 255, 255, 0.5));
-}
-
-.org-card.is-dragging {
-    opacity: 0.55;
 }
 
 /* ── 分类标题：官方组织 / 半官方组织 / 非官方组织 ──
