@@ -173,12 +173,19 @@
         '  border-radius:var(--ctl-radius);cursor:pointer;transition:var(--ctl-transition)}',
         '.egg-switch__knob{position:absolute;top:50%;left:4px;width:12px;height:12px;margin-top:-6px;',
         '  border-radius:1px;background:rgba(255,255,255,0.5);',
-        /* --ctl-ease 是**时长**(0.25s)不是缓动函数，写进简写会变成"延迟" —— 这里显式写 ease */
-        '  transition:left 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease}',
+        /* --ctl-ease 是**时长**(0.25s)不是缓动函数，写进简写会变成"延迟" —— 这里显式写缓动。
+           末尾一点点回弹（cubic-bezier 的 y 超过 1）让"滑过去"看得出来，别写成 linear。 */
+        '  transition:left 0.3s cubic-bezier(0.34, 1.32, 0.64, 1),',
+        '             background-color 0.3s ease, box-shadow 0.3s ease}',
         '.egg-switch.is-on{border-color:var(--ctl-border-hover);background:var(--ctl-bg-strong)}',
         '.egg-switch.is-on .egg-switch__knob{left:26px;background:#FFD700;',
         '  box-shadow:0 0 8px rgba(255,215,0,0.8)}',
+        /* 按下去时滑块先压扁一点，松手再弹回来 —— 只在这一下手感里用，不占布局 */
+        '.egg-switch:active .egg-switch__knob{width:16px}',
         '.egg-switch:focus-visible{outline:2px solid rgba(255,215,0,0.55);outline-offset:2px}',
+        /* 用户要求减少动态效果：不做滑动，状态直接切 */
+        '@media (prefers-reduced-motion:reduce){',
+        '  .egg-switch__knob{transition:background-color 0.01s linear, box-shadow 0.01s linear}}',
         /* 按钮 */
         '.egg-btn{min-height:30px;padding:5px 12px;font:inherit;font-size:12px;letter-spacing:1px;',
         '  color:var(--ctl-fg-dim);background:var(--ctl-bg);border:1px solid var(--ctl-border);',
@@ -211,7 +218,10 @@
         return b;
     }
 
-    /* 开关：开 = 入口正常显示；关 = 入口撤掉（入口元素自己会读同一个标记） */
+    /* 开关：开 = 入口正常显示；关 = 入口撤掉（入口元素自己会读同一个标记）。
+       ⚠️ 点它时**不要 render()**：重画会把整个列表（也就是这个开关本身）换掉，
+          滑块等于一出生就在终点，CSS 那 0.3s 的滑动过渡根本看不到。
+          所以就地改类名与 aria，让过渡自己跑 —— 只有"重置"那种会删条目的操作才重画。 */
     function switchFor(egg) {
         var on = !API.isHidden(egg.id);
         var sw = el('button', 'egg-switch' + (on ? ' is-on' : ''));
@@ -221,8 +231,10 @@
         sw.setAttribute('aria-label', '显示「' + egg.name + '」的入口');
         sw.appendChild(el('span', 'egg-switch__knob'));
         sw.addEventListener('click', function () {
-            API.setHidden(egg.id, on);      // 当前是开 → 关掉；当前是关 → 打开
-            render();
+            var close = !API.isHidden(egg.id);      // 现在开着 → 这一下是关掉
+            API.setHidden(egg.id, close);
+            sw.classList.toggle('is-on', !close);
+            sw.setAttribute('aria-checked', close ? 'false' : 'true');
         });
         return sw;
     }
