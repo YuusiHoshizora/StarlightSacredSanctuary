@@ -72,7 +72,7 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 1. **`<head>` 的"启动三件套"**：`boot.css` + `boot.js` + 那段决定是否显示加载屏的内联脚本
    （见 `MAINTENANCE.md` 的"七件事"，以及第 8 节）
 2. **favicon**：`<link rel="icon" type="image/svg+xml" href="…/assets/img/logo_SSS.svg">`
-3. **导航栏**：`<nav id="site-nav">` 六个链接 + 紧随其后的折叠按钮 + `navtoggle.js`
+3. **导航栏**：`<nav id="site-nav">` 七个链接（末项「邮箱」指向 `https://mail.stsas.top/`，跨站）+ 紧随其后的折叠按钮 + `navtoggle.js`
 4. **内容容器**：必须是 `<main>` 或 `.main-layout`（跨页过渡靠它选择，见第 8 节）
 5. **页脚** `.site-footer`
 6. **`<html>` 初始带 `no-js`**，由脚本换成 `js`

@@ -383,17 +383,18 @@
    组织详情页（archive/organization/cam.html 及以后各部自己的页）
    --------------------------------------------------------------------------
    版式：面包屑 → 页头（机构类别小标签 + 金色标题 + 英文名 + 一句简介）→
-   若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（窄一档），
-   所以页头、间距与总览页完全同源。
+   若干分区面板（标题 + 内容）。容器用 .org-section + .org-section--doc（与总览页同宽），
+   所以面包屑、页头、间距都与总览页完全同源；正文行宽跟着面板。
    分区里的内容用普通 <p> / <ul> / <ol>（样式在下面 .org-block 里统一给），
    成员名录用 .org-crews（一张 grid，3 列 × 4 行，一列一支舰队）+ .org-member（每人一张卡，整卡可点），
    点了从底部弹「成员数据库拒绝访问」的提示条（.org-toast，逻辑在 assets/js/org-member.js）。
    新页面的骨架阶段可以先用 .org-ph 占位块把位置占住。
    ========================================================================== */
 
-/* 详情页容器：比总览页窄一档，读长段落舒服些 */
+/* 详情页容器：与总览页共用同一个页面框（max-width 沿用 .org-section 的 1200px），
+   面包屑、页头才会和上一级「组织档案」停在同一左边缘；正文跟着面板宽度走。 */
 .org-section--doc {
-    max-width: 960px;
+    max-width: 1200px;
 }
 
 /* 机构类别小标签（最高权力机构 / 第一层分支权力机构 …），与 .org-supreme__tag 同款 */
@@ -456,6 +457,175 @@
     background: rgba(255, 255, 255, 0.012);
     border: 1px dashed rgba(255, 255, 255, 0.14);
     border-radius: var(--ctl-radius);
+}
+
+/* ==========================================================================
+   部门组织页（科研部 res.html 及以后各部自己的页）
+   --------------------------------------------------------------------------
+   版式尽量和 CAM / DGAM 保持同一套：面包屑 → 页头 → 分区面板。
+   页头：机构类别小标签（贴左）+ 居中的 620px 列（白色题图 / 一句简介）；下面固定三块：
+   概要（归属 / 部长 / 副部长 / 总部位置）→ 详情（功能、职责等普通段落）
+   → 下属（一个局一张卡：名称 / 简介 / 局长 / 副局长 / 总局位置）。
+   ========================================================================== */
+
+/* ── 题图 ──
+   源图 assets/img/Deptlogo/title_Dept.*.png 是 4000×1000 的黑稿 + 透明底，
+   直接 <img> 贴出来在近黑底上等于看不见 —— 照导航栏 .logo__mark 的做法当 mask：
+   只取形状，颜色交给 background-color（白色，和导航栏 logo 同一支）。
+   题图本身就是本页的 <h1>，真正的标题文字放在里面的 .org-sr-only 里。
+   每个部门一条 .org-title--<代号> 规则，只填 --org-title-image。
+   ⚠️ 变量里的 url() 是按**使用它的样式表**（本文件，assets/css/archive/）解析的，
+   所以这里写 ../../img/…，而不是页面视角的 ../../assets/img/…（实测会变成
+   assets/assets/img/…，图加载失败 → mask 整块透明，题图就"消失"了）。 */
+.org-title {
+    display: block;
+    width: min(100%, 620px);
+    aspect-ratio: 4 / 1;
+    background-color: #fff;
+    -webkit-mask: var(--org-title-image) center / contain no-repeat;
+            mask: var(--org-title-image) center / contain no-repeat;
+}
+
+/* 题图居中，并和下面的面板留一点距离。
+   （.org-head h1 的 margin:0 权重更高，所以这里带上 .org-head 前缀。） */
+.org-head .org-title {
+    margin: 0 auto 20px;
+}
+
+.org-title--res {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.RES.png");
+}
+
+/* 部门页页头：题图 / 一句简介放进同一个 620px 的列里，整列居中；
+   小标签不在这个列里，按 CAM 的位置独立贴左（和面包屑同一条竖线）。 */
+.org-hero {
+    width: min(100%, 620px);
+    margin: 0 auto;
+}
+
+.org-hero .org-lead {
+    max-width: none;              /* 跟列同宽，不再用 720px 的阅读宽度 */
+    margin: 18px 0 0;
+}
+
+/* 只给读屏 / 搜索引擎看的文字（题图 h1 的可访问名称） */
+.org-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── 概要（以及局卡里的字段）：一行一项 ──
+   标签列按最长的那一项撑开（max-content），值在右边，长地址自然折行。 */
+.org-meta {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.org-meta__row {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+}
+
+.org-meta dt {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.org-meta dd {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+/* 人名：本该链到人员档案，但人员数据库损坏 —— 做成链接样式的按钮，
+   点击由 org-member.js 从底部弹提示条。font: inherit 用来盖掉按钮的 UA 字体。 */
+.org-person {
+    font: inherit;
+    letter-spacing: inherit;
+    color: rgba(255, 255, 255, 0.92);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 215, 0, 0.35);
+    text-underline-offset: 3px;
+    transition: var(--ctl-transition), text-decoration-color var(--ctl-ease);
+}
+
+.org-person:hover,
+.org-person:focus-visible {
+    color: var(--ctl-fg-hover);
+    text-decoration-color: currentColor;
+}
+
+.org-person:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+/* ── 下属：一个局一张卡 ──
+   局不在创建范围内，不单独建页；卡里只放名称、简介、局长、副局长、总局位置。 */
+.org-units {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 18px;
+}
+
+.org-unit {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 22px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-radius);
+}
+
+.org-unit__head {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* 局简介：.org-block p 是后代选择器，会盖到卡里的段落，所以这条多带一层 .org-block */
+.org-block .org-unit__desc {
+    margin: 0 0 16px;
+    font-size: 13px;
+    line-height: 1.9;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* 局卡里的三项：贴到卡片底部（同一行的卡对齐），上面一条细线，和简介分开 */
+.org-unit .org-meta {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 8px;
+}
+
+.org-unit .org-meta__row {
+    gap: 12px;
+}
+
+.org-unit .org-meta dd {
+    font-size: 13px;
 }
 
 /* ── 分区里的正文 / 列表 / 说明 ── */
@@ -720,6 +890,24 @@
 
     .org-tag {
         margin-bottom: 12px;
+    }
+
+    /* 部门页：题图窄屏别挤太高；简介标签列收窄；局卡单列 */
+    .org-head .org-title {
+        margin: 0 auto 16px;
+    }
+
+    .org-meta__row {
+        gap: 12px;
+    }
+
+    .org-units {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .org-unit {
+        padding: 18px 16px;
     }
 
     .org-block {
