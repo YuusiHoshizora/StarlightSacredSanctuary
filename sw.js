@@ -1,4 +1,4 @@
-﻿/* =============================================================================
+/* =============================================================================
  * sw.js — 星光圣域 Service Worker
  * -----------------------------------------------------------------------------
  * 目标：让站内页面之间的切换"无缝"。
@@ -25,7 +25,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.62';
+const CACHE_VERSION = 'v5.56';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
@@ -53,12 +53,6 @@ const PRECACHE_URLS = [
     '/archive/organization/cam.html',
     '/archive/organization/dgam.html',
     '/archive/organization/res.html',
-    '/archive/personnel/',
-    '/archive/personnel/index.html',
-    '/archive/personnel/sxm.html',
-    '/archive/personnel/sam.html',
-    '/archive/personnel/sfm.html',
-    '/archive/personnel/spm.html',
     '/about/',
     '/about/index.html',
     '/main/mainpage.html',
@@ -71,7 +65,6 @@ const PRECACHE_URLS = [
     '/assets/css/error.css',
     '/assets/css/archive.css',
     '/assets/css/archive/organization.css',
-    '/assets/css/archive/personnel.css',
     '/assets/css/main/mainpage.css',
     '/assets/css/main/cq.css',
     '/assets/css/starmap/index.css',
@@ -83,8 +76,6 @@ const PRECACHE_URLS = [
     // 脚本
     '/assets/js/seamless.js',
     '/assets/js/navtoggle.js',
-    '/assets/js/personnel.js',
-    '/assets/data/personnel.js',
     '/assets/js/org-member.js',
     '/assets/js/org-secret.js',
     '/assets/js/eggs.js',

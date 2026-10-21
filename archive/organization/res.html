@@ -82,7 +82,7 @@
     <script defer src="../../assets/js/notice.js"></script>
     <script defer src="../../assets/js/seamless.js"></script>
     <script defer src="../../assets/js/navtoggle.js"></script>
-    <!-- 人名索引：部长 / 局长等名字链接到人员档案；org-member.js 保留给尚未建档的名字 -->
+    <!-- 人名索引：点部长 / 局长这些名字时，从底部弹「成员数据库拒绝访问」（DOM 与行为都在这个脚本里） -->
     <script defer src="../../assets/js/org-member.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
@@ -152,8 +152,8 @@
                · 题图 class 换成本部门的 .org-title--<代号>，并在 organization.css
                  里补一条对应的 --org-title-image（assets/img/Deptlogo/title_Dept.<代号>.png）
                · 页头的一句简介，以及概要 / 详情 / 下属里的文字与人名
-             有人员档案的名字写成 <a class="org-person" href="../personnel/<等级>#<身份编号>">姓名</a>；
-             尚未建档的名字仍用 <button type="button" class="org-person" data-member>姓名</button>（点击弹提示条）。
+             人名一律写成 <button type="button" class="org-person" data-member>姓名</button>，
+             人员数据库损坏时点击会弹提示条（脚本：assets/js/org-member.js）。
              本页内容只取「科研部」设定的一部分，后续再补。 -->
         <section class="org-section org-section--doc">
 
@@ -189,11 +189,11 @@
                     </div>
                     <div class="org-meta__row">
                         <dt>部长</dt>
-                        <dd><a class="org-person" href="../personnel/sxm#10101389110909795">余事星空</a></dd>
+                        <dd><button type="button" class="org-person" data-member>余事星空</button></dd>
                     </div>
                     <div class="org-meta__row">
                         <dt>副部长</dt>
-                        <dd><a class="org-person" href="../personnel/sxm#10101390011232123">科迪·冯·兰德马克</a></dd>
+                        <dd><button type="button" class="org-person" data-member>科迪·冯·兰德马克</button></dd>
                     </div>
                     <div class="org-meta__row">
                         <dt>总部位置</dt>
@@ -220,11 +220,11 @@
                         <dl class="org-meta">
                             <div class="org-meta__row">
                                 <dt>局长</dt>
-                                <dd><a class="org-person" href="../personnel/sxm#pending-edmund-eric-hythia">埃德蒙·埃里克·希斯亚</a></dd>
+                                <dd><button type="button" class="org-person" data-member>埃德蒙·埃里克·希斯亚</button></dd>
                             </div>
                             <div class="org-meta__row">
                                 <dt>副局长</dt>
-                                <dd><a class="org-person" href="../personnel/sxm#pending-pyotr-ivanov-ivanovia">彼得·伊万诺夫·伊万诺维亚</a></dd>
+                                <dd><button type="button" class="org-person" data-member>彼得·伊万诺夫·伊万诺维亚</button></dd>
                             </div>
                             <div class="org-meta__row">
                                 <dt>总局位置</dt>
