@@ -13,7 +13,7 @@
     var DATA = window.SSS_PERSONNEL;
     if (!DATA || !DATA.members) return;
 
-    var MISSING = '<span class="personnel-missing">资料待补</span>';
+    var MISSING = '<span class="personnel-missing">数据损坏</span>';
 
     function esc(s) {
         return String(s == null ? '' : s)
@@ -71,7 +71,7 @@
 
     var members = membersOf(classKey);
     if (!members.length) {
-        root.innerHTML = '<p class="personnel-missing">暂无成员。</p>';
+        root.innerHTML = '<p class="personnel-missing">数据损坏，无法显示成员名录。</p>';
         return;
     }
 
@@ -113,7 +113,7 @@
             ['种族', val(m.race)],
             ['归属舰队', val(m.fleet)],
             [m.residenceLabel || '居住地', val(m.residence)],
-            ['身份编号', m.identity ? esc(m.identity) : '暂无'],
+            ['身份编号', m.identity ? esc(m.identity) : MISSING],
         ].map(function (row) {
             return '                            <div class="org-meta__row">\n' +
                 '                                <dt>' + row[0] + '</dt>\n' +
