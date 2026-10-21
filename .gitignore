@@ -31,3 +31,6 @@ build/
 # --- 本地工具输出（GraphFlow 的缓存与产物，不提交）---
 .graphflow-cache/
 graphflow-out/
+
+# 本地测试截图 / 临时脚本
+.tmp-shots/
