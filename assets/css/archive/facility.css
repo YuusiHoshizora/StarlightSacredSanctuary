@@ -1,0 +1,518 @@
+/* ==========================================================================
+   深空设施档案（archive/facility/）
+   --------------------------------------------------------------------------
+   单页：左栏设施名录（设施类型 + 英文类型，按归属分组），右栏选中设施的档案。
+   没有分类层级 —— 点名录直接换右栏，链接用 #设施代号 定位。
+   版式与「人员档案」等级页同一套：左栏名录 + 右栏档案；
+   面板沿用 organization.css 的 .org-block / .org-meta，不另立一套材质。
+   ========================================================================== */
+
+/* 整页收高：页头只留标题，右栏尽量一屏读完 */
+.facility-section {
+    padding-top: 96px;
+    padding-bottom: 32px;
+}
+
+.facility-section .archive-head {
+    margin-bottom: 16px;
+}
+
+/* ── 左栏名录 + 右栏档案 ── */
+.facility-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
+/* 左栏：名录。桌面端固定在视口里，自己滚动；右栏再长也不影响它。 */
+.facility-list {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 300px);
+    padding-right: 6px;
+    overflow-y: auto;
+}
+
+.facility-list__title {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.facility-list__title span {
+    color: #FFD700;
+}
+
+/* 归属分组头：缩写（SSS / U.N.E. / HTL）+ 势力名；没有缩写的只写势力名 */
+.facility-list__group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 18px 0 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.facility-list__title + .facility-list__group {
+    margin-top: 4px;
+}
+
+.facility-list__abbr {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.55);
+}
+
+/* 一条名录：设施类型在上，英文类型在下 */
+.facility-list__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+
+    color: #fff;
+    text-decoration: none;
+
+    border-left: 2px solid transparent;
+    transition: var(--ctl-transition),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.facility-list__item:hover,
+.facility-list__item:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+    border-left-color: rgba(255, 215, 0, 0.35);
+}
+
+.facility-list__item.is-active {
+    background: rgba(255, 215, 0, 0.06);
+    border-left-color: #FFD700;
+}
+
+.facility-list__item:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 1px;
+}
+
+.facility-list__name {
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: color 0.2s ease;
+}
+
+.facility-list__en {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.46);
+}
+
+.facility-list__item.is-active .facility-list__name {
+    color: #FFD700;
+}
+
+/* ── 父子设施：父设施是一行「文件夹」，子设施缩进在下面 ── */
+.facility-list__row {
+    display: flex;
+    align-items: stretch;
+}
+
+.facility-list__row .facility-list__item {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.facility-list__toggle {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+
+    color: rgba(255, 255, 255, 0.4);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: var(--ctl-transition);
+}
+
+.facility-list__toggle:hover,
+.facility-list__toggle:focus-visible {
+    color: #FFD700;
+}
+
+.facility-list__toggle:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: -2px;
+}
+
+/* 折叠箭头：向右 ▸，展开后向下 ▾ */
+.facility-list__caret {
+    width: 6px;
+    height: 6px;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+}
+
+.facility-list__toggle[aria-expanded="true"] .facility-list__caret {
+    transform: rotate(45deg);
+}
+
+.facility-list__children {
+    margin-left: 10px;
+    padding-left: 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 收起时用 hidden 占位归零；别让上面的布局把它顶回来 */
+.facility-list__children[hidden] {
+    display: none;
+}
+
+.facility-list__item--child {
+    padding: 6px 8px;
+}
+
+.facility-list__item--child .facility-list__name {
+    font-size: 13px;
+}
+
+.facility-list__item--child .facility-list__en {
+    font-size: 10px;
+}
+
+/* 子设施属于别的势力时的缩写（如挂在索拉克矩阵下的 HTL 费沙） */
+.facility-list__tag {
+    margin-left: 6px;
+    color: rgba(255, 215, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .facility-list__toggle,
+    .facility-list__caret {
+        transition: none;
+    }
+}
+
+/* ── 右栏：选中设施的档案 ── */
+.facility-detail {
+    min-width: 0;
+}
+
+.facility-profile {
+    display: none;
+
+    /* 从别的页面直接带 #设施代号 进来时，浏览器会把档案滚到视口顶部；
+       留出顶栏的高度，标题才不会钻进固定导航栏下面。 */
+    scroll-margin-top: 96px;
+}
+
+.facility-profile.is-active {
+    display: block;
+}
+
+/* 档案头：代号 → 名称 → 英文名 → 归属徽标 */
+.facility-profile__head {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.facility-profile__kicker {
+    margin: 0 0 8px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.62);
+}
+
+.facility-profile__name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 3px;
+    color: #FFD700;
+}
+
+.facility-profile__en {
+    margin: 6px 0 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* 非星光圣域设施：中性小标签，不用金色（金色只给选中 / 强调态） */
+.facility-profile__badge {
+    display: inline-block;
+    margin: 10px 0 0;
+    padding: 3px 9px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--ctl-radius);
+}
+
+/* 右栏里的面板比组织页更紧凑：目标是一屏读完 */
+.facility-profile .org-block {
+    padding: 18px 22px;
+    margin-bottom: 14px;
+}
+
+.facility-profile .org-block:last-child {
+    margin-bottom: 0;
+}
+
+.facility-profile .org-block__head {
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.facility-profile .org-meta {
+    gap: 6px;
+}
+
+.facility-profile .org-meta dd {
+    font-size: 13px;
+}
+
+.facility-profile .org-block p {
+    margin-bottom: 0.85em;
+    line-height: 1.85;
+}
+
+/* ── 独特配件：一个配件一节，配件之间只隔一条细线 ── */
+.facility-part + .facility-part {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.facility-part__name,
+.facility-subpart__name,
+.facility-org__name {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.facility-part__en,
+.facility-subpart__en {
+    margin-left: 10px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.38);
+}
+
+/* 配件读数：占用节点数 / 「不是原生装置」这类旁注 */
+.facility-part__meta {
+    margin: 0 0 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.facility-part__note {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 215, 0, 0.55);
+}
+
+/* 子配件（分段 / 编程接口 …）：左侧一条淡线表示从属 */
+.facility-subparts {
+    margin-top: 10px;
+    padding-left: 14px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.facility-subpart + .facility-subpart {
+    margin-top: 12px;
+}
+
+/* ── 通用配件：一行一个系统 ── */
+.facility-modules {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+
+.facility-modules__row {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+}
+
+.facility-modules dt {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.facility-modules dd {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.85;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.facility-modules__list {
+    margin: 0;
+    padding-left: 1.3em;
+}
+
+.facility-modules__list li {
+    margin-bottom: 3px;
+}
+
+.facility-modules__list li:last-child {
+    margin-bottom: 0;
+}
+
+.facility-modules__list li::marker {
+    color: rgba(255, 215, 0, 0.5);
+}
+
+/* 该设施没有这一套系统（资料库写的是 N/A） */
+.facility-na {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── 参与组织与势力 ── */
+.facility-org + .facility-org {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── 正文里的设施交叉链接（[[目标]]）── */
+.facility-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 215, 0, 0.38);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.facility-link:hover,
+.facility-link:focus-visible {
+    color: #FFD700;
+    text-decoration-color: #FFD700;
+}
+
+.facility-link:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+/* ── 数据损坏 ──
+   空字段 / 截断的记录比正文再淡一档；整条记录的状态单独一行，左侧一道暗红细线。
+   （与人员档案的 .personnel-missing 同一口径，红色只表示「读不到」。） */
+.facility-missing {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.facility-damaged {
+    margin: 12px 0 0;
+    padding: 2px 0 2px 12px;
+    border-left: 2px solid rgba(255, 107, 107, 0.45);
+
+    font-size: 12px;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* 「为什么没有配件」的说明 */
+.facility-parts-note {
+    font-size: 12px;
+    line-height: 1.9;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+/* ── 窄屏：名录和档案上下排 ── */
+@media (max-width: 900px) {
+
+    .facility-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    /* 名录不再竖着占一整屏：铺成两列小条目，档案紧跟其后 */
+    .facility-list {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        column-gap: 8px;
+        max-height: none;
+        padding-right: 0;
+        overflow: visible;
+    }
+
+    .facility-list__title {
+        grid-column: 1 / -1;
+    }
+
+    .facility-list__group {
+        grid-column: 1 / -1;
+    }
+
+    /* 父设施那条「文件夹」横跨整行，子设施在下面再排两列 */
+    .facility-list__branch {
+        grid-column: 1 / -1;
+    }
+
+    .facility-list__children {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        column-gap: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .facility-section {
+        padding-bottom: 56px;
+    }
+
+    .facility-profile__name {
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
+    .facility-profile .org-block {
+        padding: 16px 16px;
+    }
+
+    .facility-profile .org-block__head {
+        font-size: 14px;
+    }
+
+    .facility-modules__row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+}

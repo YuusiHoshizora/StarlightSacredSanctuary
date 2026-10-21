@@ -31,6 +31,7 @@
 ├── archive/personnel/sam.html   高级成员（SAM）：HTML 壳，名单/档案由数据渲染
 ├── archive/personnel/sfm.html   正式成员（SFM）：HTML 壳，名单/档案由数据渲染
 ├── archive/personnel/spm.html   预备成员（SPM）：HTML 壳，名单/档案由数据渲染
+├── archive/facility/index.html 深空设施档案（无分类：左栏设施名录 + 右栏档案，全由数据渲染）
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
@@ -41,6 +42,7 @@
 │   │   ├── archive.css         档案页
 │   │   ├── archive/organization.css  组织档案页
 │   │   ├── archive/personnel.css     人员档案页
+│   │   ├── archive/facility.css      深空设施档案页
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── main/cq.css         彩蛋页 CQ
 │   │   ├── starmap/index.css   星图页
@@ -54,6 +56,7 @@
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
 │   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
+│   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案 + 设施交叉链接（# 不滚页）
 │   │   ├── org-member.js       未建档成员名的提示条（已建档的名字直接链到人员档案）
 │   │   ├── org-secret.js       组织档案页的隐藏入口：三张部门卡拖到议会卡上解锁 DGAM
 │   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
@@ -65,7 +68,8 @@
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
 │   │
 │   ├── data/
-│   │   └── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
+│   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
+│   │   └── facility.js         深空设施数据（名录 / 性质 / 归属 / 配件 / 应对措施；库内设施名自动交叉链接）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
@@ -87,6 +91,33 @@
 - 页面、数据文件和代码注释里不要写「待补」「暂无」这类现实口径。
 
 人员数据在 `assets/data/personnel.js`；`personnel.js` 渲染时把空字段统一换成「数据损坏」。
+
+---
+
+## 深空设施档案：一个页面，左名录右档案
+
+深空设施 = 巨构 / 超级武器，**不设分类层级**：`archive/facility/index.html` 一页就是全部档案，
+左栏设施名录（按归属分组）、右栏选中设施的档案，链接用 `#设施代号` 定位（与人员档案等级页同一套交互）。
+
+- 数据在 `assets/data/facility.js`；渲染在 `assets/js/facility.js`；样式在 `assets/css/archive/facility.css`
+- 名录按归属分组：星光圣域（SSS）固定第一，其余按 `affiliations` 里的缩写首字母排；
+  没有缩写的势力排在带缩写之后，归属为空的条目归入「数据损坏」组、排最后
+- 父子设施用 `parent` 字段（如四个分支矩阵挂在 索拉克矩阵 下、标准灯塔 / P-304 挂在 标准灯塔系统 下）：
+  子设施在左栏缩进到父设施下面，父设施那一行是「文件夹」——点父设施同时选中它并展开，
+  右侧箭头只负责开合；子设施不再单独出现在归属分组里（分组按父设施算），
+  子设施属于别的势力时，英文类型后面补一个缩写（SSS / HTL …）
+- 每条名录显示设施类型（`kind`）+ 英文类型（`kindEn`）；同一类型有多条时（索拉克分支矩阵 ×4）
+  自动补上各自的名字，避免左栏出现一模一样的条目
+- 组内顺序 = `facilities` 数组的书写顺序（只看顶层设施）
+- 加一条设施：追加一项、`id` 唯一即可 —— 名录 / 档案 / 锚点 / 交叉链接都会自动出来
+- 资料库正文里的 `[[目标]]` / `[[目标|显示名]]` 会自动解析：目标是本页某条设施就链到那条，
+  指向资料库其它文档的只留显示名（不生成死链）
+- 缺失口径与人员档案一致：空字段、截断的段落一律渲染成「数据损坏」；
+  整条记录截断的，在「基本信息」底部写「记录状态：数据损坏 —— <原因>」
+- 非星光圣域的设施（资料库开头写明「不是星光圣域的巨构」）在档案头标「非星光圣域设施」，
+  `foreign: true`；它们没有星光圣域的独特 / 通用配件，写进 `parts.note` 说明，别留成「数据损坏」
+- 原文照抄资料库（含原文里的英文拼写与错字），**不要在站点上顺手改写设定**：
+  要改先改资料库，再同步到这里
 
 ---
 
