@@ -1,4 +1,4 @@
-# 维护备忘
+﻿# 维护备忘
 
 给自己看的操作说明 —— 面向读者那部分在 [README.md](README.md)。
 本地怎么预览、怎么加文章、部署怎么走、改完要做什么，都记在这里。
@@ -25,6 +25,12 @@
 ├── archive/organization/index.html  组织档案（组织名录导航：官方 / 半官方 / 非官方三类，目前只有官方组织有内容）
 ├── archive/organization/cam.html    管理成员议会（最高权力机构；3 列 × 4 位议员）
 ├── archive/organization/dgam.html   管理成员讨论组（机密彩蛋页，无入口、无站内跳转）
+├── archive/organization/res.html    科研部（部门页模板：题图 / 概要 / 详情 / 四个下属局）
+├── archive/personnel/index.html 人员档案（四个等级入口；卡片人数由数据渲染）
+├── archive/personnel/sxm.html   管理成员（SXM）：HTML 壳，名单/档案由数据渲染
+├── archive/personnel/sam.html   高级成员（SAM）：HTML 壳，名单/档案由数据渲染
+├── archive/personnel/sfm.html   正式成员（SFM）：HTML 壳，名单/档案由数据渲染
+├── archive/personnel/spm.html   预备成员（SPM）：HTML 壳，名单/档案由数据渲染
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
@@ -34,6 +40,7 @@
 │   │   ├── error.css           错误页
 │   │   ├── archive.css         档案页
 │   │   ├── archive/organization.css  组织档案页
+│   │   ├── archive/personnel.css     人员档案页
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── main/cq.css         彩蛋页 CQ
 │   │   ├── starmap/index.css   星图页
@@ -46,7 +53,8 @@
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
-│   │   ├── org-member.js       组织详情页的成员名录：点名字弹「成员数据库拒绝访问」小窗
+│   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
+│   │   ├── org-member.js       未建档成员名的提示条（已建档的名字直接链到人员档案）
 │   │   ├── org-secret.js       组织档案页的隐藏入口：三张部门卡拖到议会卡上解锁 DGAM
 │   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
 │   │   ├── main.js             首页打字机效果
@@ -55,6 +63,9 @@
 │   │   ├── starmap.js          星图绘制与交互
 │   │   ├── starmap-bg.js       星图页专用的背景参数
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
+│   │
+│   ├── data/
+│   │   └── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）

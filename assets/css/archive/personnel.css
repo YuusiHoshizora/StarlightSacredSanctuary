@@ -1,0 +1,363 @@
+/* ==========================================================================
+   人员档案（archive/personnel/）
+   --------------------------------------------------------------------------
+   1) 首页：四个成员等级卡片（正式英文名 + 代号 + 人数）。
+   2) 等级页：左栏成员名录（按拉丁化名称首字母排序，中文名 + 拉丁名），
+      右栏显示选中成员的档案；链接统一用 #身份编号 定位。
+   版式与「档案」总览、「组织档案」同一套：面包屑 + 页头；
+   卡片材质沿用玻璃面板，hover 只换描边/阴影，不做位移。
+   ========================================================================== */
+
+/* ── 首页：四个等级卡片 ── */
+.personnel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.personnel-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 190px;
+    padding: 24px;
+
+    color: #fff;
+    text-decoration: none;
+
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+
+    transition: var(--ctl-transition),
+                box-shadow 0.3s ease;
+}
+
+/* 等级代号：与组织档案卡片右上角的 RES / ADM 同一支等宽读数 */
+.personnel-card__code {
+    margin: 0 0 14px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: rgba(255, 215, 0, 0.75);
+}
+
+.personnel-card__name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: #fff;
+}
+
+/* 正式英文名：SSS Administrative Member 等 */
+.personnel-card__en {
+    margin: 8px 0 0;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.personnel-card__desc {
+    margin: 10px 0 0;
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* 等级页的正式英文名：比一般 archive-sub 亮一档，它是这一级的正式名称 */
+.personnel-class-en {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.personnel-card__meta {
+    margin: auto 0 0;
+    padding-top: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
+    transition: var(--ctl-transition);
+}
+
+a.personnel-card:hover,
+a.personnel-card:focus-visible {
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+a.personnel-card:hover .personnel-card__meta,
+a.personnel-card:focus-visible .personnel-card__meta {
+    color: #FFD700;
+}
+
+a.personnel-card:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+/* 等级页整页收高：页头只留等级名 + 正式英文名，右栏尽量一屏读完 */
+.personnel-section {
+    padding-top: 96px;
+    padding-bottom: 32px;
+}
+
+.personnel-section .archive-head {
+    margin-bottom: 16px;
+}
+
+/* ── 等级页：左栏名录 + 右栏档案 ── */
+.personnel-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
+/* 左栏：名单。桌面端固定在视口里，自己滚动；右栏长也不影响它。 */
+.personnel-list {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 300px);
+    padding-right: 6px;
+    overflow-y: auto;
+}
+
+.personnel-list__title {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.personnel-list__title span {
+    color: #FFD700;
+}
+
+/* 首字母分组：A / B / C … */
+.personnel-list__group {
+    margin: 18px 0 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.55);
+}
+
+.personnel-list__title + .personnel-list__group {
+    margin-top: 4px;
+}
+
+/* 一条名录：中文名在上，拉丁化名称在下 */
+.personnel-list__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 7px 10px;
+
+    color: #fff;
+    text-decoration: none;
+
+    border-left: 2px solid transparent;
+    transition: var(--ctl-transition),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.personnel-list__item:hover,
+.personnel-list__item:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+    border-left-color: rgba(255, 215, 0, 0.35);
+}
+
+.personnel-list__item.is-active {
+    background: rgba(255, 215, 0, 0.06);
+    border-left-color: #FFD700;
+}
+
+.personnel-list__item:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 1px;
+}
+
+.personnel-list__name {
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: color 0.2s ease;
+}
+
+.personnel-list__latin {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.personnel-list__item.is-active .personnel-list__name {
+    color: #FFD700;
+}
+
+/* 右栏：选中成员的档案 */
+.personnel-detail {
+    min-width: 0;
+}
+
+.personnel-profile {
+    display: none;
+}
+
+/* 右栏资料用多列排：没写亲属的人，科研/反馈会自然补到第二列，
+   不会留下固定网格的空格；1080p 高度也能一屏读完。 */
+.personnel-profile.is-active {
+    display: block;
+    column-count: 2;
+    column-gap: 12px;
+}
+
+.personnel-profile__head {
+    column-span: all;
+    margin-bottom: 12px;
+}
+
+.personnel-profile__name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: #FFD700;
+}
+
+.personnel-profile__latin {
+    margin: 3px 0 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.personnel-profile .org-lead {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+/* 右栏里的资料面板比组织页更紧凑：目标是一屏读完 */
+.personnel-profile .org-block {
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    break-inside: avoid;
+}
+
+.personnel-profile .org-block:last-of-type {
+    margin-bottom: 0;
+}
+
+.personnel-profile .org-block__head {
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.personnel-profile .org-meta {
+    gap: 6px;
+}
+
+.personnel-profile .org-block p {
+    margin-bottom: 8px;
+    line-height: 1.8;
+}
+
+.personnel-profile .org-block ul {
+    line-height: 1.8;
+}
+
+.personnel-profile .org-block li {
+    margin-bottom: 4px;
+}
+
+.personnel-profile .org-block .org-tier-head {
+    margin: 12px 0 6px;
+}
+
+/* 个人档案里缺失的字段：比正文再淡一档 */
+.personnel-missing,
+.org-meta .personnel-missing,
+.org-block .personnel-missing {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* 亲属栏里的成员名：链到对方档案（#身份编号） */
+.personnel-relative {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 215, 0, 0.38);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.personnel-relative:hover,
+.personnel-relative:focus-visible {
+    color: #FFD700;
+    text-decoration-color: #FFD700;
+}
+
+.personnel-relative:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+/* ── 窄屏：名录和档案上下排 ── */
+@media (max-width: 1100px) {
+
+    .personnel-profile.is-active {
+        column-count: 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .personnel-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .personnel-list {
+        position: static;
+        max-height: none;
+        padding-right: 0;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .personnel-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .personnel-card {
+        min-height: 160px;
+        padding: 20px 18px;
+    }
+
+    .personnel-card__code {
+        margin-bottom: 10px;
+    }
+
+    .personnel-card__name {
+        font-size: 17px;
+        letter-spacing: 2px;
+    }
+
+    .personnel-profile__name {
+        font-size: 22px;
+        letter-spacing: 3px;
+    }
+
+    .personnel-list__item {
+        padding: 8px 10px;
+    }
+}

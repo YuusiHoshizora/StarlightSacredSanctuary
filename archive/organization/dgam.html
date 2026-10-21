@@ -84,7 +84,7 @@
     <script defer src="../../assets/js/navtoggle.js"></script>
     <!-- 彩蛋登记册：本页 body 上的 data-egg 会被它读到，自动记下"这个彩蛋被发现过" -->
     <script defer src="../../assets/js/eggs.js"></script>
-    <!-- 成员名录：点名字弹「无法从机密页面快捷跳转」（小窗 DOM 与行为都在这个脚本里） -->
+    <!-- 成员名录：人名链接到人员档案；org-member.js 保留给尚未建档的名字 -->
     <script defer src="../../assets/js/org-member.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
@@ -109,10 +109,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<!-- data-member-msg：本页所有成员卡被点时弹的提示条文案。
-     彩蛋页不连向站内其它页面，所以这里是「无法从机密页面快捷跳转」，
-     而不是别处的「成员数据库拒绝访问」。 -->
-<body data-member-msg="错误：无法从机密页面快捷跳转" data-egg="dgam">
+<body data-egg="dgam">
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -181,22 +178,22 @@
                      六支舰队在此并列，不按名义上的隶属关系嵌套。 -->
                 <div class="org-crews org-crews--pairs">
                     <h3 class="org-tier-head">科研与管理舰队 <span class="org-tier-head__en">Research and Administration Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">余事星空</span></button>
+                    <a class="org-member" href="../personnel/sxm#10101389110909795"><span class="org-member__name">余事星空</span></a>
 
                     <h3 class="org-tier-head">高级研究舰队 <span class="org-tier-head__en">Advanced Research Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">科迪·冯·兰德马克</span></button>
+                    <a class="org-member" href="../personnel/sxm#10101390011232123"><span class="org-member__name">科迪·冯·兰德马克</span></a>
 
                     <h3 class="org-tier-head">工业与收集舰队 <span class="org-tier-head__en">Industrial and Collection Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">余事月夜</span></button>
+                    <a class="org-member" href="../personnel/sxm#20101389110909799"><span class="org-member__name">余事月夜</span></a>
 
                     <h3 class="org-tier-head">精密制造舰队 <span class="org-tier-head__en">Precision Manufacturing Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">伊利莎丽娅·克利娅</span></button>
+                    <a class="org-member" href="../personnel/sxm#pending-ilisaria-clea"><span class="org-member__name">伊利莎丽娅·克利娅</span></a>
 
                     <h3 class="org-tier-head">主防御舰队 <span class="org-tier-head__en">Primary Defense Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">娜奥米·凯恩</span></button>
+                    <a class="org-member" href="../personnel/sxm#30101387062015736"><span class="org-member__name">娜奥米·凯恩</span></a>
 
                     <h3 class="org-tier-head">主动防御舰队 <span class="org-tier-head__en">Active Defense Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">哈里顿·卡冈诺维奇·纳乌莫夫</span></button>
+                    <a class="org-member" href="../personnel/sxm#pending-khariton-kaganovich-naumov"><span class="org-member__name">哈里顿·卡冈诺维奇·纳乌莫夫</span></a>
                 </div>
             </section>
 

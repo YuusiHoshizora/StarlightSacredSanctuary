@@ -720,6 +720,7 @@
     font: inherit;                   /* 盖掉按钮的 UA 字体/字号 */
     text-align: left;
     color: inherit;
+    text-decoration: none;           /* 作为人员档案链接时不要默认下划线 */
     cursor: pointer;
 
     background: rgba(255, 255, 255, 0.02);

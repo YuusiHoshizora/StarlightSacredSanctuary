@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人员档案·星光圣域</title>
+
+    <!-- 站点图标：SVG，跟随浏览器主题切换黑/白描边 -->
+    <link rel="icon" type="image/svg+xml" href="../../assets/img/logo_SSS.svg">
+
+    <!-- 加载屏：只有「资源还没进缓存」时才显示（首次访问 / 缓存被清掉）。
+         判断必须在这里同步做 —— 首次绘制前就要决定，否则会先画出页面再盖上、闪一下。
+         结构与逻辑见 assets/js/boot.js，样式见 assets/css/boot.css。 -->
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator)) return;      // 没有 SW，就没有"缓存全部资源"这回事
+            if (location.protocol === 'file:') return;        // 本地双击打开时 SW 注册不了，别把页面卡住
+            var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
+            var booted = false;
+            try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
+
+            // ① 这一次不是从 SW 缓存里拿的 → 该弹加载屏。controller 为空意味着：首次访问、
+            //    Ctrl+F5 硬刷新（硬刷新会连 Service Worker 一起绕过）、或站点数据被清过。
+            //    光看 sss-booted 标记不够 —— 它只记「这台浏览器走过加载流程」，
+            //    硬刷新时「标记还在」与「资源确实没走缓存」会分叉。
+            var cold = !navigator.serviceWorker.controller;
+
+            // ② 刚部署过新版本：seamless.js 在新 SW 接管（controllerchange）时留下的标记，
+            //    说明缓存整个换过一轮，这一趟补弹一次。读走即清，只补一次。
+            var afterUpdate = false;
+            try {
+                afterUpdate = localStorage.getItem('sss-boot-next') === '1';
+                if (afterUpdate) localStorage.removeItem('sss-boot-next');
+            } catch (e) {}
+
+            // ③ 其余情况（站内正常导航）：不弹，切换才不会闪
+            if (force || !booted || cold || afterUpdate) {
+                document.documentElement.className += ' sss-boot';
+            }
+
+            // 站内跳转进来的（referrer 与本页同源）：先把内容藏起来，等字体就绪再淡入。
+            // 背景画布与导航栏全站一致，所以只让内容参与过渡 —— 看起来就是
+            // 「外壳常驻、内容替换」，顺带把字体解码那 0.3–0.7 秒的空窗盖住。
+            // 必须在这里同步决定（首次绘制前），否则会先把内容画出来再藏、闪一下。
+            var fromSite = false;
+            try {
+                fromSite = !!document.referrer && new URL(document.referrer).origin === location.origin;
+            } catch (e) {}
+            if (fromSite) {
+                document.documentElement.classList.add('sss-switch');
+                // 兜底：万一 boot.js 没跑起来，5 秒后也得把内容放出来
+                window.setTimeout(function () {
+                    document.documentElement.classList.remove('sss-switch');
+                    document.documentElement.classList.add('sss-switch-in');
+                }, 5000);
+            }
+        })();
+    </script>
+    <!-- 首帧保护：预渲染被提前激活时（悬停后就点），浏览器可能先画一帧"样式表还在路上"的
+         裸 HTML（正常导航不会 —— 样式表本身阻塞渲染）。这里在解析阶段先把内容藏起来，
+         等样式表就位（或 2s 兜底）再放行；禁用 JS 时不加 js 类，等于没这段。 -->
+    <style>
+        /* 底色只能挂在"加载中"这个状态下：html 一旦有背景，body 的黑色就不再传播到画布，
+           负 z-index 的背景层（.hex-bg 等）会被 body 盖住 —— 背景就没了。
+           所以两条都限定在 js 且未 css-ready 时，样式一到就撤销、传播恢复。 */
+        html.js:not(.css-ready) { background: black; }
+        html.js:not(.css-ready) body { visibility: hidden; }
+    </style>
+    <script>
+        (function () {
+            var h = document.documentElement;
+            h.classList.add('js');
+            window.setTimeout(function () { h.classList.add('css-ready'); }, 2000);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../assets/css/boot.css">
+    <script defer src="../../assets/js/boot.js"></script>
+
+    <link rel="stylesheet" href="../../assets/css/global.css">
+    <link rel="stylesheet" href="../../assets/css/archive.css">
+    <link rel="stylesheet" href="../../assets/css/archive/personnel.css">
+    <script defer src="../../assets/js/background.js"></script>
+    <script defer src="../../assets/js/notice.js"></script>
+    <script defer src="../../assets/js/seamless.js"></script>
+    <script defer src="../../assets/js/navtoggle.js"></script>
+    <script defer src="../../assets/data/personnel.js"></script>
+    <script defer src="../../assets/js/personnel.js"></script>
+    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": "nav a" },
+                            { "not": { "href_matches": "/" } }
+                        ]
+                    },
+                    "eagerness": "moderate"
+                }
+            ],
+            "prefetch": [
+                { "where": { "selector_matches": "nav a" }, "eagerness": "conservative" }
+            ]
+        }
+    </script>
+    <!-- 样式表就位后放行（这行内联脚本会被它前面的样式表阻塞，所以执行时样式一定已经应用） -->
+    <script>document.documentElement.classList.add('css-ready');</script>
+</head>
+
+<body>
+
+    <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
+    <div class="boot" id="boot"></div>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <header class="navbar">
+
+        <div class="logo">
+            <span class="logo__mark" aria-hidden="true"></span>
+            星光圣域
+        </div>
+
+        <nav id="site-nav">
+            <a href="../..">首页</a>
+            <a href="../../starmap/">星图</a>
+            <a href="../../fleet/">舰队</a>
+            <a href="../../tool/">工具</a>
+            <a href="../">档案</a>
+            <a href="../../about/">关于</a>
+        </nav>
+
+        <!-- 折叠按钮：窄屏才出现（桌面 display:none），是 .navbar 自己的子元素，
+              所以和 logo 一样是栏内的一行；放进 nav 里会被那块竖排面板当成一个条目 -->
+        <button class="navbar__toggle" type="button" aria-label="导航菜单" aria-controls="site-nav" aria-expanded="false">
+            <span class="navbar__toggle__bars" aria-hidden="true"></span>
+        </button>
+
+    </header>
+
+                    <main>
+        <!-- ══ 人员档案 ══
+             四个成员等级；等级页是左栏名录 + 右栏档案的两栏版式。 -->
+        <section class="archive-section">
+            <nav class="crumb" aria-label="位置">
+                <a href="../">档案</a>
+                <span class="crumb__sep" aria-hidden="true">/</span>
+                <span class="crumb__here">人员档案</span>
+            </nav>
+
+            <header class="archive-head">
+                <h1>人员档案</h1>
+                <p class="archive-sub">Personnel Archives</p>
+                <p class="archive-lead">
+                    星光圣域成员数据库 / 部分条目缺失。<br>
+                    成员按授权等级分为四类，可通过考核逐级提升。
+                </p>
+            </header>
+
+            <div class="personnel-grid" data-personnel-index>
+                <noscript><p class="personnel-missing">人员档案需要启用 JavaScript。</p></noscript>
+            </div>
+        </section>
+    </main>
+
+    <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
+    <footer class="site-footer">
+        © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../../about/">关于本站</a>
+    </footer>
+
+</body>
+</html>
