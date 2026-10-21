@@ -82,7 +82,7 @@
     <script defer src="../../assets/js/notice.js"></script>
     <script defer src="../../assets/js/seamless.js"></script>
     <script defer src="../../assets/js/navtoggle.js"></script>
-    <!-- 成员名录：点名字弹「成员数据库拒绝访问」（小窗 DOM 与行为都在这个脚本里） -->
+    <!-- 成员名录：人名链接到人员档案；org-member.js 保留给尚未建档的名字 -->
     <script defer src="../../assets/js/org-member.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
@@ -176,30 +176,28 @@
                 <p>议会由 12 名议员组成：科研与管理舰队、工业与收集舰队、主防御舰队各 4 名。每名议员均由相应舰队选出，每隔 1 年重新选举一次，无连任限制。</p>
 
                 <!-- 议员之间是平等的：不编号、不排序。3 列 × 4 位，一列一支舰队，每人一张卡。
-                     人名卡是索引项 —— 点一下本该打开那个人的人员档案，但人员数据库数据损坏、
-                     拒绝访问，所以由 assets/js/org-member.js 从底部弹提示条：
-                     「错误：成员数据库拒绝访问：数据损坏」。 -->
+                     人名卡是索引项 —— 点一下打开对应的人员档案（archive/personnel/sxm#身份编号，右栏定位）。 -->
                 <!-- 一张 grid，按列填：每列 = 舰队名 + 4 张卡（一列 5 格）。
                      这样三列的列头、第一张卡、第二张卡…天然在同一水平线上，不会错位。
                      窄屏改成按行填（一列 4 格 → 舰队一块一块往下排）。 -->
                 <div class="org-crews">
                     <h3 class="org-tier-head">科研与管理舰队 <span class="org-tier-head__en">Research and Administration Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">余事星空</span><span class="org-member__role">科研部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">阮文恩</span><span class="org-member__role">管理部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">细山真吾</span><span class="org-member__role">资料部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">奥雷里奥·“星”·格洛瑞亚</span><span class="org-member__role">情报部部长</span></button>
+                    <a class="org-member" href="../personnel/sxm#10101389110909795"><span class="org-member__name">余事星空</span><span class="org-member__role">科研部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#pending-nguyen-van-an"><span class="org-member__name">阮文恩</span><span class="org-member__role">管理部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#pending-shingo-hosoyama"><span class="org-member__name">细山真吾</span><span class="org-member__role">资料部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#10101389123084265"><span class="org-member__name">奥雷里奥·“星”·格洛瑞亚</span><span class="org-member__role">情报部部长</span></a>
 
                     <h3 class="org-tier-head">工业与收集舰队 <span class="org-tier-head__en">Industrial and Collection Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">余事月夜</span><span class="org-member__role">工业部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">薇薇安·斯达尔</span><span class="org-member__role">后勤部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">约翰·布什·欧若拉</span><span class="org-member__role">工业部副部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">李重明</span><span class="org-member__role">收集部部长</span></button>
+                    <a class="org-member" href="../personnel/sxm#20101389110909799"><span class="org-member__name">余事月夜</span><span class="org-member__role">工业部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#pending-vivian-stahl"><span class="org-member__name">薇薇安·斯达尔</span><span class="org-member__role">后勤部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#20202402020220202"><span class="org-member__name">约翰·布什·欧若拉</span><span class="org-member__role">工业部副部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#20301392010247001"><span class="org-member__name">李重明</span><span class="org-member__role">收集部部长</span></a>
 
                     <h3 class="org-tier-head">主防御舰队 <span class="org-tier-head__en">Primary Defense Fleet</span></h3>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">娜奥米·凯恩</span><span class="org-member__role">战术战略部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">爱丽丝·格林希尔</span><span class="org-member__role">舰队后勤部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">阿莱克西·伊蒙宁</span><span class="org-member__role">规划部部长</span></button>
-                    <button type="button" class="org-member" data-member><span class="org-member__name">特拉维斯·奥古斯特森</span><span class="org-member__role">战术战略部副部长</span></button>
+                    <a class="org-member" href="../personnel/sxm#30101387062015736"><span class="org-member__name">娜奥米·凯恩</span><span class="org-member__role">战术战略部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#30101376061294034"><span class="org-member__name">爱丽丝·格林希尔</span><span class="org-member__role">舰队后勤部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#30101410102731530"><span class="org-member__name">阿莱克西·伊蒙宁</span><span class="org-member__role">规划部部长</span></a>
+                    <a class="org-member" href="../personnel/sxm#pending-travis-augustson"><span class="org-member__name">特拉维斯·奥古斯特森</span><span class="org-member__role">战术战略部副部长</span></a>
                 </div>
             </section>
 
