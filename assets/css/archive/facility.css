@@ -407,26 +407,6 @@
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* ── 正文里的设施交叉链接（[[目标]]）── */
-.facility-link {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-color: rgba(255, 215, 0, 0.38);
-    text-underline-offset: 3px;
-    transition: color 0.2s ease, text-decoration-color 0.2s ease;
-}
-
-.facility-link:hover,
-.facility-link:focus-visible {
-    color: #FFD700;
-    text-decoration-color: #FFD700;
-}
-
-.facility-link:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
-    outline-offset: 2px;
-}
-
 /* ── 数据损坏 ──
    空字段 / 截断的记录比正文再淡一档；整条记录的状态单独一行，左侧一道暗红细线。
    （与人员档案的 .personnel-missing 同一口径，红色只表示「读不到」。） */

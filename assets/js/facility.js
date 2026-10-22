@@ -4,7 +4,7 @@
  * 数据在 assets/data/facility.js（window.SSS_FACILITY）。
  * 这个脚本只负责渲染：
  *   - [data-facility] → 左栏设施名录 + 右栏设施档案
- * 没有分类层级：点名录就直接换右栏。点左栏（以及档案里的设施交叉链接）只切右栏，
+ * 没有分类层级：点名录就直接换右栏。点左栏只切右栏，
  * 不改页面滚动位置；# 用 pushState 改地址栏。
  * 空字段 / 截断的记录一律渲染成「数据损坏」（与人员档案同一口径）。
  * ========================================================================== */
@@ -32,56 +32,9 @@
         }).join('\n');
     }
 
-    /* ── 资料库 wiki 链接 ──
-       资料库正文里是 [[目标]] / [[目标|显示名]]。目标是本页某条设施时链到那条（#id）；
-       目标是资料库里的其它文档（研究计划、《非生物智慧体介绍》…）时只留显示名，
-       不生成死链。 */
-    function linkKey(target) {
-        return String(target || '')
-            .split('#')[0]                 // 去掉 #小节
-            .split('/').pop()              // 去掉资料库路径
-            .replace(/^《|》$/g, '')
-            .trim();
-    }
-
-    var byName = {};
-    DATA.facilities.forEach(function (f) {
-        byName[linkKey(f.name)] = f;
-        if (f.short) byName[linkKey(f.short)] = f;
-    });
-
-    function linkHtml(inner) {
-        var bar = inner.indexOf('|');
-        var target = (bar >= 0 ? inner.slice(0, bar) : inner).trim();
-        var label = (bar >= 0 ? inner.slice(bar + 1) : '').trim();
-        var key = linkKey(target);
-        var f = byName[key];
-        if (f) {
-            return '<a class="facility-link" href="#' + esc(f.id) + '">' + esc(label || key) + '</a>';
-        }
-
-        /* 站外引用（资料库里的研究计划、《非生物智慧体介绍》…）：不生成死链。
-           「此处」这种标签离开超链接就没有意义，换成文档名 + 小节，读者至少知道指向哪份文档。 */
-        if (label === '此处') {
-            var anchor = target.indexOf('#') >= 0 ? target.split('#').pop().trim() : '';
-            return esc('《' + key + '》' + (anchor ? '（' + anchor + '）' : ''));
-        }
-        return esc(label || key);
-    }
-
-    /* 行内文本：先按 [[…]] 切开，逐段转义 / 换链接 */
+    /* 正文在数据里就是纯文本（资料库的 wiki 链接已在录入时展开），这里只做转义 */
     function inline(text) {
-        var s = String(text == null ? '' : text);
-        var re = /\[\[([^\]]+)\]\]/g;
-        var out = '';
-        var last = 0;
-        var m;
-        while ((m = re.exec(s))) {
-            out += esc(s.slice(last, m.index));
-            out += linkHtml(m[1]);
-            last = m.index + m[0].length;
-        }
-        return out + esc(s.slice(last));
+        return esc(text);
     }
 
     function paras(list) {

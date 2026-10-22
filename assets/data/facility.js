@@ -13,20 +13,20 @@
  * 子设施不再单独出现在归属分组里，分组按父设施的归属算。
  *
  * 加一条设施：往 facilities 里追加一项，id 唯一即可 —— 左栏名录、右栏档案、
- * #锚点跳转、设施之间的交叉链接都会自动更新；新归属记得在 affiliations 里加缩写。
+ * #锚点跳转都会自动更新；新归属记得在 affiliations 里加缩写。
  *
  * 字段：
  *   id            锚点（#id），只用小写字母 / 数字 / 连字符，发布后别改
  *   parent        父设施 id（可选）：填了就缩进到父设施下面，点父设施时展开；必须指向本文件里已有的条目
  *   name          档案标题（与资料库文件名一致）
- *   short         短名（只用于 [[短名]] 交叉链接匹配，左栏名录不显示）
  *   kind          设施类型（左栏第一行，例如 自供能深空空间站）
  *   kindEn        类型英文名（左栏第二行，资料库没给就留空）
  *   en            英文名（右栏标题下的英文全名）
  *   abbr          缩写代号（FIPF / SSSMS / SUO …，没有就留空）
  *   affiliation   归属（星光圣域 / 地球联合国 / 汉莎联盟 …）
  *   plan          所属计划（救赎计划 / 通讯计划 …，资料库写了才填）
- *   clearance     授权等级（资料库有「解密」读数的条目记「机密」）
+ *   clearance     授权等级：SXM / SAM / SFM / SPM（与人员档案同一套）；
+ *                 「机密」是保护等级（旧说法，正在淘汰），不是授权等级，别写在这里。
  *   foreign       true = 不是星光圣域的巨构（卡片上标「非星光圣域设施」）
  *   damaged       记录损坏 / 截断
  *   damagedNote   损坏说明（写成档案口吻，别写「待补」「暂无」）
@@ -42,9 +42,7 @@
  *   星光圣域永远第一，其余按 abbr 首字母排；没有 abbr 的排在带缩写之后，
  *   归属为空的条目归入「数据损坏」组、排最后。
  *
- * 正文里的 [[设施名]] / [[设施名|显示名]] 会自动链到本页对应设施；
- * 指向资料库其他文档的链接（研究计划、《非生物智慧体介绍》…）只取显示名，
- * 不生成死链。
+ * 正文是纯文本：不要写资料库的 wiki 链接或资料库路径；复制正文时先把链接展开成显示文本。
  *
  * 缺失数据口径：空字段、截断的段落一律按「数据损坏导致无法访问」处理。
  * 这是站点数据，不是资料库本体；资料库改完后把对应条目同步到这里。
@@ -60,20 +58,18 @@ window.SSS_FACILITY = {
     {
       "id": "helios",
       "name": "全智能生产设施“赫利俄斯”",
-      "short": "“赫利俄斯”",
       "kind": "全智能生产设施",
       "kindEn": "Fully Intelligent Production Facility",
       "en": "Fully Intelligent Production Facility \"Helios\"",
       "abbr": "FIPF",
       "affiliation": "星光圣域",
       "plan": "救赎计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "全智能生产设施（Fully Intelligent Production Facility, FIPF）“赫利俄斯”（Helios）是由星光圣域工业与收集舰队和主防御舰队所研发的巨型空间站，能够将一整个行星包围起来，并利用行星上的物质大批量制造[[“伊利亚特”级智能战列舰]]和[[“奥罗拉”级智能战列巡洋舰]]，直到耗尽该行星的物质为止。此外，FIPF还能以常规引擎于通常宇宙内航行，或是进入次宇宙中躲避危险。",
-        "全智能自律生产设施“赫利俄斯”为星光圣域机密计划[[星光圣域设定/资料库/研究资料库/综合研究/【完成】救赎计划/01 简介|救赎计划]]的成果。"
+        "全智能生产设施（Fully Intelligent Production Facility, FIPF）“赫利俄斯”（Helios）是由星光圣域工业与收集舰队和主防御舰队所研发的巨型空间站，能够将一整个行星包围起来，并利用行星上的物质大批量制造“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰，直到耗尽该行星的物质为止。此外，FIPF还能以常规引擎于通常宇宙内航行，或是进入次宇宙中躲避危险。"
       ],
       "parts": {
         "unique": [
@@ -88,14 +84,14 @@ window.SSS_FACILITY = {
             "name": "物质重构器",
             "en": "Substances Reconstructer",
             "desc": [
-              "负责将被行星分解采集器所收集的物质转化为一种特殊的物质碎星（Broken Stars），且星光圣域目前无法在利用其它设施制造此物质。其由DSRCPSys发现，并将其广泛运用在[[“伊利亚特”级智能战列舰]]和[[“奥罗拉”级智能战列巡洋舰]]的制造上。"
+              "负责将被行星分解采集器所收集的物质转化为一种特殊的物质碎星（Broken Stars），且星光圣域目前无法在利用其它设施制造此物质。其由DSRCPSys发现，并将其广泛运用在“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰的制造上。"
             ]
           },
           {
             "name": "全智能生产线",
             "en": "Fully Intelligent Prodiction Line",
             "desc": [
-              "是由DSRCPSys所自我迭代、设计完成的生产线，能够在碎星供应充足的情况下源源不断地生产[[“伊利亚特”级智能战列舰]]和[[“奥罗拉”级智能战列巡洋舰]]，并根据实时数据将其派遣到最为合适的位置。虽说如此，星光圣域目前尚未将两者投入实战之中，目前仅作为FIPF的护卫舰队存在。"
+              "是由DSRCPSys所自我迭代、设计完成的生产线，能够在碎星供应充足的情况下源源不断地生产“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰，并根据实时数据将其派遣到最为合适的位置。虽说如此，星光圣域目前尚未将两者投入实战之中，目前仅作为FIPF的护卫舰队存在。"
             ]
           },
           {
@@ -109,14 +105,14 @@ window.SSS_FACILITY = {
             "name": "深空资源统筹规划系统",
             "en": "Deep-Space Resource Coordination and Planning System",
             "desc": [
-              "可参见[[《星光圣域非生物智慧体介绍》#DSRCPSys|此处]]。"
+              "可参见《星光圣域非生物智慧体介绍》（DSRCPSys）。"
             ]
           }
         ],
         "common": [
           { "label": "武器系统", "items": ["N/A"] },
-          { "label": "防御系统", "items": ["[[星光圣域能量屏蔽场发生器]]", "[[星光圣域自律无人机生产线]]"] },
-          { "label": "移动系统", "items": ["第Ⅴ代[[星光圣域大型引擎]]", "第Ⅲ代[[星光圣域超光速跃迁引擎]]"] }
+          { "label": "防御系统", "items": ["星光圣域能量屏蔽场发生器", "星光圣域自律无人机生产线"] },
+          { "label": "移动系统", "items": ["第Ⅴ代星光圣域大型引擎", "第Ⅲ代星光圣域超光速跃迁引擎"] }
         ]
       },
       "response": [],
@@ -125,20 +121,18 @@ window.SSS_FACILITY = {
     {
       "id": "occasus",
       "name": "自供能深空空间站“残阳”",
-      "short": "“残阳”",
       "kind": "自供能深空空间站",
       "kindEn": "Autonomous Deep-Space Outpost",
       "en": "Autonomous Deep-Space Outpost \"Occasus\"",
       "abbr": "ADSO",
       "affiliation": "星光圣域",
       "plan": "审判计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "自供能深空空间站（Autonomous Deep-Space Outpost, ADSO）“残阳”（Occasus）是由星光圣域工业与收集舰队所研发的巨型空间站，其轴线长970千米，由五个星环与一个中枢构成。借助星光圣域最为先进的技术，残阳号能够在远离主要战场的安全环境中进行超远距离攻击，也能以数万倍光速跳跃至战场第一线，利用其上的战术干扰系统辅助前线作战。",
-        "自供能深空空间站“残阳”为星光圣域机密计划[[星光圣域设定/资料库/研究资料库/综合研究/【完成】审判计划/01 简介|审判计划]]的成果。"
+        "自供能深空空间站（Autonomous Deep-Space Outpost, ADSO）“残阳”（Occasus）是由星光圣域工业与收集舰队所研发的巨型空间站，其轴线长970千米，由五个星环与一个中枢构成。借助星光圣域最为先进的技术，残阳号能够在远离主要战场的安全环境中进行超远距离攻击，也能以数万倍光速跳跃至战场第一线，利用其上的战术干扰系统辅助前线作战。"
       ],
       "parts": {
         "unique": [
@@ -174,14 +168,14 @@ window.SSS_FACILITY = {
             "name": "深空资源统筹规划系统",
             "en": "Deep-Space Resource Coordination and Planning System",
             "desc": [
-              "可参见[[《星光圣域非生物智慧体介绍》#深空资源统筹规划系统|此处]]。"
+              "可参见《星光圣域非生物智慧体介绍》（深空资源统筹规划系统）。"
             ]
           }
         ],
         "common": [
-          { "label": "武器系统", "items": ["[[物质分解激光]]（7）", "[[近距离防空套组]]（70）", "[[无人机组]]（15000）"] },
-          { "label": "防御系统", "items": ["[[星光圣域能量屏蔽场发生器]]", "[[星光圣域自律无人机生产线]]"] },
-          { "label": "移动系统", "items": ["第Ⅴ代[[星光圣域大型引擎]]"] }
+          { "label": "武器系统", "items": ["物质分解激光（7）", "近距离防空套组（70）", "无人机组（15000）"] },
+          { "label": "防御系统", "items": ["星光圣域能量屏蔽场发生器", "星光圣域自律无人机生产线"] },
+          { "label": "移动系统", "items": ["第Ⅴ代星光圣域大型引擎"] }
         ]
       },
       "response": [],
@@ -190,21 +184,19 @@ window.SSS_FACILITY = {
     {
       "id": "veritas",
       "name": "通用研究星环“真理”",
-      "short": "“真理”",
       "kind": "通用研究星环",
       "kindEn": "Universal Research Orbital Ring",
       "en": "Universal Research Orbital Ring \"Veritas\"",
       "abbr": "",
       "affiliation": "星光圣域",
       "plan": "解析计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": true,
       "damagedNote": "记录在「加工段」处中断，后续分段无法读取。",
       "intro": [
-        "通用研究星环（Universal Research Orbital Ring）“真理”（Veritas）是由星光圣域科研与管理舰队所研发的空间站，目前位于[[维斯佩拉]]星系联行星流明的同步轨道，研究该行星的特殊性质，并为[[维斯佩拉主防御系统]]提供部分算力支持。",
-        "值得一提的是，星光圣域在目前已经建造了复数个通用研究星环，并计划在更多行星轨道上建造。“真理”号是模板星环，根据不同的行星环境，其他通用研究星环的配件将会有所变更。",
-        "通用研究星环“真理”号为星光圣域[[星光圣域设定/资料库/研究资料库/综合研究/解析计划/01 简介|解析计划]]的成果。"
+        "通用研究星环（Universal Research Orbital Ring）“真理”（Veritas）是由星光圣域科研与管理舰队所研发的空间站，目前位于维斯佩拉星系联行星流明的同步轨道，研究该行星的特殊性质，并为维斯佩拉主防御系统提供部分算力支持。",
+        "值得一提的是，星光圣域在目前已经建造了复数个通用研究星环，并计划在更多行星轨道上建造。“真理”号是模板星环，根据不同的行星环境，其他通用研究星环的配件将会有所变更。"
       ],
       "parts": {
         "unique": [
@@ -288,19 +280,18 @@ window.SSS_FACILITY = {
     {
       "id": "eternity",
       "name": "星光圣域主服务器第III代“永恒”",
-      "short": "“永恒”",
       "kind": "星光圣域主服务器",
       "kindEn": "Starlight Sacred Sanctuary Main Server",
       "en": "Starlight Sacred Sanctuary Main Server Gen III \"Eternity\"",
       "abbr": "SSSMS",
       "affiliation": "星光圣域",
       "plan": "",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "星光圣域主服务器（Starlight Sacred Sanctuary Main Server，SSSMS）第III代“永恒”（Eternity）是星光圣域第3代主服务器，能够支持星光圣域95%以上的运算服务。目前“永恒”号位于次宇宙之中，与[[次宇宙传输与记录设施“永恒之光”|STRF Eternal Light]]一起构成了星光圣域的数据处理与计算核心。",
+        "星光圣域主服务器（Starlight Sacred Sanctuary Main Server，SSSMS）第III代“永恒”（Eternity）是星光圣域第3代主服务器，能够支持星光圣域95%以上的运算服务。目前“永恒”号位于次宇宙之中，与STRF Eternal Light一起构成了星光圣域的数据处理与计算核心。",
         "“永恒”取代了第II代“奇迹”（Miracle）与第I代“水晶”（Crystal），成为目前星光圣域最主要的主服务器。"
       ],
       "parts": {
@@ -330,14 +321,14 @@ window.SSS_FACILITY = {
                 "name": "数据统筹规划系统",
                 "en": "Data Coodination and Planning System",
                 "desc": [
-                  "可参见[[《星光圣域非生物智慧体介绍》#DCPSys|此处]]。"
+                  "可参见《星光圣域非生物智慧体介绍》（DCPSys）。"
                 ]
               },
               {
                 "name": "深空资源统筹规划系统",
                 "en": "Deep-Space Resource Coordination and Planning System",
                 "desc": [
-                  "可参见[[《星光圣域非生物智慧体介绍》#DSRCPSys|此处]]。"
+                  "可参见《星光圣域非生物智慧体介绍》（DSRCPSys）。"
                 ]
               }
             ]
@@ -347,7 +338,7 @@ window.SSS_FACILITY = {
           { "label": "武器系统", "items": ["N/A"] },
           { "label": "防御系统", "items": ["N/A"] },
           { "label": "移动系统", "items": ["N/A"] },
-          { "label": "数据系统", "items": ["[[大型储存单元]]（20）"] }
+          { "label": "数据系统", "items": ["大型储存单元（20）"] }
         ]
       },
       "response": [],
@@ -356,20 +347,18 @@ window.SSS_FACILITY = {
     {
       "id": "eternallight",
       "name": "次宇宙传输与记录设施“永恒之光”",
-      "short": "“永恒之光”",
       "kind": "次宇宙传输与记录设施",
       "kindEn": "Subuniverse Transmission and Recording Facility",
       "en": "Subuniverse Transmission and Recording Facility \"Eternal Light\"",
       "abbr": "STRF",
       "affiliation": "星光圣域",
       "plan": "黑洞计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "次宇宙传输与记录设施（Subuniverse Transmission and Recording Facility，STRF）“永恒之光”（Eternal Light）是由星光圣域科研与管理舰队所研发的巨型空间站，主要由七个大型服务器与三个大型次宇宙特化储存单元构成，能够储存目前星光圣域的所有数据。同时，永恒之光号支持热更新其储存单元，从而让其实际储存数据能力能够一直增长。",
-        "次宇宙传输与记录设施“永恒之光”为星光圣域机密计划[[星光圣域设定/资料库/研究资料库/综合研究/【完成】黑洞计划/01 简介|黑洞计划]]的成果。"
+        "次宇宙传输与记录设施（Subuniverse Transmission and Recording Facility，STRF）“永恒之光”（Eternal Light）是由星光圣域科研与管理舰队所研发的巨型空间站，主要由七个大型服务器与三个大型次宇宙特化储存单元构成，能够储存目前星光圣域的所有数据。同时，永恒之光号支持热更新其储存单元，从而让其实际储存数据能力能够一直增长。"
       ],
       "parts": {
         "unique": [
@@ -398,14 +387,14 @@ window.SSS_FACILITY = {
             "name": "数据统筹规划系统",
             "en": "Data Coodination and Planning System",
             "desc": [
-              "可参见[[《星光圣域非生物智慧体介绍》#DCPSys|此处]]。"
+              "可参见《星光圣域非生物智慧体介绍》（DCPSys）。"
             ]
           },
           {
             "name": "深空资源统筹规划系统",
             "en": "Deep-Space Resource Coordination and Planning System",
             "desc": [
-              "可参见[[《星光圣域非生物智慧体介绍》#DSRCPSys|此处]]。"
+              "可参见《星光圣域非生物智慧体介绍》（DSRCPSys）。"
             ]
           }
         ],
@@ -413,7 +402,7 @@ window.SSS_FACILITY = {
           { "label": "武器系统", "items": ["N/A"] },
           { "label": "防御系统", "items": ["N/A"] },
           { "label": "移动系统", "items": ["N/A"] },
-          { "label": "数据系统", "items": ["[[大型储存单元]]（30）"] }
+          { "label": "数据系统", "items": ["大型储存单元（30）"] }
         ]
       },
       "response": [],
@@ -422,20 +411,18 @@ window.SSS_FACILITY = {
     {
       "id": "allseeingeye",
       "name": "自供能极长距离观测站“全视之眼”",
-      "short": "“全视之眼”",
       "kind": "自供能极长距离观测站",
       "kindEn": "Autonomous Extremely-Long Range Observatory",
       "en": "Autonomous Extremely-Long Range Observatory \"All-Seeing Eye\"",
       "abbr": "AELRO",
       "affiliation": "星光圣域",
       "plan": "真理计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "自供能极长距离观测站（Autonomous Extremely-Long Range Observatory，AELRO）“全视之眼”（All-Seeing Eye）是由星光圣域科研与管理舰队所研发的巨型空间站，位于[[维斯佩拉]]星系γ星的恒星轨道，能够借助星能进行对数十乃至数百光年外的目标进行精确侦测。",
-        "自供能极长举例观测站“全视之眼”为星光圣域机密计划[[星光圣域设定/资料库/研究资料库/综合研究/真理计划/01 简介|真理计划]]的成果。"
+        "自供能极长距离观测站（Autonomous Extremely-Long Range Observatory，AELRO）“全视之眼”（All-Seeing Eye）是由星光圣域科研与管理舰队所研发的巨型空间站，位于维斯佩拉星系γ星的恒星轨道，能够借助星能进行对数十乃至数百光年外的目标进行精确侦测。"
       ],
       "parts": {
         "unique": [
@@ -476,14 +463,13 @@ window.SSS_FACILITY = {
     {
       "id": "hoshinofune",
       "name": "标准宇宙空间观测站“星之舟”",
-      "short": "“星之舟”",
       "kind": "标准宇宙空间观测站",
       "kindEn": "Standard Universe Observatory",
       "en": "Standard Universe Observatory \"Hoshi No Fune\"",
       "abbr": "SUO",
       "affiliation": "星光圣域",
       "plan": "",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
@@ -501,14 +487,13 @@ window.SSS_FACILITY = {
     {
       "id": "startrails",
       "name": "次宇宙导航信标“星轨”",
-      "short": "“星轨”",
       "kind": "次宇宙导航信标",
       "kindEn": "Subuniverse Navigation Beacon",
       "en": "Subuniverse Navigation Beacon \"Startrails\"",
       "abbr": "",
       "affiliation": "星光圣域",
       "plan": "",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": true,
       "damagedNote": "记录在「独特配件」处中断，配件信息无法读取。",
@@ -526,20 +511,18 @@ window.SSS_FACILITY = {
     {
       "id": "hourglass",
       "name": "通用时间校准设施“沙漏”",
-      "short": "“沙漏”",
       "kind": "通用时间校准设施",
       "kindEn": "Universal Time Calibration Facility",
       "en": "Universal Time Calibration Facility \"Hourglass\"",
       "abbr": "UTCF",
       "affiliation": "星光圣域",
       "plan": "蜂鸣器计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": true,
       "damagedNote": "记录在「脉冲星干涉器」处中断，配件信息无法读取。",
       "intro": [
-        "通用时间校准设施（Universal Time Calibration Facility，UTCF）“沙漏”（Hourglass）是由星光圣域科研与管理舰队所研发的巨型空间站，其通过复数方法对时间进行极为精确的确定，从而保证星光圣域所有极高精度设备能够正常进行进行计时作业。",
-        "通用时间校准设施“沙漏”为星光圣域蜂鸣器计划的成果。"
+        "通用时间校准设施（Universal Time Calibration Facility，UTCF）“沙漏”（Hourglass）是由星光圣域科研与管理舰队所研发的巨型空间站，其通过复数方法对时间进行极为精确的确定，从而保证星光圣域所有极高精度设备能够正常进行进行计时作业。"
       ],
       "parts": {
         "unique": [
@@ -557,7 +540,6 @@ window.SSS_FACILITY = {
     {
       "id": "navpoint",
       "name": "导航点",
-      "short": "导航点",
       "kind": "导航点",
       "kindEn": "",
       "en": "",
@@ -569,7 +551,7 @@ window.SSS_FACILITY = {
       "damaged": true,
       "damagedNote": "记录在传输中断，正文无法读取。",
       "intro": [
-        "导航点是星光圣域将[[标准灯塔]]……"
+        "导航点是星光圣域将标准灯塔……"
       ],
       "parts": {
         "unique": [],
@@ -581,7 +563,6 @@ window.SSS_FACILITY = {
     {
       "id": "sls",
       "name": "标准灯塔系统",
-      "short": "标准灯塔系统",
       "kind": "标准灯塔系统",
       "kindEn": "Standard Lighthouse System",
       "en": "Standard Lighthouse System",
@@ -641,7 +622,6 @@ window.SSS_FACILITY = {
       "id": "lighthouse",
       "parent": "sls",
       "name": "标准灯塔",
-      "short": "标准灯塔",
       "kind": "标准灯塔",
       "kindEn": "Standard Lighthouse",
       "en": "Standard Lighthouse",
@@ -653,7 +633,7 @@ window.SSS_FACILITY = {
       "damaged": true,
       "damagedNote": "记录在「部署在边境星域的」处中断，后续内容无法读取。",
       "intro": [
-        "标准灯塔（Standard Lighthouse，Std.Lh）是[[标准灯塔系统]]的重要组成部分之一，用于为舰船提供定位服务。",
+        "标准灯塔（Standard Lighthouse，Std.Lh）是标准灯塔系统的重要组成部分之一，用于为舰船提供定位服务。",
         "标准灯塔类似于脉冲星，会定期向宇宙空间发出特定频率的脉冲。所有标准灯塔的位置和频率都是确定而唯一的，只要通过简单的三角定位，就能让舰船知道自己的位置。",
         "Std.Lh所发出的频率不可避免地会对观测仪器造成干扰，这一点可以通过部署在边境星域的……"
       ],
@@ -665,20 +645,19 @@ window.SSS_FACILITY = {
       "id": "p304",
       "parent": "sls",
       "name": "标准灯塔系统节点“P-304”",
-      "short": "节点“P-304”",
       "kind": "标准灯塔系统节点",
       "kindEn": "SLS Node",
       "en": "SLS Node \"P-304\"",
       "abbr": "",
       "affiliation": "星光圣域",
       "plan": "",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": false,
       "damaged": false,
       "damagedNote": "",
       "intro": [
         "标准灯塔系统（Standard Lighthouse System，SLS）是由太空航行管理机构所主导的公益性建设。",
-        "标准灯塔系统节点（SLS Node）则是利用深空中的脉冲星作为节点，为SLS提供定位，其中星光圣域境内的[[P-304脉冲星]]承担了一个节点，并负责了该节点的设计与建造。"
+        "标准灯塔系统节点（SLS Node）则是利用深空中的脉冲星作为节点，为SLS提供定位，其中星光圣域境内的P-304脉冲星承担了一个节点，并负责了该节点的设计与建造。"
       ],
       "parts": {
         "unique": [
@@ -712,7 +691,6 @@ window.SSS_FACILITY = {
     {
       "id": "solak",
       "name": "索拉克矩阵",
-      "short": "索拉克矩阵",
       "kind": "索拉克矩阵",
       "kindEn": "Solak Matrix",
       "en": "Solak Matrix",
@@ -724,9 +702,8 @@ window.SSS_FACILITY = {
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于[[索拉克]]星系的恒星轨道上，由星际防御联盟协助进行维护。",
-        "索拉克矩阵的建造目的是将整个宇宙联系起来，其运作方式为集中所有索拉克分支矩阵的数据，在索拉克矩阵进行交换，随后分发出去。只是，由于其所需运算量巨大、能源消耗难以计数，故需要建造如此巨大的数据交中心。",
-        "索拉克矩阵是星光圣域公益计划[[星光圣域设定/资料库/研究资料库/综合研究/通讯计划/01 简介|通讯计划]]的内容。"
+        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于索拉克星系的恒星轨道上，由星际防御联盟协助进行维护。",
+        "索拉克矩阵的建造目的是将整个宇宙联系起来，其运作方式为集中所有索拉克分支矩阵的数据，在索拉克矩阵进行交换，随后分发出去。只是，由于其所需运算量巨大、能源消耗难以计数，故需要建造如此巨大的数据交中心。"
       ],
       "parts": {
         "unique": [
@@ -777,7 +754,7 @@ window.SSS_FACILITY = {
           "name": "星光圣域",
           "desc": [
             "星光圣域是索拉克矩阵建造的主要成员，其主要负责软件研发。",
-            "参见[[星光圣域设定/资料库/研究资料库/综合研究/通讯计划/02 实现原理|通讯计划]]详情。"
+            "参见“通讯计划”详情。"
           ]
         }
       ]
@@ -786,21 +763,19 @@ window.SSS_FACILITY = {
       "id": "solak-astra",
       "parent": "solak",
       "name": "索拉克分支矩阵“阿斯特拉利斯”",
-      "short": "“阿斯特拉利斯”",
       "kind": "索拉克分支矩阵",
       "kindEn": "Solak Branch Matrix",
       "en": "Solak Branch Matrix",
       "abbr": "",
       "affiliation": "星光圣域",
       "plan": "通讯计划",
-      "clearance": "机密",
+      "clearance": "SAM",
       "foreign": true,
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于[[索拉克]]星系的恒星轨道上，由星际防御联盟协助进行维护。",
-        "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，星光圣域境内的索拉克分支矩阵位于[[阿斯特拉利斯]]星系的恒星轨道上，名称为索拉克分支矩阵“阿斯特拉利斯”号。其同时也是最大的分支矩阵，能够覆盖星光圣域全境及附近的边境星域。",
-        "索拉克矩阵分支矩阵“阿斯特拉利斯”号属于星光圣域公益计划[[星光圣域设定/资料库/研究资料库/综合研究/通讯计划/01 简介|通讯计划]]的成果。"
+        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于索拉克星系的恒星轨道上，由星际防御联盟协助进行维护。",
+        "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，星光圣域境内的索拉克分支矩阵位于阿斯特拉利斯星系的恒星轨道上，名称为索拉克分支矩阵“阿斯特拉利斯”号。其同时也是最大的分支矩阵，能够覆盖星光圣域全境及附近的边境星域。"
       ],
       "parts": {
         "unique": [
@@ -839,14 +814,14 @@ window.SSS_FACILITY = {
           { "label": "武器系统", "items": ["N/A"] },
           { "label": "防御系统", "items": ["N/A"] },
           { "label": "移动系统", "items": ["N/A"] },
-          { "label": "数据系统", "items": ["[[大型储存单元]]（7）"] },
+          { "label": "数据系统", "items": ["大型储存单元（7）"] },
           {
             "label": "通信系统",
             "items": [
-              "[[星光圣域高级加密链路]] - 发射端",
-              "[[星光圣域高级加密链路]] - 接收端",
-              "[[地球联合国通信协议]] - 接收端",
-              "[[汉莎联盟通用传输协议]] - 接收端"
+              "星光圣域高级加密链路 - 发射端",
+              "星光圣域高级加密链路 - 接收端",
+              "地球联合国通信协议 - 接收端",
+              "汉莎联盟通用传输协议 - 接收端"
             ]
           }
         ]
@@ -858,7 +833,6 @@ window.SSS_FACILITY = {
       "id": "solak-fisha",
       "parent": "solak",
       "name": "索拉克分支矩阵“费沙”",
-      "short": "“费沙”",
       "kind": "索拉克分支矩阵",
       "kindEn": "Solak Branch Matrix",
       "en": "Solak Branch Matrix",
@@ -870,8 +844,8 @@ window.SSS_FACILITY = {
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于[[索拉克]]星系的恒星轨道上，由星际防御联盟协助进行维护。",
-        "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，汉莎联盟的索拉克分支矩阵位于[[费沙]]星系的第二与第三行星轨道之间，名称为“费沙”通信矩阵。其是数据流最大的分支矩阵，80%的经济活动均需要经过该分支矩阵。"
+        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于索拉克星系的恒星轨道上，由星际防御联盟协助进行维护。",
+        "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，汉莎联盟的索拉克分支矩阵位于费沙星系的第二与第三行星轨道之间，名称为“费沙”通信矩阵。其是数据流最大的分支矩阵，80%的经济活动均需要经过该分支矩阵。"
       ],
       "parts": null,
       "response": [
@@ -884,7 +858,6 @@ window.SSS_FACILITY = {
       "id": "solak-nanmen",
       "parent": "solak",
       "name": "索拉克分支矩阵“南门二”",
-      "short": "“南门二”",
       "kind": "索拉克分支矩阵",
       "kindEn": "Solak Branch Matrix",
       "en": "Solak Branch Matrix",
@@ -896,8 +869,8 @@ window.SSS_FACILITY = {
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于[[索拉克]]星系的恒星轨道上，由星际防御联盟协助进行维护。",
-        "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，地球联合国的索拉克分支矩阵位于[[南门二]]星系的第二与第三行星轨道之间，名称为“地球联合国通信副中枢”。其与地球联合国的[[“信鸽”通信阵列]]共同承担着地球联合国及大部分组织的跨星系通信任务。"
+        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于索拉克星系的恒星轨道上，由星际防御联盟协助进行维护。",
+        "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，地球联合国的索拉克分支矩阵位于南门二星系的第二与第三行星轨道之间，名称为“地球联合国通信副中枢”。其与地球联合国的“信鸽”通信阵列共同承担着地球联合国及大部分组织的跨星系通信任务。"
       ],
       "parts": null,
       "response": [
@@ -910,7 +883,6 @@ window.SSS_FACILITY = {
       "id": "solak-sacred",
       "parent": "solak",
       "name": "索拉克分支矩阵“神圣之地”",
-      "short": "“神圣之地”",
       "kind": "索拉克分支矩阵",
       "kindEn": "Solak Branch Matrix",
       "en": "Solak Branch Matrix",
@@ -922,7 +894,7 @@ window.SSS_FACILITY = {
       "damaged": true,
       "damagedNote": "记录在「自行建造」处中断，归属与位置无法确认。",
       "intro": [
-        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于[[索拉克]]星系的恒星轨道上，由星际防御联盟协助进行维护。",
+        "索拉克矩阵（Solak Matrix）是由地球联合国主导的一项公益性质的建设，其位于索拉克星系的恒星轨道上，由星际防御联盟协助进行维护。",
         "索拉克分支矩阵（Solak Branch Matrix）则由各需要接入索拉克矩阵的势力自行建造，……"
       ],
       "parts": null,
@@ -932,7 +904,6 @@ window.SSS_FACILITY = {
     {
       "id": "andromeda",
       "name": "“仙女座”级超重型炮击阵列",
-      "short": "“仙女座”",
       "kind": "“仙女座”级超重型炮击阵列",
       "kindEn": "Andromeda-class Super Heavy Artillery Array",
       "en": "Andromeda-class Super Heavy Artillery Array",
@@ -944,12 +915,12 @@ window.SSS_FACILITY = {
       "damaged": false,
       "damagedNote": "",
       "intro": [
-        "“仙女座”级超重型炮击阵列（Andromeda-class Super Heavy Artillery Array）是由地球联合国所建造的攻击巨构，是在[[“英仙座”级重型炮击阵列]]的基础上更新而来。",
+        "“仙女座”级超重型炮击阵列（Andromeda-class Super Heavy Artillery Array）是由地球联合国所建造的攻击巨构，是在“英仙座”级重型炮击阵列的基础上更新而来。",
         "在吸收了许多的新设施设计经验之后，“仙女座”级超重型炮击阵列相较于前代有着相当大程度的升级，已经成为了人类的强力武器之一。"
       ],
       "parts": null,
       "response": [
-        "[[维斯佩拉主防御系统]]能够保证其无法对维斯佩拉星域内的舰船进行攻击，对于在维斯佩拉主防御系统之外的舰船，推荐在侦测到攻击信号后进行机动，并向着上或下方向移动。",
+        "维斯佩拉主防御系统能够保证其无法对维斯佩拉星域内的舰船进行攻击，对于在维斯佩拉主防御系统之外的舰船，推荐在侦测到攻击信号后进行机动，并向着上或下方向移动。",
         "我们没有有关数据，无法进行准确推测，只能进行推测。",
         "预计星光圣域的护盾系统能够抵挡部分攻击，尽量避免在其射程内交战。"
       ],
@@ -958,7 +929,6 @@ window.SSS_FACILITY = {
     {
       "id": "perseus",
       "name": "“英仙座”级重型炮击阵列",
-      "short": "“英仙座”",
       "kind": "“英仙座”级重型炮击阵列",
       "kindEn": "Perseus-class Heavy Artillery Array",
       "en": "Perseus-class Heavy Artillery Array",
@@ -976,7 +946,7 @@ window.SSS_FACILITY = {
       ],
       "parts": null,
       "response": [
-        "[[维斯佩拉主防御系统]]能够保证其无法对维斯佩拉星域内的舰船进行攻击，对于在维斯佩拉主防御系统之外的舰船，推荐在侦测到攻击信号后进行机动，并向着上或下方向移动。",
+        "维斯佩拉主防御系统能够保证其无法对维斯佩拉星域内的舰船进行攻击，对于在维斯佩拉主防御系统之外的舰船，推荐在侦测到攻击信号后进行机动，并向着上或下方向移动。",
         "星光圣域的护盾系统在理论上能够抵挡攻击，但尚未验证。"
       ],
       "orgs": []
