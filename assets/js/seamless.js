@@ -142,6 +142,85 @@
 })();
 
 /* =============================================================================
+ * 没有跨文档 View Transitions 时的兜底切换动画
+ * -----------------------------------------------------------------------------
+ * Chrome / Edge / Safari 由 global.css 里的 @view-transition 自己做跨页淡出淡入，
+ * 这里什么都不做。
+ *
+ * Firefox（实测 158：document.startViewTransition 存在、但 @view-transition 会被丢掉）
+ * 没有跨文档过渡。不补的话：上一页"啪"地消失 → 新页面白等 sss-switch 揭幕 →
+ * 内容才淡入，中间空一段，看起来就没有切换动画。
+ *
+ * 所以这里在**左键点站内链接**时手动接一下：先给 <html> 挂 sss-leaving
+ * （CSS 让内容淡出 160ms），再跳转；下一页 <head> 里的 sss-switch 照常把新内容淡入。
+ * 两头接上，观感接近原生过渡。顶栏与背景不动，仍然是「外壳常驻、内容替换」。
+ *
+ * 只处理最普通的左键点站内链接：带修饰键 / 中键 / target=_blank / download /
+ * 站外 / 同页锚点，全部交给浏览器默认行为。
+ * 判断"支持不支持"用 boot.js 里的 sssSupportsCrossDocVT()（两处复用同一份实现）。
+ * ========================================================================== */
+(function () {
+    'use strict';
+
+    function supports() {
+        if (typeof sssSupportsCrossDocVT === 'function') return sssSupportsCrossDocVT();
+        // boot.js 没加载时的独立判断，逻辑与 boot.js 里那份一致
+        try {
+            var probe = document.createElement('style');
+            probe.textContent = '@view-transition{navigation:auto}';
+            (document.head || document.documentElement).appendChild(probe);
+            var ok = !!(probe.sheet && probe.sheet.cssRules && probe.sheet.cssRules.length);
+            if (probe.parentNode) probe.parentNode.removeChild(probe);
+            return ok;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    if (supports()) return;
+
+    var root = document.documentElement;
+    root.classList.add('sss-no-vt');
+
+    // 省电 / 减少动态效果：不做滞后跳转，直接跳
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var LEAVE_MS = 160;          // 与 CSS 里 sss-content-out 的时长一致
+    var leaving = false;
+
+    document.addEventListener('click', function (event) {
+        if (leaving || event.defaultPrevented) return;
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+        var node = event.target;
+        var anchor = node && node.closest ? node.closest('a[href]') : null;
+        if (!anchor) return;
+        if (anchor.target && anchor.target !== '_self') return;
+        if (anchor.hasAttribute('download')) return;
+
+        var href = anchor.getAttribute('href');
+        if (!href || href.charAt(0) === '#') return;
+
+        var url;
+        try {
+            url = new URL(anchor.href, location.href);
+        } catch (err) {
+            return;
+        }
+        if (url.origin !== location.origin) return;
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+        // 同页只改 hash：不跳转，别淡出
+        if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+
+        event.preventDefault();
+        leaving = true;
+        root.classList.add('sss-leaving');
+
+        window.setTimeout(function () { location.href = url.href; }, LEAVE_MS);
+    });
+})();
+
+/* =============================================================================
  * 页脚的版权年份
  * -----------------------------------------------------------------------------
  * HTML 里写着 `© <span class="copyright-years" data-since="2025">2025–2026</span>`，

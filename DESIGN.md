@@ -192,8 +192,16 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
    **Ctrl+F5 硬刷新**、清过站点数据）
 4. 有 `sss-boot-next` 标记（刚部署过新版本，`seamless.js` 在 `controllerchange` 时留下）
 
+条件 4 的"新版本"由 CI 判定，不靠人记：`.github/workflows/stamp-sw-version.yml` 每次推送后
+对 `PRECACHE_URLS` 里的文件 + 文章正文算内容指纹，写进 `sw.js` 的 `CACHE_VERSION`
+（形如 `v5.72+<10 位 hash>`）。于是**任何页面/资源变动都必然换一次版本号与缓存**，
+"没变动"则一个字节都不动 —— 站内切换继续命中缓存、不弹屏。手改版本号仍然有效。
+
 ⚠️ 光看 `sss-booted` 是不够的：它只记"走过加载流程"，硬刷新时"标记还在"与
 "资源确实没走缓存"会分叉。
+⚠️ **预渲染的隐藏文档里不判定、不放加载屏、也不消费 `sss-boot-next`**：`<head>` 的判定推迟到
+`prerenderingchange`（首次绘制就在那一刻，所以不会闪），`boot.js` 也等那一刻才启动。
+否则门会在后台白白放完（用户激活后根本看不到），标记还会被"用户最后没点"的那份预渲染吃掉。
 ⚠️ 判断字体是否就绪**只能用 `document.fonts.load()` + `document.fonts.ready`**，
 `document.fonts.check()` 在缓存已热时也返回 false，不能用来做判断。
 
@@ -204,6 +212,14 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 ⚠️ **千万不要改成"等字体就绪再揭幕"**：`sss-switch` 藏的是整块内容
 （`main` / `.main-layout` / `.site-footer`），等字体等于让整页空掉 0.3–0.7 秒，
 看起来就是一次黑屏。文字那边已经由 `font-display: block` 管着了。
+
+没有跨文档 View Transitions 的内核（Firefox 等）由 `seamless.js` 补一次"内容先淡出"：
+左键点站内链接 → 挂 `sss-leaving`（160ms）→ 跳转 → 下一页的 `sss-switch` 接上淡入；
+这类内核里 `sss-switch` 的最短停留改为 0，免得淡出后再空一段。
+⚠️ **不能用 `CSS.supports('view-transition-name','none')` 判断跨文档过渡**：Firefox 支持
+同文档的 View Transitions，属性存在但没有 `@view-transition`（158 实测：属性 true、
+at-rule 被丢弃），属性判断会把兜底动画变成死代码。现在用 `sssSupportsCrossDocVT()`
+（[boot.js](assets/js/boot.js)）把 at-rule 塞进样式表看会不会被解析。
 
 ---
 

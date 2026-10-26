@@ -367,11 +367,13 @@ nav a:hover{
       在 global.css 里声明一次即可对全站所有页面跳转生效：
       旧页面淡出、新页面淡入，顶栏作为共享元素保持不动，
       视觉上就像"外壳常驻、内容替换"，没有生硬的白/黑闪。
-      不支持该特性的浏览器会直接忽略 @view-transition 规则，退化为普通跳转。
-   2) 兜底淡入（Firefox 等完全不支持 View Transitions 的内核）
-      用 @supports 判定，只在这些浏览器里给 body 做一次淡入，
-      避免硬切换；支持 View Transitions 的浏览器不做任何多余动画，
-      以免干扰新页面快照的抓取。
+      不支持该特性的浏览器会直接忽略 @view-transition 规则。
+   2) 没有跨文档过渡的内核（Firefox 等）
+      不能靠 @supports 判断 —— Firefox 支持同文档的 view-transition-name，
+      但到 158 仍没有 @view-transition，属性判断会误判（这段以前就是死代码）。
+      现在由 seamless.js 末尾用"把 at-rule 塞进样式表看会不会被解析"来判断：
+      不支持时点站内链接会先挂 sss-leaving 让内容淡出，再跳转；
+      新页面由下面的 sss-switch 淡入，两头接上。
    ========================================================================== */
 
 @view-transition{
@@ -466,21 +468,25 @@ html.sss-switch-in .site-footer{
     }
 }
 
-@supports not (view-transition-name: none){
+/* 没有跨文档 View Transitions 的内核（Firefox 等）：seamless.js 在点站内链接时
+   先挂 sss-leaving，让内容淡出，再跳转 —— 与下一页 sss-switch 的淡入接上。
+   放在 sss-switch-in 之后，保证这里的 animation 覆盖它（动画属性不叠加）。 */
+html.sss-no-vt.sss-leaving main,
+html.sss-no-vt.sss-leaving .main-layout,
+html.sss-no-vt.sss-leaving .site-footer{
+    animation:sss-content-out 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
 
-    @keyframes page-fade-in{
-        from{ opacity:0 }
-        to{ opacity:1 }
-    }
+@keyframes sss-content-out{
+    from{ opacity:1 }
+    to  { opacity:0 }
+}
 
-    body{
-        animation:page-fade-in 260ms ease-out both;
-    }
-
-    @media (prefers-reduced-motion: reduce){
-        body{
-            animation:none;
-        }
+@media (prefers-reduced-motion: reduce){
+    html.sss-no-vt.sss-leaving main,
+    html.sss-no-vt.sss-leaving .main-layout,
+    html.sss-no-vt.sss-leaving .site-footer{
+        animation:none;
     }
 }
 

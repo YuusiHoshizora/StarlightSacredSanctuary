@@ -183,6 +183,17 @@ npx serve .                    # 或者用 Node 生态的静态服务器
 > 但如果在手机上用 `192.168.x.x` 这类局域网地址预览，Service Worker 会照常接管，
 > 改动没生效时强制刷新（Ctrl + F5）一下。
 
+> ⚠️ **做自动化冒烟测试时，绝对不要关掉用户正在使用的浏览器。**
+> 不要用 `Get-Process chrome | Stop-Process`（或 `taskkill /IM firefox.exe`）这种**按进程名全杀**
+> 的方式收尾 —— 那会把用户正开着的标签页一起关掉。正确做法：
+> - 用**独立的 profile / 数据目录**：Chrome `--user-data-dir=<临时目录>`，
+>   Firefox `--profile <临时目录>`（不要复用默认 profile）
+> - 启动时拿 `Start-Process ... -PassThru` 返回的 **PID**，结束时只 `Stop-Process -Id $p.Id`
+> - 收尾删掉那个临时 profile，别碰默认 profile
+>
+> `--headless` 也不会让"按名杀"变得安全：无头进程和用户窗口是同一个进程名。
+> 这条是踩过的：按名清理把本地正在用的浏览器一起关了。
+
 ---
 
 ## 写一篇新的事件（文章）
@@ -300,8 +311,18 @@ curl.exe -sSI https://stsas.top/no-such-page | Select-String -Pattern 'HTTP/|loc
 ## 改了样式或脚本之后
 
 `sw.js` 会预缓存全部页面与静态资源（导航请求「缓存优先 + 后台更新」，静态资源
-stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就要把 `sw.js` 顶部的
-`CACHE_VERSION` 往上加一位**（例如 `v4.8` → `v4.9`）。
+stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才安装新 SW，所以改完页面
+必须让版本号跟着变 —— 现在这件事**自动做**：
+
+- `.github/workflows/stamp-sw-version.yml` 在每次推送后跑
+  `.github/stamp-sw-version.mjs`：对 `PRECACHE_URLS` 列出的文件 + `assets/post/**/*.md`
+  算内容指纹（换行统一成 LF；排除 `sw.js` 自己与自动生成的 `index.json`），
+  写进 `const CACHE_VERSION = 'v5.72+<10 位 hash>'`，**有变化才提交**。
+- 于是：任何页面/资源变动 → 换版本号 → 新 SW 装好并换掉旧缓存 →
+  `controllerchange` 写下 `sss-boot-next` → **下次进入任意页面补弹一次加载屏**。
+  没变动 → 不提交、不部署、不弹，站内切换继续走缓存。
+- 手改 `CACHE_VERSION` 仍然有效，但不再是必需的纪律：语义部分（`v5.72`）会保留，
+  指纹追加在后面。CI 自己推的版本号提交靠 job 上的 `if:` 防自触发。
 
 ⚠️ 页面 HTML 也算 —— **漏掉它的后果最容易被误判成"没推送成功"**：文件明明已经在线上，
 但老访客的 SW 还在拿上一版的缓存页面，改动就是"看不见"。判断办法：`CACHE_VERSION`
@@ -368,7 +389,8 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
    （见任何一页的现成写法），并在 `<head>` 里加 `<script defer src="…/assets/js/navtoggle.js"></script>`。
    ⚠️ 按钮必须是 `.navbar` 自己的子元素 —— **放进 `<nav>` 里就会被那块竖排面板当成一个条目**
 6. 页脚：拷一份 `.site-footer`，把「关于本站」链接改成正确的相对路径
-7. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS/JS（否则离线访问那一页会漏）
+7. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS/JS（否则离线访问那一页会漏，
+   内容指纹也不会覆盖它 —— 改这一页就不会触发版本号与加载屏）
 
 ### 工具页左栏的两个测试入口
 
@@ -490,6 +512,15 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
     文字那边已经由 `font-display: block` 管着了：字体没到就不显示文字，骨架照常先出来。
     现在的实测是：内容藏起 24ms → 骨架淡入 189ms（空白 165ms）→ 字体就绪 461ms 文字浮现
   · 加新页面时内容容器要能被上面那三个选择器覆盖到（要么用 `<main>`，要么用 `.main-layout`）
+  · **Firefox 等没有跨文档 View Transitions 的内核**：`seamless.js` 末尾那段会在点站内链接时
+    挂 `sss-leaving`，让内容先淡出 160ms 再跳转，下一页的 `sss-switch` 接上淡入；
+    这类内核里 `sss-switch` 的 `MIN_MS` 同时改成 0（不然淡出之后还要空 120ms）。
+    ⚠️ 判断支持性**只能用 `sssSupportsCrossDocVT()`**（把 `@view-transition` 塞进样式表看
+    会不会被解析）。Firefox 158 实测：`document.startViewTransition` 有、`view-transition-name`
+    属性也认，但 `@view-transition` 整条被丢掉 —— 拿属性判断会把兜底判成"不需要"，动画全没了
+    （以前那段 `@supports not (view-transition-name:none)` 就是这么变成死代码的）
+  · 只拦最普通的左键点站内链接：修饰键 / 中键 / `target=_blank` / `download` / 站外 /
+    同页锚点都走浏览器默认行为；`prefers-reduced-motion` 下直接跳、不延迟
 - **首屏加载屏**（**全站每页都有**）：资源还没进缓存时（首次访问 / 缓存被清掉）显示，
   等就绪后上下两扇门滑开、露出页面；已就绪的页面不显示。
   · 判断在**各页 `<head>` 里那段内联脚本**（必须同步、首次绘制前决定，否则会闪一下）。
@@ -502,7 +533,12 @@ stale-while-revalidate）。所以**只要动了页面 HTML、CSS 或 JS，就�
        「资源确实没走缓存」会分叉 —— 光看标记的话硬刷新不会弹，那是错的
     ④ `sss-boot-next` 标记 —— 刚部署过新版本。`seamless.js` 在新 SW 接管
        （`controllerchange`）时写下它，各页读到就补弹一次、读走即清。
-       首次安装不算（本来就没控制器，那趟已经弹过了）
+       首次安装不算（本来就没控制器，那趟已经弹过了）。
+       「有没有新版本」由 CI 自动判定（内容指纹写进 `CACHE_VERSION`，见「改了样式或脚本之后」），
+       不需要人记着手改版本号
+  · ⚠️ **预渲染（speculationrules）的隐藏文档里不判定**：判定推迟到 `prerenderingchange`，
+    `boot.js` 也等那一刻才启动。否则门会在后台放完（激活后用户看不到），
+    `sss-boot-next` 还会被「用户最后没点」的那份预渲染吃掉 —— 表现为「该弹的时候没弹」
   · `sss-booted` 由 `boot.js` 的 `open()` 在开完门后写入；清掉站点数据会一并清掉它
   · `file://` 打开、不支持 SW 的浏览器直接不显示
   · 样式 `assets/css/boot.css`，结构与逻辑 `assets/js/boot.js`；

@@ -15,27 +15,40 @@
         (function () {
             if (!('serviceWorker' in navigator)) return;      // 没有 SW，就没有"缓存全部资源"这回事
             if (location.protocol === 'file:') return;        // 本地双击打开时 SW 注册不了，别把页面卡住
-            var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
-            var booted = false;
-            try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
+            /* 这一趟要不要显示加载屏。必须同步、首次绘制前决定，否则会先画出页面再盖上、闪一下。 */
+            function decide() {
+                var force = /(^|[?&])boot(=|&|$)/.test(location.search || '');   // ?boot=1：强制重播（调试用）
+                var booted = false;
+                try { booted = localStorage.getItem('sss-booted') === '1'; } catch (e) {}
 
-            // ① 这一次不是从 SW 缓存里拿的 → 该弹加载屏。controller 为空意味着：首次访问、
-            //    Ctrl+F5 硬刷新（硬刷新会连 Service Worker 一起绕过）、或站点数据被清过。
-            //    光看 sss-booted 标记不够 —— 它只记「这台浏览器走过加载流程」，
-            //    硬刷新时「标记还在」与「资源确实没走缓存」会分叉。
-            var cold = !navigator.serviceWorker.controller;
+                // ① 这一次不是从 SW 缓存里拿的 → 该弹加载屏。controller 为空意味着：首次访问、
+                //    Ctrl+F5 硬刷新（硬刷新会连 Service Worker 一起绕过）、或站点数据被清过。
+                //    光看 sss-booted 标记不够 —— 它只记「这台浏览器走过加载流程」，
+                //    硬刷新时「标记还在」与「资源确实没走缓存」会分叉。
+                var cold = !navigator.serviceWorker.controller;
 
-            // ② 刚部署过新版本：seamless.js 在新 SW 接管（controllerchange）时留下的标记，
-            //    说明缓存整个换过一轮，这一趟补弹一次。读走即清，只补一次。
-            var afterUpdate = false;
-            try {
-                afterUpdate = localStorage.getItem('sss-boot-next') === '1';
-                if (afterUpdate) localStorage.removeItem('sss-boot-next');
-            } catch (e) {}
+                // ② 刚部署过新版本：seamless.js 在新 SW 接管（controllerchange）时留下的标记，
+                //    说明缓存整个换过一轮，这一趟补弹一次。读走即清，只补一次。
+                var afterUpdate = false;
+                try {
+                    afterUpdate = localStorage.getItem('sss-boot-next') === '1';
+                    if (afterUpdate) localStorage.removeItem('sss-boot-next');
+                } catch (e) {}
 
-            // ③ 其余情况（站内正常导航）：不弹，切换才不会闪
-            if (force || !booted || cold || afterUpdate) {
-                document.documentElement.className += ' sss-boot';
+                // ③ 其余情况（站内正常导航）：不弹，切换才不会闪
+                if (force || !booted || cold || afterUpdate) {
+                    document.documentElement.className += ' sss-boot';
+                }
+            }
+
+            // 预渲染中的文档是隐藏的：这时候不该判定（controller 状态、标记消费都不该在隐藏期
+            // 决定），更不该让加载屏放掉 —— boot.js 会在后台把门开完，用户激活后根本看不到。
+            // 所以等真正被激活（首次绘制就在这一刻）再同步判一次，仍然不会闪。
+            // 若用户最后点的是别的链接、这份预渲染被丢弃，sss-boot-next 也没被吃掉，下一页照常补弹。
+            if (document.prerendering) {
+                document.addEventListener('prerenderingchange', decide, { once: true });
+            } else {
+                decide();
             }
 
             // ④ CQ 这个彩蛋已经发现过（用户点开过解出来的图）：给 <html> 打个标记。
