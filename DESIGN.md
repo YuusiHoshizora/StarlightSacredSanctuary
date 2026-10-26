@@ -205,6 +205,15 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 ⚠️ 判断字体是否就绪**只能用 `document.fonts.load()` + `document.fonts.ready`**，
 `document.fonts.check()` 在缓存已热时也返回 false，不能用来做判断。
 
+**加载屏做什么**：不是"等几个事件"，而是进门前把东西真正拿全 —— 等 SW 预缓存完成并接管
+本页 → 按 `FONTS` 清单逐个下载 7 个字面（≈ 42.8 MB）并 `document.fonts.load()` →
+预取文章索引与最新正文 → 等 `window load` → 再等资源活动安静 500ms。进度条按任务数走，
+百分比 / 总数 / 字节数 / 当前文件都来自真实事件，明细（文件名、大小、耗时、缓存还是网络）
+用 Resource Timing 收，默认折叠在「载入明细」里。
+字体不在 SW 预缓存里（每次部署都重下 43 MB 受不了），单独放跨版本缓存
+`starlight-fonts-v1`；加载屏自己的字面用 `SSS Boot Mono`（`font-display: swap`），
+避免 `block` 期读数区整片空白。
+
 **跨页过渡**：`<head>` 里判断 referrer 是否同源 → 给 `<html>` 加 `sss-switch`
 （内容先藏），`boot.js` 末尾的 IIFE 在**骨架就绪**（`DOMContentLoaded` + 一帧）时
 换成 `sss-switch-in` 淡入。

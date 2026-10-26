@@ -1,4 +1,4 @@
-﻿/* =============================================================================
+/* =============================================================================
  * sw.js — 星光圣域 Service Worker
  * -----------------------------------------------------------------------------
  * 目标：让站内页面之间的切换"无缝"。
@@ -9,6 +9,8 @@
  *   · 导航请求：缓存优先，立即返回已缓存的页面，同时在后台更新缓存；
  *               没有网络时回退到缓存页面 / 离线页。
  *   · 静态资源：stale-while-revalidate（先给缓存，再后台刷新）。
+ *   · 字体：单独一个**跨版本**缓存（FONT_CACHE），不随 CACHE_VERSION 清掉 ——
+ *          7 个字面共约 43 MB，每次部署都重下没人受得了。
  *
  * 重定向响应的处理（踩过的坑，见 asDirectResponse）：
  *   站点的 .html 地址在 Cloudflare 上会先 307 到不带扩展名的规范地址，
@@ -25,8 +27,15 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.72+4afccd08f1';
+const CACHE_VERSION = 'v5.72+b8d9337880';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
+
+/* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
+   名字里带版本号 —— 真的换了字体文件（同名覆盖）时把它 +1，否则会一直吃旧的。
+   ⚠️ assets/js/boot.js 里有同名常量（首次访问时 SW 还没接管页面，字体由页面自己写进来），
+      改这里必须同步改那边。
+   页面侧写入 + 这里的 cache-first，合起来保证 43 MB 字体只下一次。 */
+const FONT_CACHE = 'starlight-fonts-v1';
 
 // 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
 const OFFLINE_URL = '/404.html';
@@ -184,8 +193,9 @@ self.addEventListener('activate', (event) => {
         const names = await caches.keys();
         await Promise.all(
             names
-                /* 本地预览：以前留下的缓存全部清掉；线上：只删旧版本 */
-                .filter((name) => DEV_HOST || name !== CACHE_NAME)
+                /* 本地预览：以前留下的缓存全部清掉
+                   线上：只删旧版本的页面缓存；字体缓存跨版本保留 */
+                .filter((name) => DEV_HOST || (name !== CACHE_NAME && name !== FONT_CACHE))
                 .map((name) => {
                     console.log('[SW] 删除缓存：', name);
                     return caches.delete(name);
@@ -224,6 +234,12 @@ self.addEventListener('fetch', (event) => {
 
     // Range 请求（部分下载）交给网络，避免缓存返回不完整内容
     if (request.headers.has('range')) return;
+
+    // 字体：cache-first，写进跨版本缓存（7 个字面 43 MB，重下代价太大）
+    if (url.pathname.startsWith('/assets/fonts/')) {
+        event.respondWith(cacheFirstFont(request));
+        return;
+    }
 
     // 文章索引：网络优先（它由 GitHub Action 在每次文章变动后重写，
     // 缓存优先会让新文章晚一次访问才出现在列表里）
@@ -265,6 +281,23 @@ async function putSafely(cache, request, response) {
     } catch (err) {
         console.log('[SW] 写入缓存失败：', request.url, err && err.message);
     }
+}
+
+/* 字体：缓存优先，缓存里没有才走网络并写进跨版本缓存 */
+async function cacheFirstFont(request) {
+    const cache = await caches.open(FONT_CACHE);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    const response = await fetch(request);
+    if (response && response.ok) {
+        try {
+            await cache.put(request, response.clone());
+        } catch (err) {
+            console.log('[SW] 字体写入缓存失败：', request.url, err && err.message);
+        }
+    }
+    return response;
 }
 
 /* 导航请求：缓存优先 → 后台更新 → 断网回退 */

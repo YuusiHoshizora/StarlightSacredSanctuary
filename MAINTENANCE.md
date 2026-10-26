@@ -522,7 +522,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   · 只拦最普通的左键点站内链接：修饰键 / 中键 / `target=_blank` / `download` / 站外 /
     同页锚点都走浏览器默认行为；`prefers-reduced-motion` 下直接跳、不延迟
 - **首屏加载屏**（**全站每页都有**）：资源还没进缓存时（首次访问 / 缓存被清掉）显示，
-  等就绪后上下两扇门滑开、露出页面；已就绪的页面不显示。
+  等**真正要用到的资源**都到手后上下两扇门滑开、露出页面；已就绪的页面不显示。
   · 判断在**各页 `<head>` 里那段内联脚本**（必须同步、首次绘制前决定，否则会闪一下）。
     **四个条件满足任一就弹**（实测过）：
     ① `?boot=1` 强制重播（调试用）
@@ -542,14 +542,29 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   · `sss-booted` 由 `boot.js` 的 `open()` 在开完门后写入；清掉站点数据会一并清掉它
   · `file://` 打开、不支持 SW 的浏览器直接不显示
   · 样式 `assets/css/boot.css`，结构与逻辑 `assets/js/boot.js`；
-    页面里只放一个空的 `<div class="boot" id="boot"></div>`（内容由 boot.js 生成，8 页不用重复）
-  · 三个读数都是真实事件，且各有上限（SW 预缓存失败也不会把人卡住）；
-    `main.js` 的打字机等 `sss:booted` 事件 —— 否则动画会在加载屏后面白白播完
-  · ⚠️ **「载入字体」这个读数必须用 `document.fonts.load('400 16px "Sarasa"')` 显式去要**，
-    不能只 `await document.fonts.ready`：实测那一刻还没有任何字体进入加载流程，
-    `ready` 是个**已完成的 promise**，`.then` 立刻就跑 —— 读数形同虚设，门会开在字体前面，
-    露出的正是字体突变。现在它会在字体真正加载完成后 4ms 内才打勾。
-    字面按页取：界面/正文是 Sarasa，页面上有 `.markdown-body`（主页面）才多等 Sarasa Mono
+    页面里只放一个空的 `<div class="boot" id="boot"></div>`（内容由 boot.js 生成，20 页不用重复）
+  · **进门前真的把东西拿全**（不是"等几个事件"），四个阶段：
+    ① 本地缓存：等 SW `ready`，并等 `clients.claim()` 真正接管本页，顺带数一下缓存里有多少项
+    ② 字体：按 `boot.js` 的 `FONTS` 清单（7 个字面 ≈ 42.8 MB）逐个
+       `document.fonts.load()` + `fetch()`（后者拿准确字节数，并把响应写进字体缓存）
+    ③ 数据：`assets/post/index.json` + 最新一篇 `.md`，ENTER 进主页面时不再现拉
+    ④ 就绪：`window load`；最后再等资源活动安静 500ms（最多 4s），确认没有漏网之鱼
+    进度条按任务数走（11 项），百分比 / 总数 / 字节数 / 当前文件都来自真实事件；
+    明细用 `PerformanceObserver` 收 Resource Timing（文件名、大小、耗时、缓存还是网络），
+    默认折叠在「载入明细」里 —— **别把它改成默认展开**，那会把读数区挤成一面墙
+  · **字体跨版本缓存**：字体太占更新流量，不进 SW 预缓存；改放 `starlight-fonts-v1`
+    （`sw.js` 的 `FONT_CACHE` 与 `boot.js` 里的同名常量，**改一边必须改另一边**）。
+    页面自己也会往里写：首次访问时 SW 还没接管，那时 `document.fonts.load` 拿到的字体
+    SW 存不下来。⚠️ 真的换字体文件（同名覆盖）时把 `FONT_CACHE` 的版本 +1，否则一直吃旧的
+  · ⚠️ **加载屏自己的字面是 `SSS Boot Mono`**（`boot.css` 里单独一条 `@font-face`，
+    `font-display: swap`）：全站的 `block` 会让读数区在字体到之前整个空着（实测 2.2s
+    时几乎全黑）。它和 `Sarasa Mono` 是同一个文件，只下一次；`FONTS` 第一项用的就是
+    这个字面 —— 同一份 5 MB 不会因为"加载屏要一份、预热再要一份"发两次请求
+  · ⚠️ **「载入字体」必须显式 `document.fonts.load()`**，不能只 `await document.fonts.ready`：
+    实测那一刻还没有任何字体进入加载流程，`ready` 是个**已完成的 promise**，`.then` 立刻
+    就跑 —— 读数形同虚设，门会开在字体前面。字面清单见 `FONTS`
+  · 上限：单任务 20s、等缓存 30s、总兜底 60s（网络卡死也会放人进去，字体继续在后台下）
+  · `main.js` 的打字机等 `sss:booted` 事件 —— 否则动画会在加载屏后面白白播完
   · 收尾必须 `classList.remove('sss-boot','boot-open')`：**用字符串 `replace` 会漏掉开头那个类**，
     而 `html.sss-boot main{ opacity:.5 }` 会一直生效（页面永久半透明）
 - **公告**：第一次访问自动弹一次（关掉后同一浏览器不再弹），「关于」页的「站点公告」卡片可随时重看。

@@ -5,9 +5,29 @@
    `<div class="boot" id="boot">`，内容与逻辑由 assets/js/boot.js 生成）。
    何时显示由各页 <head> 里那段内联脚本同步决定：给 <html> 挂上 sss-boot
    才显示 —— 必须在首次绘制前决定，否则会先画出页面再盖上，闪一下。
+
+   结构（由 boot.js 生成）：
+     .boot__half*    上下两扇门
+     .boot__seam     中缝金线
+     .boot__bg       放大的半透明 logo（CSS mask）
+     .boot__frame    一圈细描边 + 金色角标
+     .boot__inner    读数区：标题 / 百分比 / 进度条 / 阶段 / 当前文件 / 明细
    ========================================================================== */
 
 .boot { display: none; }
+
+/* 加载屏专用字面：和全站的 Sarasa Mono 是同一个文件，但 font-display 用 swap。
+   首次访问时这一个文件要下 5 MB，而 global.css 里 `block` 的语义是"字体没到就不显示
+   文字" —— 整个读数区会空好几秒（实测 2.2s 时几乎全黑）。
+   这里允许先用系统等宽顶上，字体到了再换；只影响这一屏，正文仍走 block。 */
+@font-face {
+    font-family: "SSS Boot Mono";
+    src: url("../fonts/SarasaMonoSC-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 html.sss-boot .boot {
     display: block;
     position: fixed;
@@ -75,16 +95,20 @@ html.sss-boot .boot {
     top: calc(50% - 1px);
     height: 2px;
     background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.85), transparent);
-    opacity: 0.28;
+    opacity: 0.14;                    /* 读数区有进度条，中缝压暗一点，别抢戏 */
     transition: opacity 0.3s;
 }
 .boot.is-open .boot__seam { opacity: 0; }
 
-/* 中间读数：用站的等宽字面 Sarasa Mono（全站等宽只有这一支，见 global.css 的 @font-face）。
+/* --------------------------------------------------------------------------
+   读数区
+   字体用站的等宽字面 Sarasa Mono（全站等宽只有这一支，见 global.css 的 @font-face）。
    ⚠️ 分成两条：布局那条只给 .boot__inner，字体那条要连后代一起给 —— 加载屏的文字
-   全在子元素里（.boot__title / .boot__step span / .boot__hint），而 global.css 顶部那条
-   `* { font-family: "Sarasa" }` 会直接盖到每个元素上，只写容器等于没改。
-   字体本身由 boot.js 的 sssFontFaces() 在显示加载屏时一起等（否则 block 期里读数会是空的）。 */
+   全在子元素里，而 global.css 顶部那条 `* { font-family: "Sarasa" }` 会直接盖到每个
+   元素上，只写容器等于没改。
+   字面由 boot.js 的 FONTS 清单在进门前一起下载（第一项就是 Mono Regular，
+   所以读数会最先显示出来）。
+   -------------------------------------------------------------------------- */
 .boot__inner {
     position: absolute;
     inset: 0;
@@ -92,18 +116,19 @@ html.sss-boot .boot {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 24px 24px 64px;      /* 往上提一点，进度条就不会压在中缝上 */
     text-align: center;
     transition: opacity 0.26s ease, transform 0.26s ease;
 }
 
 .boot__inner,
 .boot__inner * {
-    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-family: "SSS Boot Mono", "Sarasa Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
+
 .boot.is-open .boot__inner { opacity: 0; transform: scale(0.98); }
 
-/* 去掉小 logo 后，标题直接顶在最上面 */
+.boot__head { text-align: center; }
 .boot__title { font-size: 19px; letter-spacing: 8px; color: #fff; }
 .boot__sub {
     margin-top: 9px;
@@ -112,38 +137,53 @@ html.sss-boot .boot {
     color: rgba(255, 255, 255, 0.32);
 }
 
-.boot__steps {
+/* --- 百分比 + 进度条 --- */
+.boot__meter {
+    width: min(360px, 78vw);
+    margin-top: 30px;
+}
+.boot__meter-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+}
+.boot__pct {
+    display: flex;
+    align-items: flex-end;
+    line-height: 1;
+    color: #fff;
+}
+.boot__pct span {
+    font-size: 34px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+}
+.boot__pct em {
+    font-style: normal;
+    font-size: 11px;
+    color: #FFD700;
+    margin: 0 0 4px 5px;
+    letter-spacing: 1px;
+}
+.boot__meter-meta {
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    margin-top: 32px;
+    gap: 4px;
+    text-align: right;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.32);
 }
-.boot__step {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.3);
-    transition: color 0.25s;
-}
-.boot__step i {
-    width: 5px;
-    height: 5px;
-    flex: 0 0 auto;
-    background: rgba(255, 255, 255, 0.18);
-    transition: background 0.25s, box-shadow 0.25s;
-}
-.boot__step.is-done { color: rgba(255, 255, 255, 0.82); }
-.boot__step.is-done i {
-    background: #FFD700;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+.boot__meter-meta b {
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.72);
 }
 
 .boot__bar {
-    width: min(320px, 62vw);
+    position: relative;
+    margin-top: 12px;
     height: 2px;
-    margin-top: 26px;
     background: rgba(255, 255, 255, 0.12);
     overflow: hidden;
 }
@@ -152,14 +192,175 @@ html.sss-boot .boot {
     width: 0;
     height: 100%;
     background: #FFD700;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* 进行中：一段扫光，说明"在动"，不是卡住 */
+.boot__bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -40%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.9), transparent);
+    animation: boot-scan 1.6s linear infinite;
+}
+@keyframes boot-scan {
+    to { left: 110%; }
 }
 
-.boot__hint {
-    margin-top: 16px;
+/* --- 阶段 --- */
+.boot__steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 16px;
+    margin-top: 18px;
+}
+.boot__step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.25s;
+}
+.boot__step i {
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.18);
+    transition: background 0.25s, box-shadow 0.25s;
+}
+.boot__step.is-done { color: rgba(255, 255, 255, 0.8); }
+.boot__step.is-done i {
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+/* --- 当前正在拿的文件 --- */
+.boot__now {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(360px, 78vw);
+    min-height: 14px;
+    margin-top: 20px;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.24);
+    color: rgba(255, 255, 255, 0.42);
+    text-align: left;
+}
+.boot__now-dot {
+    flex: 0 0 auto;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #FFD700;
+    animation: boot-blink 1.1s ease-in-out infinite;
+}
+@keyframes boot-blink {
+    0%, 100% { opacity: 0.15; }
+    50%      { opacity: 1; }
+}
+.boot__now-label {
+    flex: 0 0 auto;
+    color: rgba(255, 255, 255, 0.55);
+}
+.boot__now-label::after {
+    content: '›';
+    margin-left: 8px;
+    color: rgba(255, 255, 255, 0.25);
+}
+.boot__now-file {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- 载入明细（默认折叠） --- */
+.boot__log {
+    width: min(360px, 78vw);
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.boot__log summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0 6px;
+    list-style: none;
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.36);
+    cursor: pointer;
+    user-select: none;
+}
+.boot__log summary::-webkit-details-marker { display: none; }
+.boot__log summary b {
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+}
+.boot__chev {
+    margin-left: auto;
+    width: 6px;
+    height: 6px;
+    border-right: 1px solid rgba(255, 255, 255, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.2s;
+}
+.boot__log[open] .boot__chev { transform: rotate(-135deg) translateY(-2px); }
+
+.boot__log-body {
+    max-height: min(24vh, 190px);
+    overflow: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+}
+.boot__log-row {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto auto;
+    gap: 8px;
+    align-items: baseline;
+    padding: 2px 0;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.38);
+    animation: boot-row-in 0.18s ease-out both;
+}
+@keyframes boot-row-in {
+    from { opacity: 0; transform: translateY(2px); }
+}
+.boot__log-kind { font-style: normal; color: rgba(255, 215, 0, 0.55); }
+.boot__log-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+}
+.boot__log-size { font-style: normal; color: rgba(255, 255, 255, 0.35); white-space: nowrap; }
+.boot__log-meta { color: rgba(255, 255, 255, 0.26); white-space: nowrap; }
+
+.boot__hint {
+    max-width: min(360px, 78vw);
+    margin-top: 14px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.22);
+    text-align: center;
+}
+
+/* 窄矮屏：把纵向间距收一收，明细高度也压一下 */
+@media (max-height: 560px) {
+    .boot__title { font-size: 16px; letter-spacing: 6px; }
+    .boot__meter { margin-top: 18px; }
+    .boot__steps { margin-top: 12px; }
+    .boot__now { margin-top: 12px; }
+    .boot__hint { display: none; }
+    .boot__log-body { max-height: 18vh; }
 }
 
 /* 门开时，底下的页面从略微缩小恢复，像被"推近"了一点。
@@ -177,5 +378,10 @@ html.sss-boot.boot-open main {
     .boot__seam,
     html.sss-boot.boot-open main {
         transition-duration: 0.001s !important;
+    }
+    .boot__bar::after,
+    .boot__now-dot,
+    .boot__log-row {
+        animation: none !important;
     }
 }

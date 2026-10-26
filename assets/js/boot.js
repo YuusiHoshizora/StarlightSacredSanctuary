@@ -2,39 +2,28 @@
  * boot.js — 首屏加载屏
  * -----------------------------------------------------------------------------
  * 作用：资源还没进缓存时（首次访问、或缓存被清掉），任何页面都先显示加载屏，
- *       等资源真的就绪，再像舱门一样上下分开、露出页面。
+ *       等**真正要用到的资源都到手**之后再像舱门一样上下分开、露出页面。
  *
  * 何时显示由各页 <head> 里那段内联脚本决定 —— 必须在首次绘制前同步决定，
- * 否则会先画出页面再盖上，闪一下。判断依据是 localStorage 里的一个标记：
- *   · 还没有标记 ⇒ 这台浏览器没走过加载流程 ⇒ 显示（这一趟把资源缓存下来）
+ * 否则会先画出页面再盖上，闪一下。判断依据是 localStorage 里的标记：
+ *   · 还没有标记 ⇒ 这台浏览器没走过加载流程 ⇒ 显示
  *   · 已有标记   ⇒ 之后各页都不再显示，切换页面不会闪
- * 标记就在本文件的 open() 里写入；清掉站点数据会一并清掉它，于是下次访问又会显示一遍。
+ * 标记就在 open() 里写入；清掉站点数据会一并清掉它，于是下次访问又会显示一遍。
  * file:// 双击打开（SW 注册不了）、不支持 SW 的浏览器，都不显示。
  *
- * 页面里只需要一个空的 <div class="boot" id="boot"></div>，
- * 里面的结构由这里生成 —— 8 个页面不用重复那一段。
+ * 加载屏现在做的事（不再是"等几个事件"而已）：
+ *   ① 等 Service Worker 预缓存完成（页面 / CSS / JS / 数据）
+ *   ② 把 7 个字面**真的下载并解码**（约 42.8 MB；字体不进 SW 预缓存，太占更新流量）
+ *   ③ 预取文章索引与最新一篇正文，ENTER 进主页面时不再现拉
+ *   ④ 等 window load（页面自己的图片 / 样式都到位）
+ *   ⑤ 再等资源活动安静下来（最多 4 秒），确认没有漏网之鱼
+ * 每一项都对应一条真实的 Resource Timing，明细折叠在加载屏里（默认收起）。
+ *
+ * 字体单独放一个**跨版本**缓存（starlight-fonts-v1）：SW 每次换 CACHE_VERSION 都会
+ * 把页面缓存整个换掉，如果字体也在里面，等于每次部署都要重下 43 MB。页面自己也会往
+ * 这个缓存里写（首次访问时 SW 还没接管本页，那时 fetch 到的字体 SW 存不下来）。
+ * 页面里的 FONT_CACHE 与 sw.js 里的 FONT_CACHE 必须一致。
  * ========================================================================== */
-
-/* 这一趟要等哪些字面。
-   按各页实际会渲染到的来：界面与正文是 Sarasa（Regular / Bold）；等宽的地方用
-   Sarasa Mono —— 主页面渲染出来的 Markdown 正文（global.css 里 .markdown-body 那条），
-   以及**加载屏自己的读数**（boot.css 的 .boot__inner）：加载屏是第一次绘制，
-   字体没到的话 `font-display: block` 会让读数空着，所以显示加载屏时把它一起等。
-   斜体不在这里等 —— 用得极少，而每多一份就是 5–8 MB。
-   加载屏与跨页切换（文件末尾那个 IIFE）共用这一份清单，不在两处各写一遍。 */
-function sssFontFaces() {
-    var faces = ['400 16px "Sarasa"', '700 16px "Sarasa"'];
-    var want = [];
-    if (document.documentElement.classList.contains('sss-boot')) want.push('400 16px "Sarasa Mono"');
-    if (document.querySelector('.markdown-body')) {
-        want.push('400 16px "Sarasa Mono"');
-        want.push('700 16px "Sarasa Mono"');
-    }
-    for (var i = 0; i < want.length; i++) {
-        if (faces.indexOf(want[i]) < 0) faces.push(want[i]);
-    }
-    return faces;
-}
 
 /* 这台浏览器能不能做"跨文档"的 View Transition（也就是 @view-transition 那套）。
    ⚠️ 不能用 CSS.supports('view-transition-name','none') 判断：Firefox 从 144 起支持
@@ -60,21 +49,43 @@ function sssSupportsCrossDocVT() {
 (function () {
     'use strict';
 
+    /* 与 sw.js 里的 FONT_CACHE 一致（改一边就要改另一边）。
+       字体文件是"基本不会变"的大文件，单独放一个缓存，SW 换版本时不跟着清掉。 */
+    var FONT_CACHE = 'starlight-fonts-v1';
+
+    /* 进门前要真正拿到手的字面（不只是"声明了"）。
+       第一项用的就是加载屏自己的字面（boot.css 里的 "SSS Boot Mono"，和全站 Sarasa Mono
+       是同一个文件、只是 font-display 用 swap）—— 这样加载屏文字和预热用的是**同一个
+       FontFace**，首次访问不会为同一份 5 MB 文件发两次请求。
+       其余按使用频率：UI 与正文 → 等宽 → 斜体。 */
+    var FONTS = [
+        { face: '400 16px "SSS Boot Mono"',      file: '/assets/fonts/SarasaMonoSC-Regular.woff2',     name: 'Sarasa Mono Regular' },
+        { face: '400 16px "Sarasa"',             file: '/assets/fonts/SarasaGothicSC-Regular.woff2',   name: 'Sarasa Regular' },
+        { face: '700 16px "Sarasa"',             file: '/assets/fonts/SarasaGothicSC-Bold.woff2',      name: 'Sarasa Bold' },
+        { face: '700 16px "Sarasa Mono"',        file: '/assets/fonts/SarasaMonoSC-Bold.woff2',        name: 'Sarasa Mono Bold' },
+        { face: 'italic 400 16px "Sarasa"',      file: '/assets/fonts/SarasaGothicSC-Italic.woff2',    name: 'Sarasa Italic' },
+        { face: 'italic 400 16px "Sarasa Mono"', file: '/assets/fonts/SarasaMonoSC-Italic.woff2',      name: 'Sarasa Mono Italic' },
+        { face: 'italic 700 16px "Sarasa Mono"', file: '/assets/fonts/SarasaMonoSC-BoldItalic.woff2',  name: 'Sarasa Mono Bold Italic' }
+    ];
+
     function start() {
         var boot = document.getElementById('boot');
         if (!boot) return;
         if (!document.documentElement.classList.contains('sss-boot')) return;   // 这一趟不需要加载屏
 
-        /* 三个读数都对应真实事件，而且各有上限：万一 SW 预缓存失败，
-           也不能把人一直卡在加载屏上。 */
-        var MIN_MS = 1200;      // 再快也让读数走完，别一闪而过
-        var CAP_CACHE = 3500;
-        var CAP_FONTS = 7000;
-        var CAP_ALL = 9000;
+        var MIN_MS = 1400;          // 读数至少走这么久，别一闪而过
+        var CAP_TASK = 20000;       // 单个资源的上限
+        var CAP_CACHE = 30000;      // 等 SW 预缓存的上限
+        var CAP_TOTAL = 60000;      // 兜底：无论如何都要放人进去
 
         var t0 = Date.now();
-        var done = { cache: false, fonts: false, ready: false };
         var opened = false;
+        var doneCount = 0;
+        var totalCount = 0;
+        var bytes = 0;
+        var failed = 0;
+        var lastActivity = Date.now();
+        var firstPost = null;
 
         boot.innerHTML =
             '<div class="boot__half boot__half--top"></div>' +
@@ -83,41 +94,370 @@ function sssSupportsCrossDocVT() {
             '<div class="boot__bg" aria-hidden="true"></div>' +
             '<div class="boot__frame"></div>' +
             '<div class="boot__inner">' +
-                '<div class="boot__title">星光圣域</div>' +
-                '<div class="boot__sub">STARLIGHT SACRED SANCTUARY</div>' +
-                '<div class="boot__steps">' +
-                    '<div class="boot__step" data-step="cache"><i></i><span>建立本地缓存</span></div>' +
-                    '<div class="boot__step" data-step="fonts"><i></i><span>载入字体</span></div>' +
-                    '<div class="boot__step" data-step="ready"><i></i><span>系统就绪</span></div>' +
+                '<div class="boot__head">' +
+                    '<div class="boot__title">星光圣域</div>' +
+                    '<div class="boot__sub">STARLIGHT SACRED SANCTUARY</div>' +
                 '</div>' +
-                '<div class="boot__bar"><i id="boot-bar"></i></div>' +
-                '<div class="boot__hint">正在进行资源预载中，请稍后</div>' +
+                '<div class="boot__meter">' +
+                    '<div class="boot__meter-row">' +
+                        '<div class="boot__pct"><span id="boot-pct">00</span><em>%</em></div>' +
+                        '<div class="boot__meter-meta">' +
+                            '<span><b id="boot-done">0</b> / <b id="boot-total">0</b> 项</span>' +
+                            '<span id="boot-bytes">0 KB</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="boot__bar"><i id="boot-bar"></i></div>' +
+                '</div>' +
+                '<div class="boot__steps" id="boot-steps">' +
+                    '<div class="boot__step" data-step="cache"><i></i><span>本地缓存</span></div>' +
+                    '<div class="boot__step" data-step="fonts"><i></i><span>字体</span></div>' +
+                    '<div class="boot__step" data-step="data"><i></i><span>数据</span></div>' +
+                    '<div class="boot__step" data-step="ready"><i></i><span>就绪</span></div>' +
+                '</div>' +
+                '<div class="boot__now">' +
+                    '<i class="boot__now-dot"></i>' +
+                    '<span class="boot__now-label" id="boot-now-label">初始化</span>' +
+                    '<span class="boot__now-file" id="boot-now">—</span>' +
+                '</div>' +
+                '<details class="boot__log" id="boot-log-wrap">' +
+                    '<summary><span>载入明细</span><b id="boot-log-count">0</b><span>项</span><i class="boot__chev"></i></summary>' +
+                    '<div class="boot__log-body" id="boot-log"></div>' +
+                '</details>' +
+                '<div class="boot__hint">字体 7 种 · 约 42.8 MB，仅首次下载；之后从本地缓存读取</div>' +
             '</div>';
 
-        var bar = document.getElementById('boot-bar');
+        var byId = function (id) { return document.getElementById(id); };
+        var els = {
+            pct: byId('boot-pct'),
+            done: byId('boot-done'),
+            total: byId('boot-total'),
+            bytes: byId('boot-bytes'),
+            bar: byId('boot-bar'),
+            now: byId('boot-now'),
+            nowLabel: byId('boot-now-label'),
+            log: byId('boot-log'),
+            logCount: byId('boot-log-count'),
+            logWrap: byId('boot-log-wrap'),
+            steps: byId('boot-steps')
+        };
 
-        function mark(name) {
-            if (done[name] || opened) return;
-            done[name] = true;
+        /* ------------------------------ 小工具 ------------------------------ */
 
-            var el = boot.querySelector('[data-step="' + name + '"]');
+        function fmtSize(n) {
+            if (!n) return '—';
+            if (n < 1024) return n + ' B';
+            if (n < 1048576) return Math.round(n / 1024) + ' KB';
+            return (n / 1048576).toFixed(1) + ' MB';
+        }
+
+        function fmtMs(n) {
+            if (!n && n !== 0) return '—';
+            return n < 1000 ? Math.round(n) + ' ms' : (n / 1000).toFixed(1) + ' s';
+        }
+
+        function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+        function kindOf(name) {
+            var m = /\.([a-z0-9]+)$/i.exec(name);
+            var e = m ? m[1].toLowerCase() : '';
+            if (e === 'woff2' || e === 'woff' || e === 'ttf' || e === 'otf') return '字体';
+            if (e === 'css') return '样式';
+            if (e === 'js' || e === 'mjs') return '脚本';
+            if (e === 'json') return '数据';
+            if (e === 'md') return '正文';
+            if (e === 'png' || e === 'jpg' || e === 'jpeg' || e === 'webp' || e === 'gif' || e === 'svg' || e === 'ico') return '图片';
+            if (e === 'html') return '页面';
+            return '资源';
+        }
+
+        function tick() {
+            var pct = totalCount ? Math.round(doneCount / totalCount * 100) : 0;
+            els.pct.textContent = pad2(pct);
+            els.bar.style.width = pct + '%';
+            els.done.textContent = String(doneCount);
+            els.total.textContent = String(totalCount);
+            els.bytes.textContent = fmtSize(bytes);
+        }
+
+        function setNow(label, file) {
+            els.nowLabel.textContent = label;
+            els.now.textContent = file || '—';
+        }
+
+        function markStep(name) {
+            var el = els.steps.querySelector('[data-step="' + name + '"]');
             if (el) el.className = 'boot__step is-done';
-
-            var n = 0;
-            for (var k in done) { if (done[k]) n++; }
-            if (bar) bar.style.width = Math.round(n / 3 * 100) + '%';
-
-            maybeOpen();
         }
 
-        function maybeOpen() {
-            if (opened || !done.cache || !done.fonts || !done.ready) return;
+        /* --------------------------- 载入明细（真实时序） --------------------------- */
+
+        var seen = Object.create(null);
+
+        function addRow(entry) {
+            var url = entry.name;
+            if (seen[url]) return;
+            seen[url] = true;
+            lastActivity = Date.now();
+            if (!/^https?:/i.test(url)) return;
+
+            var file = url.split('/').pop().split('?')[0];
+            try { file = decodeURIComponent(file); } catch (e) { /* 保持原样 */ }
+            var size = entry.decodedBodySize || entry.transferSize || 0;
+            var source = entry.transferSize > 0 ? '网络' : '缓存';
+
+            var row = document.createElement('div');
+            row.className = 'boot__log-row';
+            row.title = url;
+
+            var kind = document.createElement('i');
+            kind.className = 'boot__log-kind';
+            kind.textContent = kindOf(file);
+
+            var name = document.createElement('b');
+            name.className = 'boot__log-name';
+            name.textContent = file;
+
+            var sizeEl = document.createElement('em');
+            sizeEl.className = 'boot__log-size';
+            sizeEl.textContent = size ? fmtSize(size) : '—';
+
+            var meta = document.createElement('span');
+            meta.className = 'boot__log-meta';
+            meta.textContent = fmtMs(entry.duration) + ' · ' + source;
+
+            row.appendChild(kind);
+            row.appendChild(name);
+            row.appendChild(sizeEl);
+            row.appendChild(meta);
+            els.log.appendChild(row);
+            els.logCount.textContent = String(els.log.children.length);
+            if (els.logWrap.open) els.log.scrollTop = els.log.scrollHeight;
+        }
+
+        try {
+            performance.getEntriesByType('resource').forEach(addRow);
+        } catch (e) { /* 忽略 */ }
+
+        var observer = null;
+        if (window.PerformanceObserver) {
+            try {
+                observer = new PerformanceObserver(function (list) {
+                    list.getEntries().forEach(addRow);
+                });
+                observer.observe({ type: 'resource', buffered: true });
+            } catch (e) { /* 老内核没有 type/buffered，忽略 */ }
+        }
+
+        /* ------------------------------- 任务框架 ------------------------------- */
+
+        function withCap(job, ms) {
+            return new Promise(function (resolve) {
+                var timer = setTimeout(function () { resolve(null); }, ms);
+                Promise.resolve().then(job).then(function (size) {
+                    clearTimeout(timer);
+                    resolve(size == null ? 0 : size);
+                }, function () {
+                    clearTimeout(timer);
+                    resolve(null);          // null = 这一项失败 / 超时
+                });
+            });
+        }
+
+        function runOne(job, ms) {
+            return withCap(job, ms).then(function (size) {
+                if (size === null) failed++;
+                else bytes += size;
+                doneCount++;
+                tick();
+            });
+        }
+
+        /* ------------------------------ ① 本地缓存 ------------------------------ */
+
+        function waitForReady() {
+            if (!navigator.serviceWorker || !navigator.serviceWorker.ready) return Promise.resolve(false);
+            return navigator.serviceWorker.ready.then(function () {
+                // clients.claim() 是异步的：等它真的接管本页，这样字体 → SW 才会写进缓存
+                if (navigator.serviceWorker.controller) return true;
+                return new Promise(function (resolve) {
+                    var timer = setTimeout(function () { resolve(true); }, 2500);
+                    navigator.serviceWorker.addEventListener('controllerchange', function () {
+                        clearTimeout(timer);
+                        resolve(true);
+                    }, { once: true });
+                });
+            }, function () { return false; });
+        }
+
+        function countCache() {
+            if (!window.caches) return Promise.resolve(null);
+            return caches.keys().then(function (names) {
+                var target = null;
+                for (var i = 0; i < names.length; i++) {
+                    if (names[i].indexOf('starlight-cache-') === 0) target = names[i];
+                }
+                if (!target) return null;
+                return caches.open(target)
+                    .then(function (cache) { return cache.keys(); })
+                    .then(function (keys) { return keys.length; });
+            }).catch(function () { return null; });
+        }
+
+        function runCache() {
+            setNow('本地缓存', '预缓存页面、样式与脚本');
+            return runOne(function () {
+                return waitForReady().then(function (ok) {
+                    if (!ok) return 0;
+                    setNow('本地缓存', '校验缓存清单');
+                    return countCache().then(function (n) {
+                        setNow('本地缓存', n == null ? '已就绪' : '已就绪 · ' + n + ' 项');
+                        return 0;
+                    });
+                });
+            }, CAP_CACHE).then(function () { markStep('cache'); });
+        }
+
+        /* -------------------------------- ② 字体 -------------------------------- */
+
+        function warmFile(url, cacheIt) {
+            return fetch(url, { credentials: 'same-origin' }).then(function (res) {
+                if (!res || !res.ok) throw new Error('HTTP ' + (res && res.status));
+
+                /* 大字体：页面自己写进跨版本缓存（首次访问时 SW 还没接管，存不下来）。
+                   ⚠️ clone 必须在读 body 之前同步做 —— 异步的 caches.open() 回调里再 clone
+                   时 body 已经被下面的 reader 读掉，会抛 "body is already used"。 */
+                var copy = (cacheIt && window.caches) ? res.clone() : null;
+                if (copy) {
+                    try {
+                        caches.open(FONT_CACHE).then(function (cache) {
+                            cache.put(url, copy).catch(function () { });
+                        }).catch(function () { });
+                    } catch (e) { /* 忽略 */ }
+                }
+
+                if (res.body && res.body.getReader) {
+                    var reader = res.body.getReader();
+                    var size = 0;
+                    return (function pump() {
+                        return reader.read().then(function (step) {
+                            if (step.done) return size;
+                            if (step.value) size += step.value.byteLength;
+                            return pump();
+                        });
+                    })();
+                }
+                return res.blob().then(function (blob) { return blob.size; });
+            });
+        }
+
+        function warmFont(font) {
+            /* 先让字体管线去取（这一步同时把文件放进浏览器缓存），再 fetch 一次：
+               · 拿到准确字节数写进读数
+               · 把响应写进跨版本缓存（`document.fonts.load` 的请求页面侧拿不到响应）
+               顺序很重要：反过来先 fetch 的话，字体管线会再发一次请求。 */
+            var load = (document.fonts && document.fonts.load)
+                ? document.fonts.load(font.face).catch(function () { })
+                : Promise.resolve();
+
+            return load.then(function () {
+                return warmFile(font.file, true);
+            });
+        }
+
+        function runFonts() {
+            var i = 0;
+
+            function next() {
+                if (i >= FONTS.length) {
+                    markStep('fonts');
+                    return Promise.resolve();
+                }
+                var font = FONTS[i++];
+                var short = font.file.split('/').pop();
+                setNow('载入字体', short);
+                return runOne(function () { return warmFont(font); }, CAP_TASK).then(next);
+            }
+
+            return next();
+        }
+
+        /* ------------------------------ ③ 文章数据 ------------------------------ */
+
+        function runData() {
+            setNow('预载数据', 'index.json');
+            return runOne(function () {
+                return fetch('/assets/post/index.json', { credentials: 'same-origin' })
+                    .then(function (res) {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        return res.json();
+                    })
+                    .then(function (list) {
+                        if (Array.isArray(list) && list.length) firstPost = String(list[0]);
+                        return 0;
+                    });
+            }, CAP_TASK).then(function () {
+                if (!firstPost) { doneCount++; tick(); return; }   // 没有文章：这一项直接算完
+                setNow('预载数据', firstPost);
+                return runOne(function () {
+                    return warmFile('/assets/post/' + encodeURIComponent(firstPost), false);
+                }, CAP_TASK);
+            }).then(function () { markStep('data'); });
+        }
+
+        /* ------------------------------ ④ 页面就绪 ------------------------------ */
+
+        function waitLoad() {
+            return new Promise(function (resolve) {
+                if (document.readyState === 'complete') return resolve(0);
+                window.addEventListener('load', function () { resolve(0); }, { once: true });
+            });
+        }
+
+        function runLoad() {
+            setNow('系统就绪', '等待页面自身资源');
+            return runOne(waitLoad, CAP_TASK).then(function () { markStep('ready'); });
+        }
+
+        /* ------------------------- ⑤ 等资源活动安静下来 ------------------------- */
+
+        function waitQuiet(minQuiet, maxWait) {
+            var started = Date.now();
+            return new Promise(function (resolve) {
+                (function check() {
+                    var now = Date.now();
+                    if (now - lastActivity >= minQuiet || now - started >= maxWait) return resolve();
+                    window.setTimeout(check, 100);
+                })();
+            });
+        }
+
+        /* -------------------------------- 启动 -------------------------------- */
+
+        totalCount = 1 + FONTS.length + 2 + 1;     // 缓存 + 字体 + 索引/正文 + load
+        tick();
+
+        var cacheDone = runCache();
+        var fontsDone = runFonts();
+        var dataDone = cacheDone.then(runData);
+        var loadDone = runLoad();
+
+        Promise.all([cacheDone, fontsDone, dataDone, loadDone]).then(function () {
+            setNow('就绪', failed ? failed + ' 项跳过' : '全部资源已就绪');
+            return waitQuiet(500, 4000);
+        }).then(function () {
+            if (opened) return;
             window.setTimeout(open, Math.max(0, MIN_MS - (Date.now() - t0)));
-        }
+        });
+
+        /* -------------------------------- 开门 -------------------------------- */
 
         function open() {
             if (opened) return;
             opened = true;
+
+            if (observer) {
+                try { observer.disconnect(); } catch (e) { /* 忽略 */ }
+            }
 
             /* 记下「这台浏览器已经走过加载流程」：以后各页都不再显示加载屏，
                除非清掉站点数据（localStorage 一并被清）或用 ?boot=1 强制重播。 */
@@ -136,46 +476,7 @@ function sssSupportsCrossDocVT() {
             }, 1200);                        // 0.2s 错拍 + 0.8s 开门 + 余量
         }
 
-        // ① 预缓存：SW 的 install 里 waitUntil 的就是预缓存，所以 ready 即缓存完成
-        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-            navigator.serviceWorker.ready.then(function () { mark('cache'); },
-                                               function () { mark('cache'); });
-        } else {
-            mark('cache');
-        }
-        window.setTimeout(function () { mark('cache'); }, CAP_CACHE);
-
-        // ② 字体
-        //    必须**显式**要求加载具体字面，不能只 await document.fonts.ready ——
-        //    实测（无头 Chrome 量过）那一刻还没有任何字体进入加载流程，ready 是个
-        //    已完成的 promise，.then 立刻就跑，这个读数等于形同虚设：门开在字体前面，
-        //    露出来的就是"回退字体 → 真实字体"的突变。
-        //    字面清单见文件开头的 sssFontFaces()
-        var faces = sssFontFaces();
-        if (document.fonts && document.fonts.load) {
-            Promise.all(faces.map(function (face) {
-                // 单个字面失败（例如字体文件缺失）不该把人卡住
-                return document.fonts.load(face).catch(function () {});
-            }))
-                // 再挂一次 ready，兜住页面上其它字面（斜体等）；
-                // 放在 loads 之后才可信 —— 这时确实有字体在加载它才会等。
-                .then(function () { return document.fonts.ready; })
-                .then(function () { mark('fonts'); })
-                .catch(function () { mark('fonts'); });
-        } else {
-            mark('fonts');
-        }
-        window.setTimeout(function () { mark('fonts'); }, CAP_FONTS);
-
-        // ③ 页面 load
-        if (document.readyState === 'complete') {
-            mark('ready');
-        } else {
-            window.addEventListener('load', function () { mark('ready'); });
-        }
-        window.setTimeout(function () { mark('ready'); }, CAP_ALL);
-
-        window.setTimeout(open, CAP_ALL);       // 兜底：无论如何都放人进去
+        window.setTimeout(open, CAP_TOTAL); // 兜底：网络卡死也放人进去
     }
 
     /* 预渲染中的文档是隐藏的，先别启动：
