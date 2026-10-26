@@ -25,11 +25,11 @@
     align-items: start;
 }
 
-/* 左栏：名录。桌面端固定在视口里，自己滚动；右栏再长也不影响它。 */
+/* 左栏：名录。桌面端固定在视口里，自己滚动；高度与人员 / 舰船档案共用同一变量。 */
 .facility-list {
     position: sticky;
     top: 96px;
-    max-height: calc(100vh - 300px);
+    height: var(--archive-list-height);
     padding-right: 6px;
     overflow-y: auto;
 }
@@ -103,6 +103,7 @@
 
 .facility-list__name {
     font-size: 14px;
+    line-height: 1.5;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.9);
     transition: color 0.2s ease;
@@ -111,6 +112,7 @@
 .facility-list__en {
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
+    line-height: 1.5;
     letter-spacing: 0;
     color: rgba(255, 255, 255, 0.46);
 }
@@ -447,6 +449,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         column-gap: 8px;
+        height: auto;
         max-height: none;
         padding-right: 0;
         overflow: visible;

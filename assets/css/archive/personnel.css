@@ -115,11 +115,11 @@ a.personnel-card:focus-visible {
     align-items: start;
 }
 
-/* 左栏：名单。桌面端固定在视口里，自己滚动；右栏长也不影响它。 */
+/* 左栏：名单。桌面端固定在视口里，自己滚动；高度与舰船 / 深空设施档案共用同一变量。 */
 .personnel-list {
     position: sticky;
     top: 96px;
-    max-height: calc(100vh - 300px);
+    height: var(--archive-list-height);
     padding-right: 6px;
     overflow-y: auto;
 }
@@ -151,12 +151,12 @@ a.personnel-card:focus-visible {
     margin-top: 4px;
 }
 
-/* 一条名录：中文名在上，拉丁化名称在下 */
+/* 一条名录：中文名在上，拉丁化名称在下（行高与另两份档案页统一） */
 .personnel-list__item {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 7px 10px;
+    padding: 8px 10px;
 
     color: #fff;
     text-decoration: none;
@@ -185,6 +185,7 @@ a.personnel-card:focus-visible {
 
 .personnel-list__name {
     font-size: 14px;
+    line-height: 1.5;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.9);
     transition: color 0.2s ease;
@@ -193,6 +194,7 @@ a.personnel-card:focus-visible {
 .personnel-list__latin {
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
+    line-height: 1.5;
     letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.5);
 }
@@ -325,6 +327,7 @@ a.personnel-card:focus-visible {
 
     .personnel-list {
         position: static;
+        height: auto;
         max-height: none;
         padding-right: 0;
         overflow: visible;

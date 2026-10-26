@@ -25,7 +25,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.70';
+const CACHE_VERSION = 'v5.72';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 // 断网且无缓存时显示的离线页面（与线上 404 页是同一个文件，不再存两份）
@@ -61,6 +61,8 @@ const PRECACHE_URLS = [
     '/archive/personnel/spm.html',
     '/archive/facility/',
     '/archive/facility/index.html',
+    '/archive/vessel/',
+    '/archive/vessel/index.html',
     '/about/',
     '/about/index.html',
     '/main/mainpage.html',
@@ -75,6 +77,7 @@ const PRECACHE_URLS = [
     '/assets/css/archive/organization.css',
     '/assets/css/archive/personnel.css',
     '/assets/css/archive/facility.css',
+    '/assets/css/archive/vessel.css',
     '/assets/css/main/mainpage.css',
     '/assets/css/main/cq.css',
     '/assets/css/starmap/index.css',
@@ -90,6 +93,8 @@ const PRECACHE_URLS = [
     '/assets/data/personnel.js',
     '/assets/js/facility.js',
     '/assets/data/facility.js',
+    '/assets/js/vessel.js',
+    '/assets/data/vessel.js',
     '/assets/js/org-member.js',
     '/assets/js/org-secret.js',
     '/assets/js/eggs.js',
@@ -101,7 +106,7 @@ const PRECACHE_URLS = [
     '/assets/js/background.js',
     '/assets/js/starmap-bg.js',
     '/assets/js/starmap-data.js',
-    '/assets/js/starmap.js',
+    '/assets/data/starmap.js',
     '/assets/js/marked.min.js',
 
     // 文章索引

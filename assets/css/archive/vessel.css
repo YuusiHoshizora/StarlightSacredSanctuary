@@ -1,0 +1,336 @@
+/* ==========================================================================
+   舰船档案（archive/vessel/）
+   --------------------------------------------------------------------------
+   单页：左栏舰船名录（舰船名 + 舰种英文，按尺寸分类分组），右栏选中舰船的档案。
+   点击名录直接换右栏，链接用 #舰船代号 定位。
+   版式与「深空设施档案」同一套：左栏名录 + 右栏档案；
+   面板沿用 organization.css 的 .org-block / .org-meta，不另立一套材质。
+   ========================================================================== */
+
+/* 整页收高：页头只留标题，右栏尽量一屏读完 */
+.vessel-section {
+    padding-top: 96px;
+    padding-bottom: 32px;
+}
+
+.vessel-section .archive-head {
+    margin-bottom: 16px;
+}
+
+/* ── 左栏名录 + 右栏档案 ── */
+.vessel-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
+/* 左栏：名录。桌面端固定在视口里，自己滚动；高度与人员 / 深空设施档案共用同一变量。 */
+.vessel-list {
+    position: sticky;
+    top: 96px;
+    height: var(--archive-list-height);
+    padding-right: 6px;
+    overflow-y: auto;
+}
+
+.vessel-list__title {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.vessel-list__title span {
+    color: #FFD700;
+}
+
+/* 尺寸分组头：巨型舰船 / Large Vessel；下方一条细线 */
+.vessel-list__group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 18px 0 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.vessel-list__title + .vessel-list__group {
+    margin-top: 4px;
+}
+
+.vessel-list__group-en {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    letter-spacing: 0;
+    color: rgba(255, 215, 0, 0.55);
+}
+
+/* 一条名录：舰船名在上，舰种英文在下 */
+.vessel-list__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+
+    color: #fff;
+    text-decoration: none;
+
+    border-left: 2px solid transparent;
+    transition: var(--ctl-transition),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.vessel-list__item:hover,
+.vessel-list__item:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+    border-left-color: rgba(255, 215, 0, 0.35);
+}
+
+.vessel-list__item.is-active {
+    background: rgba(255, 215, 0, 0.06);
+    border-left-color: #FFD700;
+}
+
+.vessel-list__item:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 1px;
+}
+
+.vessel-list__name {
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: color 0.2s ease;
+}
+
+.vessel-list__en {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.46);
+}
+
+.vessel-list__item.is-active .vessel-list__name {
+    color: #FFD700;
+}
+
+/* ── 右栏：选中舰船的档案 ── */
+.vessel-detail {
+    min-width: 0;
+}
+
+.vessel-profile {
+    display: none;
+
+    /* 从别的页面直接带 #舰船代号 进来时，浏览器会把档案滚到视口顶部；
+       留出顶栏的高度，标题才不会钻进固定导航栏下面。 */
+    scroll-margin-top: 96px;
+}
+
+.vessel-profile.is-active {
+    display: block;
+}
+
+/* 档案头：舰种 → 舰船名 → 舰种英文 */
+.vessel-profile__head {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vessel-profile__kicker {
+    margin: 0 0 8px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.62);
+}
+
+.vessel-profile__name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 3px;
+    color: #FFD700;
+}
+
+.vessel-profile__en {
+    margin: 6px 0 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* 右栏里的面板比组织页更紧凑：目标是一屏读完 */
+.vessel-profile .org-block {
+    padding: 18px 22px;
+    margin-bottom: 14px;
+}
+
+.vessel-profile .org-block:last-child {
+    margin-bottom: 0;
+}
+
+.vessel-profile .org-block__head {
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.vessel-profile .org-meta {
+    gap: 6px;
+}
+
+.vessel-profile .org-meta dd {
+    font-size: 13px;
+}
+
+.vessel-profile .org-block p {
+    margin-bottom: 0.85em;
+    line-height: 1.85;
+}
+
+/* ── 详细装备：一行一套系统 ── */
+.vessel-modules {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.vessel-modules__row {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+}
+
+.vessel-modules dt {
+    min-width: 4.4em;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.vessel-modules dd {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.85;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.vessel-modules__list {
+    margin: 0;
+    padding-left: 1.3em;
+}
+
+.vessel-modules__list li {
+    margin-bottom: 3px;
+}
+
+.vessel-modules__list li:last-child {
+    margin-bottom: 0;
+}
+
+.vessel-modules__list li::marker {
+    color: rgba(255, 215, 0, 0.5);
+}
+
+/* 该舰没有这一套系统（资料库写的是 N/A） */
+.vessel-na {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 「详细装备无意义」这类说明：比正文淡一档 */
+.vessel-equipment-note {
+    font-size: 12px;
+    line-height: 1.9;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+/* ── 数据损坏 ──
+   空字段 / 截断的记录比正文再淡一档；整条记录的状态单独一行，左侧一道暗红细线。
+   （与人员档案的 .personnel-missing、深空设施档案的 .facility-missing 同一口径，
+   红色只表示「读不到」。） */
+.vessel-missing {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.vessel-damaged {
+    margin: 12px 0 0;
+    padding: 2px 0 2px 12px;
+    border-left: 2px solid rgba(255, 107, 107, 0.45);
+
+    font-size: 12px;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── 窄屏：名录和档案上下排 ── */
+@media (max-width: 900px) {
+
+    .vessel-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    /* 名录不再竖着占一整屏：铺成两列小条目，档案紧跟其后 */
+    .vessel-list {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        column-gap: 8px;
+        height: auto;
+        max-height: none;
+        padding-right: 0;
+        overflow: visible;
+    }
+
+    .vessel-list__title,
+    .vessel-list__group {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .vessel-section {
+        padding-bottom: 56px;
+    }
+
+    .vessel-profile__name {
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
+    .vessel-profile .org-block {
+        padding: 16px 16px;
+    }
+
+    .vessel-profile .org-block__head {
+        font-size: 14px;
+    }
+
+    .vessel-modules__row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .vessel-modules dt {
+        min-width: 0;
+    }
+}
