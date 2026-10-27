@@ -183,16 +183,38 @@ npx serve .                    # 或者用 Node 生态的静态服务器
 > 但如果在手机上用 `192.168.x.x` 这类局域网地址预览，Service Worker 会照常接管，
 > 改动没生效时强制刷新（Ctrl + F5）一下。
 
-> ⚠️ **做自动化冒烟测试时，绝对不要关掉用户正在使用的浏览器。**
-> 不要用 `Get-Process chrome | Stop-Process`（或 `taskkill /IM firefox.exe`）这种**按进程名全杀**
-> 的方式收尾 —— 那会把用户正开着的标签页一起关掉。正确做法：
-> - 用**独立的 profile / 数据目录**：Chrome `--user-data-dir=<临时目录>`，
->   Firefox `--profile <临时目录>`（不要复用默认 profile）
-> - 启动时拿 `Start-Process ... -PassThru` 返回的 **PID**，结束时只 `Stop-Process -Id $p.Id`
-> - 收尾删掉那个临时 profile，别碰默认 profile
->
-> `--headless` 也不会让"按名杀"变得安全：无头进程和用户窗口是同一个进程名。
-> 这条是踩过的：按名清理把本地正在用的浏览器一起关了。
+### 自动化测试时：不要关掉用户正在用的浏览器
+
+用脚本跑冒烟测试（无头 Chrome / Firefox）时，**收尾禁止按进程名全杀**：
+
+```powershell
+# ❌ 绝对不要：会把用户正开着的窗口一起关掉
+Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process firefox -ErrorAction SilentlyContinue | Stop-Process -Force
+taskkill /IM firefox.exe /F
+```
+
+`--headless` 也不能让"按名杀"变得安全 —— 无头进程和用户的窗口是同一个进程名。
+正确做法：
+
+1. **永远用独立的 profile / 数据目录**：Chrome `--user-data-dir=<临时目录>`，
+   Firefox `--profile <临时目录>`。不要碰默认 profile（那里有用户的登录态和标签页）
+2. 启动时用 `Start-Process ... -PassThru` 拿到 **PID**，收尾只结束它：
+   ```powershell
+   $p = Start-Process -FilePath $exe -ArgumentList @(...) -PassThru
+   # …测试…
+   Stop-Process -Id $p.Id -Force
+   ```
+3. 万一有子进程残留，**只按临时 profile 路径过滤**，不要按名字：
+   ```powershell
+   Get-CimInstance Win32_Process -Filter "Name='firefox.exe'" |
+     Where-Object { $_.CommandLine -like "*$profile*" } |
+     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+   ```
+4. 收尾删掉那个临时 profile
+
+> 这条是踩出来的：两次按进程名清理，把本机正在用的浏览器窗口一起关了（用户当时的
+> 标签页直接消失）。测试脚本宁可多留一个进程几秒，也不要按名字扫射。
 
 ---
 
@@ -512,9 +534,11 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     文字那边已经由 `font-display: block` 管着了：字体没到就不显示文字，骨架照常先出来。
     现在的实测是：内容藏起 24ms → 骨架淡入 189ms（空白 165ms）→ 字体就绪 461ms 文字浮现
   · 加新页面时内容容器要能被上面那三个选择器覆盖到（要么用 `<main>`，要么用 `.main-layout`）
-  · **Firefox 等没有跨文档 View Transitions 的内核**：`seamless.js` 末尾那段会在点站内链接时
-    挂 `sss-leaving`，让内容先淡出 160ms 再跳转，下一页的 `sss-switch` 接上淡入；
-    这类内核里 `sss-switch` 的 `MIN_MS` 同时改成 0（不然淡出之后还要空 120ms）。
+  · **Firefox 等没有跨文档 View Transitions 的内核**：**不要**做"先淡出再跳转"。
+    实测点链接后旧文档约 20ms 就被卸载，淡出只来得及渲染一帧（内容接近全透明），
+    后面等待新页面的那段时间就剩一块空内容区 —— 用户感觉到的"卡一下"就是它。
+    现在交给浏览器：旧页面一直显示到新文档可以绘制为止，再靠 `sss-switch` 把新内容淡入；
+    这类内核里 `MIN_MS` 改成 0。`seamless.js` 只保留预取回退，不再拦链接点击。
     ⚠️ 判断支持性**只能用 `sssSupportsCrossDocVT()`**（把 `@view-transition` 塞进样式表看
     会不会被解析）。Firefox 158 实测：`document.startViewTransition` 有、`view-transition-name`
     属性也认，但 `@view-transition` 整条被丢掉 —— 拿属性判断会把兜底判成"不需要"，动画全没了

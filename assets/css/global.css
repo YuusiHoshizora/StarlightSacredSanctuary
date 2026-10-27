@@ -371,9 +371,9 @@ nav a:hover{
    2) 没有跨文档过渡的内核（Firefox 等）
       不能靠 @supports 判断 —— Firefox 支持同文档的 view-transition-name，
       但到 158 仍没有 @view-transition，属性判断会误判（这段以前就是死代码）。
-      现在由 seamless.js 末尾用"把 at-rule 塞进样式表看会不会被解析"来判断：
-      不支持时点站内链接会先挂 sss-leaving 让内容淡出，再跳转；
-      新页面由下面的 sss-switch 淡入，两头接上。
+      `boot.js` 里的 sssSupportsCrossDocVT() 用"把 at-rule 塞进样式表看会不会被解析"
+      来判断；不支持时**不做上一页淡出** —— 旧页面会一直被浏览器显示到新文档可以绘制，
+      再靠下面的 sss-switch 把新内容淡入（淡出只会留下一块空内容区，正是"卡一下"的来源）。
    ========================================================================== */
 
 @view-transition{
@@ -464,28 +464,6 @@ html.sss-switch-in .site-footer{
     html.sss-switch-in main,
     html.sss-switch-in .main-layout,
     html.sss-switch-in .site-footer{
-        animation:none;
-    }
-}
-
-/* 没有跨文档 View Transitions 的内核（Firefox 等）：seamless.js 在点站内链接时
-   先挂 sss-leaving，让内容淡出，再跳转 —— 与下一页 sss-switch 的淡入接上。
-   放在 sss-switch-in 之后，保证这里的 animation 覆盖它（动画属性不叠加）。 */
-html.sss-no-vt.sss-leaving main,
-html.sss-no-vt.sss-leaving .main-layout,
-html.sss-no-vt.sss-leaving .site-footer{
-    animation:sss-content-out 0.16s cubic-bezier(0.4, 0, 1, 1) both;
-}
-
-@keyframes sss-content-out{
-    from{ opacity:1 }
-    to  { opacity:0 }
-}
-
-@media (prefers-reduced-motion: reduce){
-    html.sss-no-vt.sss-leaving main,
-    html.sss-no-vt.sss-leaving .main-layout,
-    html.sss-no-vt.sss-leaving .site-footer{
         animation:none;
     }
 }

@@ -513,10 +513,9 @@ function sssSupportsCrossDocVT() {
 
     var root = document.documentElement;
 
-    /* 没有跨文档 View Transitions 的内核（Firefox 等）走 seamless.js 末尾那段兜底：
-       上一页点链接时先把内容淡出，这里就不要再停 120ms —— 否则淡出之后还要空一段。 */
+    /* 没有跨文档 View Transitions 的内核（Firefox 等）：旧页面会一直显示到新文档
+       可以绘制为止，所以这里就不要再停 120ms 了 —— 停了只是让内容多空白一段。 */
     var noVT = !sssSupportsCrossDocVT();
-    if (noVT) root.classList.add('sss-no-vt');
 
     if (!root.classList.contains('sss-switch')) return;    // 这一趟不是站内跳转
 

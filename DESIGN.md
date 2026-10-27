@@ -72,7 +72,7 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 1. **`<head>` 的"启动三件套"**：`boot.css` + `boot.js` + 那段决定是否显示加载屏的内联脚本
    （见 `MAINTENANCE.md` 的"七件事"，以及第 8 节）
 2. **favicon**：`<link rel="icon" type="image/svg+xml" href="…/assets/img/logo_SSS.svg">`
-3. **导航栏**：`<nav id="site-nav">` 七个链接（末项「邮箱」指向 `https://mail.stsas.top/`，跨站）+ 紧随其后的折叠按钮 + `navtoggle.js`
+3. **导航栏**：`<nav id="site-nav">` 七个链接（末项「邮箱」指向 `https://mail.stsas.top/`，跨站，暂时停用）+ 紧随其后的折叠按钮 + `navtoggle.js`
 4. **内容容器**：必须是 `<main>` 或 `.main-layout`（跨页过渡靠它选择，见第 8 节）
 5. **页脚** `.site-footer`
 6. **`<html>` 初始带 `no-js`**，由脚本换成 `js`
@@ -222,9 +222,10 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 （`main` / `.main-layout` / `.site-footer`），等字体等于让整页空掉 0.3–0.7 秒，
 看起来就是一次黑屏。文字那边已经由 `font-display: block` 管着了。
 
-没有跨文档 View Transitions 的内核（Firefox 等）由 `seamless.js` 补一次"内容先淡出"：
-左键点站内链接 → 挂 `sss-leaving`（160ms）→ 跳转 → 下一页的 `sss-switch` 接上淡入；
-这类内核里 `sss-switch` 的最短停留改为 0，免得淡出后再空一段。
+没有跨文档 View Transitions 的内核（Firefox 等）：**不做"上一页淡出"**，让浏览器自己把旧页面
+一直显示到新文档可以绘制为止，再由 `sss-switch` 把新内容淡入；这类内核里 `sss-switch` 的最短
+停留改为 0。⚠️ 别再加"先淡出再跳转"：实测点链接后旧文档约 20ms 就被卸载，淡出只来得及渲染
+一帧（内容接近全透明），随后整段时间都是一块空的内容区 —— 那正是「卡一下」的来源。
 ⚠️ **不能用 `CSS.supports('view-transition-name','none')` 判断跨文档过渡**：Firefox 支持
 同文档的 View Transitions，属性存在但没有 `@view-transition`（158 实测：属性 true、
 at-rule 被丢弃），属性判断会把兜底动画变成死代码。现在用 `sssSupportsCrossDocVT()`
