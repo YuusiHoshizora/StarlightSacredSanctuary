@@ -22,6 +22,21 @@
     padding: 104px 40px 64px;
 }
 
+/* 只给读屏 / 搜索引擎看的文字（本页的 h1）：视觉上不画页标题，语义上不能缺。
+   写法同组织页的 .org-sr-only（assets/css/archive/organization.css）。 */
+.tool-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* ── 左栏：二级入口 ── */
 .tool-side__title {
     margin: 0;
@@ -45,6 +60,15 @@
     border-radius: var(--ctl-panel-radius);
 
     transition: background 0.25s, border-color 0.25s, transform 0.25s ease;
+}
+
+/* 「公告测试」是按钮（只发事件、不该是一条能跳转的链接）：button 自带的字体、
+   居中与宽度和列表条目不一样，这里把它拉回 .tool-entry 的样子 */
+button.tool-entry {
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 /* 左侧那条标识竖线：落在卡片**外面**（留白里），一根实心金线，默认不显示，hover / 键盘聚焦时亮起。
@@ -127,13 +151,15 @@
 }
 
 /* ── 右栏：小工具 ──
-   卡片竖着排成一列：拾色器在上、时间转换在下。
-   两张卡的宽度各自定死（都在下面），所以一列里不会互相拉扯。 */
+   三张同宽的卡**横着**排：一屏放得下，页面就不用滚。宽度都按 234px 写死，
+   横排时不会互相拉扯。窄到放不下三张时退成两列（见下面的 1160px 断点），
+   ≤900px 再退成单列。规则见 DESIGN.md「一屏放得下」。 */
 .tool-main {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 234px);
+    gap: 18px 26px;
+    align-items: start;
+    align-content: start;
 }
 
 .tool-card {
@@ -181,6 +207,13 @@
     touch-action: none;             /* 手机上拖动取色，别滚页面 */
     -webkit-user-select: none;
     user-select: none;
+}
+
+/* 键盘聚焦：跟站内其它控件一样用金色焦点环，别只靠浏览器自带的细框
+   （深色画布上不够显眼，也和全站不一致） */
+.hue__wheel:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 4px;
 }
 
 .hue__panel {
@@ -387,9 +420,11 @@
     text-align: center;
 }
 
-/* 换算后的「年内第几天」，平时只读展示；
-   同样把行高和最小高度对齐，清空或填入时卡片下边界不动 */
-.timeconv__note {
+/* 提示行：平时为空，只在输入有误时显示错误（换算成功不写推导过程，见 DESIGN.md
+   「操作界面的文案」）。行高和最小高度对齐，提示出现 / 消失时卡片下边界不动。
+   时间转换与罗马数字两张卡共用。 */
+.timeconv__note,
+.roman__note {
     margin: 8px 0 0;
     line-height: 1.45;
     min-height: 1.45em;
@@ -398,12 +433,14 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
-.timeconv__note--err {
+.timeconv__note--err,
+.roman__note--err {
     color: var(--ctl-err);
 }
 
-/* 中间的方向标记：两边都能改，所以是双向箭头 */
-.timeconv__switch {
+/* 中间的方向标记：两边都能改，所以是双向箭头（时间转换、罗马数字共用） */
+.timeconv__switch,
+.roman__switch {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -411,7 +448,8 @@
     color: rgba(255, 255, 255, 0.25);
 }
 
-.timeconv__switch svg {
+.timeconv__switch svg,
+.roman__switch svg {
     width: 14px;
     height: 14px;
     fill: none;
@@ -419,6 +457,64 @@
     stroke-width: 1.3;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+/* ── 罗马数字 ──
+   两行：阿拉伯 / 罗马，中间一个双向箭头表示互为换算。
+   卡片宽度照另外两张卡写死，上下叠着看时左右边缘对齐。 */
+.tool-card--roman {
+    width: 234px;
+}
+
+.roman__field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.roman__key {
+    flex: 0 0 44px;                /* 三种字数的标签都占这么宽，两行的输入框左边缘对齐 */
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.38);
+    white-space: nowrap;           /* 「阿拉伯」不能被挤成竖排 */
+    pointer-events: none;          /* 点字上当点空白，交给 label 聚焦输入框 */
+}
+
+.roman__field .tool-field {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    padding: 4px 6px;
+    text-align: left;              /* 字母串左对齐比居中好读 */
+}
+
+/* 阿拉伯数字与罗马数字都加一点字距：MMCDXCVIII 这种长串不挤在一起 */
+.roman__input {
+    letter-spacing: 2px;
+}
+
+/* 方向标记比时间转换那张卡矮一点：这里只有两行 */
+.roman__switch {
+    height: 26px;
+}
+
+/* ==========================================================================
+   中宽屏：三张卡横排放不下（放三张要 754px 栏宽）时退成两列 ——
+   拾色器占左列两行，时间转换与罗马数字叠在右列；
+   整体高度约等于拾色器那张卡，仍然一屏放得下。
+   ========================================================================== */
+@media (max-width: 1160px) and (min-width: 901px) {
+
+    .tool-main {
+        grid-template-columns: repeat(2, 234px);
+        grid-template-rows: auto auto;
+    }
+
+    .tool-card--hue {
+        grid-row: 1 / span 2;
+    }
 }
 
 /* ==========================================================================

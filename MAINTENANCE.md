@@ -64,7 +64,7 @@
 │   │   ├── org-secret.js       组织档案页的隐藏入口：三张部门卡拖到议会卡上解锁 DGAM
 │   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
 │   │   ├── main.js             首页打字机效果
-│   │   ├── tool.js             工具页（拾色器 + 时间转换）
+│   │   ├── tool.js             工具页（拾色器 + 时间转换 + 罗马数字）
 │   │   ├── starmap-data.js     星系数据（STARMAP_DATA）
 │   │   ├── starmap-bg.js       星图页专用的背景参数
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
@@ -182,6 +182,11 @@ npx serve .                    # 或者用 Node 生态的静态服务器
 > 改完 CSS / JS 刷新一次就能看到效果。
 > 但如果在手机上用 `192.168.x.x` 这类局域网地址预览，Service Worker 会照常接管，
 > 改动没生效时强制刷新（Ctrl + F5）一下。
+
+> IDE 内置服务器的预览地址会多一层子路径（例如 WebStorm 的
+> `http://localhost:63342/项目名/tool/index.html`）。`boot.js` / `seamless.js`
+> 按「自己脚本的地址」推算站点根，所以首屏的字体预热、`index.json` 与
+> Service Worker 注册在子路径下也能正确解析；部署在域名根时行为不变。
 
 ### 自动化测试时：不要关掉用户正在用的浏览器
 

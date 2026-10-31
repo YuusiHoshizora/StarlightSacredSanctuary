@@ -25,6 +25,19 @@
  * 页面里的 FONT_CACHE 与 sw.js 里的 FONT_CACHE 必须一致。
  * ========================================================================== */
 
+/* 站点根：本文件就在 <站点根>assets/js/boot.js，去掉这段路径就是根。
+   部署在域名根时是 "/"，被放在子路径下（IDE 内置服务器的 /项目名/、或临时挂到别的
+   目录下预览）时也能算对 —— 首屏那几个 fetch 原来写的是 "/assets/…"，在子路径下会
+   全部 404、连 sw.js 都注册不上。
+   ⚠️ 必须在脚本执行期读 document.currentScript：挪到异步回调里就变成 null 了。 */
+var SSS_SITE_ROOT = (function () {
+    try {
+        var script = document.currentScript;
+        if (script && script.src) return new URL('../../', script.src).href;
+    } catch (e) { /* 忽略，退回域名根 */ }
+    return '/';
+})();
+
 /* 这台浏览器能不能做"跨文档"的 View Transition（也就是 @view-transition 那套）。
    ⚠️ 不能用 CSS.supports('view-transition-name','none') 判断：Firefox 从 144 起支持
    **同文档**的 View Transitions（属性存在、document.startViewTransition 也有），
@@ -59,13 +72,13 @@ function sssSupportsCrossDocVT() {
        FontFace**，首次访问不会为同一份 5 MB 文件发两次请求。
        其余按使用频率：UI 与正文 → 等宽 → 斜体。 */
     var FONTS = [
-        { face: '400 16px "SSS Boot Mono"',      file: '/assets/fonts/SarasaMonoSC-Regular.woff2',     name: 'Sarasa Mono Regular' },
-        { face: '400 16px "Sarasa"',             file: '/assets/fonts/SarasaGothicSC-Regular.woff2',   name: 'Sarasa Regular' },
-        { face: '700 16px "Sarasa"',             file: '/assets/fonts/SarasaGothicSC-Bold.woff2',      name: 'Sarasa Bold' },
-        { face: '700 16px "Sarasa Mono"',        file: '/assets/fonts/SarasaMonoSC-Bold.woff2',        name: 'Sarasa Mono Bold' },
-        { face: 'italic 400 16px "Sarasa"',      file: '/assets/fonts/SarasaGothicSC-Italic.woff2',    name: 'Sarasa Italic' },
-        { face: 'italic 400 16px "Sarasa Mono"', file: '/assets/fonts/SarasaMonoSC-Italic.woff2',      name: 'Sarasa Mono Italic' },
-        { face: 'italic 700 16px "Sarasa Mono"', file: '/assets/fonts/SarasaMonoSC-BoldItalic.woff2',  name: 'Sarasa Mono Bold Italic' }
+        { face: '400 16px "SSS Boot Mono"',      file: 'assets/fonts/SarasaMonoSC-Regular.woff2',     name: 'Sarasa Mono Regular' },
+        { face: '400 16px "Sarasa"',             file: 'assets/fonts/SarasaGothicSC-Regular.woff2',   name: 'Sarasa Regular' },
+        { face: '700 16px "Sarasa"',             file: 'assets/fonts/SarasaGothicSC-Bold.woff2',      name: 'Sarasa Bold' },
+        { face: '700 16px "Sarasa Mono"',        file: 'assets/fonts/SarasaMonoSC-Bold.woff2',        name: 'Sarasa Mono Bold' },
+        { face: 'italic 400 16px "Sarasa"',      file: 'assets/fonts/SarasaGothicSC-Italic.woff2',    name: 'Sarasa Italic' },
+        { face: 'italic 400 16px "Sarasa Mono"', file: 'assets/fonts/SarasaMonoSC-Italic.woff2',      name: 'Sarasa Mono Italic' },
+        { face: 'italic 700 16px "Sarasa Mono"', file: 'assets/fonts/SarasaMonoSC-BoldItalic.woff2',  name: 'Sarasa Mono Bold Italic' }
     ];
 
     function start() {
@@ -274,19 +287,55 @@ function sssSupportsCrossDocVT() {
 
         /* ------------------------------ ① 本地缓存 ------------------------------ */
 
+        /* navigator.serviceWorker.ready 在没有注册时**永远不会 resolve** —— 它等的是
+           「有一个 active worker 接管本页」。sw.js 拿不到（404、MIME 不对）或被浏览器策略
+           挡住时就是这种情况：原来只能干等到 30 秒上限，用户看到的就是卡在 73%。
+           所以先确认「到底有没有注册」：等 load（seamless.js 在 load 之后才注册）之后再给
+           3 秒，还没有任何注册就当作没有本地缓存，直接放行。 */
+        function hasRegistration() {
+            var sw = navigator.serviceWorker;
+            if (!sw.getRegistrations) return Promise.resolve(true);   // 老内核没有这个接口
+            return sw.getRegistrations().then(function (list) {
+                return !!(list && list.length);
+            }, function () { return false; });                        // 非安全上下文等：SW 本来就不可用
+        }
+
+        function whenLoaded() {
+            if (document.readyState === 'complete') return Promise.resolve();
+            return new Promise(function (resolve) {
+                window.addEventListener('load', function () { resolve(); }, { once: true });
+            });
+        }
+
+        function waitForRegistration() {
+            var tries = 10;                    // 10 × 300ms = 3s
+            function poll() {
+                return hasRegistration().then(function (ok) {
+                    if (ok || --tries <= 0) return ok;
+                    return new Promise(function (resolve) { setTimeout(resolve, 300); }).then(poll);
+                });
+            }
+            return hasRegistration().then(function (ok) {
+                return ok ? true : whenLoaded().then(poll);
+            });
+        }
+
         function waitForReady() {
             if (!navigator.serviceWorker || !navigator.serviceWorker.ready) return Promise.resolve(false);
-            return navigator.serviceWorker.ready.then(function () {
-                // clients.claim() 是异步的：等它真的接管本页，这样字体 → SW 才会写进缓存
-                if (navigator.serviceWorker.controller) return true;
-                return new Promise(function (resolve) {
-                    var timer = setTimeout(function () { resolve(true); }, 2500);
-                    navigator.serviceWorker.addEventListener('controllerchange', function () {
-                        clearTimeout(timer);
-                        resolve(true);
-                    }, { once: true });
-                });
-            }, function () { return false; });
+            return waitForRegistration().then(function (ok) {
+                if (!ok) return false;
+                return navigator.serviceWorker.ready.then(function () {
+                    // clients.claim() 是异步的：等它真的接管本页，这样字体 → SW 才会写进缓存
+                    if (navigator.serviceWorker.controller) return true;
+                    return new Promise(function (resolve) {
+                        var timer = setTimeout(function () { resolve(true); }, 2500);
+                        navigator.serviceWorker.addEventListener('controllerchange', function () {
+                            clearTimeout(timer);
+                            resolve(true);
+                        }, { once: true });
+                    });
+                }, function () { return false; });
+            });
         }
 
         function countCache() {
@@ -360,7 +409,7 @@ function sssSupportsCrossDocVT() {
                 : Promise.resolve();
 
             return load.then(function () {
-                return warmFile(font.file, true);
+                return warmFile(SSS_SITE_ROOT + font.file, true);
             });
         }
 
@@ -386,7 +435,7 @@ function sssSupportsCrossDocVT() {
         function runData() {
             setNow('预载数据', 'index.json');
             return runOne(function () {
-                return fetch('/assets/post/index.json', { credentials: 'same-origin' })
+                return fetch(SSS_SITE_ROOT + 'assets/post/index.json', { credentials: 'same-origin' })
                     .then(function (res) {
                         if (!res.ok) throw new Error('HTTP ' + res.status);
                         return res.json();
@@ -399,7 +448,7 @@ function sssSupportsCrossDocVT() {
                 if (!firstPost) { doneCount++; tick(); return; }   // 没有文章：这一项直接算完
                 setNow('预载数据', firstPost);
                 return runOne(function () {
-                    return warmFile('/assets/post/' + encodeURIComponent(firstPost), false);
+                    return warmFile(SSS_SITE_ROOT + 'assets/post/' + encodeURIComponent(firstPost), false);
                 }, CAP_TASK);
             }).then(function () { markStep('data'); });
         }

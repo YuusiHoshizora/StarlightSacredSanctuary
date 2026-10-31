@@ -152,29 +152,33 @@
     </header>
     <main class="tool-layout">
 
+        <!-- 视觉上不画页标题（一进来就是工具卡），但语义上本页必须有 h1 -->
+        <h1 class="tool-sr-only">工具</h1>
+
         <!-- 左栏（窄）：需要二级入口的复杂工具 -->
         <aside class="tool-side">
             <h2 class="tool-side__title">测试工具</h2>
 
             <!-- 测试入口（会随站点一起发布，访客也能看到）：
-                 公告测试 → 发一个 sss:notice 事件，让 notice.js 弹一次公告
+                 公告测试 → 是个按钮（只发事件、不跳转），发一个 sss:notice 事件让 notice.js 弹公告
                  加载测试 → 就是个普通链接，跳到 ../?boot=1 重播一次首屏加载屏 -->
-            <a class="tool-entry" href="#" id="entry-notice">
+            <button type="button" class="tool-entry" id="entry-notice">
                 <span class="tool-entry__name">公告测试</span>
                 <span class="tool-entry__desc">重新弹一次站点公告</span>
-                <span class="tool-entry__arrow">›</span>
-            </a>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
+            </button>
 
             <a class="tool-entry" href="../?boot=1">
                 <span class="tool-entry__name">加载测试</span>
                 <span class="tool-entry__desc">重播一遍首屏加载流程</span>
-                <span class="tool-entry__arrow">›</span>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
             </a>
         </aside>
 
-        <!-- 右栏（宽）：可以直接用的小工具 -->
+        <!-- 右栏（宽）：可以直接用的小工具。
+             三张卡横向排开（宽度一致），一屏放得下就别让页面滚 —— 见 DESIGN.md「一屏放得下」。 -->
         <section class="tool-main">
-            <div class="tool-card">
+            <div class="tool-card tool-card--hue">
                 <h3 class="tool-card__name">拾色器</h3>
 
                 <div class="hue">
@@ -228,7 +232,7 @@
                                 </button>
                             </div>
                         </div>
-                        <p class="hue__tip" id="hue-tip"></p>
+                        <p class="hue__tip" id="hue-tip" aria-live="polite"></p>
                     </div>
                 </div>
             </div>
@@ -267,7 +271,7 @@
                             </label>
                         </div>
 
-                        <p class="timeconv__note" id="se-note"></p>
+                        <p class="timeconv__note" id="se-note" aria-live="polite"></p>
                     </section>
 
                     <!-- 中：换算方向 -->
@@ -292,19 +296,49 @@
                             </label>
                             <label class="timeconv__field">
                                 <input type="number" id="ad-month" class="tool-field" inputmode="numeric"
-                                       value="9" aria-label="公元 月（1–12）" />
+                                       value="10" aria-label="公元 月（1–12）" />
                                 <span class="timeconv__key">月</span>
                             </label>
                             <label class="timeconv__field">
                                 <input type="number" id="ad-day" class="tool-field" inputmode="numeric"
-                                       value="25" aria-label="公元 日" />
+                                       value="11" aria-label="公元 日" />
                                 <span class="timeconv__key">日</span>
                             </label>
                         </div>
 
-                        <p class="timeconv__note" id="ad-note"></p>
+                        <p class="timeconv__note" id="ad-note" aria-live="polite"></p>
                     </section>
 
+                </div>
+            </div>
+
+            <!-- 罗马数字：阿拉伯数字 ⇄ 罗马数字，两边都能改，改哪边由哪边驱动另一边。
+                 只做标准写法 1–3999（罗马数字没有 0 和负数，4000 起要用上划线，这里不支持）。 -->
+            <div class="tool-card tool-card--roman">
+                <h3 class="tool-card__name">罗马数字</h3>
+
+                <div class="roman">
+                    <label class="roman__field">
+                        <span class="roman__key">阿拉伯</span>
+                        <input type="text" id="roman-arabic" class="tool-field roman__input"
+                               value="2599" inputmode="numeric" autocomplete="off" spellcheck="false"
+                               aria-label="阿拉伯数字（1–3999）" />
+                    </label>
+
+                    <div class="roman__switch" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                            <path d="M8 2.5v11M4.5 6L8 2.5 11.5 6M4.5 10L8 13.5 11.5 10"/>
+                        </svg>
+                    </div>
+
+                    <label class="roman__field">
+                        <span class="roman__key">罗马</span>
+                        <input type="text" id="roman-roman" class="tool-field roman__input"
+                               value="MMDXCIX" autocomplete="off" spellcheck="false"
+                               aria-label="罗马数字（I V X L C D M，1–3999）" />
+                    </label>
+
+                    <p class="roman__note" id="roman-note" aria-live="polite"></p>
                 </div>
             </div>
 
@@ -319,13 +353,12 @@
 
     <script>
     /* 工具页左栏两个测试入口的行为（另一个是普通链接，不需要脚本）：
-       「公告测试」发一个 document 上的 sss:notice 事件，notice.js 收到就弹公告。 */
+       「公告测试」是个按钮，点一下往 document 上发 sss:notice 事件，notice.js 收到就弹公告。 */
     (function () {
         var entry = document.getElementById('entry-notice');
         if (!entry) return;
 
-        entry.addEventListener('click', function (e) {
-            e.preventDefault();                 // 是个 <a href="#">，别让它跳走
+        entry.addEventListener('click', function () {
             document.dispatchEvent(new Event('sss:notice'));
         });
     })();

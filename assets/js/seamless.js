@@ -22,6 +22,18 @@
 (function () {
     'use strict';
 
+    /* 站点根：本文件在 <站点根>assets/js/seamless.js，去掉这段路径就是根。
+       部署在域名根时是 "/"；被放在子路径下预览（IDE 内置服务器的 /项目名/）时也对 ——
+       原来写死 '/sw.js'，子路径下会 404，SW 注册不上，首屏加载屏就会一直等它。
+       ⚠️ 必须在脚本执行期读 document.currentScript（下面注册发生在 load 回调里）。 */
+    var SITE_ROOT = (function () {
+        try {
+            var script = document.currentScript;
+            if (script && script.src) return new URL('../../', script.src).href;
+        } catch (err) { /* 忽略，退回域名根 */ }
+        return '/';
+    })();
+
     /* ------------------------------ Service Worker ----------------------------- */
 
     function activate(worker) {
@@ -35,7 +47,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
             navigator.serviceWorker
-                .register('/sw.js', { updateViaCache: 'none' })
+                .register(SITE_ROOT + 'sw.js', { updateViaCache: 'none' })
                 .then(function (reg) {
                     // 已有等待中的新版本：立即让它接管（新版本已预缓存好最新页面）
                     if (reg.waiting) {

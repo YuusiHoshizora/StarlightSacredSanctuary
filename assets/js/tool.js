@@ -297,6 +297,10 @@
   }
 
   canvas.addEventListener("pointerdown", (e) => {
+    /* 焦点收到画布上：输入框还聚焦时 setField 不会覆盖它（那是给「正在输入」留的守卫），
+       拖色环就会出现 HEX 停在旧值、RGB/HSL 已经变了的自相矛盾。
+       preventDefault 会挡掉浏览器默认的「按下即聚焦」，所以这里手动聚焦。 */
+    canvas.focus({ preventScroll: true });
     const rect = canvas.getBoundingClientRect();
     dragging = modeAt(e.clientX - rect.left, e.clientY - rect.top);
     try {
@@ -383,6 +387,9 @@
 
   /* ── 每行最右侧的复制按钮：复制同一行输入框里的值 ── */
   document.querySelectorAll(".hue__copy").forEach((btn) => {
+    /* 按下时别让输入框失焦：失焦会触发 update() 把框刷回当前颜色，
+       复制的就不是屏幕上看到的那串了（输完没回车也会被刷掉） */
+    btn.addEventListener("pointerdown", (e) => e.preventDefault());
     btn.addEventListener("click", () => {
       const target = document.getElementById(btn.dataset.target);
       const value = target ? target.value.trim() : "";
@@ -425,9 +432,8 @@
    两边互为输入：改星纪元就更新公元，改公元就更新星纪元；每次都由当前输入重算，
    不保留中间状态，所以来回切也不会累积误差。
 
-   界面：输入框排成「395 年 6 月 9 日」，年月日三个字放在输入框外面；不额外回显日期、不显示星期。
-   两边都报「年内第几天」，各自按自己的历法算。星纪元一年恒 360 天，落在纪元之前的
-   0 / 负数年同样是完整的一年，所以也照报年内天数，不换说法。
+   界面：输入框排成「395 年 6 月 9 日」，年月日三个字放在输入框外面；只给换算结果，
+   不回显「年内第几天」之类的推导信息（见 DESIGN.md「操作界面的文案」）。
    ============================================================ */
 (function () {
   "use strict";
@@ -453,9 +459,19 @@
   if (!el.seYear || !el.adYear) return;      // 这张卡片不在这个页面上
 
   /* ── 基础换算 ── */
+  /* Date.UTC 的坑：年份 0–99 会被当成 1900–1999（Date.UTC(50, 0, 1) 是 1950 年）。
+     本工具的「前星纪元」会换算到公元 0–99 这一段，所以必须自己按真实年份构造 UTC 时刻。
+     month 用 1–12；日/月溢出照 Date 的规则归一化（day 0 = 上个月最后一天）。 */
+  function utcMs(year, month, day) {
+    const t = new Date(0);
+    t.setUTCFullYear(year, month - 1, day);
+    t.setUTCHours(0, 0, 0, 0);
+    return t.getTime();
+  }
+
   /* 某年某月的天数（前推格里历闰年规则：4 整除、整百年须 400 整除） */
   function daysInGregorianMonth(year, month) {
-    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+    return new Date(utcMs(year, month + 1, 0)).getUTCDate();
   }
 
   function jdnToDate(jdn) {
@@ -463,7 +479,7 @@
   }
 
   function dateToJdn(year, month, day) {
-    const t = Date.UTC(year, month - 1, day);
+    const t = utcMs(year, month, day);
     if (!isFinite(t)) return null;
     return Math.round((t - EPOCH) / MS_PER_DAY);
   }
@@ -512,7 +528,7 @@
 
     const dayOfYear = jdn - dateToJdn(lo, 1, 1) + 1;
     if (dayOfYear < 1 || dayOfYear > 366) return null;
-    if (dayOfYear !== (jdnToDate(jdn).getTime() - Date.UTC(lo, 0, 1)) / MS_PER_DAY + 1) return null;
+    if (dayOfYear !== (jdnToDate(jdn).getTime() - utcMs(lo, 1, 1)) / MS_PER_DAY + 1) return null;
 
     return {
       year: lo,
@@ -531,7 +547,7 @@
     return parseInt(text, 10);
   }
 
-  /* ── 提示行 ── */
+  /* ── 提示行（只用来放错误；换算成功时保持空） ── */
   const notes = { se: el.seNote, ad: el.adNote };
 
   function setNote(side, text, isError) {
@@ -541,15 +557,11 @@
     node.classList.toggle("timeconv__note--err", !!isError);
   }
 
-  /* 两侧都报「年内第几天」，各自按自己的历法算（年长不同，同一个日子序号也不同）。
-     · 星纪元：一年恒 360 天，0 与负数年（前星纪元）也照样是完整的一年
-     · 公元：按 365/366 天算，直接用 Date 落在当年第几天 */
-  function setSeNote(seMonth, seDay) {
-    setNote("se", "年内第 " + ((seMonth - 1) * SE_MONTH_DAYS + (seDay - 1) + 1) + " 天");
-  }
-
-  function setAdNote(adYear, adMonth, adDay) {
-    setNote("ad", "年内第 " + (dateToJdn(adYear, adMonth, adDay) - dateToJdn(adYear, 1, 1) + 1) + " 天");
+  /* 输入有误：提示写在**正在编辑的那一侧**（就近），另一侧只清掉提示。
+     数字都保留 —— 用户可能只改错了一位，别把已经填好的值抹掉。 */
+  function failInput(side, text) {
+    setNote(side, text, true);
+    setNote(side === "se" ? "ad" : "se", "", false);
   }
 
   /* ── 星纪元 → 公元 ── */
@@ -562,20 +574,19 @@
       setNote("ad", "", false);          // 输入没填完：只清提示，不抹掉已经填好的数字
       return;
     }
-    if (m < 1 || m > SE_MONTHS) { setNote("ad", "星纪元的月份只有 1–12", true); return; }
-    if (d < 1 || d > SE_MONTH_DAYS) { setNote("ad", "星纪元每月固定 30 天（1–30）", true); return; }
+    if (m < 1 || m > SE_MONTHS) { failInput("se", "星纪元的月份只有 1–12"); return; }
+    if (d < 1 || d > SE_MONTH_DAYS) { failInput("se", "星纪元每月固定 30 天（1–30）"); return; }
 
     const jdn = seToJdn(y, m, d);
     const g = gregorianFromJdn(jdn);
-    if (!g) { setNote("ad", "超出可换算范围", true); return; }
+    if (!g) { failInput("se", "超出可换算范围"); return; }
 
     el.adYear.value = g.year;
     el.adMonth.value = g.month;
     el.adDay.value = g.day;
 
-    /* 两边各报自己历法里的信息 */
-    setSeNote(m, d);
-    setAdNote(g.year, g.month, g.day);
+    setNote("se", "", false);
+    setNote("ad", "", false);
   }
 
   /* ── 公元 → 星纪元 ── */
@@ -588,22 +599,22 @@
       setNote("se", "", false);
       return;
     }
-    if (m < 1 || m > 12) { setNote("se", "公元的月份只有 1–12", true); return; }
+    if (m < 1 || m > 12) { failInput("ad", "公元的月份只有 1–12"); return; }
     if (d < 1 || d > daysInGregorianMonth(y, m)) {
-      setNote("se", "公元 " + y + " 年 " + m + " 月没有 " + d + " 日", true);
+      failInput("ad", "公元 " + y + " 年 " + m + " 月没有 " + d + " 日");
       return;
     }
 
     const jdn = dateToJdn(y, m, d);
-    if (jdn === null) { setNote("se", "超出可换算范围", true); return; }
+    if (jdn === null) { failInput("ad", "超出可换算范围"); return; }
     const se = seFromJdn(jdn);
 
     el.seYear.value = se.year;
     el.seMonth.value = se.month;
     el.seDay.value = se.day;
 
-    setSeNote(se.month, se.day);
-    setAdNote(y, m, d);
+    setNote("se", "", false);
+    setNote("ad", "", false);
   }
 
   /* ── 绑定：两边都能改，谁改就由谁驱动另一边 ── */
@@ -616,4 +627,101 @@
 
   /* ── 默认值：星纪元 395 年 6 月 9 日（页面 HTML 里已经写好，这里再算一遍保证自洽） ── */
   syncFromSe();
+})();
+
+
+/* ============================================================
+   工具页脚本：罗马数字（阿拉伯数字 ⇄ 罗马数字）
+   ------------------------------------------------------------
+   · 只做标准罗马数字：1–3999。罗马数字没有 0 和负数；4000 起要用上划线
+     （V̄ 之类），这里不支持，直接报错
+   · 两边都能改：改阿拉伯就更新罗马，改罗马就更新阿拉伯
+   · 罗马输入按「标准写法」校验：先按减法规则算出值，再把它转回罗马数字比对，
+     所以 IIII / VX / IC 这类非标准写法会被拒绝，并提示正确写法
+   · 提示行只放错误；换算成功时什么都不写 —— 操作界面只给结果，不解释过程
+     （见 DESIGN.md「操作界面的文案」）
+   ============================================================ */
+(function () {
+  "use strict";
+
+  const arInput = document.getElementById("roman-arabic");
+  const rmInput = document.getElementById("roman-roman");
+  const note = document.getElementById("roman-note");
+  if (!arInput || !rmInput || !note) return;      // 这张卡片不在这个页面上
+
+  const MAX = 3999;
+  /* 从大到小排好：一直取到取不动为止，就是标准写法 */
+  const TABLE = [
+    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
+    [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
+    [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]
+  ];
+  const VALUES = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+
+  function toRoman(n) {
+    let out = "";
+    for (let i = 0; i < TABLE.length; i++) {
+      while (n >= TABLE[i][0]) {
+        out += TABLE[i][1];
+        n -= TABLE[i][0];
+      }
+    }
+    return out;
+  }
+
+  /* 返回 { n } 或 { err }；空串返回 null */
+  function fromRoman(text) {
+    const s = text.trim().toUpperCase().replace(/\s+/g, "");   // 允许小写、允许中间带空格
+    if (!s) return null;
+    if (!/^[IVXLCDM]+$/.test(s)) return { err: "只用 I V X L C D M 七个字母" };
+
+    /* 从右往左：比右边小就减，否则就加 —— 减法规则（IV / IX / XL / XC / CD / CM）自然成立 */
+    let total = 0;
+    let prev = 0;
+    for (let i = s.length - 1; i >= 0; i--) {
+      const v = VALUES[s[i]];
+      if (v < prev) total -= v;
+      else { total += v; prev = v; }
+    }
+    if (total < 1 || total > MAX) return { err: "标准罗马数字只写到 1–3999" };
+
+    const canonical = toRoman(total);
+    if (canonical !== s) return { err: "不是标准写法，应写作 " + canonical };
+    return { n: total };
+  }
+
+  /* 只显示错误；成功时清空，不列出「按位拆开」之类的推导过程 */
+  function setNote(text, isError) {
+    note.textContent = text;
+    note.classList.toggle("roman__note--err", !!isError);
+  }
+
+  function syncFromArabic() {
+    const raw = arInput.value.trim().replace(/[\s,]/g, "");   // 容忍 "2 498" / "2,498"
+    if (!raw) { setNote("", false); return; }
+    if (!/^\d+$/.test(raw)) { setNote("阿拉伯数字只能填 0–9 的整数", true); return; }
+
+    const n = parseInt(raw, 10);
+    if (n === 0) { setNote("罗马数字里没有 0（1–3999）", true); return; }
+    if (n > MAX) { setNote("标准罗马数字只写到 3999", true); return; }
+
+    rmInput.value = toRoman(n);
+    setNote("", false);
+  }
+
+  function syncFromRoman() {
+    if (!rmInput.value.trim()) { setNote("", false); return; }
+    const res = fromRoman(rmInput.value);
+    if (res.err) { setNote(res.err, true); return; }
+
+    arInput.value = String(res.n);
+    setNote("", false);
+  }
+
+  [arInput, rmInput].forEach(function (input) {
+    input.addEventListener("input", input === arInput ? syncFromArabic : syncFromRoman);
+  });
+
+  /* 默认值：2599 ⇄ MMDXCIX（HTML 里已经写好，这里再算一遍保证自洽） */
+  syncFromArabic();
 })();
