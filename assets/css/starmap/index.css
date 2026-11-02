@@ -656,19 +656,19 @@ html.starmap-enter .starmap-os{
 .starmap-os__name{
     margin:0;
     font-family:ui-monospace, "Cascadia Mono", Consolas, monospace;
-    font-size:18px;
-    letter-spacing:5px;
+    font-size:20px;
+    letter-spacing:6px;
     color:#fff;
 }
 .starmap-os__name sup{
     margin-left:2px;
-    font-size:9px;
+    font-size:10px;
     color:rgba(255,215,0,0.8);
 }
 .starmap-os__dept{
-    margin:5px 0 0;
+    margin:6px 0 0;
     font-family:ui-monospace, "Cascadia Mono", Consolas, monospace;
-    font-size:9px;
+    font-size:10px;
     letter-spacing:1.5px;
     color:rgba(255,255,255,0.4);
 }
@@ -681,7 +681,7 @@ html.starmap-enter .starmap-os{
     padding-top:12px;
     border-top:1px solid rgba(255,255,255,0.08);
     font-family:ui-monospace, "Cascadia Mono", Consolas, monospace;
-    font-size:9px;
+    font-size:10px;
     letter-spacing:2px;
     color:rgba(255,255,255,0.28);
 }
@@ -703,7 +703,7 @@ html.starmap-enter .starmap-os{
 .starmap-os__line{
     margin:0 0 12px;
     font-family:ui-monospace, "Cascadia Mono", Consolas, monospace;
-    font-size:10px;
+    font-size:12px;
     letter-spacing:1.5px;
     color:rgba(255,255,255,0.6);
 }
@@ -774,78 +774,80 @@ html.starmap-ui .starmap-right{
     background: #05060b;
 }
 
-/* 顶栏：OS 工具条 */
-.starmap-os-page .navbar{
-    height: 64px;
-    padding: 0 30px;
-    backdrop-filter: none;
-    background: rgba(5, 6, 11, 0.86);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.starmap-os-page .starmap-layout{ padding-top: 64px; }
-.starmap-os-page .logo{
-    gap: 12px;
-    font-size: 15px;
-    letter-spacing: 3px;
-}
-.starmap-os-page .logo__os{
+/* 没有导航栏：页面从最顶上开始，右上角只留一个出口 */
+.starmap-os-page .starmap-layout{ padding-top: 0; }
+
+.os-exit{
+    position: fixed;
+    top: 18px;
+    right: 28px;
+    z-index: 60;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     font-family: var(--os-mono);
-    letter-spacing: 4px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.starmap-os-page .logo__os sup{
-    margin-left: 1px;
-    font-size: 8px;
-    color: rgba(255, 215, 0, 0.8);
-}
-.starmap-os-page .logo__dept{
-    margin-left: 6px;
-    padding-left: 12px;
-    border-left: 1px solid rgba(255, 255, 255, 0.14);
-    font-family: var(--os-mono);
+.os-exit span{
     font-size: 9px;
     letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.35);
 }
-.starmap-os-page #site-nav{ gap: 22px; }
-.starmap-os-page #site-nav a{
-    font-family: var(--os-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.5);
+.os-exit:hover,
+.os-exit:focus-visible{
+    border-color: rgba(255, 215, 0, 0.65);
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.06);
+    outline: none;
 }
-.starmap-os-page #site-nav a:hover{ color: #FFD700; }
+.os-exit:hover span,
+.os-exit:focus-visible span{ color: rgba(255, 215, 0, 0.75); }
 
 /* 地图左上角读数 */
 .starmap-os-page .map-readout{
     position: absolute;
-    top: 82px;
+    top: 20px;
     left: 30px;
     z-index: 2;
     display: flex;
-    gap: 20px;
+    align-items: center;
+    gap: 18px;
     font-family: var(--os-mono);
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 2.5px;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.5);
     pointer-events: none;
 }
-.starmap-os-page .map-readout__live{
+.starmap-os-page .map-readout__os{
+    color: #FFD700;
+    letter-spacing: 3px;
+}
+.starmap-os-page .map-readout__mode{
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: rgba(255, 215, 0, 0.75);
+    gap: 7px;
+    color: rgba(255, 215, 0, 0.7);
 }
-.starmap-os-page .map-readout__live i{
-    width: 4px;
-    height: 4px;
+.starmap-os-page .map-readout__mode i{
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: #FFD700;
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+    box-shadow: 0 0 7px rgba(255, 215, 0, 0.9);
+}
+.starmap-os-page .map-readout__sector{
+    color: rgba(255, 255, 255, 0.35);
 }
 
 /* 右侧：系统读数 */
 .starmap-os-page .starmap-right{
-    width: 380px;
+    width: 400px;
     padding: 34px 32px;
     gap: 28px;
     backdrop-filter: none;
@@ -858,7 +860,7 @@ html.starmap-ui .starmap-right{
     display: block;
     margin-bottom: 16px;
     font-family: var(--os-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 3px;
     color: rgba(255, 215, 0, 0.55);
 }
@@ -868,13 +870,13 @@ html.starmap-ui .starmap-right{
 }
 .starmap-os-page .system-name{
     font-family: var(--os-mono);
-    font-size: 19px;
-    letter-spacing: 4px;
+    font-size: 24px;
+    letter-spacing: 5px;
 }
 .starmap-os-page .system-name-en{
     font-family: var(--os-mono);
-    font-size: 9px;
-    letter-spacing: 3px;
+    font-size: 11px;
+    letter-spacing: 4px;
     text-transform: uppercase;
     color: rgba(255, 215, 0, 0.6);
 }
@@ -882,7 +884,7 @@ html.starmap-ui .starmap-right{
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 .starmap-os-page .system-description{
-    font-size: 12px;
+    font-size: 14px;
     line-height: 2;
     letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.55);
@@ -896,14 +898,14 @@ html.starmap-ui .starmap-right{
 }
 .starmap-os-page .info-item .label{
     font-family: var(--os-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 2px;
     opacity: 0.45;
     margin-bottom: 6px;
 }
 .starmap-os-page .info-item .value{
     font-family: var(--os-mono);
-    font-size: 15px;
+    font-size: 18px;
     letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.9);
 }
@@ -915,7 +917,7 @@ html.starmap-ui .starmap-right{
     border-radius: 0;
     background: none;
     font-family: var(--os-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1.5px;
     color: rgba(255, 255, 255, 0.55);
 }
@@ -932,7 +934,7 @@ html.starmap-ui .starmap-right{
 }
 .starmap-os-page .empty-info{
     font-family: var(--os-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1.5px;
     line-height: 2.1;
     color: rgba(255, 255, 255, 0.35);
@@ -943,12 +945,12 @@ html.starmap-ui .starmap-right{
 .starmap-os-page .map-zoom__btn{
     border-radius: 0;
     font-family: var(--os-mono);
-    font-size: 11px;
+    font-size: 12px;
 }
 .starmap-os-page .map-search__input{
     border-radius: 0;
     font-family: var(--os-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1px;
 }
 .starmap-os-page .map-search__list{
@@ -959,32 +961,27 @@ html.starmap-ui .starmap-right{
 }
 .starmap-os-page .map-search__name{
     font-family: var(--os-mono);
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 1px;
 }
 .starmap-os-page .map-search__en{
     font-family: var(--os-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.32);
 }
 .starmap-os-page .map-search__empty{
     font-family: var(--os-mono);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 1px;
 }
 
 @media (max-width: 900px){
-    .starmap-os-page .logo__dept{ display: none; }
     .starmap-os-page .starmap-right{ width: 100%; min-width: 0; }
 }
 
 /* 空状态 & 读数微调 */
 .starmap-os-page #system-list:empty{ display: none; }
-.starmap-os-page .map-readout{
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.5);
-}
 .starmap-os-page .empty-info{
     height: auto;
     margin-top: 4px;
@@ -994,10 +991,10 @@ html.starmap-ui .starmap-right{
     text-align: left;
     opacity: 1;
     color: rgba(255, 255, 255, 0.45);
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 1px;
 }
 .starmap-os-page .empty-info p{
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 1px;
 }

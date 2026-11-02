@@ -100,26 +100,6 @@
     <script defer src="../../assets/js/starmap-data.js"></script>
     <script defer src="../../assets/data/starmap.js"></script>
     <script defer src="../../assets/js/seamless.js"></script>
-    <script defer src="../../assets/js/navtoggle.js"></script>
-    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
-    <script type="speculationrules">
-        {
-            "prerender": [
-                {
-                    "where": {
-                        "and": [
-                            { "selector_matches": "nav a" },
-                            { "not": { "href_matches": "/" } }
-                        ]
-                    },
-                    "eagerness": "moderate"
-                }
-            ],
-            "prefetch": [
-                { "where": { "selector_matches": "nav a" }, "eagerness": "conservative" }
-            ]
-        }
-    </script>
     <!-- 样式表就位后放行（这行内联脚本会被它前面的样式表阻塞，所以执行时样式一定已经应用） -->
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
@@ -141,7 +121,7 @@
                 </div>
             </div>
             <div class="starmap-os__rule" aria-hidden="true">
-                <span>STARCHART</span>
+                <span>OFFLINE ARCHIVE</span>
                 <span class="starmap-os__dots"><i></i><i></i><i></i></span>
                 <span>SECTOR 0</span>
             </div>
@@ -154,41 +134,17 @@
 
     <div class="background"></div>
     <div class="overlay"></div>
-
-    <header class="navbar">
-
-                <div class="logo">
-            <span class="logo__mark" aria-hidden="true"></span>
-            <span class="logo__os">Starmap<sup>®</sup>OS</span>
-            <span class="logo__dept">Archive Dept.</span>
-        </div>
-
-        <nav id="site-nav">
-            <a href="../..">首页</a>
-            <a href="../../fleet/">舰队</a>
-            <a href="../">工具</a>
-            <a href="../../archive/">档案</a>
-            <a href="../../about/">关于</a>
-        </nav>
-
-        <!-- 折叠按钮：窄屏才出现（桌面 display:none），是 .navbar 自己的子元素，
-             所以和 logo 一样是栏内的一行；放进 nav 里会被那块竖排面板当成一个条目 -->
-        <button class="navbar__toggle" type="button" aria-label="导航菜单" aria-controls="site-nav" aria-expanded="false">
-            <span class="navbar__toggle__bars" aria-hidden="true"></span>
-        </button>
-
-    </header>
-
-    <main>
+    <a class="os-exit" href="../"><span>EXIT</span>退出</a>
+<main>
 
         <div class="starmap-layout">
 
             <!-- 左侧：星图 -->
             <div class="starmap-left">
                 <div class="map-readout" aria-hidden="true">
-                    <span>STARCHART</span>
-                    <span>SECTOR 0</span>
-                    <span class="map-readout__live"><i></i>LIVE</span>
+                    <span class="map-readout__os">STARMAP®OS</span>
+                    <span class="map-readout__mode"><i></i>OFFLINE ARCHIVE</span>
+                    <span class="map-readout__sector">STARCHART / SECTOR 0</span>
                 </div>
 
                 <canvas id="starmap-canvas"></canvas>
@@ -251,7 +207,7 @@
         }
 
         var line = os.querySelector('[data-line]');
-        var steps = ['正在校验星域索引…', '载入星域数据…', '校准坐标系…', '渲染完成'];
+        var steps = ['正在校验本地存档…', '载入星域快照…', '校准坐标系…', '渲染完成'];
         var step = 0;
         var startedAt = Date.now();
         var timer = window.setInterval(function () {

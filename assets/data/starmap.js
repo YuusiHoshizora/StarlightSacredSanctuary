@@ -233,9 +233,9 @@ function renderSystemInfo(system, isInitial = false) {
     if (!system) {
       infoContainer.innerHTML = `
         <div class="empty-info">
-          <p>当前星图系统运行异常</p>
-          <p>无法访问星图系统主数据库</p>
-          <p>部分星系信息可能缺失</p>
+          <p>STARMAP®OS · 离线版本</p>
+          <p>当前显示本地保存的星域快照</p>
+          <p>部分星系信息可能不完整</p>
         </div>
       `;
     } else {
@@ -287,9 +287,9 @@ function renderSystemInfo(system, isInitial = false) {
       });
       infoContainer.innerHTML = `
         <div class="empty-info">
-          <p>当前星图系统运行异常</p>
-          <p>无法访问星图系统主数据库</p>
-          <p>部分星系信息可能缺失</p>
+          <p>STARMAP®OS · 离线版本</p>
+          <p>当前显示本地保存的星域快照</p>
+          <p>部分星系信息可能不完整</p>
         </div>
       `;
       infoContainer.style.opacity = '1';

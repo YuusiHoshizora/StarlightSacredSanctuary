@@ -567,6 +567,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     · 星图本体走 Starmap®OS 一套视觉：`body.starmap-os-page` 作用域下的覆盖块在
       `assets/css/starmap/index.css` 末尾（等宽字 / 发丝线 / 金色读数 / 方块控件），
       改主站风格不会带偏星图
+    · 星图是「离线版本」：文案一律写本地存档 / 星域快照，不写「无法访问主数据库」；
+      页面不再有导航栏（排序和主站不同），右上角只有一个「EXIT 退出」回工具页
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
       （personnel / facility / vessel / tool / main / org-secret 已登记；org-member 改成只绑一次）
