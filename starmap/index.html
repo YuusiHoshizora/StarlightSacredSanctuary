@@ -90,15 +90,11 @@
     <script defer src="../assets/js/boot.js"></script>
 
     <link rel="stylesheet" href="../assets/css/global.css">
-    <link rel="stylesheet" href="../assets/css/starmap/index.css">
-    <!-- 星图页专用背景参数：必须排在 background.js 之前 -->
-    <script defer src="../assets/js/starmap-bg.js"></script>
+    <link rel="stylesheet" href="../assets/css/starmap/gate.css">
     <script defer src="../assets/js/background.js"></script>
     <script defer src="../assets/js/notice.js"></script>
-
-    <script defer src="../assets/js/starmap-data.js"></script>
-    <script defer src="../assets/data/starmap.js"></script>
     <script defer src="../assets/js/seamless.js"></script>
+    <script defer src="../assets/js/spa.js"></script>
     <script defer src="../assets/js/navtoggle.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
@@ -157,56 +153,59 @@
 
     <main>
 
-        <div class="starmap-layout">
+        <section class="starmap-gate">
+            <div class="starmap-gate__panel">
+                <p class="starmap-gate__kicker">STAR CHART · 星域测绘</p>
+                <h1 class="starmap-gate__title">星图</h1>
+                <p class="starmap-gate__sub">
+                    星图需要载入星域数据与渲染模块，比站内其它页面重一些。
+                    点下面的按钮再开始测绘。
+                </p>
 
-            <!-- 左侧：星图 -->
-            <div class="starmap-left">
-                <canvas id="starmap-canvas"></canvas>
+                <div class="starmap-gate__bar" aria-hidden="true"><i id="starmap-gate-bar"></i></div>
 
-                <!-- 比例尺控制：缩小 / 滑块（辅助缩放，不显示数值）/ 放大 / 回到默认
-                     滑块夹在两个按钮之间，拖动方向与紧邻的按钮一致：
-                     向左 = 缩小（同左侧「−」），向右 = 放大（同右侧「+」）。 -->
-                <div class="map-zoom" role="group" aria-label="比例尺控制">
-                    <button type="button" id="zoom-out" class="map-zoom__btn" aria-label="缩小" title="缩小">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
-                    </button>
-                    <input type="range" id="zoom-slider" class="map-zoom__slider"
-                           min="0" max="1" step="0.01" value="0"
-                           aria-label="比例尺（左右拖动缩放）" />
-                    <button type="button" id="zoom-in" class="map-zoom__btn" aria-label="放大" title="放大">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                    </button>
-                    <button type="button" id="zoom-reset" class="map-zoom__btn" aria-label="回到默认" title="回到默认">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="12" cy="12" r="7.5"/>
-                            <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>
-                        </svg>
-                    </button>
-
-                    <!-- 搜索星系（中文名 / 英文名）：结果浮在输入框上方，↑↓ 选择、Enter 跳转、Esc 清空 -->
-                    <div class="map-search">
-                        <div class="map-search__list" id="galaxy-search-list" role="listbox"
-                             aria-label="搜索结果" hidden></div>
-                        <input type="search" id="galaxy-search" class="map-search__input"
-                               placeholder="搜索星系" autocomplete="off" spellcheck="false"
-                               aria-label="按名称搜索星系（中文名或英文名）" />
-                    </div>
+                <div class="starmap-gate__row">
+                    <a class="starmap-gate__btn" id="starmap-gate-btn" href="map.html">载入星图</a>
+                    <span class="starmap-gate__hint" id="starmap-gate-hint">点击后载入 · 首次约 1–3 秒</span>
                 </div>
             </div>
-
-            <!-- 右侧：星系介绍 -->
-            <aside class="starmap-right">
-
-                <div id="system-info"></div>
-                <div id="system-list" class="system-list"></div>
-
-            </aside>
-
-        </div>
+        </section>
 
     </main>
 
-    <!-- 星图页刻意不放页脚：整屏地图要沉浸感。授权声明见其它页面与「关于」页。 -->
+    <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
+    <footer class="site-footer">
+        © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../about/">关于本站</a>
+    </footer>
+
+    <script>
+    /* 星图入口：点「载入星图」后先把进度条走满，再跳去真正加载星图的 map.html。
+       换页（spa.js）会重新执行这段；它只绑当前按钮、不挂全局监听，所以不用清理。 */
+    (function () {
+        var btn = document.getElementById('starmap-gate-btn');
+        if (!btn) return;
+
+        var bar = document.getElementById('starmap-gate-bar');
+        var hint = document.getElementById('starmap-gate-hint');
+        var going = false;
+
+        btn.addEventListener('click', function (e) {
+            if (going) { e.preventDefault(); return; }
+            going = true;
+            e.preventDefault();
+            document.documentElement.classList.add('starmap-gate--arming');
+
+            if (bar) bar.style.width = '100%';
+            if (hint) hint.textContent = '正在载入星图…';
+
+            var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.setTimeout(function () {
+                location.href = btn.getAttribute('href');
+            }, reduced ? 0 : 720);
+        });
+    })();
+    </script>
 
 </body>
+
 </html>

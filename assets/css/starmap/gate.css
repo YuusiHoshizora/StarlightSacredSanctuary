@@ -1,0 +1,141 @@
+/* ==========================================================================
+   星图入口（/starmap/）
+   --------------------------------------------------------------------------
+   星图本身（map.html）要载入星域数据 + 渲染模块，比较重。这一页只做"门"：
+   普通背景、一段说明、一条进度条和「载入星图」按钮；点了才真正加载星图。
+   一次性页面，样式只在这里用。
+   ========================================================================== */
+
+.starmap-gate{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:56vh;
+    padding:clamp(48px, 12vh, 120px) 24px;
+}
+
+.starmap-gate__panel{
+    position:relative;
+    width:min(520px, 100%);
+    padding:34px 32px 30px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(5,6,11,0.55);
+}
+
+/* 两个金色角标，和加载屏 / 工具页同一套语言 */
+.starmap-gate__panel::before,
+.starmap-gate__panel::after{
+    content:'';
+    position:absolute;
+    width:14px;
+    height:14px;
+    border:1px solid rgba(255,215,0,0.5);
+}
+.starmap-gate__panel::before{ top:-1px; left:-1px; border-right:0; border-bottom:0; }
+.starmap-gate__panel::after{ right:-1px; bottom:-1px; border-top:0; border-left:0; }
+
+.starmap-gate__kicker{
+    margin:0;
+    font-family:"Sarasa Mono", monospace;
+    font-size:10px;
+    letter-spacing:3px;
+    color:rgba(255,215,0,0.55);
+}
+
+.starmap-gate__title{
+    margin:14px 0 0;
+    font-size:34px;
+    font-weight:400;
+    letter-spacing:10px;
+    color:#fff;
+}
+
+.starmap-gate__sub{
+    margin:14px 0 0;
+    font-size:13px;
+    line-height:1.9;
+    letter-spacing:0.5px;
+    color:rgba(255,255,255,0.5);
+}
+
+/* 进度条：待命时一段底色缓慢扫过，点击后由 0 走到 100% */
+.starmap-gate__bar{
+    position:relative;
+    height:2px;
+    margin:28px 0 20px;
+    background:rgba(255,255,255,0.12);
+    overflow:hidden;
+}
+.starmap-gate__bar i{
+    position:relative;
+    z-index:1;
+    display:block;
+    width:0;
+    height:100%;
+    background:#FFD700;
+    transition:width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.starmap-gate__bar::after{
+    content:'';
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:22%;
+    background:rgba(255,215,0,0.28);
+    animation:starmap-gate-idle 2.6s ease-in-out infinite;
+}
+html.starmap-gate--arming .starmap-gate__bar::after{ display:none; }
+@keyframes starmap-gate-idle{
+    from{ left:-22%; }
+    to  { left:100%; }
+}
+
+.starmap-gate__row{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+}
+
+.starmap-gate__btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:38px;
+    padding:8px 26px;
+    border:1px solid rgba(255,215,0,0.45);
+    color:#FFD700;
+    font-size:13px;
+    letter-spacing:4px;
+    text-decoration:none;
+    transition:background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.starmap-gate__btn:hover,
+.starmap-gate__btn:focus-visible{
+    background:#FFD700;
+    border-color:#FFD700;
+    color:#05060b;
+    text-decoration:none;
+    outline:none;
+}
+html.starmap-gate--arming .starmap-gate__btn{
+    pointer-events:none;
+    opacity:0.7;
+}
+
+.starmap-gate__hint{
+    font-family:"Sarasa Mono", monospace;
+    font-size:11px;
+    line-height:1.6;
+    letter-spacing:1px;
+    color:rgba(255,255,255,0.32);
+}
+
+@media (prefers-reduced-motion: reduce){
+    .starmap-gate__bar::after{ animation:none; opacity:0.3; }
+    .starmap-gate__bar i{ transition:none; }
+}
+
+@media (max-width:560px){
+    .starmap-gate__title{ font-size:28px; letter-spacing:8px; }
+}
