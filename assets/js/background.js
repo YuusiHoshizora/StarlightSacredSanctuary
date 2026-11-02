@@ -31,6 +31,12 @@
 
     /* --- 华丽度相关，全部可调；设为 0 即关闭对应特效 --- */
     SKY_PARALLAX: 0.03,       // 星云随鼠标的视差强度（相对位移比例）
+    /* 天空底色三段。默认是深蓝紫；星图页会覆盖成和启动画面一致的 #05060b */
+    SKY_TOP: '#0a0a14',
+    SKY_MID: '#0c0c12',
+    SKY_BOTTOM: '#0b0a10',
+    /* 可选的中心光晕：{x, y, r, mid, inner, outer}，不设则不画 */
+    SKY_GLOW: null,
     AURORA: 0.5,              // 极光强度
     STAR_DENSITY: 1 / 9000,   // 星星密度（每平方 CSS 像素）
     STAR_TWINKLE: 0.55,       // 星星闪烁幅度
@@ -404,12 +410,12 @@
     }
 
     if (showMinor) drawLevel(minorStep, CFG.COORD_MINOR, 1);
-    if (showMedium) drawLevel(medStep, CFG.COORD_MEDIUM_C, 1.4);
-    if (showMajor) drawLevel(majStep, CFG.COORD_MAJOR_C, 2.2);
+    if (showMedium) drawLevel(medStep, CFG.COORD_MEDIUM_C, 1);
+    if (showMajor) drawLevel(majStep, CFG.COORD_MAJOR_C, 1.6);
 
     /* 原点坐标轴（随内容一起缩放平移，因此也参与对齐） */
     ctx.strokeStyle = CFG.COORD_AXIS;
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(ox + 0.5, 0); ctx.lineTo(ox + 0.5, vh);
     ctx.moveTo(0, oy + 0.5); ctx.lineTo(vw, oy + 0.5);
@@ -513,11 +519,25 @@
 
     /* 底色：深蓝紫，与 #0c0c0c 的网格自然衔接 */
     var g = sctx.createLinearGradient(0, 0, 0, vh);
-    g.addColorStop(0, '#0a0a14');
-    g.addColorStop(0.55, '#0c0c12');
-    g.addColorStop(1, '#0b0a10');
+    g.addColorStop(0, CFG.SKY_TOP || '#0a0a14');
+    g.addColorStop(0.55, CFG.SKY_MID || '#0c0c12');
+    g.addColorStop(1, CFG.SKY_BOTTOM || '#0b0a10');
     sctx.fillStyle = g;
     sctx.fillRect(0, 0, vw, vh);
+
+    /* 可选的中心光晕（星图页用它和启动画面保持同一个底色） */
+    if (CFG.SKY_GLOW) {
+      var gl = CFG.SKY_GLOW;
+      var gx = vw * (gl.x == null ? 0.5 : gl.x);
+      var gy = vh * (gl.y == null ? 0.42 : gl.y);
+      var gr = Math.max(vw, vh) * (gl.r || 0.75);
+      var gg = sctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
+      gg.addColorStop(0, gl.inner || 'rgba(40,52,86,0.32)');
+      gg.addColorStop(gl.mid == null ? 0.68 : gl.mid, gl.outer || 'rgba(5,6,11,0.98)');
+      gg.addColorStop(1, gl.outer || 'rgba(5,6,11,0.98)');
+      sctx.fillStyle = gg;
+      sctx.fillRect(0, 0, vw, vh);
+    }
 
     if (CFG.AURORA > 0) {
       /* 两团缓慢漂移的极光；位置随鼠标轻微视差 */

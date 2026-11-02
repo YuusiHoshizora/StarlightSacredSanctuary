@@ -43,10 +43,10 @@ window.SSS_BG = {
   COORD_LEVEL_BY_ZOOM: true,
   COORD_MEDIUM_FROM_ZOOM: sssZoomAtSliderPos(1 / 3),   // ≈ 0.397
   COORD_MINOR_FROM_ZOOM: sssZoomAtSliderPos(2 / 3),    // ≈ 0.713
-  COORD_MINOR: '#2b2b40',    // 小坐标：最细最暗
-  COORD_MEDIUM_C: '#3b3b58', // 中坐标
-  COORD_MAJOR_C: '#565679',  // 大坐标
-  COORD_AXIS: '#6a6a92',     // 坐标轴：过原点 (0,0)，也就是穿过维斯佩拉
+  COORD_MINOR: 'rgba(255,255,255,0.03)',    // 小坐标：最细最暗
+  COORD_MEDIUM_C: 'rgba(255,255,255,0.04)', // 中坐标
+  COORD_MAJOR_C: 'rgba(255,255,255,0.07)',  // 大坐标
+  COORD_AXIS: 'rgba(255,215,0,0.16)',       // 坐标轴：金色，与启动画面的十字一致
   COORD_MARK: 0.5,           // 大坐标交点的小点
   /* 星系吸附粒度（单位：小格）。数据本来就是小格整数，保持 1 即可。 */
   COORD_SNAP_CELLS: 1,
@@ -57,6 +57,19 @@ window.SSS_BG = {
   ZOOM_MAX: 1.45,
   SNAP: true,                // 暴露 window.SSS_COORD 给 starmap.js 对齐
 
+  /* 底色与启动画面完全一致：#05060b + 中心冷光晕，不要极光 */
+  SKY_TOP: '#05060b',
+  SKY_MID: '#05060b',
+  SKY_BOTTOM: '#05060b',
+  SKY_GLOW: {
+    x: 0.5,
+    y: 0.42,
+    r: 0.75,
+    mid: 0.68,
+    inner: 'rgba(40,52,86,0.32)',
+    outer: 'rgba(5,6,11,0.98)'
+  },
+
   /* --- 配色沿用全站，便于激活区接口保持兼容（星图页不启用） --- */
   ACTIVE_STROKE: '#3a3072',
   DOT_COLOR: '#ffd700',
@@ -64,8 +77,8 @@ window.SSS_BG = {
   R: 30,
   STROKE: 1.8,
 
-  /* --- 环境：保留风格，但整体压暗、静止 --- */
-  AURORA: 0.18,
+  /* --- 环境：与启动画面一致，不要极光、完全静止 --- */
+  AURORA: 0,
   AURA: 0,
   RING: 0,
   RAY: 0,

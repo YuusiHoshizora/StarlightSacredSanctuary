@@ -67,7 +67,7 @@
 │   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
 │   │   ├── main.js             首页打字机效果
 │   │   ├── tool.js             工具页（拾色器 + 时间转换 + 罗马数字）
-│   │   ├── starmap-data.js     星系数据（STARMAP_DATA）
+│   │   ├── starmap.js          星图绘制与交互（渲染脚本，页面在 tool/starmap/index.html 直接引用）
 │   │   ├── starmap-bg.js       星图页专用的背景参数
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
 │   │
@@ -75,7 +75,7 @@
 │   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
 │   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
 │   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
-│   │   └── starmap.js          星图绘制与交互（渲染脚本，页面在 tool/starmap/index.html 直接引用）
+│   │   └── starmap-data.js     星系数据（STARMAP_DATA）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
