@@ -30,6 +30,7 @@
         '/about': true,
         '/archive': true,
         '/archive/facility': true,
+        '/archive/organization': true,
         '/archive/organization/cam': true,
         '/archive/organization/dgam': true,
         '/archive/organization/res': true,

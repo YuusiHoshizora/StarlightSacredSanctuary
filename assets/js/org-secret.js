@@ -215,7 +215,7 @@
         dir = 0;
     }
 
-    document.addEventListener('dragover', function (e) {
+    function onDocDragOver(e) {
         if (!dragging) return;
         var h = window.innerHeight || document.documentElement.clientHeight;
         var y = e.clientY;
@@ -228,5 +228,14 @@
         } else {
             dir = 0;
         }
-    }, true);
+    }
+
+    document.addEventListener('dragover', onDocDragOver, true);
+
+    if (window.__sssPageCleanup) {
+        window.__sssPageCleanup.add('org-secret', function () {
+            stopScroll();
+            document.removeEventListener('dragover', onDocDragOver, true);
+        });
+    }
 })();

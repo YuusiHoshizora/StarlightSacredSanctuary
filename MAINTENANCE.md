@@ -557,11 +557,11 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     并行 fetch 目标页 HTML + 页面脚本源码 → 预挂 CSS → `document.startViewTransition()` 里
     换内容根（`.main-layout` 或 `<main>`）与 `.site-footer`、**同步执行目标页脚本**、改标题与 URL。
     所以 Firefox 里也是**真交叉淡化**（同文档过渡），数据驱动的页面在新快照里已经渲染好。
-    只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击；其余链接（含暂未接入的
-    `/starmap/`、`/main/cq`、`/archive/organization/`）照旧整页跳转。
+    只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击；其余链接（`/starmap/`、
+    `/main/cq`）照旧整页跳转（页面脚本的画布 / 循环还没有停止钩子）。
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
-      （personnel / facility / vessel / tool / main 已登记；org-member 改成只绑一次）
+      （personnel / facility / vessel / tool / main / org-secret 已登记；org-member 改成只绑一次）
     · 往试点加页面：`PILOT` 里加归一化路径（去 `.html` / 尾斜杠）+ 页面里加
       `<script defer src="…/assets/js/spa.js">`（放在 seamless.js 之后）+ 确认页面脚本可重跑
       （顶层别留 `const` / `let`，有全局监听就登记清理）
