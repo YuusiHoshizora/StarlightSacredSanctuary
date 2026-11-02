@@ -44,6 +44,10 @@
     letter-spacing: 3px;
     color: rgba(255, 255, 255, 0.9);
 }
+.tool-side__title--second {
+    margin-top: 26px;
+}
+
 
 .tool-entry {
     position: relative;
@@ -162,8 +166,26 @@ button.tool-entry {
     align-content: start;
 }
 
+.tool-main__title {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 17px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.tool-main__sub {
+    grid-column: 1 / -1;
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+
 .tool-card {
     flex: 0 0 auto;
+    scroll-margin-top: 96px;
     padding: 14px 16px 16px;
     background: rgba(20, 20, 50, 0.42);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -513,7 +535,7 @@ button.tool-entry {
     }
 
     .tool-card--hue {
-        grid-row: 1 / span 2;
+        grid-row: 3 / span 2;
     }
 }
 
@@ -540,6 +562,13 @@ button.tool-entry {
         flex-direction: column;
         align-items: center;
         gap: 18px;
+    }
+
+    .tool-main__title,
+    .tool-main__sub {
+        align-self: flex-start;
+        width: 100%;
+        max-width: 274px;
     }
 
     .tool-card {

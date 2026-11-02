@@ -137,7 +137,6 @@
 
         <nav id="site-nav">
             <a href="..">首页</a>
-            <a href="../starmap/">星图</a>
             <a href="../fleet/">舰队</a>
             <a href=".">工具</a>
             <a href="../archive/">档案</a>
@@ -157,12 +156,36 @@
         <h1 class="tool-sr-only">工具</h1>
 
         <!-- 左栏（窄）：需要二级入口的复杂工具 -->
+                <!-- 左栏（窄）：工具目录。通用工具在上，测试工具在下 -->
         <aside class="tool-side">
-            <h2 class="tool-side__title">测试工具</h2>
+            <h2 class="tool-side__title">通用工具</h2>
 
-            <!-- 测试入口（会随站点一起发布，访客也能看到）：
-                 公告测试 → 是个按钮（只发事件、不跳转），发一个 sss:notice 事件让 notice.js 弹公告
-                 加载测试 → 就是个普通链接，跳到 ../?boot=1 重播一次首屏加载屏 -->
+            <a class="tool-entry" href="#tool-hue">
+                <span class="tool-entry__name">拾色器</span>
+                <span class="tool-entry__desc">色相环取色，HEX / RGB / HSL 互转</span>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
+            </a>
+
+            <a class="tool-entry" href="#tool-timeconv">
+                <span class="tool-entry__name">时间转换</span>
+                <span class="tool-entry__desc">星纪元 ⇄ 公元纪年</span>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
+            </a>
+
+            <a class="tool-entry" href="#tool-roman">
+                <span class="tool-entry__name">罗马数字</span>
+                <span class="tool-entry__desc">阿拉伯数字 ⇄ 罗马数字</span>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
+            </a>
+
+            <a class="tool-entry" href="../starmap/">
+                <span class="tool-entry__name">星图</span>
+                <span class="tool-entry__desc">Starmap®OS · 星域测绘</span>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
+            </a>
+
+            <h2 class="tool-side__title tool-side__title--second">测试工具</h2>
+
             <button type="button" class="tool-entry" id="entry-notice">
                 <span class="tool-entry__name">公告测试</span>
                 <span class="tool-entry__desc">重新弹一次站点公告</span>
@@ -179,7 +202,9 @@
         <!-- 右栏（宽）：可以直接用的小工具。
              三张卡横向排开（宽度一致），一屏放得下就别让页面滚 —— 见 DESIGN.md「一屏放得下」。 -->
         <section class="tool-main">
-            <div class="tool-card tool-card--hue">
+            <h2 class="tool-main__title">便捷转换</h2>
+            <p class="tool-main__sub">拾色器、时间换算、罗马数字 —— 常用的小工具都放这儿。</p>
+            <div class="tool-card tool-card--hue" id="tool-hue">
                 <h3 class="tool-card__name">拾色器</h3>
 
                 <div class="hue">
@@ -242,7 +267,7 @@
                  两边都是三个数字框，任何一边改动，另一边即时跟着变。
                  纪元：公元 2110-01-01 00:00:00 UTC = S.E. 1 年 1 月 1 日 00:00:00。
                  公元 2110 年之前的日期落在纪元前，星纪元年份记作 0 或负数（前星纪元）。 -->
-            <div class="tool-card tool-card--timeconv">
+            <div class="tool-card tool-card--timeconv" id="tool-timeconv">
                 <h3 class="tool-card__name">时间转换</h3>
 
                 <div class="timeconv">
@@ -315,7 +340,7 @@
 
             <!-- 罗马数字：阿拉伯数字 ⇄ 罗马数字，两边都能改，改哪边由哪边驱动另一边。
                  只做标准写法 1–3999（罗马数字没有 0 和负数，4000 起要用上划线，这里不支持）。 -->
-            <div class="tool-card tool-card--roman">
+            <div class="tool-card tool-card--roman" id="tool-roman">
                 <h3 class="tool-card__name">罗马数字</h3>
 
                 <div class="roman">
