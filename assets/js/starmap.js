@@ -223,11 +223,11 @@ function getSystemAt(clientX, clientY) {
 // ── 更新右侧信息 ──
 function renderSystemInfo(system, isInitial = false) {
   clearTimeout(fadeTimer);
-  /* 信息栏标题跟着选中状态走：未选中 = NOTICE，选中 = SYSTEM INFO */
-  infoContainer.classList.toggle('is-selected', !!system);
 
   if (isInitial) {
     // ── 首次加载：直接渲染 ──
+    /* 标题跟着内容一起定：未选中 = NOTICE，选中 = SYSTEM INFO */
+    infoContainer.classList.toggle('is-selected', !!system);
     document.querySelectorAll('.system-list-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.id === system?.id);
     });
@@ -287,6 +287,7 @@ function renderSystemInfo(system, isInitial = false) {
       document.querySelectorAll('.system-list-btn').forEach((btn) => {
         btn.classList.remove('active');
       });
+      infoContainer.classList.remove('is-selected');
       infoContainer.innerHTML = `
         <div class="empty-info">
           <p>Starmap®OS Archive Dept. Ver.9.2</p>
@@ -306,6 +307,7 @@ function renderSystemInfo(system, isInitial = false) {
       document.querySelectorAll('.system-list-btn').forEach((btn) => {
         btn.classList.toggle('active', btn.dataset.id === system.id);
       });
+      infoContainer.classList.add('is-selected');
       infoContainer.innerHTML = `
         <div id="system-info-body">
           <h2 class="system-name">${system.name}</h2>
