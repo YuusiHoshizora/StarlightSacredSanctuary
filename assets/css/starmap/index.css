@@ -607,11 +607,11 @@
     transition:opacity 0.45s ease;
     background:
         /* 大坐标：每 25 小格一条 */
-        linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px) 0 0 / 100% calc(100vh / 68 * 25),
-        linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px) 0 0 / calc(100vh / 68 * 25) 100%,
+        linear-gradient(rgba(255,255,255,0.11) 1px, transparent 1px) 0 0 / 100% calc(100vh / 68 * 25),
+        linear-gradient(90deg, rgba(255,255,255,0.11) 1px, transparent 1px) 0 0 / calc(100vh / 68 * 25) 100%,
         /* 中坐标：每 5 小格一条（星图默认比例尺 0.5 下的可见网格） */
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 100% calc(100vh / 68 * 5),
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / calc(100vh / 68 * 5) 100%,
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 100% calc(100vh / 68 * 5),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / calc(100vh / 68 * 5) 100%,
         radial-gradient(circle at 50% 42%, rgba(40,52,86,0.32), rgba(5,6,11,0.98) 68%),
         #05060b;
 }
@@ -878,7 +878,7 @@ html.starmap-ui .starmap-right{
     padding: 34px 32px;
     gap: 28px;
     backdrop-filter: none;
-    background: rgba(5, 6, 11, 0.78);
+    background: rgba(5, 6, 11, 0.92);
     border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 .starmap-os-page #system-info::before,
@@ -887,7 +887,7 @@ html.starmap-ui .starmap-right{
     display: block;
     margin-bottom: 16px;
     font-family: var(--os-mono);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 3px;
     color: rgba(255, 215, 0, 0.55);
 }
@@ -914,7 +914,7 @@ html.starmap-ui .starmap-right{
     font-size: 14px;
     line-height: 2;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.62);
 }
 .starmap-os-page .info-item{
     border: 0;
@@ -925,7 +925,7 @@ html.starmap-ui .starmap-right{
 }
 .starmap-os-page .info-item .label{
     font-family: var(--os-mono);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 2px;
     opacity: 0.45;
     margin-bottom: 6px;
@@ -1017,11 +1017,12 @@ html.starmap-ui .starmap-right{
     justify-content: flex-start;
     text-align: left;
     opacity: 1;
-    color: rgba(255, 255, 255, 0.45);
-    font-size: 13px;
-    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: "Sarasa", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
 }
 .starmap-os-page .empty-info p{
-    font-size: 13px;
-    letter-spacing: 1px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
 }

@@ -43,10 +43,10 @@ window.SSS_BG = {
   COORD_LEVEL_BY_ZOOM: true,
   COORD_MEDIUM_FROM_ZOOM: sssZoomAtSliderPos(1 / 3),   // ≈ 0.397
   COORD_MINOR_FROM_ZOOM: sssZoomAtSliderPos(2 / 3),    // ≈ 0.713
-  COORD_MINOR: 'rgba(255,255,255,0.03)',    // 小坐标：最细最暗
-  COORD_MEDIUM_C: 'rgba(255,255,255,0.04)', // 中坐标
-  COORD_MAJOR_C: 'rgba(255,255,255,0.07)',  // 大坐标
-  COORD_AXIS: 'rgba(255,215,0,0.16)',       // 坐标轴：金色，与启动画面的十字一致
+  COORD_MINOR: 'rgba(255,255,255,0.06)',    // 小坐标：最细最暗
+  COORD_MEDIUM_C: 'rgba(255,255,255,0.11)', // 中坐标
+  COORD_MAJOR_C: 'rgba(255,255,255,0.20)',  // 大坐标
+  COORD_AXIS: 'rgba(255,215,0,0.35)',       // 坐标轴：金色，与启动画面的十字一致
   COORD_MARK: 0.5,           // 大坐标交点的小点
   /* 星系吸附粒度（单位：小格）。数据本来就是小格整数，保持 1 即可。 */
   COORD_SNAP_CELLS: 1,

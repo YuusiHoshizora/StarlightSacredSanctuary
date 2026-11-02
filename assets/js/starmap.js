@@ -196,7 +196,7 @@ function drawStarMap() {
     const nG = isActive ? 215 : 192;
     const nB = isActive ? 32  : 192;
     ctx.fillStyle = `rgba(${nR},${nG},${nB},${s.nameBrightness})`;
-    ctx.font = "14px 'Sarasa'";
+    ctx.font = "15px 'Sarasa'";
     ctx.textAlign = "center";
     ctx.fillText(sys.name, px, py - 14);
   }
