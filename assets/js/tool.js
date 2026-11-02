@@ -401,10 +401,19 @@
   /* ── 启动 ── */
   resizeCanvas();
   update();
-  window.addEventListener("resize", () => {
+  function onResize() {
     resizeCanvas();
     update();
-  });
+  }
+  if (window.__sssToolResize) window.removeEventListener("resize", window.__sssToolResize);
+  window.__sssToolResize = onResize;
+  window.addEventListener("resize", onResize);
+  if (window.__sssPageCleanup) {
+    window.__sssPageCleanup.add('tool', function () {
+      window.removeEventListener("resize", onResize);
+      if (window.__sssToolResize === onResize) window.__sssToolResize = null;
+    });
+  }
 })();
 
 

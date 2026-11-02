@@ -1,76 +1,102 @@
 /* =============================================================================
- * spa.js — 站内「同文档」导航（试点）
+ * spa.js — 站内「同文档」导航
  * -----------------------------------------------------------------------------
- * 背景：Firefox 到现在（159）仍没有**跨文档** View Transitions —— 每次点链接都是
- * 真·换文档，做不到 B 站那种「内容交叉淡化」。但 Firefox 支持**同文档**的
- * document.startViewTransition()。所以这里在试点页面之间把导航改成"同文档换内容"：
+ * Firefox 没有跨文档 View Transitions，但支持**同文档**的
+ * document.startViewTransition()。所以站内导航改成"同文档换内容"：
  *
  *   点击（左键、站内、两个页面都在 PILOT 里）
- *     → fetch 目标页 → 预挂目标页的 CSS
- *     → document.startViewTransition( 换 <main> + <footer>、改标题、pushState )
+ *     → 并行 fetch：目标页 HTML + 目标页的页面脚本源码
+ *     → 预挂目标页 CSS
+ *     → document.startViewTransition() 里：
+ *         跑上一页注册的清理 → 换内容根（<main> / .main-layout）+ 页脚
+ *         → 同步执行目标页脚本 → 改标题 / URL → 回到顶部
  *
  * navbar / 背景画布 / 页脚外壳都不重新加载，换的只有内容；Chrome 与 Firefox
  * 都用同一套 view-transition 伪元素动画（见 global.css），所以是真交叉淡化。
  *
- * 只接管 PILOT 里列出的页面：其余链接保持整页跳转，不改变现有行为。
- * 往试点里加页面时要先确认：
- *   · 内容是 <main>（页脚也要能被单独替换）
- *   · 没有页面级内联脚本（换完不会执行），或者在这里补一个 init
- *   · 页面 CSS 是独立文件（会自动挂上/摘掉）
+ * 页面脚本按"源码文本"取回来、在换页回调里用 <script> 同步执行 —— 这样数据驱动的
+ * 页面（人员 / 设施 / 舰船 / 主页面）在新快照里就已经渲染好，不会先空一下再填。
+ * 脚本里如果有全局监听/定时器，必须在结束时注册清理（window.__sssPageCleanup.add）。
+ *
+ * 试点页面：见下方 PILOT。暂不包含 /starmap/（画布 + 大量 rAF，需要专门拆解）、
+ * /main/cq（彩蛋页）和 /archive/organization/（org-secret 的拖拽循环待接入）。
  * ========================================================================== */
 (function () {
     'use strict';
 
+    /* 试点页面：全部用 normPath 归一化后的形式（去 .html / 去尾斜杠） */
     var PILOT = {
-        '/about/': true,
-        '/archive/': true,
-        '/fleet/': true
+        '/': true,
+        '/about': true,
+        '/archive': true,
+        '/archive/facility': true,
+        '/archive/organization/cam': true,
+        '/archive/organization/dgam': true,
+        '/archive/organization/res': true,
+        '/archive/personnel': true,
+        '/archive/personnel/sam': true,
+        '/archive/personnel/sfm': true,
+        '/archive/personnel/spm': true,
+        '/archive/personnel/sxm': true,
+        '/archive/vessel': true,
+        '/fleet': true,
+        '/tool': true,
+        '/main/mainpage': true
     };
 
+    /* 全站外壳脚本：不参与"换页后重跑" */
+    var SHELL_SCRIPTS = /\/assets\/js\/(boot|background|notice|seamless|navtoggle|eggs|spa)\.js$/;
+
     function normPath(pathname) {
-        var p = String(pathname || '/').replace(/\/index\.html$/, '/');
-        // /about 与 /about/ 视为同一页（Cloudflare 两种地址都可能出现）
-        if (p !== '/' && !/\/$/.test(p) && !/\.[^/]+$/.test(p)) p += '/';
-        return p;
+        var p = String(pathname || '/').replace(/\/index\.html$/, '/').replace(/\.html$/, '').replace(/\/+$/, '');
+        return p === '' ? '/' : p;
     }
 
     function isPilotUrl(url) {
         return PILOT[normPath(url.pathname)] === true;
     }
 
-    // 老内核没有同文档过渡：保持整页跳转（现在的淡入行为）
+    /* 老内核没有同文档过渡：保持整页跳转 */
     if (!document.startViewTransition) return;
-    // 当前页不是试点：不接管
     if (!isPilotUrl(new URL(location.href))) return;
 
+    /* ------------------------- 页面脚本的清理登记表 ------------------------- */
+    /* 页面脚本在末尾登记一个清理函数（移除全局监听 / 取消定时器 / 删掉挂到
+       body 上的临时节点）。换页前统一跑一遍，避免重复绑定和内存泄漏。 */
+    var cleanups = Object.create(null);
+    window.__sssPageCleanup = {
+        add: function (name, fn) { cleanups[name] = fn; },
+        runAll: function () {
+            Object.keys(cleanups).forEach(function (name) {
+                try { cleanups[name](); } catch (e) { /* 忽略 */ }
+                delete cleanups[name];
+            });
+        }
+    };
+
     var navigating = false;
+    var scriptCache = Object.create(null);
+    var currentPath = normPath(location.pathname);
+    var currentSearch = location.search;
 
     /* ------------------------------ 链接解析 ------------------------------ */
 
     function resolveUrl(value, base) {
-        try {
-            return new URL(value, base).href;
-        } catch (e) {
-            return null;
-        }
+        try { return new URL(value, base).href; } catch (e) { return null; }
     }
 
     function samePage(url) {
         return normPath(url.pathname) === normPath(location.pathname) && url.search === location.search;
     }
 
-    /* 顶栏是常驻的（换页不替换），但文档 base URL 会随 pushState 变：
-       各个页面给「当前页」那一项写的是 href="."，换到别的路径后它会解析到新页
-       （在关于页点「档案」→ 解析回 /about/ → 整页重载，看起来就是"本页跳一下"）。
-       所以进来先按此刻的 URL 把顶栏链接固定成绝对地址。 */
-    (function absolutizeShell() {
-        var nav = document.querySelector('.navbar');
-        if (!nav) return;
-        Array.prototype.forEach.call(nav.querySelectorAll('a[href]'), function (a) {
-            var abs = resolveUrl(a.getAttribute('href'), location.href);
-            if (abs) a.setAttribute('href', abs);
-        });
-    })();
+    /* 顶栏与样式表的相对地址先固化成绝对地址：换页后文档 base URL 会变，
+       各页给「当前页」那一项写的 href="." 会解析到新页面（在关于页点「档案」→ 回 /about/），
+       样式表的相对 href 也会在深层路径下解析错。 */
+    Array.prototype.forEach.call(document.querySelectorAll('.navbar a[href], link[rel="stylesheet"][href]'), function (el) {
+        var attr = el.tagName === 'LINK' ? 'href' : 'href';
+        var abs = resolveUrl(el.getAttribute(attr), location.href);
+        if (abs) el.setAttribute(attr, abs);
+    });
 
     /* --------------------------------- 点击 --------------------------------- */
 
@@ -88,11 +114,7 @@
         if (!href || href.charAt(0) === '#') return;
 
         var url;
-        try {
-            url = new URL(anchor.href, location.href);
-        } catch (e) {
-            return;
-        }
+        try { url = new URL(anchor.href, location.href); } catch (e) { return; }
         if (url.origin !== location.origin) return;
         if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
         if (!isPilotUrl(url)) return;
@@ -120,21 +142,35 @@
             })
             .then(function (html) {
                 var doc = new DOMParser().parseFromString(html, 'text/html');
-                return preloadStyles(doc, url).then(function () {
-                    return apply(doc, url, push);
+                var scripts = collectScripts(doc, url);
+                var texts = unique(scripts.filter(function (s) { return s.src; }).map(function (s) { return s.src; }));
+                return Promise.all([
+                    preloadStyles(doc, url),
+                    Promise.all(texts.map(fetchScript))
+                ]).then(function () {
+                    return apply(doc, url, scripts, push);
                 });
             })
             .catch(function () {
-                location.href = url.href;       // 任何一步失败：退回整页跳转
+                location.href = url.href;           // 任何一步失败：退回整页跳转
             })
             .then(function () { navigating = false; },
                   function () { navigating = false; location.href = url.href; });
     }
 
+    function unique(list) {
+        var seen = Object.create(null);
+        return list.filter(function (item) {
+            if (seen[item]) return false;
+            seen[item] = true;
+            return true;
+        });
+    }
+
     /* --------------------------- 目标页 CSS 预挂载 --------------------------- */
 
     function currentStyles() {
-        var map = {};
+        var map = Object.create(null);
         Array.prototype.forEach.call(document.querySelectorAll('link[rel="stylesheet"][href]'), function (link) {
             var abs = resolveUrl(link.getAttribute('href'), location.href);
             if (abs) map[abs] = link;
@@ -151,13 +187,11 @@
         return list;
     }
 
-    /** 目标页需要、当前页还没有的样式表，先挂上并等加载完，避免新快照闪一下无样式 */
     function preloadStyles(doc, url) {
         var have = currentStyles();
-        var wanted = wantedStyles(doc, url);
         var jobs = [];
 
-        wanted.forEach(function (abs) {
+        wantedStyles(doc, url).forEach(function (abs) {
             if (have[abs]) return;
             jobs.push(new Promise(function (resolve) {
                 var link = document.createElement('link');
@@ -172,24 +206,58 @@
         return Promise.all(jobs);
     }
 
-    /** 换完之后，把目标页不需要的样式表摘掉（试点页的 CSS 都是独立命名空间） */
     function pruneStyles(doc, url) {
-        var wanted = {};
+        var wanted = Object.create(null);
         wantedStyles(doc, url).forEach(function (abs) { wanted[abs] = true; });
 
         var have = currentStyles();
         Object.keys(have).forEach(function (abs) {
-            if (!wanted[abs]) {
-                var link = have[abs];
-                if (link.parentNode) link.parentNode.removeChild(link);
-            }
+            if (!wanted[abs] && have[abs].parentNode) have[abs].parentNode.removeChild(have[abs]);
         });
+    }
+
+    /* ---------------------------- 页面脚本的收集与执行 ---------------------------- */
+
+    function collectScripts(doc, url) {
+        var items = [];
+        Array.prototype.forEach.call(doc.querySelectorAll('script'), function (s) {
+            if (s.type && s.type !== 'text/javascript') return;      // speculationrules
+            var src = s.getAttribute('src');
+            if (src) {
+                var abs = resolveUrl(src, url.href);
+                if (!abs || SHELL_SCRIPTS.test(abs)) return;
+                items.push({ src: abs });
+                return;
+            }
+            var code = s.textContent || '';
+            if (!code.trim()) return;
+            if (/css-ready/.test(code) || /sss-boot/.test(code)) return;   // 加载屏 / 首帧保护
+            items.push({ code: code });
+        });
+        return items;
+    }
+
+    function fetchScript(src) {
+        if (scriptCache[src]) return Promise.resolve(scriptCache[src]);
+        return fetch(src, { credentials: 'same-origin' }).then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.text();
+        }).then(function (text) {
+            scriptCache[src] = text;
+            return text;
+        });
+    }
+
+    function runScript(code) {
+        var el = document.createElement('script');
+        el.textContent = code;
+        el.setAttribute('data-sss-page', '');
+        document.body.appendChild(el);
+        if (el.parentNode) el.parentNode.removeChild(el);
     }
 
     /* -------------------------- 把相对地址变成绝对地址 -------------------------- */
 
-    /** 换进来的节点是按"目标页"的相对路径写的，留在当前文档里会解析错（如 archive 的
-        organization/）。统一按目标页 URL 展开成绝对地址，之后再点也不会错。 */
     function absolutize(root, url) {
         ['href', 'src'].forEach(function (attr) {
             Array.prototype.forEach.call(root.querySelectorAll('[' + attr + ']'), function (el) {
@@ -216,57 +284,66 @@
 
     /* -------------------------------- 替换内容 -------------------------------- */
 
-    function replaceInto(doc, url, selector) {
-        var oldEl = document.querySelector(selector);
-        var newEl = doc.querySelector(selector);
+    function contentRoot(scope) {
+        return scope.querySelector('.main-layout') || scope.querySelector('main');
+    }
+
+    function replaceContent(doc, url) {
+        var oldRoot = contentRoot(document);
+        var newRoot = contentRoot(doc);
+        if (!oldRoot || !newRoot) return false;
+        var imported = document.importNode(newRoot, true);
+        absolutize(imported, url);
+        oldRoot.parentNode.replaceChild(imported, oldRoot);
+        return true;
+    }
+
+    function replaceFooter(doc, url) {
+        var oldEl = document.querySelector('.site-footer');
+        var newEl = doc.querySelector('.site-footer');
         if (!oldEl || !newEl) return;
         var imported = document.importNode(newEl, true);
         absolutize(imported, url);
         oldEl.parentNode.replaceChild(imported, oldEl);
     }
 
-    function initPage(url) {
-        var path = normPath(url.pathname);
-
-        /* 关于页的两块内联交互（换页时内联脚本不会执行，这里补上） */
-        if (path === '/about/') {
-            var card = document.getElementById('about-notice');
-            if (card) {
-                var openNotice = function () { document.dispatchEvent(new Event('sss:notice')); };
-                card.addEventListener('click', openNotice);
-                card.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openNotice();
-                    }
-                });
-            }
-        }
-
-        /* eggs.js 里「关于」页那张卡片：让它重新填一次 */
-        document.dispatchEvent(new CustomEvent('sss:swap', { detail: { url: url.href } }));
-    }
-
-    function apply(doc, url, push) {
+    function apply(doc, url, scripts, push) {
         var run = function () {
-            replaceInto(doc, url, 'main');
-            replaceInto(doc, url, '.site-footer');
+            cleanupsRunAll();
+
+            if (!replaceContent(doc, url)) { location.href = url.href; return; }
+            replaceFooter(doc, url);
 
             if (doc.title) document.title = doc.title;
             pruneStyles(doc, url);
 
+            /* 在同一个任务里同步执行目标页脚本 —— 新快照里内容已经是渲染好的 */
+            scripts.forEach(function (item) {
+                try { runScript(item.src ? scriptCache[item.src] : item.code); }
+                catch (e) { /* 单个脚本失败不影响换页 */ }
+            });
+
             if (push) history.pushState({ sssSpa: true }, '', url.href);
+            currentPath = normPath(url.pathname);
+            currentSearch = url.search;
             window.scrollTo(0, 0);
-            initPage(url);
+            document.dispatchEvent(new CustomEvent('sss:swap', { detail: { url: url.href } }));
         };
 
         return document.startViewTransition(run).finished.catch(function () { });
+    }
+
+    function cleanupsRunAll() {
+        try { window.__sssPageCleanup.runAll(); } catch (e) { /* 忽略 */ }
     }
 
     /* ------------------------------ 前进 / 后退 ------------------------------ */
 
     window.addEventListener('popstate', function () {
         var url = new URL(location.href);
+        /* popstate 时 location 已经是目标地址，不能拿它和自身比；要跟"当前 DOM 是哪一页"比。
+           同页的 # 变化（文章 / 档案条目）交给页面脚本，不要重新换页。 */
+        if (normPath(url.pathname) === currentPath && url.search === currentSearch) return;
         if (!isPilotUrl(url)) {         // 上一条不是试点页：离开这个文档，整页加载
             location.reload();
             return;

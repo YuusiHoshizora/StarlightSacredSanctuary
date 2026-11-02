@@ -259,4 +259,11 @@
 
     /* 首次进入：有 #身份编号 就选中，没有就显示第一位；都不滚动页面 */
     fromHash();
+
+    if (window.__sssPageCleanup) {
+        window.__sssPageCleanup.add('personnel', function () {
+            window.removeEventListener('hashchange', fromHash);
+            window.removeEventListener('popstate', fromHash);
+        });
+    }
 })();

@@ -284,4 +284,11 @@
     /* 首次进入：有 #舰船代号 就选中，没有就显示第一条 */
     fromHash();
     initialising = false;
+
+    if (window.__sssPageCleanup) {
+        window.__sssPageCleanup.add('vessel', function () {
+            window.removeEventListener('hashchange', fromHash);
+            window.removeEventListener('popstate', fromHash);
+        });
+    }
 })();

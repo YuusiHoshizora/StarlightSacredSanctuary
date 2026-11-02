@@ -247,11 +247,12 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 （`main` / `.main-layout` / `.site-footer`），等字体等于让整页空掉 0.3–0.7 秒，
 看起来就是一次黑屏。文字那边已经由 `font-display: block` 管着了。
 
-**站内同文档导航（试点）**：`assets/js/spa.js` 在 about / archive / fleet 三个纯静态页之间
-把跳转变成"同文档换内容"——拦截点击 → fetch 目标页 → 只替换 `<main>` 与 `.site-footer`、
-切换页面 CSS、更新标题与 URL → 用 `document.startViewTransition()` 包住。navbar 与背景
-不重载，所以 Firefox 也能拿到真正的交叉淡化（同文档过渡它支持）。只接管"当前页和目标页
-都在 `PILOT` 里"的普通左键点击；其余跳转保持整页加载。
+**站内同文档导航**：`assets/js/spa.js` 在试点页之间把跳转变成"同文档换内容"——拦截点击 →
+并行 fetch 目标页 HTML 与页面脚本源码 → 替换内容根（`.main-layout` 或 `<main>`）与页脚 →
+**同步执行目标页脚本** → 更新标题/URL，整段套 `document.startViewTransition()`。
+navbar、背景画布不重载，所以 Firefox 也能拿到真正的交叉淡化（同文档过渡它支持）。
+试点覆盖全站，除 `/starmap/`（画布 + 大量 rAF）、`/main/cq`（彩蛋页）、
+`/archive/organization/`（org-secret 拖拽循环待接入）—— 这三处仍整页加载。
 
 没有跨文档 View Transitions 的内核（Firefox 等）：**不做"上一页淡出"**，让浏览器自己把旧页面
 一直显示到新文档可以绘制为止，再由 `sss-switch` 把新内容淡入；这类内核里 `sss-switch` 的最短

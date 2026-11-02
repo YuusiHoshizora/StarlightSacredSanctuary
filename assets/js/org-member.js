@@ -57,9 +57,12 @@
 
         /* 点提示条本身也可以收起；ESC 同样收起（键盘用户不用等） */
         toast.addEventListener('click', hide);
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') hide();
-        });
+        if (!window.__sssOrgKey) {
+            window.__sssOrgKey = true;
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') hide();
+            });
+        }
         return toast;
     }
 
@@ -83,10 +86,13 @@
     }
 
     /* 一个委托监听就够：以后加成员、加页面都不用再绑 */
-    document.addEventListener('click', function (e) {
-        var el = e.target && e.target.closest ? e.target.closest('[data-member]') : null;
-        if (!el) return;
-        e.preventDefault();
-        show(msgFor(el));
-    });
+    if (!window.__sssOrgClick) {
+        window.__sssOrgClick = true;
+        document.addEventListener('click', function (e) {
+            var el = e.target && e.target.closest ? e.target.closest('[data-member]') : null;
+            if (!el) return;
+            e.preventDefault();
+            show(msgFor(el));
+        });
+    }
 })();
