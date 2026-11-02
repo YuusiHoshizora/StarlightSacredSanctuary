@@ -569,6 +569,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       改主站风格不会带偏星图
     · 星图是「离线版本」：文案一律写本地存档 / 星域快照，不写「无法访问主数据库」；
       页面不再有导航栏（排序和主站不同），右上角只有一个「EXIT 退出」回工具页
+    · 左上读数：进入后显示 `Connecting...`（白色、点呼吸），5 秒后切 `Offline Mode`（红色）；
+      `STARMAP®OS` 20px，下面不再跟 STARCHART / SECTOR 0
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
       （personnel / facility / vessel / tool / main / org-secret 已登记；org-member 改成只绑一次）

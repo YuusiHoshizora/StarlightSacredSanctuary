@@ -826,32 +826,46 @@ html.starmap-ui .starmap-right{
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
     font-family: var(--os-mono);
     font-size: 12px;
     letter-spacing: 2.5px;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.55);
     pointer-events: none;
 }
 .starmap-os-page .map-readout__os{
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: 4px;
     color: #FFD700;
-    letter-spacing: 3px;
 }
 .starmap-os-page .map-readout__mode{
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    color: rgba(255, 215, 0, 0.7);
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.65);
+    transition: color 0.3s ease;
 }
 .starmap-os-page .map-readout__mode i{
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #FFD700;
-    box-shadow: 0 0 7px rgba(255, 215, 0, 0.9);
+    background: rgba(255, 255, 255, 0.55);
+    animation: os-connecting 1.2s ease-in-out infinite;
 }
-.starmap-os-page .map-readout__sector{
-    color: rgba(255, 255, 255, 0.35);
+.starmap-os-page .map-readout__mode.is-offline{
+    color: #FF4D4D;
+}
+.starmap-os-page .map-readout__mode.is-offline i{
+    background: #FF4D4D;
+    box-shadow: 0 0 7px rgba(255, 77, 77, 0.85);
+    animation: none;
+}
+@keyframes os-connecting{
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1; }
 }
 
 /* 右侧：系统读数 */
