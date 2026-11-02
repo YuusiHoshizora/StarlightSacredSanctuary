@@ -572,7 +572,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       页面不再有导航栏（排序和主站不同），右上角只有一个「EXIT 退出」回工具页
     · 左上读数：进入后显示 `Connecting...`（白色、点呼吸），5 秒后切 `Offline Mode`（红色）；
       `STARMAP®OS` 20px，下面不再跟 STARCHART / SECTOR 0
-    · 右侧信息栏：未选中时标题 `NOTICE`、选中星系后 `SYSTEM INFO`；左边界按钮切换展开/收起，
+    · 右侧信息栏：未选中时标题 `NOTICE`、选中星系后 `SYSTEM INFO`；面板外侧的箭头切换展开/收起，
+      箭头和面板都装在 `.starmap-panel-wrap` 里一起 translateX，保证同步；进场时整块从右侧滑入
       进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍

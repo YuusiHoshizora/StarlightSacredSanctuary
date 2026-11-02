@@ -756,66 +756,63 @@ html.starmap-ui .map-search{
     transition:opacity 0.5s ease, transform 0.5s ease;
 }
 
-/* 信息栏：进场从右侧滑入；左边界按钮切换展开 / 收起 */
-html:not(.starmap-ui) .starmap-right{ opacity:0; transform:translateX(100%); }
-html.starmap-ui .starmap-right{
+/* 信息栏：整块（面板 + 箭头）一起滑入 / 收起，箭头挂在面板外面，保证同步 */
+.starmap-os-page .starmap-panel-wrap{
+    position:relative;
+    margin-left:auto;
+    width:400px;
+    min-width:320px;
+    display:flex;
+    z-index:1;
+}
+html:not(.starmap-ui) .starmap-panel-wrap{ opacity:0; transform:translateX(100%); }
+html.starmap-ui .starmap-panel-wrap{
     opacity:1;
     transform:translateX(0);
     transition:opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.starmap-os-page .starmap-layout.is-panel-collapsed .starmap-right{
+.starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-wrap{
     opacity:1;
     transform:translateX(100%);
     transition:opacity 0.4s ease, transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 信息栏左边界：展开 / 收起按钮 */
+/* 面板本身填满 wrapper（宽度和右边距都交给 wrapper） */
+.starmap-os-page .starmap-right{
+    width:100%;
+    min-width:0;
+    margin-left:0;
+}
+
+/* 面板外侧的简单箭头：无描边、无底色，跟着面板一起动 */
 .starmap-os-page .starmap-panel-toggle{
     position:absolute;
     top:50%;
-    right:400px;                      /* 面板宽度 */
-    transform:translate(50%, -50%);
+    left:-26px;
+    transform:translateY(-50%);
     z-index:3;
-    width:26px;
-    height:64px;
-    padding:0;
-    display:flex;
+    display:inline-flex;
     align-items:center;
     justify-content:center;
-    border:1px solid rgba(255,255,255,0.18);
-    border-radius:0;
-    background:rgba(5,6,11,0.92);
-    color:rgba(255,255,255,0.55);
+    width:26px;
+    height:44px;
+    padding:0;
+    border:0;
+    background:none;
+    color:rgba(255,255,255,0.45);
+    font-family:var(--os-mono);
+    font-size:18px;
+    line-height:1;
     cursor:pointer;
-    opacity:0;
-    transition:right 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-               transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-               opacity 0.4s ease 0.15s,
-               border-color 0.2s ease,
-               color 0.2s ease;
+    transition:color 0.2s ease;
 }
-html.starmap-ui .starmap-panel-toggle{ opacity:1; }
 .starmap-os-page .starmap-panel-toggle:hover,
 .starmap-os-page .starmap-panel-toggle:focus-visible{
-    border-color:rgba(255,215,0,0.65);
     color:#FFD700;
     outline:none;
 }
-.starmap-os-page .starmap-panel-toggle__arrow{
-    width:7px;
-    height:7px;
-    border-top:1px solid currentColor;
-    border-right:1px solid currentColor;
-    transform:rotate(45deg) translate(-1px, 1px);
-    transition:transform 0.3s ease;
-}
-.starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-toggle{
-    right:0;
-    transform:translate(0, -50%);
-}
-.starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-toggle__arrow{
-    transform:rotate(-135deg) translate(-1px, 1px);
-}
+.starmap-os-page .starmap-panel-toggle__arrow::before{ content:"›"; }
+.starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-toggle__arrow::before{ content:"‹"; }
 
 @media (prefers-reduced-motion: reduce){
     .starmap-os{ transition:none; }
@@ -825,8 +822,7 @@ html.starmap-ui .starmap-panel-toggle{ opacity:1; }
     html.starmap-enter #starmap-canvas,
     html.starmap-ui .map-zoom,
     html.starmap-ui .map-search,
-    html.starmap-ui .starmap-right,
-    .starmap-os-page .starmap-panel-toggle{ transition:none; }
+    html.starmap-ui .starmap-panel-wrap{ transition:none; }
 }
 
 /* ==========================================================================
@@ -934,7 +930,8 @@ html.starmap-ui .starmap-panel-toggle{ opacity:1; }
 
 /* 右侧：系统读数 */
 .starmap-os-page .starmap-right{
-    width: 400px;
+    width: 100%;
+    min-width: 0;
     padding: 34px 32px;
     gap: 28px;
     backdrop-filter: none;
@@ -1065,6 +1062,7 @@ html.starmap-ui .starmap-panel-toggle{ opacity:1; }
 }
 
 @media (max-width: 900px){
+    .starmap-os-page .starmap-panel-wrap{ width: 100%; min-width: 0; }
     .starmap-os-page .starmap-right{ width: 100%; min-width: 0; }
     .starmap-os-page .starmap-panel-toggle{ display: none; }
 }
