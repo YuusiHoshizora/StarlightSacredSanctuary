@@ -59,6 +59,19 @@
         return normPath(url.pathname) === normPath(location.pathname) && url.search === location.search;
     }
 
+    /* 顶栏是常驻的（换页不替换），但文档 base URL 会随 pushState 变：
+       各个页面给「当前页」那一项写的是 href="."，换到别的路径后它会解析到新页
+       （在关于页点「档案」→ 解析回 /about/ → 整页重载，看起来就是"本页跳一下"）。
+       所以进来先按此刻的 URL 把顶栏链接固定成绝对地址。 */
+    (function absolutizeShell() {
+        var nav = document.querySelector('.navbar');
+        if (!nav) return;
+        Array.prototype.forEach.call(nav.querySelectorAll('a[href]'), function (a) {
+            var abs = resolveUrl(a.getAttribute('href'), location.href);
+            if (abs) a.setAttribute('href', abs);
+        });
+    })();
+
     /* --------------------------------- 点击 --------------------------------- */
 
     document.addEventListener('click', function (event) {
@@ -83,7 +96,12 @@
         if (url.origin !== location.origin) return;
         if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
         if (!isPilotUrl(url)) return;
-        if (samePage(url)) return;          // 同页锚点交给浏览器默认行为
+        if (samePage(url)) {
+            if (url.hash) return;               // 同页锚点：交给浏览器滚过去
+            event.preventDefault();             // 点当前页自己：不整页重载，回到顶部
+            window.scrollTo(0, 0);
+            return;
+        }
 
         event.preventDefault();
         navigate(url, true);
