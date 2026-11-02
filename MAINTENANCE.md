@@ -576,7 +576,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       箭头和面板都装在 `.starmap-panel-wrap` 里一起 translateX，保证同步；进场时整块从右侧滑入
     · 搜索选定星系：`animateViewTo`（easeOutCubic，约 520ms）平滑把星系移到视野中心，不再瞬移
     · 选中星系不在可见地图里时，在「视角中点 → 星系」射线与可见区域边缘的交点显示金色箭头；
-      信息栏展开时取面板左缘、收起时取画布右缘，面板切换结束（transitionend）后重算
+      信息栏展开时取面板左缘、收起时取画布右缘；面板滑动期间用 rAF 逐帧跟随（箭头内缩 52px 避开把手），
+      滑动中若选中星系进入视野，箭头立即隐藏
       进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍

@@ -229,7 +229,8 @@ function updateEdgeArrow() {
     return;
   }
 
-  const pad = 22;
+  /* 内缩留出面板把手的位置（把手在边界外 34px 以内） */
+  const pad = 52;
   const left = pad, top = pad;
   const right = Math.max(left + 1, mapRight - pad);
   const bottom = h - pad;

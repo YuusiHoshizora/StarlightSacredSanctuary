@@ -280,11 +280,25 @@
         var toggle = document.getElementById('starmap-panel-toggle');
         var layout = document.querySelector('.starmap-layout');
         if (!toggle || !layout) return;
+
+        /* 面板滑动期间每帧重算边缘箭头，让箭头跟着面板一起走 */
+        var panelRaf = 0;
+        function trackPanelArrow() {
+            if (panelRaf) cancelAnimationFrame(panelRaf);
+            var t0 = performance.now();
+            function tick(now) {
+                if (window.SSS_UPDATE_EDGE_ARROW) window.SSS_UPDATE_EDGE_ARROW();
+                if (now - t0 < 700) panelRaf = requestAnimationFrame(tick);
+            }
+            panelRaf = requestAnimationFrame(tick);
+        }
+
         toggle.addEventListener('click', function () {
             var collapsed = layout.classList.toggle('is-panel-collapsed');
             toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
             toggle.setAttribute('aria-label', collapsed ? '展开信息栏' : '收起信息栏');
             if (window.SSS_UPDATE_EDGE_ARROW) window.SSS_UPDATE_EDGE_ARROW();
+            trackPanelArrow();
         });
 
         /* 面板滑完之后再校准一次边缘箭头（可见区域变了） */
