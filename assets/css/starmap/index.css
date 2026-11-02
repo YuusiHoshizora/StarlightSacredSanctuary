@@ -606,12 +606,12 @@
     opacity:1;
     transition:opacity 0.45s ease;
     background:
-        /* 大坐标：每 25 小格一条 */
-        linear-gradient(rgba(255,255,255,0.11) 1px, transparent 1px) 0 0 / 100% calc(100vh / 68 * 25),
-        linear-gradient(90deg, rgba(255,255,255,0.11) 1px, transparent 1px) 0 0 / calc(100vh / 68 * 25) 100%,
+        /* 大坐标：每 25 小格一条；位置与本体网格同相（本体原点在视口中心） */
+        linear-gradient(rgba(255,255,255,0.20) 1px, transparent 1px) 0 calc(50% + 100vh * 25 / 136) / 100% calc(100vh / 68 * 25),
+        linear-gradient(90deg, rgba(255,255,255,0.20) 1px, transparent 1px) calc(50% + 100vh * 25 / 136) 0 / calc(100vh / 68 * 25) 100%,
         /* 中坐标：每 5 小格一条（星图默认比例尺 0.5 下的可见网格） */
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 100% calc(100vh / 68 * 5),
-        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / calc(100vh / 68 * 5) 100%,
+        linear-gradient(rgba(255,255,255,0.11) 1px, transparent 1px) 0 calc(50% + 100vh * 5 / 136) / 100% calc(100vh / 68 * 5),
+        linear-gradient(90deg, rgba(255,255,255,0.11) 1px, transparent 1px) calc(50% + 100vh * 5 / 136) 0 / calc(100vh / 68 * 5) 100%,
         radial-gradient(circle at 50% 42%, rgba(40,52,86,0.32), rgba(5,6,11,0.98) 68%),
         #05060b;
 }
@@ -637,16 +637,16 @@ html.starmap-enter .starmap-os{
 .starmap-os__frame::before{ top:-1px; left:-1px; border-right:0; border-bottom:0; }
 .starmap-os__frame::after{ right:-1px; bottom:-1px; border-top:0; border-left:0; }
 
-/* 中心十字：提前暗示星图的直角坐标系 */
+/* 中心十字：与本体坐标轴同位置、同颜色（贯穿整个视口） */
 .starmap-os::before,
 .starmap-os::after{
     content:'';
     position:absolute;
-    background:rgba(255,215,0,0.16);
+    background:rgba(255,215,0,0.35);
     pointer-events:none;
 }
-.starmap-os::before{ left:50%; top:16%; bottom:16%; width:1px; }
-.starmap-os::after{ top:50%; left:16%; right:16%; height:1px; }
+.starmap-os::before{ left:50%; top:0; bottom:0; width:1px; }
+.starmap-os::after{ top:50%; left:0; right:0; height:1px; }
 
 .starmap-os__inner{
     position:relative;
