@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.72+0098e3c0aa';
+const CACHE_VERSION = 'v5.72+b8485a96b8';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -97,6 +97,7 @@ const PRECACHE_URLS = [
 
     // 脚本
     '/assets/js/seamless.js',
+    '/assets/js/spa.js',
     '/assets/js/navtoggle.js',
     '/assets/js/personnel.js',
     '/assets/data/personnel.js',

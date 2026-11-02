@@ -56,6 +56,7 @@
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
+│   │   ├── spa.js              站内同文档导航（试点：about / archive / fleet）
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
 │   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
 │   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案（# 不滚页）
@@ -548,8 +549,19 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     会不会被解析）。Firefox 158 实测：`document.startViewTransition` 有、`view-transition-name`
     属性也认，但 `@view-transition` 整条被丢掉 —— 拿属性判断会把兜底判成"不需要"，动画全没了
     （以前那段 `@supports not (view-transition-name:none)` 就是这么变成死代码的）
-  · 只拦最普通的左键点站内链接：修饰键 / 中键 / `target=_blank` / `download` / 站外 /
-    同页锚点都走浏览器默认行为；`prefers-reduced-motion` 下直接跳、不延迟
+  · **站内同文档导航（试点，`assets/js/spa.js`）**：about / archive / fleet 三页之间点链接
+    不再整页加载 —— 拦截点击 → `fetch` 目标页 → 只换 `<main>` 与 `.site-footer`、切换页面 CSS、
+    改标题与 URL，套 `document.startViewTransition()`。这三页在 Firefox 里因此是**真交叉淡化**
+    （Firefox 支持同文档过渡）。只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击
+    （修饰键 / 中键 / `target=_blank` / `download` / 站外 / 同页锚点走默认行为）；
+    其余链接照旧整页跳转。
+    · 往试点加页面之前先确认：内容在 `<main>` 里、**没有页面级内联脚本**（换页不会执行，
+      要的话在 spa.js 的 `initPage()` 里补）、页面 CSS 是独立文件（会自动挂上/摘掉）、
+      不需要重新初始化画布/定时器
+    · 换进来的相对链接会按目标页 URL 转成绝对地址（archive 的 `organization/` 不会解析错）；
+      **顶栏是常驻的、不参与替换**，所以试点页要和现有三页**同一层级**，否则顶栏里的
+      `../about/` 这类相对链接会解析错（真要加深层页，先改顶栏链接为绝对路径）
+    · 关于页的两处内联交互（公告卡、彩蛋卡）由 spa.js / eggs.js 监听 `sss:swap` 补渲染
 - **首屏加载屏**（**全站每页都有**）：资源还没进缓存时（首次访问 / 缓存被清掉）显示，
   等**真正要用到的资源**都到手后上下两扇门滑开、露出页面；已就绪的页面不显示。
   · 判断在**各页 `<head>` 里那段内联脚本**（必须同步、首次绘制前决定，否则会闪一下）。

@@ -147,6 +147,9 @@
     if (own) API.findWhenActive(own);
 
     /* ---------- 「关于」页：填那张卡片 ---------- */
+    /* 包成函数：站内同文档换页（spa.js）换到关于页时，这张卡是新插入的，
+       需要重新渲染一次；只在这个函数里绑定，换页后重复调用不会叠监听。 */
+    function initAboutEggs() {
     var card = document.getElementById('about-eggs');
     if (!card) return;                          // 不是关于页
 
@@ -307,4 +310,9 @@
     }
 
     render();
+    }
+
+    /* 首次加载填一次；同文档换页后（spa.js 派发 sss:swap）再填一次 */
+    initAboutEggs();
+    document.addEventListener('sss:swap', initAboutEggs);
 })();
