@@ -223,6 +223,8 @@ function getSystemAt(clientX, clientY) {
 // ── 更新右侧信息 ──
 function renderSystemInfo(system, isInitial = false) {
   clearTimeout(fadeTimer);
+  /* 信息栏标题跟着选中状态走：未选中 = NOTICE，选中 = SYSTEM INFO */
+  infoContainer.classList.toggle('is-selected', !!system);
 
   if (isInitial) {
     // ── 首次加载：直接渲染 ──

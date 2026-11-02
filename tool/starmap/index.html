@@ -187,6 +187,11 @@
 
             </aside>
 
+            <button class="starmap-panel-toggle" id="starmap-panel-toggle" type="button"
+                    aria-controls="system-info" aria-expanded="true" aria-label="收起信息栏">
+                <span class="starmap-panel-toggle__arrow" aria-hidden="true"></span>
+            </button>
+
         </div>
 
     </main>
@@ -261,6 +266,20 @@
         } else {
             window.addEventListener('load', begin, { once: true });
         }
+    })();
+    </script>
+
+    <script>
+    /* 信息栏展开 / 收起：左边界按钮切换 */
+    (function () {
+        var toggle = document.getElementById('starmap-panel-toggle');
+        var layout = document.querySelector('.starmap-layout');
+        if (!toggle || !layout) return;
+        toggle.addEventListener('click', function () {
+            var collapsed = layout.classList.toggle('is-panel-collapsed');
+            toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            toggle.setAttribute('aria-label', collapsed ? '展开信息栏' : '收起信息栏');
+        });
     })();
     </script>
 
