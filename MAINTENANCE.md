@@ -18,8 +18,7 @@
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
 ├── main/cq.html                彩蛋：CQ（无入口页，见「设计约定 · 彩蛋」）
-├── starmap/index.html          星图入口（普通背景 + 载入条，点了才加载地图）
-├── starmap/map.html            星图本体（canvas + 数据；刻意没有页脚）
+├── starmap/index.html          星图（canvas + 数据 + Starmap®OS 启动画面；刻意没有页脚）
 ├── fleet/index.html            舰队
 ├── tool/index.html             工具
 ├── archive/index.html          档案（分类导航）
@@ -48,8 +47,7 @@
 │   │   ├── archive/vessel.css          舰船档案页
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── main/cq.css         彩蛋页 CQ
-│   │   ├── starmap/index.css   星图本体
-│   │   ├── starmap/gate.css    星图入口
+│   │   ├── starmap/index.css   星图 + Starmap®OS 启动画面
 │   │   ├── fleet/index.css     舰队页
 │   │   ├── tool/index.css      工具页
 │   │   └── about/index.css     关于页
@@ -76,7 +74,7 @@
 │   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
 │   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
 │   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
-│   │   └── starmap.js          星图绘制与交互（渲染脚本，页面在 starmap/map.html 直接引用）
+│   │   └── starmap.js          星图绘制与交互（渲染脚本，页面在 starmap/index.html 直接引用）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
@@ -561,7 +559,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     所以 Firefox 里也是**真交叉淡化**（同文档过渡），数据驱动的页面在新快照里已经渲染好。
     只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击；其余链接（`/starmap/`、
     `/main/cq`）照旧整页跳转（页面脚本的画布 / 循环还没有停止钩子）。
-    · 星图拆成两页：`/starmap/` 是入口（普通背景 + 载入条，参与同文档导航），`/starmap/map.html` 是本体（重，整页加载）
+    · 星图只有一页：进页面自动跑 Starmap®OS 启动画面，第一帧画好后启动画面淡出、六边形背景淡出、
+      坐标背景淡入，随后操作按钮与右栏出现；时序在页面末尾那段内联脚本里
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
       （personnel / facility / vessel / tool / main / org-secret 已登记；org-member 改成只绑一次）

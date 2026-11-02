@@ -42,8 +42,7 @@
         '/archive/vessel': true,
         '/fleet': true,
         '/tool': true,
-        '/main/mainpage': true,
-        '/starmap': true
+        '/main/mainpage': true
     };
 
     /* 全站外壳脚本：不参与"换页后重跑" */
