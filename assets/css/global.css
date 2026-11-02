@@ -385,21 +385,19 @@ nav a:hover{
     view-transition-name:site-navbar;
 }
 
-@keyframes vt-fade-out{
-    to{ opacity:0 }
-}
-
 @keyframes vt-fade-in{
     from{ opacity:0 }
 }
 
-/* 内容整体淡出 / 淡入 */
+/* 交叉淡化只让**新快照淡入**，旧快照保持不透明垫在下面。
+   两边同时半透明时，中间会透出页面底下的黑色 —— 那就是"切换时淡黑一下"的来源
+   （旧实现：old 180ms ease-in 淡出 + new 240ms ease-out 淡入，曲线错开，中间必然更暗）。 */
 ::view-transition-old(root){
-    animation:vt-fade-out 180ms ease-in both;
+    animation:none;
 }
 
 ::view-transition-new(root){
-    animation:vt-fade-in 240ms ease-out both;
+    animation:vt-fade-in 220ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 /* 顶栏不做交叉淡化：直接显示新快照，避免文字重影 */

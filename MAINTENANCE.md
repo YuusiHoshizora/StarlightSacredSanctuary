@@ -528,6 +528,10 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   换一片星空就改那个种子
 - **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪；
    navbar 是共享元素（`view-transition-name:site-navbar`），所以它"钉住"不动。
+  · ⚠️ **交叉淡化只让新快照淡入**（`::view-transition-old(root){animation:none}`，新快照 220ms 淡入）。
+    两页同时半透明时，中间会透出页面的黑底 —— 那就是"切换时淡黑一下"；旧实现是 old 180ms 淡出 +
+    new 240ms 淡入，两条曲线错开，必然会暗一下（实测中间亮度比两端低约 22%）。
+    旧快照保持不透明垫在下面，新快照在上面淡入，合成结果始终不透明。
   另有「内容先藏、字体就绪再淡入」这一层（`sss-switch` / `sss-switch-in`）：
   · 各页 `<head>` 里同步判断这次是不是**站内跳转**（`document.referrer` 同源），是就给
     `<html>` 挂 `sss-switch` —— 只让内容区（`main` / `.main-layout` / `.site-footer`）透明，
