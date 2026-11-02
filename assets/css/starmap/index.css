@@ -21,6 +21,15 @@
   height: 100%;
   display: block;
   z-index: 0;
+  /* 单指拖动 = 平移地图，不是滚页面 / 缩放页面。
+     不放在 768px 的媒体查询里：宽屏触摸设备同样需要。 */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: grab;
+}
+#starmap-canvas:active {
+  cursor: grabbing;
 }
 
 /* 右侧星系介绍区 */

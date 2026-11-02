@@ -631,6 +631,8 @@ canvas.addEventListener("pointermove", (e) => {
   }
 
   if (!dragFrom) return;
+  /* 鼠标已经松开（在画布外松开、丢了 pointerup）：别继续跟着鼠标平移 */
+  if (e.pointerType !== "touch" && e.buttons === 0) { dragFrom = null; return; }
   const dx = e.clientX - dragFrom.x;
   const dy = e.clientY - dragFrom.y;
   if (Math.abs(dx) + Math.abs(dy) < 2) return;
@@ -648,7 +650,18 @@ canvas.addEventListener("pointerup", (e) => {
   }
 });
 
-canvas.addEventListener("pointercancel", endTouch);
+/* 捕获丢了 / 指针被取消：一定结束拖动，否则地图会"黏"在鼠标上继续走 */
+canvas.addEventListener("lostpointercapture", () => {
+  dragFrom = null;
+});
+window.addEventListener("blur", () => {
+  dragFrom = null;
+});
+
+canvas.addEventListener("pointercancel", (e) => {
+  endTouch(e);
+  dragFrom = null;
+});
 
 /* ── 触摸：双指捏合缩放（移动端） ──
    单指拖动沿用上面的平移；检测到第二根手指就切到捏合：
