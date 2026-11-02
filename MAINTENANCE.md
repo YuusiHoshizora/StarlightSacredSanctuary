@@ -428,7 +428,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 
 · 星图已经从顶栏撤下，入口只在工具页「通用工具」里（`tool/starmap/`，旧地址 `/starmap/` 会重定向过去）
 · 公告测试 —— `tool/index.html` 里发一个 `sss:notice` 事件，`notice.js` 收到就弹公告
-· 加载测试 —— 普通链接 `../?boot=1`；各页 `<head>` 里那段判断见到 `boot` 参数就重播一次加载屏
+· 加载测试 —— 普通链接 `../?boot=1`；各页 `<head>` 里那段判断见到 `boot` 参数就重播一次加载屏（`spa.js` 会跳过带 `boot` 参数的 URL，
+  交给整页加载，否则会被同文档导航吃掉、加载屏不播）
 
 不想要测试入口了，就把左栏那两个 `.tool-entry` 和 `tool/index.html` 末尾那段脚本一起删掉
 （`?boot=1` 这个开关本身可以留着，它就是个调试入口）。

@@ -118,6 +118,8 @@
         try { url = new URL(anchor.href, location.href); } catch (e) { return; }
         if (url.origin !== location.origin) return;
         if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+        /* ?boot=1（工具页「加载测试」）必须整页加载才会重播加载屏，别被同文档导航吃掉 */
+        if (/(^|[?&])boot(=|&|$)/.test(url.search)) return;
         if (!isPilotUrl(url)) return;
         if (samePage(url)) {
             if (url.hash) return;               // 同页锚点：交给浏览器滚过去
@@ -342,6 +344,8 @@
 
     window.addEventListener('popstate', function () {
         var url = new URL(location.href);
+        /* 前进/后退落到 ?boot=1 时也整页重来，才能重播加载屏 */
+        if (/(^|[?&])boot(=|&|$)/.test(url.search)) { location.reload(); return; }
         /* popstate 时 location 已经是目标地址，不能拿它和自身比；要跟"当前 DOM 是哪一页"比。
            同页的 # 变化（文章 / 档案条目）交给页面脚本，不要重新换页。 */
         if (normPath(url.pathname) === currentPath && url.search === currentSearch) return;
