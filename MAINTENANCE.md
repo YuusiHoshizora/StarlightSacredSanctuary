@@ -564,6 +564,9 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     `/main/cq`）照旧整页跳转（页面脚本的画布 / 循环还没有停止钩子）。
     · 星图只有一页：进页面自动跑 Starmap®OS 启动画面，第一帧画好后启动画面淡出、六边形背景淡出、
       坐标背景淡入，随后操作按钮与右栏出现；时序在页面末尾那段内联脚本里
+    · 星图本体走 Starmap®OS 一套视觉：`body.starmap-os-page` 作用域下的覆盖块在
+      `assets/css/starmap/index.css` 末尾（等宽字 / 发丝线 / 金色读数 / 方块控件），
+      改主站风格不会带偏星图
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
       （personnel / facility / vessel / tool / main / org-secret 已登记；org-member 改成只绑一次）

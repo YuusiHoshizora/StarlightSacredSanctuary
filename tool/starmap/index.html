@@ -124,7 +124,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<body>
+<body class="starmap-os-page">
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -157,9 +157,10 @@
 
     <header class="navbar">
 
-        <div class="logo">
+                <div class="logo">
             <span class="logo__mark" aria-hidden="true"></span>
-            星光圣域
+            <span class="logo__os">Starmap<sup>®</sup>OS</span>
+            <span class="logo__dept">Archive Dept.</span>
         </div>
 
         <nav id="site-nav">
@@ -184,6 +185,12 @@
 
             <!-- 左侧：星图 -->
             <div class="starmap-left">
+                <div class="map-readout" aria-hidden="true">
+                    <span>STARCHART</span>
+                    <span>SECTOR 0</span>
+                    <span class="map-readout__live"><i></i>LIVE</span>
+                </div>
+
                 <canvas id="starmap-canvas"></canvas>
 
                 <!-- 比例尺控制：缩小 / 滑块（辅助缩放，不显示数值）/ 放大 / 回到默认
