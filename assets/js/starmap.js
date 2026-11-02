@@ -200,6 +200,78 @@ function drawStarMap() {
     ctx.textAlign = "center";
     ctx.fillText(sys.name, px, py - 14);
   }
+  updateEdgeArrow();
+}
+
+/* ── 选中星系不在视野里：指向它的边缘箭头 ── */
+function updateEdgeArrow() {
+  const arrow = document.getElementById("starmap-edge-arrow");
+  if (!arrow) return;
+  if (!selectedId) { arrow.classList.remove("is-on"); return; }
+
+  const sys = STARMAP_DATA.find((s) => s.id === selectedId);
+  if (!sys) { arrow.classList.remove("is-on"); return; }
+
+  const { w, h } = getCanvasScale();
+  const p = systemPixel(sys, w, h);
+
+  /* 可见地图区域的右边界：信息栏展开时 = 面板左边缘，收起时 = 画布右缘 */
+  let mapRight = w;
+  const panel = document.querySelector(".starmap-right");
+  if (panel) {
+    const r = panel.getBoundingClientRect();
+    if (r.left > 0 && r.left < w) mapRight = Math.min(mapRight, r.left);
+  }
+
+  /* 已经在视野里就不显示 */
+  if (p.px >= 0 && p.px <= mapRight && p.py >= 0 && p.py <= h) {
+    arrow.classList.remove("is-on");
+    return;
+  }
+
+  const pad = 22;
+  const left = pad, top = pad;
+  const right = Math.max(left + 1, mapRight - pad);
+  const bottom = h - pad;
+  const cx = w / 2, cy = h / 2;           // 当前视角中点
+  const dx = p.px - cx, dy = p.py - cy;
+
+  if (!dx && !dy) { arrow.classList.remove("is-on"); return; }
+
+  /* 中点 → 星系 的射线与可见区域求交 */
+  const tx = dx > 0 ? (right - cx) / dx : dx < 0 ? (left - cx) / dx : Infinity;
+  const ty = dy > 0 ? (bottom - cy) / dy : dy < 0 ? (top - cy) / dy : Infinity;
+  const t = Math.min(tx, ty);
+  if (!isFinite(t) || t <= 0) { arrow.classList.remove("is-on"); return; }
+
+  const ax = cx + dx * t;
+  const ay = cy + dy * t;
+  arrow.style.left = ax + "px";
+  arrow.style.top = ay + "px";
+  arrow.style.transform =
+    "translate(-50%, -50%) rotate(" + Math.atan2(dy, dx) + "rad)";
+  arrow.classList.add("is-on");
+}
+window.SSS_UPDATE_EDGE_ARROW = updateEdgeArrow;
+
+/* 把视口平移到 (tx, ty)，带缓动；搜索定位用 */
+let viewAnimId = 0;
+function animateViewTo(tx, ty, ms) {
+  const C = window.SSS_COORD;
+  if (!C) return;
+  cancelAnimationFrame(viewAnimId);
+  const from = C.pan();
+  const dur = ms || 480;
+  const start = performance.now();
+
+  function step(now) {
+    const t = Math.min(1, (now - start) / dur);
+    const e = 1 - Math.pow(1 - t, 3);      // easeOutCubic
+    C.setView(null, from[0] + (tx - from[0]) * e, from[1] + (ty - from[1]) * e);
+    drawStarMap();
+    if (t < 1) viewAnimId = requestAnimationFrame(step);
+  }
+  viewAnimId = requestAnimationFrame(step);
 }
 
 // ── 点击检测 ──
@@ -813,15 +885,20 @@ function moveSearchCursor(step) {
   renderSearchList();
 }
 
-/* 跳到某个星系：移到视野中心 + 选中（地图高亮、右侧信息栏同步） */
+/* 跳到某个星系：平滑移到视野中心 + 选中（地图高亮、右侧信息栏同步） */
 function gotoGalaxy(sys) {
   const C = window.SSS_COORD;
+  selectSystem(sys);
   if (C && sys) {
     const cell = C.cell();
-    C.setView(null, C.w() / 2 - Number(sys.x) * cell, C.h() / 2 - Number(sys.y) * cell);
+    animateViewTo(
+      C.w() / 2 - Number(sys.x) * cell,
+      C.h() / 2 - Number(sys.y) * cell,
+      520
+    );
+  } else {
+    drawStarMap();
   }
-  selectSystem(sys);
-  drawStarMap();
   closeSearchList();
   if (searchInput) searchInput.blur();
 }

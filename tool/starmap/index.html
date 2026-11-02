@@ -179,7 +179,6 @@
                 </div>
             </div>
 
-            <!-- 右侧：星系介绍 -->
             <!-- 右侧：星系介绍（整块一起滑入 / 收起，箭头挂在面板外面） -->
             <div class="starmap-panel-wrap">
                 <aside class="starmap-right">
@@ -194,6 +193,9 @@
                     <span class="starmap-panel-toggle__arrow" aria-hidden="true"></span>
                 </button>
             </div>
+
+            <!-- 选中星系不在当前视野里时，指向它的边缘箭头 -->
+            <div class="starmap-edge-arrow" id="starmap-edge-arrow" aria-hidden="true"></div>
 
         </div>
 
@@ -282,7 +284,16 @@
             var collapsed = layout.classList.toggle('is-panel-collapsed');
             toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
             toggle.setAttribute('aria-label', collapsed ? '展开信息栏' : '收起信息栏');
+            if (window.SSS_UPDATE_EDGE_ARROW) window.SSS_UPDATE_EDGE_ARROW();
         });
+
+        /* 面板滑完之后再校准一次边缘箭头（可见区域变了） */
+        var wrap = document.querySelector('.starmap-panel-wrap');
+        if (wrap) {
+            wrap.addEventListener('transitionend', function () {
+                if (window.SSS_UPDATE_EDGE_ARROW) window.SSS_UPDATE_EDGE_ARROW();
+            });
+        }
     })();
     </script>
 

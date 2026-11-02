@@ -814,10 +814,42 @@ html.starmap-ui .starmap-panel-wrap{
 .starmap-os-page .starmap-panel-toggle__arrow::before{ content:"›"; }
 .starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-toggle__arrow::before{ content:"‹"; }
 
+/* 选中星系不在视野：页面边缘的指向箭头（中点 → 星系 的射线与可见区域边缘的交点） */
+.starmap-os-page .starmap-edge-arrow{
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:2;
+    width:0;
+    height:0;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.15s ease;
+}
+.starmap-os-page .starmap-edge-arrow.is-on{ opacity:1; }
+.starmap-os-page .starmap-edge-arrow::before{
+    content:"\203A";                  /* › */
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%, -50%);
+    font-family:var(--os-mono);
+    font-size:28px;
+    line-height:1;
+    color:#FFD700;
+    text-shadow:0 0 10px rgba(255,215,0,0.55);
+    animation:starmap-edge-pulse 1.4s ease-in-out infinite;
+}
+@keyframes starmap-edge-pulse{
+    0%, 100% { opacity:0.55; }
+    50%      { opacity:1; }
+}
+
 @media (prefers-reduced-motion: reduce){
     .starmap-os{ transition:none; }
     .starmap-os__dots i,
     .starmap-os__bar i{ animation:none; }
+    .starmap-edge-arrow::before{ animation:none; }
     html.starmap-enter .background,
     html.starmap-enter #starmap-canvas,
     html.starmap-ui .map-zoom,
@@ -1065,6 +1097,7 @@ html.starmap-ui .starmap-panel-wrap{
     .starmap-os-page .starmap-panel-wrap{ width: 100%; min-width: 0; }
     .starmap-os-page .starmap-right{ width: 100%; min-width: 0; }
     .starmap-os-page .starmap-panel-toggle{ display: none; }
+    .starmap-os-page .starmap-edge-arrow{ display: none; }
 }
 
 /* 空状态 & 读数微调 */
