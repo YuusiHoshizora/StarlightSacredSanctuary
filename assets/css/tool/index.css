@@ -174,14 +174,6 @@ button.tool-entry {
     color: rgba(255, 255, 255, 0.9);
 }
 
-.tool-main__sub {
-    grid-column: 1 / -1;
-    margin: 0 0 6px;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.55);
-}
-
 
 .tool-card {
     flex: 0 0 auto;
@@ -564,8 +556,7 @@ button.tool-entry {
         gap: 18px;
     }
 
-    .tool-main__title,
-    .tool-main__sub {
+    .tool-main__title {
         align-self: flex-start;
         width: 100%;
         max-width: 274px;

@@ -251,7 +251,7 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 并行 fetch 目标页 HTML 与页面脚本源码 → 替换内容根（`.main-layout` 或 `<main>`）与页脚 →
 **同步执行目标页脚本** → 更新标题/URL，整段套 `document.startViewTransition()`。
 navbar、背景画布不重载，所以 Firefox 也能拿到真正的交叉淡化（同文档过渡它支持）。
-试点覆盖全站，除 `/starmap/`（画布 + 大量 rAF，且要重建背景配置；页内有自己的 Starmap®OS 启动序列）与 `/main/cq`
+试点覆盖全站，除 `/tool/starmap/`（画布 + 大量 rAF，且要重建背景配置；页内有自己的 Starmap®OS 启动序列）与 `/main/cq`
 （彩蛋页，内联脚本里的循环没有停止钩子）—— 这两处仍整页加载。
 
 没有跨文档 View Transitions 的内核（Firefox 等）：**不做"上一页淡出"**，让浏览器自己把旧页面

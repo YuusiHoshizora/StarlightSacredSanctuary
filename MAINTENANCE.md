@@ -18,9 +18,10 @@
 │
 ├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
 ├── main/cq.html                彩蛋：CQ（无入口页，见「设计约定 · 彩蛋」）
-├── starmap/index.html          星图（canvas + 数据 + Starmap®OS 启动画面；刻意没有页脚）
+├── starmap/index.html          旧地址重定向 → /tool/starmap/
 ├── fleet/index.html            舰队
 ├── tool/index.html             工具
+├── tool/starmap/index.html     星图（canvas + 数据 + Starmap®OS 启动画面；刻意没有页脚）
 ├── archive/index.html          档案（分类导航）
 ├── archive/organization/index.html  组织档案（组织名录导航：官方 / 半官方 / 非官方三类，目前只有官方组织有内容）
 ├── archive/organization/cam.html    管理成员议会（最高权力机构；3 列 × 4 位议员）
@@ -74,7 +75,7 @@
 │   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
 │   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
 │   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
-│   │   └── starmap.js          星图绘制与交互（渲染脚本，页面在 starmap/index.html 直接引用）
+│   │   └── starmap.js          星图绘制与交互（渲染脚本，页面在 tool/starmap/index.html 直接引用）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
@@ -422,10 +423,10 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 
 ### 工具页的目录与测试入口
 
-工具页左栏是目录：**通用工具**（拾色器 / 时间转换 / 罗马数字 / 星图）在上，**测试工具**
-（公告测试 / 加载测试）在下；右栏是「便捷转换」，三张工具卡都放在里面。
+工具页左栏是目录：**通用工具**（星图）在上，**测试工具**（公告测试 / 加载测试）在下；右栏是「便捷转换」，
+拾色器 / 时间转换 / 罗马数字 三张工具卡都放在里面。
 
-· 星图已经从顶栏撤下，入口只在工具页「通用工具」里（`../starmap/`）
+· 星图已经从顶栏撤下，入口只在工具页「通用工具」里（`tool/starmap/`，旧地址 `/starmap/` 会重定向过去）
 · 公告测试 —— `tool/index.html` 里发一个 `sss:notice` 事件，`notice.js` 收到就弹公告
 · 加载测试 —— 普通链接 `../?boot=1`；各页 `<head>` 里那段判断见到 `boot` 参数就重播一次加载屏
 

@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.72+94b4c6b56d';
+const CACHE_VERSION = 'v5.72+edc0854e8e';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -49,8 +49,8 @@ const PRECACHE_URLS = [
     // 页面（同时缓存 "目录形式" 与 ".html" 两种地址，命中率更高）
     '/',
     '/index.html',
-    '/starmap/',
-    '/starmap/index.html',
+    '/tool/starmap/',
+    '/tool/starmap/index.html',
     '/fleet/',
     '/fleet/index.html',
     '/tool/',
