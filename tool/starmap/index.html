@@ -134,7 +134,6 @@
 
     <div class="background"></div>
     <div class="overlay"></div>
-    <a class="os-exit" href="../"><span>EXIT</span>退出</a>
 <main>
 
         <div class="starmap-layout">
@@ -152,6 +151,12 @@
                      滑块夹在两个按钮之间，拖动方向与紧邻的按钮一致：
                      向左 = 缩小（同左侧「−」），向右 = 放大（同右侧「+」）。 -->
                 <div class="map-zoom" role="group" aria-label="比例尺控制">
+                    <button type="button" id="overview-btn" class="map-zoom__btn map-zoom__btn--overview"
+                            aria-label="全面浏览" title="全面浏览">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
+                        </svg>
+                    </button>
                     <button type="button" id="zoom-out" class="map-zoom__btn" aria-label="缩小" title="缩小">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
                     </button>

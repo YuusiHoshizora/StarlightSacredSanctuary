@@ -20,6 +20,7 @@ const infoContainer = document.getElementById("system-info");
 let selectedId = null;
 let hoveredId = null;
 let fadeTimer = null;
+let overviewMode = false;   // 全面浏览中：缩放 / 星系点击 / 信息栏都禁用
 
 // ── 过渡动画参数 ──
 const ANIM_SPEED = 0.05;   // 每帧插值步长（越大越快）
@@ -152,6 +153,9 @@ function systemPixel(sys, w, h) {
 // ── 绘制星图（使用动画插值） ──
 function drawStarMap() {
   const { w, h } = getCanvasScale();
+  /* 全面浏览这一档比例尺太小，名字会挤成一团，只画星点 */
+  const zoomNow = window.SSS_COORD ? window.SSS_COORD.zoom() : 1;
+  const showLabels = zoomNow >= 0.15;
   ctx.clearRect(0, 0, w, h);
 
   for (const sys of STARMAP_DATA) {
@@ -195,10 +199,12 @@ function drawStarMap() {
     const nR = isActive ? 255 : 192;
     const nG = isActive ? 215 : 192;
     const nB = isActive ? 32  : 192;
-    ctx.fillStyle = `rgba(${nR},${nG},${nB},${s.nameBrightness})`;
-    ctx.font = "15px 'Sarasa'";
-    ctx.textAlign = "center";
-    ctx.fillText(sys.name, px, py - 14);
+    if (showLabels) {
+      ctx.fillStyle = `rgba(${nR},${nG},${nB},${s.nameBrightness})`;
+      ctx.font = "15px 'Sarasa'";
+      ctx.textAlign = "center";
+      ctx.fillText(sys.name, px, py - 14);
+    }
   }
   updateEdgeArrow();
 }
@@ -207,6 +213,7 @@ function drawStarMap() {
 function updateEdgeArrow() {
   const arrow = document.getElementById("starmap-edge-arrow");
   if (!arrow) return;
+  if (overviewMode) { arrow.classList.remove("is-on"); return; }
   if (!selectedId) { arrow.classList.remove("is-on"); return; }
 
   const sys = STARMAP_DATA.find((s) => s.id === selectedId);
@@ -461,6 +468,12 @@ function handleMouseLeave() {
 canvas.addEventListener("mousemove", handleMouseMove);
 canvas.addEventListener("mouseleave", handleMouseLeave);
 canvas.addEventListener("click", (e) => {
+  /* 全面浏览：点地图任意位置 = 以该点为新中心退出 */
+  if (overviewMode) {
+    exitOverview(e.clientX, e.clientY);
+    dragMoved = false;
+    return;
+  }
   // 拖动过画布时不触发选中
   if (dragMoved) { dragMoved = false; return; }
   const sys = getSystemAt(e.clientX, e.clientY);
@@ -556,8 +569,18 @@ function bindZoomButton(btn, action) {
 function syncZoomUI() {
   const C = window.SSS_COORD;
   if (!C) return;
+  if (overviewMode) {
+    /* 全面浏览：缩放全部禁用，滑块位置仍跟着当前（缩小后的）比例尺 */
+    if (zoomInBtn) zoomInBtn.disabled = true;
+    if (zoomOutBtn) zoomOutBtn.disabled = true;
+    if (zoomResetBtn) zoomResetBtn.disabled = true;
+    if (zoomSlider) zoomSlider.disabled = true;
+    syncZoomSlider();
+    return;
+  }
   if (zoomInBtn) zoomInBtn.disabled = !C.canZoomIn();
   if (zoomOutBtn) zoomOutBtn.disabled = !C.canZoomOut();
+  if (zoomSlider) zoomSlider.disabled = false;
   /* 已经回到默认比例尺、且原点正好落在视口中心时，默认按钮置灰 */
   if (zoomResetBtn) {
     const def = C.limits().def;
@@ -573,6 +596,98 @@ function syncZoomUI() {
 bindZoomButton(zoomInBtn, () => { stopWheelZoom(); if (window.SSS_COORD) window.SSS_COORD.zoomIn(); });
 bindZoomButton(zoomOutBtn, () => { stopWheelZoom(); if (window.SSS_COORD) window.SSS_COORD.zoomOut(); });
 bindZoomButton(zoomResetBtn, () => { stopWheelZoom(); if (window.SSS_COORD) window.SSS_COORD.reset(); });
+
+/* ── 全面浏览 ──
+   缩到能看见全部星系（比 ZOOM_MIN 还小，走 setViewRaw 绕过夹取）；
+   期间禁用缩放 / 拖动 / 星系点击，隐藏信息栏；点地图任意位置即以该点为新中心退出。 */
+const overviewBtn = document.getElementById("overview-btn");
+const overviewLayout = document.querySelector(".starmap-layout");
+
+function overviewFit() {
+  const C = window.SSS_COORD;
+  if (!C) return null;
+  const { w, h } = getCanvasScale();
+  const base = C.base();
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const s of STARMAP_DATA) {
+    const x = Number(s.x), y = Number(s.y);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const padX = 80, padY = 80;
+  const spanX = Math.max(1, (maxX - minX) * base);
+  const spanY = Math.max(1, (maxY - minY) * base);
+  const z = Math.max(0.005, Math.min(
+    (w - padX * 2) / spanX,
+    (h - padY * 2) / spanY,
+    C.limits().max
+  ));
+  const cell = base * z;
+  return {
+    z,
+    panX: w / 2 - ((minX + maxX) / 2) * cell,
+    panY: h / 2 - ((minY + maxY) / 2) * cell
+  };
+}
+
+function enterOverview() {
+  if (overviewMode) return;
+  const C = window.SSS_COORD;
+  const fit = overviewFit();
+  if (!C || !fit) return;
+
+  overviewMode = true;
+  stopWheelZoom();
+  dragFrom = null;
+  dragMoved = false;
+  overviewLayout.classList.add("is-overview");
+  if (overviewBtn) {
+    overviewBtn.classList.add("is-on");
+    overviewBtn.disabled = true;
+  }
+  C.setViewRaw(fit.z, fit.panX, fit.panY);
+  syncZoomUI();
+  updateEdgeArrow();
+}
+
+function exitOverview(clientX, clientY) {
+  if (!overviewMode) return;
+  const C = window.SSS_COORD;
+
+  overviewMode = false;
+  overviewLayout.classList.remove("is-overview");
+  if (overviewBtn) {
+    overviewBtn.classList.remove("is-on");
+    overviewBtn.disabled = false;
+  }
+  dragMoved = false;
+
+  if (C) {
+    /* 点击点成为新的视角中心；视角回到正常范围的最小比例尺。
+       先按当前（全面浏览）的比例尺把点击点换算成格坐标，再用新比例尺反推原点。 */
+    const lim = C.limits();
+    const pan = C.pan();
+    const cellOld = C.cell();
+    const gx = (clientX - pan[0]) / cellOld;
+    const gy = (clientY - pan[1]) / cellOld;
+    const cellNew = C.base() * lim.min;
+    C.setView(lim.min, C.w() / 2 - gx * cellNew, C.h() / 2 - gy * cellNew);
+  }
+  syncZoomUI();
+  updateEdgeArrow();
+}
+
+if (overviewBtn) overviewBtn.addEventListener("click", enterOverview);
+
+/* ESC 退出到工具页；输入框里按 ESC 交给搜索框自己清空 */
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Escape" || e.defaultPrevented) return;
+  const t = e.target;
+  if (t && t.closest && t.closest("input, textarea")) return;
+  location.href = "../";
+});
 
 /* ── 鼠标滚轮缩放 ──
    向上滚 = 放大、向下滚 = 缩小（与按钮方向一致），并且锚定在鼠标位置：
@@ -633,6 +748,7 @@ function wheelStep(now) {
 }
 
 canvas.addEventListener("wheel", (e) => {
+  if (overviewMode) { e.preventDefault(); return; }
   const C = window.SSS_COORD;
   if (!C) return;
   /* 触控板双指捏合会带 ctrlKey：交还给浏览器做页面缩放，不抢这个手势 */
@@ -661,6 +777,7 @@ canvas.addEventListener("wheel", (e) => {
 
 canvas.addEventListener("pointerdown", (e) => {
   if (!window.SSS_COORD) return;
+  if (overviewMode) return;                // 全面浏览：不拖动、不捏合，只等一次点击
   if (e.pointerType === "touch") {
     touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (touchPts.size >= 2) { startPinch(); return; }
@@ -677,6 +794,7 @@ canvas.addEventListener("pointerdown", (e) => {
 canvas.addEventListener("pointermove", (e) => {
   const C = window.SSS_COORD;
   if (!C) return;
+  if (overviewMode) return;
 
   /* 双指捏合：以两指中点为锚点缩放（手指底下的格点保持不动） */
   if (e.pointerType === "touch" && touchPts.has(e.pointerId)) {

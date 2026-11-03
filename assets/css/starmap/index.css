@@ -814,8 +814,7 @@ html.starmap-ui .starmap-panel-wrap{
 .starmap-os-page .starmap-panel-toggle__arrow::before{ content:"›"; }
 .starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-toggle__arrow::before{ content:"‹"; }
 
-/* 选中星系不在视野：页面边缘的指向箭头（中点 → 星系 的射线与可见区域边缘的交点） */
-.starmap-os-page .starmap-edge-arrow{
+/* 选中星系不在视野：页面边缘的指向箭头（中点 → 星系 的射线与可见区域边缘的交点） */.starmap-os-page .starmap-edge-arrow{
     position:absolute;
     left:0;
     top:0;
@@ -875,40 +874,18 @@ html.starmap-ui .starmap-panel-wrap{
     background: #05060b;
 }
 
-/* 没有导航栏：页面从最顶上开始，右上角只留一个出口 */
+/* 没有导航栏：页面从最顶上开始 */
 .starmap-os-page .starmap-layout{ padding-top: 0; }
 
-.os-exit{
-    position: fixed;
-    top: 18px;
-    right: 28px;
-    z-index: 60;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 7px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    font-family: var(--os-mono);
-    font-size: 13px;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
-}
-.os-exit span{
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
-}
-.os-exit:hover,
-.os-exit:focus-visible{
-    border-color: rgba(255, 215, 0, 0.65);
+/* 全面浏览：信息栏与其把手一起隐藏，边缘箭头也收起 */
+.starmap-os-page .starmap-layout.is-overview .starmap-panel-wrap{ display: none; }
+.starmap-os-page .starmap-layout.is-overview .starmap-edge-arrow{ display: none; }
+/* 全面浏览按钮的激活态 */
+.starmap-os-page .map-zoom__btn--overview.is-on{
     color: #FFD700;
-    background: rgba(255, 215, 0, 0.06);
-    outline: none;
+    border-color: rgba(255, 215, 0, 0.7);
+    background: rgba(255, 215, 0, 0.08);
 }
-.os-exit:hover span,
-.os-exit:focus-visible span{ color: rgba(255, 215, 0, 0.75); }
 
 /* 地图左上角读数 */
 .starmap-os-page .map-readout{

@@ -958,6 +958,17 @@
     notifyView();
   }
 
+  /* 直接指定视角（不夹取比例尺）：全面浏览需要比 ZOOM_MIN 更小的缩放 */
+  function setViewRaw(z, panX, panY) {
+    zoomStop();
+    if (z != null) coordZoom = z;
+    if (panX != null) coordPanX = panX;
+    if (panY != null) coordPanY = panY;
+    zoomTween.target = coordZoom;
+    refreshCoordCell();
+    notifyView();
+  }
+
   /* 只平移（保持当前比例尺），用「回到默认」那套缓动（RESET_MS），
      搜索定位就调这个，保证和"回到初始点"的速度曲线完全一致。 */
   function panToView(x, y) {
@@ -1043,6 +1054,7 @@
         pos: coordPosPx,
         snap: coordSnapZoomPx,
         setView: setCoordView,
+        setViewRaw: setViewRaw,
         panTo: panToView,
         /* 按钮用的平滑缩放；zoomTarget 是动画终点，便于连续点击累积 */
         zoomIn: function (f) { zoomByStep(f || CFG.ZOOM_STEP); },

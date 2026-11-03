@@ -569,7 +569,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       `assets/css/starmap/index.css` 末尾（等宽字 / 发丝线 / 金色读数 / 方块控件），
       改主站风格不会带偏星图
     · 星图是「离线版本」：文案一律写本地存档 / 星域快照，不写「无法访问主数据库」；
-      页面不再有导航栏（排序和主站不同），右上角只有一个「EXIT 退出」回工具页
+      页面没有导航栏，也没有退出按钮：按 ESC 回工具页（输入框里的 ESC 留给搜索框）
     · 左上读数：进入后显示 `Connecting...`（白色、点呼吸），5 秒后切 `Offline Mode`（红色）；
       `STARMAP®OS` 20px，下面不再跟 STARCHART / SECTOR 0
     · 右侧信息栏：未选中时标题 `NOTICE`、选中星系后 `SYSTEM INFO`；面板外侧的箭头切换展开/收起，
@@ -578,6 +578,9 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     · 选中星系不在可见地图里时，在「视角中点 → 星系」射线与可见区域边缘的交点显示金色箭头；
       信息栏展开时取面板左缘、收起时取画布右缘；面板滑动期间用 rAF 逐帧跟随（箭头内缩 52px 避开把手），
       滑动中若选中星系进入视野，箭头立即隐藏
+    · 全面浏览：左下角最左的按钮；`overviewFit` 取全部星系的包围盒算出适配比例尺，
+      用 `SSS_COORD.setViewRaw` 绕过 ZOOM_MIN；期间禁用缩放 / 拖动 / 星系点击，信息栏与把手隐藏。
+      点地图任意位置 → 该点成为新中心、比例尺回到 ZOOM_MIN，恢复控制，信息栏回到进入前的状态
       进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
