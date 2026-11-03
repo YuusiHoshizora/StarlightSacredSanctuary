@@ -877,9 +877,19 @@ html.starmap-ui .starmap-panel-wrap{
 /* 没有导航栏：页面从最顶上开始 */
 .starmap-os-page .starmap-layout{ padding-top: 0; }
 
-/* 全面浏览：信息栏与其把手一起隐藏，边缘箭头也收起 */
-.starmap-os-page .starmap-layout.is-overview .starmap-panel-wrap{ display: none; }
+/* 全面浏览：信息栏与其把手淡出、不可点，边缘箭头也收起 */
+.starmap-os-page .starmap-layout.is-overview .starmap-panel-wrap{
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
 .starmap-os-page .starmap-layout.is-overview .starmap-edge-arrow{ display: none; }
+/* 全面浏览中比例尺条与放大 / 缩小按钮同款禁用态 */
+.starmap-os-page .map-zoom__slider:disabled{
+    opacity: 0.28;
+    cursor: default;
+    pointer-events: none;
+}
 /* 全面浏览按钮的激活态 */
 .starmap-os-page .map-zoom__btn--overview.is-on{
     color: #FFD700;

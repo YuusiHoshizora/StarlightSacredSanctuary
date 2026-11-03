@@ -470,7 +470,7 @@ canvas.addEventListener("mouseleave", handleMouseLeave);
 canvas.addEventListener("click", (e) => {
   /* 全面浏览：点地图任意位置 = 以该点为新中心退出 */
   if (overviewMode) {
-    exitOverview(e.clientX, e.clientY);
+    exitOverviewAt(e.clientX, e.clientY);
     dragMoved = false;
     return;
   }
@@ -599,9 +599,13 @@ bindZoomButton(zoomResetBtn, () => { stopWheelZoom(); if (window.SSS_COORD) wind
 
 /* ── 全面浏览 ──
    缩到能看见全部星系（比 ZOOM_MIN 还小，走 setViewRaw 绕过夹取）；
-   期间禁用缩放 / 拖动 / 星系点击，隐藏信息栏；点地图任意位置即以该点为新中心退出。 */
+   进入 / 退出用和「回到默认」同一套指数缓动（RESET_MS ≈ 0.1s 时间常数）。
+   期间禁用缩放 / 拖动 / 星系点击，信息栏淡出；点地图任意位置、再按一次按钮、
+   或通过搜索选中星系都会退出。 */
 const overviewBtn = document.getElementById("overview-btn");
 const overviewLayout = document.querySelector(".starmap-layout");
+let preOverviewView = null;      // 进入前的 { z, x, y }
+let overviewRaf = 0;
 
 function overviewFit() {
   const C = window.SSS_COORD;
@@ -632,54 +636,101 @@ function overviewFit() {
   };
 }
 
+/* 视角缓动：与 background 的 RESET_MS 同一套指数趋近（tau≈0.1s），
+   但用 setViewRaw 写入，所以能缩到 ZOOM_MIN 以下 */
+function flyView(zT, xT, yT, done) {
+  const C = window.SSS_COORD;
+  if (!C) { if (done) done(); return; }
+  if (overviewRaf) cancelAnimationFrame(overviewRaf);
+  const z0 = C.zoom();
+  const p0 = C.pan();
+  const tau = 0.1;                 // RESET_MS 320ms / 3.2 / 1000
+  let last = performance.now();
+  let z = z0, x = p0[0], y = p0[1];
+
+  function step(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    const k = 1 - Math.exp(-dt / tau);
+    z += (zT - z) * k;
+    x += (xT - x) * k;
+    y += (yT - y) * k;
+    C.setViewRaw(z, x, y);
+    if (Math.abs(zT - z) > 0.0005 || Math.abs(xT - x) > 1.5 || Math.abs(yT - y) > 1.5) {
+      overviewRaf = requestAnimationFrame(step);
+    } else {
+      C.setViewRaw(zT, xT, yT);
+      overviewRaf = 0;
+      if (done) done();
+    }
+  }
+  overviewRaf = requestAnimationFrame(step);
+}
+
 function enterOverview() {
   if (overviewMode) return;
   const C = window.SSS_COORD;
   const fit = overviewFit();
   if (!C || !fit) return;
 
+  preOverviewView = { z: C.zoom(), x: C.pan()[0], y: C.pan()[1] };
   overviewMode = true;
   stopWheelZoom();
   dragFrom = null;
   dragMoved = false;
   overviewLayout.classList.add("is-overview");
-  if (overviewBtn) {
-    overviewBtn.classList.add("is-on");
-    overviewBtn.disabled = true;
-  }
-  C.setViewRaw(fit.z, fit.panX, fit.panY);
+  if (overviewBtn) overviewBtn.classList.add("is-on");
   syncZoomUI();
   updateEdgeArrow();
+  flyView(fit.z, fit.panX, fit.panY);
 }
 
-function exitOverview(clientX, clientY) {
+/* 退出：先切回普通状态，再把视角缓动到目标 */
+function leaveOverview(zT, xT, yT) {
   if (!overviewMode) return;
-  const C = window.SSS_COORD;
-
   overviewMode = false;
   overviewLayout.classList.remove("is-overview");
-  if (overviewBtn) {
-    overviewBtn.classList.remove("is-on");
-    overviewBtn.disabled = false;
-  }
+  if (overviewBtn) overviewBtn.classList.remove("is-on");
   dragMoved = false;
-
-  if (C) {
-    /* 点击点成为新的视角中心；视角回到正常范围的最小比例尺。
-       先按当前（全面浏览）的比例尺把点击点换算成格坐标，再用新比例尺反推原点。 */
-    const lim = C.limits();
-    const pan = C.pan();
-    const cellOld = C.cell();
-    const gx = (clientX - pan[0]) / cellOld;
-    const gy = (clientY - pan[1]) / cellOld;
-    const cellNew = C.base() * lim.min;
-    C.setView(lim.min, C.w() / 2 - gx * cellNew, C.h() / 2 - gy * cellNew);
-  }
   syncZoomUI();
+  flyView(zT, xT, yT, function () { updateEdgeArrow(); });
   updateEdgeArrow();
 }
 
-if (overviewBtn) overviewBtn.addEventListener("click", enterOverview);
+/* 点地图：点击点为新的中心，比例尺回到正常最小值 */
+function exitOverviewAt(clientX, clientY) {
+  const C = window.SSS_COORD;
+  if (!C) return;
+  const lim = C.limits();
+  const pan = C.pan();
+  const cellOld = C.cell();
+  const gx = (clientX - pan[0]) / cellOld;
+  const gy = (clientY - pan[1]) / cellOld;
+  const cellNew = C.base() * lim.min;
+  leaveOverview(lim.min, C.w() / 2 - gx * cellNew, C.h() / 2 - gy * cellNew);
+}
+
+/* 再按一次按钮：回到进入前的视角 */
+function exitOverviewToSaved() {
+  if (!preOverviewView) return;
+  leaveOverview(preOverviewView.z, preOverviewView.x, preOverviewView.y);
+}
+
+/* 搜索选中：退出全面浏览，并用进入前的比例尺把选中星系移到中心 */
+function exitOverviewForSystem(sys) {
+  const C = window.SSS_COORD;
+  if (!C) return;
+  const z = preOverviewView ? preOverviewView.z : C.zoom();
+  const cell = C.base() * z;
+  leaveOverview(z, C.w() / 2 - Number(sys.x) * cell, C.h() / 2 - Number(sys.y) * cell);
+}
+
+if (overviewBtn) {
+  overviewBtn.addEventListener("click", function () {
+    if (overviewMode) exitOverviewToSaved();
+    else enterOverview();
+  });
+}
 
 /* ESC 退出到工具页；输入框里按 ESC 交给搜索框自己清空 */
 document.addEventListener("keydown", function (e) {
@@ -989,9 +1040,14 @@ function gotoGalaxy(sys) {
   const C = window.SSS_COORD;
   selectSystem(sys);
   if (C && sys) {
-    const cell = C.cell();
-    /* 与「回到默认」共用同一套缓动（background 里的 panTo / RESET_MS） */
-    C.panTo(C.w() / 2 - Number(sys.x) * cell, C.h() / 2 - Number(sys.y) * cell);
+    if (overviewMode) {
+      /* 全面浏览中选中星系：自动退出（缩回进入前的比例尺）并把这个星系居中 */
+      exitOverviewForSystem(sys);
+    } else {
+      const cell = C.cell();
+      /* 与「回到默认」共用同一套缓动（background 里的 panTo / RESET_MS） */
+      C.panTo(C.w() / 2 - Number(sys.x) * cell, C.h() / 2 - Number(sys.y) * cell);
+    }
   } else {
     drawStarMap();
   }
