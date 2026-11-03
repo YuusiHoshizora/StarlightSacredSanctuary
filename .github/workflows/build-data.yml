@@ -1,0 +1,63 @@
+name: Build Data from CSV
+
+# data/**/*.csv 是数据源，assets/data/*.js 是生成物。
+# 改了 CSV 却忘了在本地跑 build 时，这里补上，并把结果提交回去：
+#   人 push（改 data/**）→ 本工作流 build → 提交 assets/data/*.js + 盖 CACHE_VERSION
+#   → Cloudflare 按这次提交部署 → 访客拿到新数据。
+#
+# 为什么顺手盖 CACHE_VERSION：站内是缓存优先的，只有 sw.js 变了浏览器才会换缓存。
+# stamp-sw-version.yml 会跳过 bot 提交（if: actor != github-actions[bot]），
+# 所以这一条 bot 提交必须自己盖，否则线上 JS 更新了、老访客还在吃旧缓存。
+#
+# ⚠️ 和另外两个工作流一样：自己推上去的提交不能再跑一遍（job 上的 if），
+#    提交消息也不要带 [skip ci]（Cloudflare 会跳过部署）。
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'data/**'
+      - 'scripts/data-csv.mjs'
+      - '.github/workflows/build-data.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: build-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: "github.actor != 'github-actions[bot]'"
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Build assets/data/*.js from data/**/*.csv
+        run: node scripts/data-csv.mjs build
+
+      - name: Stamp CACHE_VERSION in sw.js
+        run: node .github/stamp-sw-version.mjs
+
+      - name: Commit & Push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/data sw.js
+          if git diff --cached --quiet; then
+            echo "生成结果没变化，不用提交"
+            exit 0
+          fi
+          git commit -m "chore(data): rebuild assets/data from CSV"
+          # 万一这期间有人推了别的提交：先 rebase，再按新内容重算一遍指纹
+          if ! git push; then
+            git pull --rebase --autostash origin master
+            node scripts/data-csv.mjs build
+            node .github/stamp-sw-version.mjs
+            git add assets/data sw.js
+            git commit --amend --no-edit
+            git push
+          fi

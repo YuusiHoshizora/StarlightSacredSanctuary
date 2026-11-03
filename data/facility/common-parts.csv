@@ -1,0 +1,28 @@
+﻿facility,label,items
+helios,武器系统,N/A
+helios,防御系统,"星光圣域能量屏蔽场发生器
+星光圣域自律无人机生产线"
+helios,移动系统,"第Ⅴ代星光圣域大型引擎
+第Ⅲ代星光圣域超光速跃迁引擎"
+occasus,武器系统,"物质分解激光（7）
+近距离防空套组（70）
+无人机组（15000）"
+occasus,防御系统,"星光圣域能量屏蔽场发生器
+星光圣域自律无人机生产线"
+occasus,移动系统,第Ⅴ代星光圣域大型引擎
+eternity,武器系统,N/A
+eternity,防御系统,N/A
+eternity,移动系统,N/A
+eternity,数据系统,大型储存单元（20）
+eternallight,武器系统,N/A
+eternallight,防御系统,N/A
+eternallight,移动系统,N/A
+eternallight,数据系统,大型储存单元（30）
+solak-astra,武器系统,N/A
+solak-astra,防御系统,N/A
+solak-astra,移动系统,N/A
+solak-astra,数据系统,大型储存单元（7）
+solak-astra,通信系统,"星光圣域高级加密链路 - 发射端
+星光圣域高级加密链路 - 接收端
+地球联合国通信协议 - 接收端
+汉莎联盟通用传输协议 - 接收端"

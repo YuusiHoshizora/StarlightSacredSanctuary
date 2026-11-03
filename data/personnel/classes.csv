@@ -1,0 +1,5 @@
+﻿key,code,name,en,desc
+sxm,SXM,管理成员,SSS Administrative Member,星光圣域的人员，拥有最高的授权等级。
+sam,SAM,高级成员,SSS Advanced Member,星光圣域的人员，拥有较高的授权等级。
+sfm,SFM,正式成员,SSS Formal Member,星光圣域的人员。
+spm,SPM,预备成员,SSS Preparatory Member,近期加入星光圣域的人员。

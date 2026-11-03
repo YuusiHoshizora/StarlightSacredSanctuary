@@ -25,6 +25,10 @@ MIGRATION-CLOUDFLARE.md
 graphflow-out
 node_modules
 
+# —— 数据源与构建脚本：站点只需要 assets/data/*.js（生成物），CSV 不必公开托管 ——
+data
+scripts
+
 # —— 文章目录里那份 Obsidian 配置（36 MB、上百个文件，含同步冲突垃圾）——
 # 它在发布目录里面，本地 wrangler deploy 时会被整个传上去，务必留着这条
 assets/post/.obsidian

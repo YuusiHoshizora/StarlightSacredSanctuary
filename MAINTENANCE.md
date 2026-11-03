@@ -71,7 +71,7 @@
 │   │   ├── starmap-bg.js       星图页专用的背景参数
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
 │   │
-│   ├── data/
+│   ├── data/                   页面读的数据 JS —— **生成物**，源文件是仓库根目录的 data/**/*.csv
 │   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
 │   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
 │   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
@@ -85,8 +85,39 @@
 │   ├── audio/                  彩蛋页用的两段 WAV（cq.wav / QSL-sstv.wav，共约 5 MB）
 │   └── post/                   事件正文 .md + 自动生成的 index.json
 │
+├── data/                       数据源（CSV，人直接编辑；说明见 data/README.md）
+│   ├── personnel/              classes.csv / members.csv
+│   ├── facility/               affiliations / facilities / unique-parts / common-parts / orgs
+│   ├── vessel/                 sizes / vessels / equipment
+│   ├── starmap/                systems.csv
+│   └── README.md               每列含义 + 编辑约定 + 常见操作
+│
+├── scripts/
+│   └── data-csv.mjs            CSV ⇄ JS：build / check / export
+│
 └── .github/workflows/generate-post-index.yml
 ```
+
+---
+
+## 数据怎么改：改 CSV，然后 build
+
+人员 / 深空设施 / 舰船 / 星图的数据源在 `data/` 下的 CSV，`assets/data/*.js` 是
+`node scripts/data-csv.mjs build` 从 CSV 生成的。**改数据不要碰 `assets/data/*.js`**，
+下次 build 会整个覆盖。
+
+```bash
+node scripts/data-csv.mjs build    # CSV → assets/data/*.js
+node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不写文件
+```
+
+- 一个单元格里换行 = 多条内容（简介的一段一段、角色的分条、装备的逐条）
+- 表格软件能用，但 Excel 会把 `anchor` / `identity` 这类长数字、`410/10/27` 这种生日
+  自动改成科学计数法 / 日期 —— 用 Excel 要按「文本」导入，细节见 `data/README.md`
+- 推送到 master 且改到 `data/**` 时，GitHub Actions 会自动 build 并提交生成结果
+  （连同 `sw.js` 的 CACHE_VERSION），本地忘了跑也不会漏
+- 每列的含义、子表（配件 / 装备 / 组织）怎么挂、加一条数据要动哪几个文件，
+  全部写在 [data/README.md](data/README.md)，这里不重复
 
 ---
 
@@ -98,7 +129,7 @@
 - 整份档案缺失 / 打不开 → 数据损坏、无法访问；
 - 页面、数据文件和代码注释里不要写「待补」「暂无」这类现实口径。
 
-人员数据在 `assets/data/personnel.js`；`personnel.js` 渲染时把空字段统一换成「数据损坏」。
+人员数据在 `data/personnel/*.csv`（build 生成 `assets/data/personnel.js`）；`personnel.js` 渲染时把空字段统一换成「数据损坏」。
 
 ---
 
@@ -116,7 +147,7 @@
 深空设施 = 巨构 / 超级武器，**不设分类层级**：`archive/facility/index.html` 一页就是全部档案，
 左栏设施名录（按归属分组）、右栏选中设施的档案，链接用 `#设施代号` 定位（与人员档案等级页同一套交互）。
 
-- 数据在 `assets/data/facility.js`；渲染在 `assets/js/facility.js`；样式在 `assets/css/archive/facility.css`
+- 数据在 `data/facility/*.csv`（build 生成 `assets/data/facility.js`）；渲染在 `assets/js/facility.js`；样式在 `assets/css/archive/facility.css`
 - 名录按归属分组：星光圣域（SSS）固定第一，其余按 `affiliations` 里的缩写首字母排；
   没有缩写的势力排在带缩写之后，归属为空的条目归入「数据损坏」组、排最后
 - 父子设施用 `parent` 字段（如四个分支矩阵挂在 索拉克矩阵 下、标准灯塔 / P-304 挂在 标准灯塔系统 下）：
@@ -147,7 +178,7 @@
 `archive/vessel` 一页收录资料库「军事 / 舰队作战 / 舰船舰体」下的全部舰船，
 左栏舰船名录（按尺寸分类分组）、右栏选中舰船的档案，链接用 `#舰船代号` 定位（与深空设施档案同一套交互）。
 
-- 数据在 `assets/data/vessel.js`；渲染在 `assets/js/vessel.js`；样式在 `assets/css/archive/vessel.css`
+- 数据在 `data/vessel/*.csv`（build 生成 `assets/data/vessel.js`）；渲染在 `assets/js/vessel.js`；样式在 `assets/css/archive/vessel.css`
 - 名录分组按 `sizes` 数组的顺序：巨型 / 大型 / 中型 / 小型；组内顺序 = `vessels` 的书写顺序
 - 尺寸分类以资料库的目录归属为准（`舰船舰体/巨型舰船` 等四个目录）。
   资料库「分类.md」写明尺寸分类不是严谨的分类，个别舰船的目录归属与舰种分类表并不一致
@@ -293,9 +324,12 @@ Redirect Rule 301 过来，见下）。
   匿名下载；`.github/`、`.gitignore` 也一样
 - 2026-10 又补进清单的（补之前实测都是 200 公开可读）：**`wrangler.jsonc`、
   `MAINTENANCE.md`、`MIGRATION-CLOUDFLARE.md`**，以及发布目录里那份 36 MB 的
-  `assets/post/.obsidian` —— 它在 cwd 里，哪天用本地 `wrangler deploy` 会整个传上去
+  `assets/post/.obsidian` —— 它在 cwd 里，哪天用本地 `wrangler deploy` 会整个传上去；
+  数据源 `data/` 与构建脚本 `scripts/` 也在清单里（线上只需要生成出来的 `assets/data/*.js`）
 - 后台「设置 → 构建」：**构建命令「无」**、部署命令 `npx wrangler deploy`、根目录 `/`；
-  推送到 `master` 自动构建部署（每次约 30–50 秒）
+  推送到 `master` 自动构建部署（每次约 30–50 秒）。
+  数据 CSV → JS 的那一步不在这边跑，交给 `.github/workflows/build-data.yml`
+  （见上文「数据怎么改」），所以这边的构建命令仍然保持「无」
 - ⚠️ **带 `[skip ci]` 的提交会跳过部署**（Netlify 与 Cloudflare 都是这个行为，实测踩过）。
   2026-10 的现场：`Generate Post Index` 那个动作把 index.json 提交回去时用了
   `chore: update post index [skip ci]` —— Actions 确实跑了、也确实把提交推上去了，
