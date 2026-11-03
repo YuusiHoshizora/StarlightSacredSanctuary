@@ -582,6 +582,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       用 `SSS_COORD.setViewRaw` 绕过 ZOOM_MIN；进入 / 退出用 `flyView`（与「回到默认」同一条 RESET_MS 指数缓动）。
       期间缩放（含比例尺条）/ 拖动 / 星系点击禁用，信息栏淡出；点地图任意位置 → 该点为新中心、
       比例尺回到 ZOOM_MIN，恢复控制；通过搜索选中星系会自动退出并把星系居中
+    · 缩放锚点：`+` / `-` 按钮与比例尺条都以**当前视角中心**为锚点（`zoomTweenStep` / `setCoordView`）；
+      滚轮 / 双指捏合仍以鼠标 / 双指中点为锚点，回到默认仍把原点飞回中心
       进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍

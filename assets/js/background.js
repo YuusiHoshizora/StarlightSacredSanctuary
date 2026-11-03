@@ -297,10 +297,23 @@
 
     var k = 1 - Math.exp(-dtSec / tweenTau());
 
+    /* 只缩放（按钮）时，保持"当前视角中心"对应的内容点不动；
+       位置缓动（回到默认 / panTo）优先，此时不额外挪原点。 */
+    var oldCell = coordCellPx || coordCellBase();
+    var centerGx = (vw / 2 - coordPanX) / oldCell;
+    var centerGy = (vh / 2 - coordPanY) / oldCell;
+    var zoomOnly = panTween.x == null && panTween.y == null;
+
     var diff = zoomTween.target - coordZoom;
     var zoomDone = Math.abs(diff) <= 0.0005;
     if (zoomDone) coordApplyZoom(zoomTween.target);
     else coordApplyZoom(coordZoom + diff * k);
+
+    if (zoomOnly) {
+      var newCell = coordCellPx || coordCellBase();
+      coordPanX = vw / 2 - centerGx * newCell;
+      coordPanY = vh / 2 - centerGy * newCell;
+    }
 
     /* 位置与比例尺用同一个系数趋近，视觉上是一次整体的"飞过去"。
        剩下不到 1.5px 时直接吸附到终点：这点位移看不出来，
@@ -948,13 +961,26 @@
      缩放请用 zoomIn / zoomOut / reset（带缓动）；setView 供需要直接指定的场合使用。 */
   function setCoordView(z, panX, panY) {
     zoomStop();
+
+    /* 只给比例尺（滑块）时，以"当前视角中心"为锚点；
+       同时给了原点（滚轮 / 捏合）时，按调用方给的原点走。 */
+    var oldCell = coordCellPx || coordCellBase();
+    var cx = vw / 2;
+    var cy = vh / 2;
+    var centerGx = (cx - coordPanX) / oldCell;
+    var centerGy = (cy - coordPanY) / oldCell;
+
     if (z != null) coordZoom = Math.min(CFG.ZOOM_MAX, Math.max(CFG.ZOOM_MIN, z));
+    refreshCoordCell();
+
     if (panX != null) coordPanX = panX;
+    else if (z != null) coordPanX = cx - centerGx * coordCellPx;
     if (panY != null) coordPanY = panY;
+    else if (z != null) coordPanY = cy - centerGy * coordCellPx;
+
     /* zoomStop() 会把缓动终点对齐到"改之前"的比例尺，而这里直接改了比例尺，
        必须把终点同步过来 —— 否则 canZoomIn/Out 以及下一次按钮缩放的基准都会是旧值 */
     zoomTween.target = coordZoom;
-    refreshCoordCell();
     notifyView();
   }
 
