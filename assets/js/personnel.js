@@ -92,7 +92,7 @@
         return out;
     }
 
-    /* 亲属名：在成员库里找得到就链到对方的档案页 #身份编号 */
+    /* 亲属名：在成员库里找得到就链到对方的档案页 ?person=身份编号 */
     function relativeHtml(r) {
         var m = String(r).match(/^([^：:]+)[：:](.+)$/);
         var label = m ? m[1] : '';
@@ -102,7 +102,7 @@
         })[0];
         if (!target) return esc(r);
         return (label ? esc(label) + '：' : '') +
-            '<a class="personnel-relative" href="' + esc(target.class + '.html#' + target.anchor) + '">' + esc(name) + '</a>';
+            '<a class="personnel-relative" href="' + esc(target.class + '.html?person=' + encodeURIComponent(target.anchor)) + '">' + esc(name) + '</a>';
     }
 
     function profileHtml(m, active) {
@@ -225,11 +225,21 @@
     }
 
     function fromHash() {
-        var raw = location.hash ? location.hash.slice(1) : '';
-        var id = raw;
+        var id = '';
+
+        /* 优先读 ?person=身份编号：静态主机的 clean-url 跳转不会丢 query */
         try {
-            id = decodeURIComponent(raw);
-        } catch (e) { /* 保留原值 */ }
+            var q = new URLSearchParams(location.search).get('person');
+            if (q) id = q;
+        } catch (e) { /* 老浏览器不支持 URLSearchParams 时退回 hash */ }
+
+        if (!id) {
+            var raw = location.hash ? location.hash.slice(1) : '';
+            try {
+                id = decodeURIComponent(raw);
+            } catch (e) { /* 保留原值 */ }
+        }
+
         activate(id || (profiles[0] && profiles[0].id));
     }
 
@@ -257,7 +267,14 @@
     window.addEventListener('hashchange', fromHash);
     window.addEventListener('popstate', fromHash);
 
-    /* 首次进入：有 #身份编号 就选中，没有就显示第一位；都不滚动页面 */
+    /* 跨文档 View Transition / 预渲染时，脚本可能在 URL 的 query 稳定之前就跑完；
+       pageshow 与 load 后再补一次选中，保证从组织页带 ?person= 进来一定落到对应人物 */
+    window.addEventListener('pageshow', fromHash);
+    window.addEventListener('load', function () {
+        window.setTimeout(fromHash, 60);
+    });
+
+    /* 首次进入：有 ?person= / #身份编号 就选中，没有就显示第一位；都不滚动页面 */
     fromHash();
 
     if (window.__sssPageCleanup) {

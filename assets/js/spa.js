@@ -320,13 +320,16 @@
             if (doc.title) document.title = doc.title;
             pruneStyles(doc, url);
 
+            /* 先推 URL，再同步执行目标页脚本：数据驱动页面（如 personnel.js）
+               要靠新 URL 上的 ?person= 才能选中对应条目 */
+            if (push) history.pushState({ sssSpa: true }, '', url.href);
+
             /* 在同一个任务里同步执行目标页脚本 —— 新快照里内容已经是渲染好的 */
             scripts.forEach(function (item) {
                 try { runScript(item.src ? scriptCache[item.src] : item.code); }
                 catch (e) { /* 单个脚本失败不影响换页 */ }
             });
 
-            if (push) history.pushState({ sssSpa: true }, '', url.href);
             currentPath = normPath(url.pathname);
             currentSearch = url.search;
             window.scrollTo(0, 0);
