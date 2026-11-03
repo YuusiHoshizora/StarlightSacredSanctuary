@@ -164,8 +164,8 @@
 
 
             <a class="tool-entry" href="starmap/">
-                <span class="tool-entry__name">星图</span>
-                <span class="tool-entry__desc">Starmap®OS · 星域测绘</span>
+                <span class="tool-entry__name">星图®系统</span>
+                <span class="tool-entry__desc">Starmap®OS</span>
                 <span class="tool-entry__arrow" aria-hidden="true">›</span>
             </a>
 
@@ -173,13 +173,13 @@
 
             <button type="button" class="tool-entry" id="entry-notice">
                 <span class="tool-entry__name">公告测试</span>
-                <span class="tool-entry__desc">重新弹一次站点公告</span>
+                <span class="tool-entry__desc">点击此处以重新弹出公告</span>
                 <span class="tool-entry__arrow" aria-hidden="true">›</span>
             </button>
 
             <a class="tool-entry" href="../?boot=1">
                 <span class="tool-entry__name">加载测试</span>
-                <span class="tool-entry__desc">重播一遍首屏加载流程</span>
+                <span class="tool-entry__desc">点击此处以重新进行加载</span>
                 <span class="tool-entry__arrow" aria-hidden="true">›</span>
             </a>
         </aside>
@@ -325,14 +325,14 @@
             <!-- 罗马数字：阿拉伯数字 ⇄ 罗马数字，两边都能改，改哪边由哪边驱动另一边。
                  只做标准写法 1–3999（罗马数字没有 0 和负数，4000 起要用上划线，这里不支持）。 -->
             <div class="tool-card tool-card--roman" id="tool-roman">
-                <h3 class="tool-card__name">罗马数字</h3>
+                <h3 class="tool-card__name">数字转换</h3>
 
                 <div class="roman">
                     <label class="roman__field">
-                        <span class="roman__key">阿拉伯</span>
+                        <span class="roman__key">标准</span>
                         <input type="text" id="roman-arabic" class="tool-field roman__input"
                                value="2599" inputmode="numeric" autocomplete="off" spellcheck="false"
-                               aria-label="阿拉伯数字（1–3999）" />
+                               aria-label="标准数字（1–3999）" />
                     </label>
 
                     <div class="roman__switch" aria-hidden="true">
@@ -342,10 +342,10 @@
                     </div>
 
                     <label class="roman__field">
-                        <span class="roman__key">罗马</span>
+                        <span class="roman__key">迭代</span>
                         <input type="text" id="roman-roman" class="tool-field roman__input"
                                value="MMDXCIX" autocomplete="off" spellcheck="false"
-                               aria-label="罗马数字（I V X L C D M，1–3999）" />
+                               aria-label="迭代数字（I V X L C D M，1–3999）" />
                     </label>
 
                     <p class="roman__note" id="roman-note" aria-live="polite"></p>

@@ -682,7 +682,7 @@
   function fromRoman(text) {
     const s = text.trim().toUpperCase().replace(/\s+/g, "");   // 允许小写、允许中间带空格
     if (!s) return null;
-    if (!/^[IVXLCDM]+$/.test(s)) return { err: "只用 I V X L C D M 七个字母" };
+    if (!/^[IVXLCDM]+$/.test(s)) return { err: "迭代数字仅包含I V X L C D M" };
 
     /* 从右往左：比右边小就减，否则就加 —— 减法规则（IV / IX / XL / XC / CD / CM）自然成立 */
     let total = 0;
@@ -692,10 +692,10 @@
       if (v < prev) total -= v;
       else { total += v; prev = v; }
     }
-    if (total < 1 || total > MAX) return { err: "标准罗马数字只写到 1–3999" };
+    if (total < 1 || total > MAX) return { err: "迭代数字只写到 1–3999" };
 
     const canonical = toRoman(total);
-    if (canonical !== s) return { err: "不是标准写法，应写作 " + canonical };
+    if (canonical !== s) return { err: "非标准写法，应为 " + canonical };
     return { n: total };
   }
 
@@ -708,11 +708,11 @@
   function syncFromArabic() {
     const raw = arInput.value.trim().replace(/[\s,]/g, "");   // 容忍 "2 498" / "2,498"
     if (!raw) { setNote("", false); return; }
-    if (!/^\d+$/.test(raw)) { setNote("阿拉伯数字只能填 0–9 的整数", true); return; }
+    if (!/^\d+$/.test(raw)) { setNote("标准数字只能填 0–9 的整数", true); return; }
 
     const n = parseInt(raw, 10);
-    if (n === 0) { setNote("罗马数字里没有 0（1–3999）", true); return; }
-    if (n > MAX) { setNote("标准罗马数字只写到 3999", true); return; }
+    if (n === 0) { setNote("迭代数字没有0", true); return; }
+    if (n > MAX) { setNote("迭代数字最大值为3999", true); return; }
 
     rmInput.value = toRoman(n);
     setNote("", false);
