@@ -958,6 +958,29 @@
     notifyView();
   }
 
+  /* 只平移（保持当前比例尺），用「回到默认」那套缓动（RESET_MS），
+     搜索定位就调这个，保证和"回到初始点"的速度曲线完全一致。 */
+  function panToView(x, y) {
+    if (zoomTween.raf) cancelAnimationFrame(zoomTween.raf);
+    zoomTween.raf = 0;
+    zoomTween.last = 0;
+
+    if (!(CFG.ZOOM_MS > 0) || prefersReducedMotion()) {
+      coordPanX = x;
+      coordPanY = y;
+      panTween.x = panTween.y = null;
+      zoomTween.target = coordZoom;
+      notifyView();
+      return;
+    }
+
+    zoomTween.target = coordZoom;       // 比例尺不动
+    panTween.x = x;
+    panTween.y = y;
+    zoomTween.tau = Math.max(0.001, (CFG.RESET_MS / 1000) / 3.2);
+    zoomTween.raf = requestAnimationFrame(zoomTweenStep);
+  }
+
   /* 回到默认：比例尺与位置一起平滑飞回（原点重新摆到视口中心）。
      关闭动效或系统偏好"减少动态"时直接就位。 */
   function resetView() {
@@ -1020,6 +1043,7 @@
         pos: coordPosPx,
         snap: coordSnapZoomPx,
         setView: setCoordView,
+        panTo: panToView,
         /* 按钮用的平滑缩放；zoomTarget 是动画终点，便于连续点击累积 */
         zoomIn: function (f) { zoomByStep(f || CFG.ZOOM_STEP); },
         zoomOut: function (f) { zoomByStep(1 / (f || CFG.ZOOM_STEP)); },

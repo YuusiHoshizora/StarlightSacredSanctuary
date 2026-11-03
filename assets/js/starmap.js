@@ -255,26 +255,6 @@ function updateEdgeArrow() {
 }
 window.SSS_UPDATE_EDGE_ARROW = updateEdgeArrow;
 
-/* 把视口平移到 (tx, ty)，带缓动；搜索定位用 */
-let viewAnimId = 0;
-function animateViewTo(tx, ty, ms) {
-  const C = window.SSS_COORD;
-  if (!C) return;
-  cancelAnimationFrame(viewAnimId);
-  const from = C.pan();
-  const dur = ms || 480;
-  const start = performance.now();
-
-  function step(now) {
-    const t = Math.min(1, (now - start) / dur);
-    const e = 1 - Math.pow(1 - t, 3);      // easeOutCubic
-    C.setView(null, from[0] + (tx - from[0]) * e, from[1] + (ty - from[1]) * e);
-    drawStarMap();
-    if (t < 1) viewAnimId = requestAnimationFrame(step);
-  }
-  viewAnimId = requestAnimationFrame(step);
-}
-
 // ── 点击检测 ──
 function getSystemAt(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
@@ -892,11 +872,8 @@ function gotoGalaxy(sys) {
   selectSystem(sys);
   if (C && sys) {
     const cell = C.cell();
-    animateViewTo(
-      C.w() / 2 - Number(sys.x) * cell,
-      C.h() / 2 - Number(sys.y) * cell,
-      520
-    );
+    /* 与「回到默认」共用同一套缓动（background 里的 panTo / RESET_MS） */
+    C.panTo(C.w() / 2 - Number(sys.x) * cell, C.h() / 2 - Number(sys.y) * cell);
   } else {
     drawStarMap();
   }
