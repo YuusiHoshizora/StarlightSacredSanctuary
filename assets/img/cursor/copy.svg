@@ -1,0 +1,7 @@
+<!-- 星光圣域指针：复制（32×32；热点与用法定在 global.css 的 cur 令牌里） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <g transform="translate(16 16) scale(1.15) translate(-16 -16)">
+    <path d="M9.6 17.4 V9.6 H17.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.00"/><path d="M9.6 17.4 V9.6 H17.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.2"/>
+    <path d="M13.8 13.8 H22.4 V22.4 H13.8 Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.00"/><path d="M13.8 13.8 H22.4 V22.4 H13.8 Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.2"/>
+    </g>
+</svg>

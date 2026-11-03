@@ -26,10 +26,10 @@
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
-  cursor: grab;
+  cursor: var(--cur-grab);
 }
 #starmap-canvas:active {
-  cursor: grabbing;
+  cursor: var(--cur-grabbing);
 }
 
 /* 右侧星系介绍区 */
@@ -112,7 +112,7 @@
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
   background-color: rgba(255, 255, 255, 0.45);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
 }
@@ -146,7 +146,7 @@
   gap: 2px;
   padding: 7px 9px;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
   transition: background 0.15s;
 }
 
@@ -194,7 +194,7 @@
   background: var(--ctl-bg);
   border: 1px solid var(--ctl-border);
   border-radius: var(--ctl-radius);
-  cursor: pointer;
+  cursor: var(--cur-pointer);
 
   transition: var(--ctl-transition);
 }
@@ -225,7 +225,7 @@
 
 .map-zoom__btn:disabled {
   opacity: 0.28;
-  cursor: default;
+  cursor: var(--cur-not-allowed);
 }
 
 /* ── 比例尺滑块 ──
@@ -252,7 +252,7 @@
     rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
 
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
@@ -449,7 +449,7 @@
   border: 1px solid var(--ctl-border);
   border-radius: var(--ctl-radius);
   color: var(--ctl-fg);
-  cursor: pointer;
+  cursor: var(--cur-pointer);
   /* 字体族由 global.css 的「*」规则统一给 Sarasa */
   font-size: 15px;
   text-align: left;
@@ -803,7 +803,7 @@ html.starmap-ui .starmap-panel-wrap{
     font-family:var(--os-mono);
     font-size:30px;
     line-height:1;
-    cursor:pointer;
+    cursor: var(--cur-pointer);
     transition:color 0.2s ease;
 }
 .starmap-os-page .starmap-panel-toggle:hover,
@@ -896,7 +896,7 @@ html.starmap-ui .starmap-panel-wrap{
 /* 全面浏览中比例尺条与放大 / 缩小按钮同款禁用态 */
 .starmap-os-page .map-zoom__slider:disabled{
     opacity: 0.28;
-    cursor: default;
+    cursor: var(--cur-not-allowed);
     pointer-events: none;
 }
 /* 全面浏览按钮的激活态 */

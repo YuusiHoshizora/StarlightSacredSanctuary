@@ -170,7 +170,7 @@
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 50%;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-    cursor: pointer;
+    cursor: var(--cur-pointer);
     transition: var(--ctl-transition);
     animation: org-switch-in 0.35s ease;
 }
@@ -560,7 +560,7 @@
     background: none;
     border: 0;
     padding: 0;
-    cursor: pointer;
+    cursor: var(--cur-pointer);
     text-decoration: underline;
     text-decoration-color: rgba(255, 215, 0, 0.35);
     text-underline-offset: 3px;
@@ -721,7 +721,7 @@
     text-align: left;
     color: inherit;
     text-decoration: none;           /* 作为人员档案链接时不要默认下划线 */
-    cursor: pointer;
+    cursor: var(--cur-pointer);
 
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.08);

@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.72+6bc50b5b92';
+const CACHE_VERSION = 'v5.72+9dfef6d939';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -124,6 +124,31 @@ const PRECACHE_URLS = [
 
     // 图标
     '/assets/img/logo_SSS.svg',
+    // 指针（24 个光标素材；global.css 的 --cur-* 令牌指向它们）
+    '/assets/img/cursor/default.svg',
+    '/assets/img/cursor/pointer.svg',
+    '/assets/img/cursor/text.svg',
+    '/assets/img/cursor/vertical-text.svg',
+    '/assets/img/cursor/crosshair.svg',
+    '/assets/img/cursor/grab.svg',
+    '/assets/img/cursor/grabbing.svg',
+    '/assets/img/cursor/move.svg',
+    '/assets/img/cursor/all-scroll.svg',
+    '/assets/img/cursor/cell.svg',
+    '/assets/img/cursor/context-menu.svg',
+    '/assets/img/cursor/help.svg',
+    '/assets/img/cursor/wait.svg',
+    '/assets/img/cursor/progress.svg',
+    '/assets/img/cursor/copy.svg',
+    '/assets/img/cursor/alias.svg',
+    '/assets/img/cursor/zoom-in.svg',
+    '/assets/img/cursor/zoom-out.svg',
+    '/assets/img/cursor/not-allowed.svg',
+    '/assets/img/cursor/no-drop.svg',
+    '/assets/img/cursor/ew-resize.svg',
+    '/assets/img/cursor/ns-resize.svg',
+    '/assets/img/cursor/nesw-resize.svg',
+    '/assets/img/cursor/nwse-resize.svg',
 
     // 部门题图（只放已建页的那几张，别一次预缓存 15 张）
     '/assets/img/Deptlogo/title_Dept.RES.png'

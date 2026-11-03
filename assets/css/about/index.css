@@ -135,7 +135,7 @@
 
 /* 「站点公告」卡片：整张可点，所以要做成能点的样子（hover / 键盘聚焦转金） */
 .about-card--action {
-    cursor: pointer;
+    cursor: var(--cur-pointer);
     transition: var(--ctl-transition), background-color 0.25s, border-color 0.25s;
 }
 

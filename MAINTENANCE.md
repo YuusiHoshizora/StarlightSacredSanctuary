@@ -80,6 +80,8 @@
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
 │   │                           QSL.png（彩蛋页用，2854×2008）
+│   │                           cursor/ 24 个 32×32 SVG 指针（星芒家族：默认星芒、金星 +
+│   │                           轨道环、文本菱、准星、拖拽、缩放、禁止、复制…由 global.css 的 --cur-* 引用）
 │   ├── audio/                  彩蛋页用的两段 WAV（cq.wav / QSL-sstv.wav，共约 5 MB）
 │   └── post/                   事件正文 .md + 自动生成的 index.json
 │
@@ -491,6 +493,10 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   金色只用于 hover / 键盘聚焦 / 选中，不做默认态，也不引入新颜色
 - **控件**：按钮与输入框统一使用 `global.css` 里 `:root` 的 `--ctl-*` 令牌
   （背景、描边、圆角、过渡），不要在页面样式里另写一套
+- **指针**：全站鼠标光标是 `assets/img/cursor/` 里的 24 个 SVG（34 个 `--cur-*` 令牌，
+  含全部 CSS 光标关键字），由 `global.css` 统一引用。默认不是系统箭头，是一枚星芒；
+  白 = 普通，金 = 可点 / 进行中 / 取点。写法、热点、尺寸与「为什么阅读区单独给文本光标」
+  见 [DESIGN.md](DESIGN.md) 的「指针」；新增图形记得补 `sw.js` 的 `PRECACHE_URLS`
 - **字体**：正文、标题与界面都用 Sarasa Gothic SC 的三个真实字面（Regular / Bold / Italic），
   **全站等宽只有一支：Sarasa Mono SC**（`assets/fonts/SarasaMonoSC-*.woff2`，@font-face 见
   `global.css`）—— 凡是要等宽的地方一律写 `"Sarasa Mono", "Sarasa", monospace`，

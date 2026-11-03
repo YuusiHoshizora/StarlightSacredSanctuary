@@ -1,0 +1,7 @@
+<!-- 星光圣域指针：默认 · 星芒（32×32；热点与用法定在 global.css 的 cur 令牌里） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <g transform="translate(16 16) scale(1.15) translate(-16 -16)">
+    <path d="M16 8.2 L17.8 14.3 L23.8 16 L17.8 17.7 L16 23.8 L14.2 17.7 L8.2 16 L14.2 14.3 Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M16 8.2 L17.8 14.3 L23.8 16 L17.8 17.7 L16 23.8 L14.2 17.7 L8.2 16 L14.2 14.3 Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/>
+    <rect x="15.1" y="15.1" width="1.8" height="1.8" fill="#ffffff"/>
+    </g>
+</svg>

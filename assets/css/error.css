@@ -64,7 +64,7 @@
     font-size: 15px;
     /* 字体族由 global.css 的「*」规则统一给 Sarasa，这里不用管 */
     letter-spacing: 2px;
-    cursor: pointer;
+    cursor: var(--cur-pointer);
     text-decoration: none;
     transition: var(--ctl-transition);
 }

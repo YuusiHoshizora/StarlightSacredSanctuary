@@ -72,7 +72,7 @@ button.tool-entry {
     width: 100%;
     font: inherit;
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cur-pointer);
 }
 
 /* 左侧那条标识竖线：落在卡片**外面**（留白里），一根实心金线，默认不显示，hover / 键盘聚焦时亮起。
@@ -217,7 +217,7 @@ button.tool-entry {
     display: block;
     width: 100%;
     height: auto;                   /* 画布本身是正方形，宽度定了高度就跟着来 */
-    cursor: crosshair;
+    cursor: var(--cur-crosshair);
     touch-action: none;             /* 手机上拖动取色，别滚页面 */
     -webkit-user-select: none;
     user-select: none;
@@ -323,7 +323,7 @@ button.tool-entry {
     background: var(--ctl-bg);
     border: 1px solid var(--ctl-border);
     border-radius: var(--ctl-radius);
-    cursor: pointer;
+    cursor: var(--cur-copy);
     transition: var(--ctl-transition);
 }
 

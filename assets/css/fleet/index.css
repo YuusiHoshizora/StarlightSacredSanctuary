@@ -27,7 +27,7 @@
     padding: 40px 30px;
     text-align: center;
     transition: 0.3s;
-    cursor: pointer;
+    cursor: var(--cur-pointer);
     text-decoration: none;
     color: white;
     display: block;

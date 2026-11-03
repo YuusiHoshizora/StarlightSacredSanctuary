@@ -41,12 +41,84 @@
                       border-color var(--ctl-ease);
     --ctl-panel-radius: 16px;                     /* 面板 / 卡片统一圆角 */
     --ctl-err: #ff6b6b;                           /* 复用错误页那支红，仅用于失败提示 */
+
+    /* ==========================================================================
+       指针（鼠标光标）
+       --------------------------------------------------------------------------
+       全站一套，图形在 assets/img/cursor/，统一 32×32（Windows 上限；Safari 也只认
+       带固定宽高的 SVG —— WebKit bug 173911）。每个图形都垫一层半透明深色描边，
+       细白线落到白底 / 亮图上也不会糊掉。
+         · 白 = 普通（默认 / 文本 / 拖拽 / 缩放 / 禁止…）
+         · 金 = 可点、进行中、取点（pointer / grabbing / progress / crosshair 的样点）
+       形状语汇只有四样：星芒（本站标记）、细线、断口环（轨道）、2px 方点（精确落点）。
+       用法：cursor: var(--cur-*)；别在别处直接写 url() 或关键字（那样会退回系统光标）。
+       CSS 的关键字都有对应令牌；col/row/e/w/n/s/ne/... 与 ew/ns/nesw/nwse 共图。
+       加一种新状态：图形放进 assets/img/cursor/、这里加一条令牌、sw.js 补一行预缓存。
+       ========================================================================== */
+    --cur-default: url("/assets/img/cursor/default.svg") 16 16, default;
+    --cur-pointer: url("/assets/img/cursor/pointer.svg") 16 16, pointer;
+    --cur-text: url("/assets/img/cursor/text.svg") 16 16, text;
+    --cur-vertical-text: url("/assets/img/cursor/vertical-text.svg") 16 16, vertical-text;
+    --cur-crosshair: url("/assets/img/cursor/crosshair.svg") 16 16, crosshair;
+    --cur-grab: url("/assets/img/cursor/grab.svg") 16 16, grab;
+    --cur-grabbing: url("/assets/img/cursor/grabbing.svg") 16 16, grabbing;
+    --cur-move: url("/assets/img/cursor/move.svg") 16 16, move;
+    --cur-all-scroll: url("/assets/img/cursor/all-scroll.svg") 16 16, all-scroll;
+    --cur-cell: url("/assets/img/cursor/cell.svg") 16 16, cell;
+    --cur-context-menu: url("/assets/img/cursor/context-menu.svg") 16 16, context-menu;
+    --cur-help: url("/assets/img/cursor/help.svg") 16 16, help;
+    --cur-wait: url("/assets/img/cursor/wait.svg") 16 16, wait;
+    --cur-progress: url("/assets/img/cursor/progress.svg") 16 16, progress;
+    --cur-copy: url("/assets/img/cursor/copy.svg") 16 16, copy;
+    --cur-alias: url("/assets/img/cursor/alias.svg") 16 16, alias;
+    --cur-zoom-in: url("/assets/img/cursor/zoom-in.svg") 14 14, zoom-in;
+    --cur-zoom-out: url("/assets/img/cursor/zoom-out.svg") 14 14, zoom-out;
+    --cur-not-allowed: url("/assets/img/cursor/not-allowed.svg") 16 16, not-allowed;
+    --cur-no-drop: url("/assets/img/cursor/no-drop.svg") 16 16, no-drop;
+    --cur-ew-resize: url("/assets/img/cursor/ew-resize.svg") 16 16, ew-resize;
+    --cur-ns-resize: url("/assets/img/cursor/ns-resize.svg") 16 16, ns-resize;
+    --cur-nesw-resize: url("/assets/img/cursor/nesw-resize.svg") 16 16, nesw-resize;
+    --cur-nwse-resize: url("/assets/img/cursor/nwse-resize.svg") 16 16, nwse-resize;
+    /* 同图别名：CSS 的定向 / 行列关键字全部覆盖（方向不同的两端共用一个图形） */
+    --cur-col-resize: url("/assets/img/cursor/ew-resize.svg") 16 16, col-resize;
+    --cur-row-resize: url("/assets/img/cursor/ns-resize.svg") 16 16, row-resize;
+    --cur-e-resize: url("/assets/img/cursor/ew-resize.svg") 16 16, e-resize;
+    --cur-w-resize: url("/assets/img/cursor/ew-resize.svg") 16 16, w-resize;
+    --cur-n-resize: url("/assets/img/cursor/ns-resize.svg") 16 16, n-resize;
+    --cur-s-resize: url("/assets/img/cursor/ns-resize.svg") 16 16, s-resize;
+    --cur-ne-resize: url("/assets/img/cursor/nesw-resize.svg") 16 16, ne-resize;
+    --cur-sw-resize: url("/assets/img/cursor/nesw-resize.svg") 16 16, sw-resize;
+    --cur-nw-resize: url("/assets/img/cursor/nwse-resize.svg") 16 16, nw-resize;
+    --cur-se-resize: url("/assets/img/cursor/nwse-resize.svg") 16 16, se-resize;
 }
 
 ::selection {
     background-color: rgba(58, 48, 114, 0.25);
     color:#C0C0C0
 }
+
+/* ==========================================================================
+   光标基线：全站默认星芒，可点的给「金星 + 轨道环」，文本区给竖菱
+   --------------------------------------------------------------------------
+   为什么挂在 html 上：cursor 会继承，一处声明就覆盖整页；代价是浏览器原生
+   「鼠标移到文字上自动变 I 形」的行为也没了（那只在 cursor:auto 时发生），
+   所以文字相关的几类元素要逐个补回来 —— 见下面三条规则与 mainpage.css 的阅读区。
+   任何一处想用站内指针都写 var(--cur-*)，不要写关键字（那样会退回系统光标）。
+   ========================================================================== */
+html { cursor: var(--cur-default); }
+
+a[href], area[href],
+button, select, summary, label[for], [role="button"], [role="link"],
+input[type="button"], input[type="submit"], input[type="reset"],
+input[type="checkbox"], input[type="radio"], input[type="range"],
+input[type="file"], input[type="color"] { cursor: var(--cur-pointer); }
+
+/* 输入框与可编辑区：I 形。放在可点规则后面，靠属性选择器的权重压过上面的 input 列表 */
+input, textarea, [contenteditable]:not([contenteditable="false"]) { cursor: var(--cur-text); }
+
+/* 禁用控件：禁止环（比退回系统默认箭头更直白；已在各页的 :disabled 规则里覆盖） */
+button:disabled, input:disabled, select:disabled, textarea:disabled,
+[aria-disabled="true"] { cursor: var(--cur-not-allowed); }
 
 /* ==========================================================================
    字体载入策略：一律 font-display: block（别改回 swap）
@@ -535,7 +607,7 @@ html.sss-switch-in .site-footer{
     background:none;
     border:none;
     color:#fff;                            /* 三条杠用 currentColor，hover 时整体转金 */
-    cursor:pointer;
+    cursor: var(--cur-pointer);
 }
 
 /* 三条杠：按钮中心那一条用自身背景画，上下两条用伪元素 */

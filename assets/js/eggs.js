@@ -173,7 +173,7 @@
            呼应加载屏里"这一步已完成"那个小金点。别改成胶囊，那不是这个站的语言。 */
         '.egg-switch{position:relative;width:44px;height:24px;flex:0 0 auto;padding:0;',
         '  background:var(--ctl-bg);border:1px solid var(--ctl-border);',
-        '  border-radius:var(--ctl-radius);cursor:pointer;transition:var(--ctl-transition)}',
+        '  border-radius:var(--ctl-radius);cursor: var(--cur-pointer);transition:var(--ctl-transition)}',
         '.egg-switch__knob{position:absolute;top:50%;left:4px;width:12px;height:12px;margin-top:-6px;',
         '  border-radius:1px;background:rgba(255,255,255,0.5);',
         /* --ctl-ease 是**时长**(0.25s)不是缓动函数，写进简写会变成"延迟" —— 这里显式写缓动。
@@ -190,7 +190,7 @@
         /* 按钮 */
         '.egg-btn{min-height:30px;padding:5px 12px;font:inherit;font-size:12px;letter-spacing:1px;',
         '  color:var(--ctl-fg-dim);background:var(--ctl-bg);border:1px solid var(--ctl-border);',
-        '  border-radius:var(--ctl-radius);cursor:pointer;transition:var(--ctl-transition)}',
+        '  border-radius:var(--ctl-radius);cursor: var(--cur-pointer);transition:var(--ctl-transition)}',
         '.egg-btn:hover,.egg-btn:focus-visible{color:var(--ctl-fg-hover);background:var(--ctl-bg-strong);',
         '  border-color:var(--ctl-border-hover)}',
         '.egg-btn--reset:hover,.egg-btn--reset:focus-visible{color:var(--ctl-err);',
