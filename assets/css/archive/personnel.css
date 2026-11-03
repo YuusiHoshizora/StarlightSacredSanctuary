@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    人员档案（archive/personnel/）
    --------------------------------------------------------------------------
    1) 首页：四个成员等级卡片（正式英文名 + 代号 + 人数）。
@@ -212,17 +212,28 @@ a.personnel-card:focus-visible {
     display: none;
 }
 
-/* 右栏资料用多列排：没写亲属的人，科研/反馈会自然补到第二列，
-   不会留下固定网格的空格；1080p 高度也能一屏读完。 */
+/* 右栏资料分左右两栏：左边固定「基本信息 / 身份信息 / 亲属」，
+   右边固定「科研水平 / 主防御舰队反馈」。 */
 .personnel-profile.is-active {
     display: block;
-    column-count: 2;
-    column-gap: 12px;
 }
 
 .personnel-profile__head {
-    column-span: all;
     margin-bottom: 12px;
+}
+
+.personnel-profile__cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.personnel-profile__col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
 }
 
 .personnel-profile__name {
@@ -250,8 +261,7 @@ a.personnel-card:focus-visible {
 /* 右栏里的资料面板比组织页更紧凑：目标是一屏读完 */
 .personnel-profile .org-block {
     padding: 16px 18px;
-    margin-bottom: 12px;
-    break-inside: avoid;
+    margin-bottom: 0;
 }
 
 .personnel-profile .org-block:last-of-type {
@@ -314,8 +324,8 @@ a.personnel-card:focus-visible {
 /* ── 窄屏：名录和档案上下排 ── */
 @media (max-width: 1100px) {
 
-    .personnel-profile.is-active {
-        column-count: 1;
+    .personnel-profile__cols {
+        grid-template-columns: 1fr;
     }
 }
 

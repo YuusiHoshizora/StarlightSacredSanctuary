@@ -154,30 +154,42 @@
             }).join('\n')
             : '                        ' + MISSING;
 
-        return '                <article class="personnel-profile' + (active ? ' is-active' : '') + '" id="' + esc(m.anchor) + '">\n' +
-            '                    <header class="personnel-profile__head">\n' +
-            '                        <h2 class="personnel-profile__name">' + esc(m.name) + '</h2>\n' +
-            '                        <p class="personnel-profile__latin">' + esc(m.latin) + '</p>\n' +
-            '                    </header>\n\n' +
-            '                    <section class="org-block personnel-profile__block personnel-profile__block--basic">\n' +
+        var basic = '                    <section class="org-block personnel-profile__block personnel-profile__block--basic">\n' +
             '                        <h3 class="org-block__head">基本信息<span class="org-block__en">Basic Information</span></h3>\n' +
             '                        <dl class="org-meta">\n' + meta + '\n                        </dl>\n' +
-            '                    </section>\n\n' +
-            '                    <section class="org-block personnel-profile__block personnel-profile__block--identity">\n' +
+            '                    </section>';
+
+        var identity = '                    <section class="org-block personnel-profile__block personnel-profile__block--identity">\n' +
             '                        <h3 class="org-block__head">身份信息<span class="org-block__en">Identity</span></h3>\n' +
             roles + '\n' +
-            '                    </section>' + relatives + '\n\n' +
-            '                    <section class="org-block personnel-profile__block personnel-profile__block--research">\n' +
+            '                    </section>';
+
+        var researchBlock = '                    <section class="org-block personnel-profile__block personnel-profile__block--research">\n' +
             '                        <h3 class="org-block__head">科研水平<span class="org-block__en">Research</span></h3>\n' +
             '                        <h4 class="org-tier-head">获奖情况 <span class="org-tier-head__en">Awards</span></h4>\n' +
             awards + '\n' +
             '                        <h4 class="org-tier-head">当前研究 <span class="org-tier-head__en">Current Research</span></h4>\n' +
             research + '\n' +
-            '                    </section>\n\n' +
-            '                    <section class="org-block personnel-profile__block personnel-profile__block--feedback">\n' +
+            '                    </section>';
+
+        var feedbackBlock = '                    <section class="org-block personnel-profile__block personnel-profile__block--feedback">\n' +
             '                        <h3 class="org-block__head">主防御舰队反馈<span class="org-block__en">Defense Fleet Feedback</span></h3>\n' +
             feedback + '\n' +
-            '                    </section>\n' +
+            '                    </section>';
+
+        return '                <article class="personnel-profile' + (active ? ' is-active' : '') + '" id="' + esc(m.anchor) + '">\n' +
+            '                    <header class="personnel-profile__head">\n' +
+            '                        <h2 class="personnel-profile__name">' + esc(m.name) + '</h2>\n' +
+            '                        <p class="personnel-profile__latin">' + esc(m.latin) + '</p>\n' +
+            '                    </header>\n\n' +
+            '                    <div class="personnel-profile__cols">\n' +
+            '                        <div class="personnel-profile__col personnel-profile__col--left">\n' +
+            basic + '\n' + identity + relatives + '\n' +
+            '                        </div>\n' +
+            '                        <div class="personnel-profile__col personnel-profile__col--right">\n' +
+            researchBlock + '\n' + feedbackBlock + '\n' +
+            '                        </div>\n' +
+            '                    </div>\n' +
             '                </article>';
     }
 
