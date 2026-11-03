@@ -21,7 +21,7 @@
     width: 100%;
     max-width: 1200px;             /* 与组织档案页同一个阅读宽度 */
     margin: 0 auto;
-    padding: 120px 60px 80px;
+    padding: 96px 60px 80px;
     flex: 1 1 auto;
 
     /* 三份档案页（人员 / 舰船 / 深空设施）的左栏名录共用同一个高度：
