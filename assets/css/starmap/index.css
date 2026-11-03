@@ -31,6 +31,13 @@
 #starmap-canvas:active {
   cursor: var(--cur-grabbing);
 }
+/* 拖动中：整页强制 grabbing（starmap.js 在按住期间给 <html> 挂 is-starmap-panning）。
+   不能只靠上面的 :active —— 指针拖出画布（哪怕已经 pointer capture）时 :active 会失效，
+   光标会在拖动中途掉回默认箭头。!important 用来盖住面板 / 按钮自己的光标。 */
+html.is-starmap-panning,
+html.is-starmap-panning * {
+  cursor: var(--cur-grabbing) !important;
+}
 
 /* 右侧星系介绍区 */
 .starmap-right {

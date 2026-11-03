@@ -492,6 +492,13 @@ window.addEventListener("resize", () => {
 let dragMoved = false;
 let dragFrom = null;
 
+/* 拖动期间的光标状态：挂在 <html> 上，由 CSS 强制整页 grabbing。
+   ！不能只靠 #starmap-canvas:active —— 指针拖出画布（哪怕已经 pointer capture）
+   时 :active 会失效，光标会在拖动中途掉回默认箭头；用类才能保证按住期间不跳。 */
+function setPanning(on) {
+  document.documentElement.classList.toggle("is-starmap-panning", !!on);
+}
+
 const zoomInBtn = document.getElementById("zoom-in");
 const zoomOutBtn = document.getElementById("zoom-out");
 const zoomResetBtn = document.getElementById("zoom-reset");
@@ -677,6 +684,7 @@ function enterOverview() {
   overviewMode = true;
   stopWheelZoom();
   dragFrom = null;
+  setPanning(false);
   dragMoved = false;
   overviewLayout.classList.add("is-overview");
   if (overviewBtn) overviewBtn.classList.add("is-on");
@@ -836,6 +844,7 @@ canvas.addEventListener("pointerdown", (e) => {
   stopWheelZoom();                         // 拖动接管视角
   dragFrom = { x: e.clientX, y: e.clientY };
   dragMoved = false;
+  if (e.pointerType !== "touch") setPanning(true);   // 触摸没有光标，不用挂这个类
   /* 合成事件（没有真实指针）调用会抛 NotFoundError，这里容错处理 */
   try {
     canvas.setPointerCapture(e.pointerId);
@@ -858,7 +867,7 @@ canvas.addEventListener("pointermove", (e) => {
 
   if (!dragFrom) return;
   /* 鼠标已经松开（在画布外松开、丢了 pointerup）：别继续跟着鼠标平移 */
-  if (e.pointerType !== "touch" && e.buttons === 0) { dragFrom = null; return; }
+  if (e.pointerType !== "touch" && e.buttons === 0) { dragFrom = null; setPanning(false); return; }
   const dx = e.clientX - dragFrom.x;
   const dy = e.clientY - dragFrom.y;
   if (Math.abs(dx) + Math.abs(dy) < 2) return;
@@ -871,6 +880,7 @@ canvas.addEventListener("pointermove", (e) => {
 canvas.addEventListener("pointerup", (e) => {
   endTouch(e);
   dragFrom = null;
+  setPanning(false);
   if (canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
     canvas.releasePointerCapture(e.pointerId);
   }
@@ -879,14 +889,17 @@ canvas.addEventListener("pointerup", (e) => {
 /* 捕获丢了 / 指针被取消：一定结束拖动，否则地图会"黏"在鼠标上继续走 */
 canvas.addEventListener("lostpointercapture", () => {
   dragFrom = null;
+  setPanning(false);
 });
 window.addEventListener("blur", () => {
   dragFrom = null;
+  setPanning(false);
 });
 
 canvas.addEventListener("pointercancel", (e) => {
   endTouch(e);
   dragFrom = null;
+  setPanning(false);
 });
 
 /* ── 触摸：双指捏合缩放（移动端） ──
@@ -919,6 +932,7 @@ function startPinch() {
     gy: (mid.y - pan[1]) / cell
   };
   dragFrom = null;      // 别同时单指平移
+  setPanning(false);
   dragMoved = true;     // 捏合之后不要触发选中
 }
 
