@@ -814,7 +814,16 @@ html.starmap-ui .starmap-panel-wrap{
 .starmap-os-page .starmap-panel-toggle__arrow::before{ content:"›"; }
 .starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-toggle__arrow::before{ content:"‹"; }
 
-/* 选中星系不在视野：页面边缘的指向箭头（中点 → 星系 的射线与可见区域边缘的交点） */.starmap-os-page .starmap-edge-arrow{
+/* 信息栏右上角的退出按钮：样式复用左下角控件（.map-zoom__btn），随面板一起进出 */
+.starmap-os-page .starmap-panel-exit{
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 4;
+}
+
+/* 选中星系不在视野：页面边缘的指向箭头（中点 → 星系 的射线与可见区域边缘的交点） */
+.starmap-os-page .starmap-edge-arrow{
     position:absolute;
     left:0;
     top:0;

@@ -732,14 +732,13 @@ if (overviewBtn) {
   });
 }
 
-/* ESC 退出到工具页。
-   搜索框聚焦时也直接退出（搜索自己的 Esc 只清空，不拦默认，所以这里一定会跑到）；
-   公告弹窗打开时 notice.js 会先 preventDefault，ESC 交给它关弹窗。 */
-document.addEventListener("keydown", function (e) {
-  if (e.key !== "Escape" && e.key !== "Esc") return;
-  if (e.defaultPrevented) return;
-  location.href = "../";
-});
+/* 退出星图：信息栏右上角的 ×（跟着面板一起进出） */
+const panelExitBtn = document.getElementById("starmap-panel-exit");
+if (panelExitBtn) {
+  panelExitBtn.addEventListener("click", function () {
+    location.href = "../";
+  });
+}
 
 /* ── 鼠标滚轮缩放 ──
    向上滚 = 放大、向下滚 = 缩小（与按钮方向一致），并且锚定在鼠标位置：
