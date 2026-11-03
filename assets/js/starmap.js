@@ -732,11 +732,12 @@ if (overviewBtn) {
   });
 }
 
-/* ESC 退出到工具页；输入框里按 ESC 交给搜索框自己清空 */
+/* ESC 退出到工具页。
+   搜索框聚焦时也直接退出（搜索自己的 Esc 只清空，不拦默认，所以这里一定会跑到）；
+   公告弹窗打开时 notice.js 会先 preventDefault，ESC 交给它关弹窗。 */
 document.addEventListener("keydown", function (e) {
-  if (e.key !== "Escape" || e.defaultPrevented) return;
-  const t = e.target;
-  if (t && t.closest && t.closest("input, textarea")) return;
+  if (e.key !== "Escape" && e.key !== "Esc") return;
+  if (e.defaultPrevented) return;
   location.href = "../";
 });
 
