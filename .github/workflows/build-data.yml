@@ -52,12 +52,18 @@ jobs:
             exit 0
           fi
           git commit -m "chore(data): rebuild assets/data from CSV"
-          # 万一这期间有人推了别的提交：先 rebase，再按新内容重算一遍指纹
+          # 万一这期间有人推了别的提交：先 rebase，再按新内容重算一遍指纹。
+          # 注意：stamp workflow 可能已经推了内容相同的 sw.js 提交，这时 rebase
+          # 会把我们这条提交当成「已应用」跳过，HEAD 变成对方的提交。若此时没有
+          # 新改动就直接结束，绝不能 --amend —— 那会把对方的提交改写成新 SHA，
+          # push 仍会被判非快进而失败。
           if ! git push; then
             git pull --rebase --autostash origin master
             node scripts/data-csv.mjs build
             node .github/stamp-sw-version.mjs
             git add assets/data sw.js
-            git commit --amend --no-edit
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(data): rebuild assets/data from CSV"
+            fi
             git push
           fi
