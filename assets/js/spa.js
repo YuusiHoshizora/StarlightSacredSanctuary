@@ -32,7 +32,10 @@
         '/archive/facility': true,
         '/archive/organization': true,
         '/archive/organization/cam': true,
-        '/archive/organization/dgam': true,
+        /* '/archive/organization/dgam' 故意不在这里：它是彩蛋页，靠 <body data-egg="dgam">
+           自动登记，提示条也是写在 <main> 外面的。同文档换页只换 <main> 与页脚，
+           body 属性 / 提示条都搬不过去，彩蛋就永远不会被记为"已发现"。
+           彩蛋页一律走整页加载（与 /main/cq 同一口径）。 */
         '/archive/organization/res': true,
         '/archive/personnel': true,
         '/archive/personnel/sam': true,
@@ -221,6 +224,21 @@
 
     /* ---------------------------- 页面脚本的收集与执行 ---------------------------- */
 
+    /* 这个内联脚本是不是在 <head> 里？
+       各页 <head> 里的内联脚本只有两支：决定要不要弹加载屏的守卫、和
+       documentElement.classList.add('css-ready')。它们只在整页加载时有意义，
+       换页时重跑会把加载屏又打开，所以整类跳过。
+       （以前是按"源码里出现 sss-boot"来跳，会误伤正文里提到 sss-boot 的页面脚本 ——
+        例如 DGAM 页那段"等加载屏收起来再弹提示条"的脚本，于是它的提示条永远不出现。） */
+    function isHeadScript(node) {
+        var n = node;
+        while (n && n.nodeType === 1) {
+            if (n.tagName === 'HEAD') return true;
+            n = n.parentNode;
+        }
+        return false;
+    }
+
     function collectScripts(doc, url) {
         var items = [];
         Array.prototype.forEach.call(doc.querySelectorAll('script'), function (s) {
@@ -234,7 +252,7 @@
             }
             var code = s.textContent || '';
             if (!code.trim()) return;
-            if (/css-ready/.test(code) || /sss-boot/.test(code)) return;   // 加载屏 / 首帧保护
+            if (isHeadScript(s)) return;                            // 加载屏 / 首帧保护
             items.push({ code: code });
         });
         return items;
@@ -310,12 +328,39 @@
         oldEl.parentNode.replaceChild(imported, oldEl);
     }
 
+    /* <body> 上的 data-* 属性也要跟着目标页走。
+       换页只换 <main> 与页脚，body 本身不换；而彩蛋登记靠 <body data-egg="...">，
+       不把属性搬过来，经由站内换页进入的彩蛋页就永远不会被记为"已发现"。
+       只搬 data-*（body 的 class / style 由各页脚本和加载屏维护，不碰）。 */
+    function syncBody(doc) {
+        var target = doc.body;
+        if (!target) return;
+
+        var wanted = Object.create(null);
+        Array.prototype.forEach.call(target.attributes, function (attr) {
+            if (attr.name.indexOf('data-') === 0) wanted[attr.name] = attr.value;
+        });
+
+        /* 先删掉目标页没有的 —— 否则离开彩蛋页之后 data-egg 还挂着，
+           下一次换页会被当成"又进了一次彩蛋页"。 */
+        Array.prototype.slice.call(document.body.attributes).forEach(function (attr) {
+            if (attr.name.indexOf('data-') === 0 && !(attr.name in wanted)) {
+                document.body.removeAttribute(attr.name);
+            }
+        });
+
+        Object.keys(wanted).forEach(function (name) {
+            document.body.setAttribute(name, wanted[name]);
+        });
+    }
+
     function apply(doc, url, scripts, push) {
         var run = function () {
             cleanupsRunAll();
 
             if (!replaceContent(doc, url)) { location.href = url.href; return; }
             replaceFooter(doc, url);
+            syncBody(doc);
 
             if (doc.title) document.title = doc.title;
             pruneStyles(doc, url);

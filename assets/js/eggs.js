@@ -143,12 +143,20 @@
     window.SSS_EGGS = API;
 
     /* ---------- 彩蛋页：<body data-egg="cq"> 就自动登记 ---------- */
-    var own = document.body && document.body.getAttribute('data-egg');
-    if (own) API.findWhenActive(own);
+    /* 包成函数：站内同文档换页（spa.js）进入彩蛋页时，<body data-egg> 是换页之后
+       才同步到 body 上的（见 spa.js 的 syncBody），页面脚本重跑时读不到；
+       所以换页后（sss:swap）还要再登记一次，否则经由站内链接进入的 DGAM
+       永远不会出现在「关于」页的已发现列表里。 */
+    function registerOwnEgg() {
+        var own = document.body && document.body.getAttribute('data-egg');
+        if (own) API.findWhenActive(own);
+    }
+    registerOwnEgg();
 
     /* ---------- 「关于」页：填那张卡片 ---------- */
     /* 包成函数：站内同文档换页（spa.js）换到关于页时，这张卡是新插入的，
        需要重新渲染一次；只在这个函数里绑定，换页后重复调用不会叠监听。 */
+    var aboutStyleReady = false;
     function initAboutEggs() {
     var card = document.getElementById('about-eggs');
     if (!card) return;                          // 不是关于页
@@ -201,9 +209,12 @@
         '@media (max-width:768px){.egg-row{gap:10px}.egg-btn{padding:5px 10px}}'
     ].join('');
 
-    var style = document.createElement('style');
-    style.textContent = CSS;
-    document.head.appendChild(style);
+    if (!aboutStyleReady) {
+        var style = document.createElement('style');
+        style.textContent = CSS;
+        document.head.appendChild(style);
+        aboutStyleReady = true;
+    }
 
     function el(tag, cls, text) {
         var n = document.createElement(tag);
@@ -312,7 +323,21 @@
     render();
     }
 
-    /* 首次加载填一次；同文档换页后（spa.js 派发 sss:swap）再填一次 */
+    /* 首次加载填一次；同文档换页后（spa.js 派发 sss:swap）再填一次。
+       换页时先把新页面 <body data-egg> 的彩蛋登记掉（属性由 spa.js 的 syncBody 搬过来），
+       再刷新「关于」页那张卡 —— 顺序不能反，否则刚发现的彩蛋不会出现在列表里。 */
     initAboutEggs();
-    document.addEventListener('sss:swap', initAboutEggs);
+    document.addEventListener('sss:swap', function () {
+        registerOwnEgg();
+        initAboutEggs();
+    });
+
+    /* bfcache 恢复：卡片可能是"换页 / 完成彩蛋之前"的旧快照，按 storage 重画一次。
+       pageshow 在普通首次加载时也会触发，重复渲染无副作用。 */
+    window.addEventListener('pageshow', function () { initAboutEggs(); });
+
+    /* 别的标签页改了记录（storage 事件）：「关于」页的卡片跟着刷新 */
+    window.addEventListener('storage', function (e) {
+        if (e.key === null || e.key === KEY || e.key === KEY_OFF) initAboutEggs();
+    });
 })();

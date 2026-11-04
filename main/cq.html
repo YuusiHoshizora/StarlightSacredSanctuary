@@ -1255,15 +1255,23 @@
         var toast = document.getElementById('cq-toast');
         if (!shot || !modal || !closeBtn || !toast) return;
 
-        /* 已经发现过（比如刷新回来）：进来就当作"已宣告过"，不再弹提示、不再重复登记 */
+        /* 这次页面会话里提示条弹过没有。注意：它**不能**代替 storage 判断 ——
+           页面可能在「关于」页重置之前就打开了（bfcache 恢复 / 另一个标签页），
+           那种情况下一次性算好的"已发现"会是死的 true，重置后的第一次完成就被吃掉，
+           首页和「关于」页都不会更新。所以是否已发现，每次都以 localStorage 为准。 */
         var announced = false;
-        try { announced = (localStorage.getItem('sss.eggs') || '').indexOf('cq') >= 0; } catch (e) {}
+
+        function isFound() {
+            try { return (localStorage.getItem('sss.eggs') || '').indexOf('cq') >= 0; } catch (e) { return false; }
+        }
 
         function announce() {
-            if (announced) return;        // 提示只弹一次：发现之后再点图就只是开弹窗
-            announced = true;
-            toast.classList.add('is-in');
-            window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
+            if (isFound()) return;        // 已经发现过：点图就只是开弹窗，不重复弹提示 / 登记
+            if (!announced) {
+                announced = true;
+                toast.classList.add('is-in');
+                window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
+            }
             /* 这一刻才算发现 */
             var eggs = window.SSS_EGGS;
             if (eggs && eggs.findWhenActive) eggs.findWhenActive('cq');
