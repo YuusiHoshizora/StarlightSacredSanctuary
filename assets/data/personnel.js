@@ -98,7 +98,7 @@ window.SSS_PERSONNEL = {
       "anchor": "10101347060759797",
       "identity": "10101347060759797",
       "name": "阿斯特莱雅·阿莉茜娅",
-      "latin": "Astraea Alicia",
+      "latin": "Astraea Aletheia",
       "gender": "女",
       "birth": "374/6/7",
       "race": "凯斯特莉娅",
