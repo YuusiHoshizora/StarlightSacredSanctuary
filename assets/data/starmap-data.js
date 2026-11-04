@@ -14,13 +14,13 @@ const STARMAP_DATA = [
     "planets": 2,
     "starType": "黑洞",
     "developmentLevel": "休整阶段",
-    "description": "B-970黑洞位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
+    "description": "B-1203黑洞位于星光圣域的边境，是星光圣域位于伊谢尔伦回廊的前线。",
     "x": 128,
     "y": -8
   },
   {
     "id": "b1206",
-    "name": "B-1206 黑洞",
+    "name": "B-1206黑洞",
     "nameEn": "Black Hole B-1206",
     "starCount": 1,
     "planets": 0,
@@ -38,13 +38,13 @@ const STARMAP_DATA = [
     "planets": 1,
     "starType": "黑洞",
     "developmentLevel": "休整阶段",
-    "description": "B-970黑洞位于星光圣域的边境，是星光圣域研究寂静领域的前哨站之一。",
+    "description": "B-516黑洞位于星光圣域的边境，是星光圣域研究寂静领域的前哨站之一。",
     "x": -97,
     "y": 28
   },
   {
     "id": "b970",
-    "name": "B-970 黑洞",
+    "name": "B-970黑洞",
     "nameEn": "Black Hole B-970",
     "starCount": 1,
     "planets": 1,
@@ -57,7 +57,7 @@ const STARMAP_DATA = [
   {
     "id": "n373",
     "name": "N-373中子星",
-    "nameEn": "Neutron Star N-9",
+    "nameEn": "Neutron Star N-373",
     "starCount": 1,
     "planets": 2,
     "starType": "中子星",
@@ -80,13 +80,13 @@ const STARMAP_DATA = [
   },
   {
     "id": "p234",
-    "name": "p-234脉冲星",
-    "nameEn": "Pulsar Star P-234",
+    "name": "P-234脉冲星",
+    "nameEn": "Pulsar P-234",
     "starCount": 1,
     "planets": 0,
     "starType": "脉冲星",
     "developmentLevel": "休整阶段",
-    "description": "星光圣域边境探索指挥中心所在星系",
+    "description": "星光圣域边境探索指挥中心所在星系。",
     "x": -8,
     "y": -36
   },
@@ -247,7 +247,7 @@ const STARMAP_DATA = [
     "y": 69
   },
   {
-    "id": "differeceengine",
+    "id": "differenceengine",
     "name": "差分机",
     "nameEn": "the Difference Engine",
     "starCount": 1,
@@ -302,7 +302,7 @@ const STARMAP_DATA = [
     "planets": 3,
     "starType": "红巨星",
     "developmentLevel": "完全",
-    "description": "法兰海德是维斯佩拉主防御系统的最外层节点之一，同时为前往残阳的旅客提供引导。\t",
+    "description": "法兰海德是维斯佩拉主防御系统的最外层节点之一，同时为前往残阳的旅客提供引导。",
     "x": 12,
     "y": 5
   },
@@ -348,7 +348,7 @@ const STARMAP_DATA = [
     "nameEn": "Ridien",
     "starCount": 2,
     "planets": 5,
-    "starType": "B",
+    "starType": "B、B",
     "developmentLevel": "休整阶段",
     "description": "瑞狄恩是星光圣域用于补给的星系之一。",
     "x": 28,
