@@ -612,7 +612,9 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     · 星图是「离线版本」：文案一律写本地存档 / 星域快照，不写「无法访问主数据库」；
       页面没有导航栏；退出 = 信息栏右上角的 × 按钮（复用左下角控件样式，随面板一起滑入 / 收起）
     · 左上读数：进入后显示 `Connecting...`（白色、点呼吸），5 秒后切 `Offline Mode`（红色）；
-      `STARMAP®OS` 20px，下面不再跟 STARCHART / SECTOR 0
+      `STARMAP®OS` 20px，下面不再跟 STARCHART / SECTOR 0。
+      `.map-readout` 是**竖排**（`flex-direction: column; align-items: flex-start; gap: 8px`）：
+      `STARMAP®OS` 在上，状态行在它正下方并与它左对齐（不是并排在同一行）
     · 右侧信息栏：未选中时标题 `NOTICE`、选中星系后 `SYSTEM INFO`；面板外侧的箭头切换展开/收起，
       箭头和面板都装在 `.starmap-panel-wrap` 里一起 translateX，保证同步；进场时整块从右侧滑入
     · 搜索选定星系：调用 `SSS_COORD.panTo`（只平移、保持比例尺），与「回到默认」共用 background 的 `RESET_MS` 指数缓动；不再有单独的 easeOutCubic

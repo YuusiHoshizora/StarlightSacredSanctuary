@@ -920,8 +920,10 @@ html.starmap-ui .starmap-panel-wrap{
     left: 30px;
     z-index: 2;
     display: flex;
-    align-items: center;
-    gap: 16px;
+    /* 竖排：STARMAP®OS 在上，Connecting... / Offline Mode 在它正下方 */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
     font-family: var(--os-mono);
     font-size: 12px;
     letter-spacing: 2.5px;
