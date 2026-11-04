@@ -32,10 +32,14 @@
         '/archive/facility': true,
         '/archive/organization': true,
         '/archive/organization/cam': true,
-        /* '/archive/organization/dgam' 故意不在这里：它是彩蛋页，靠 <body data-egg="dgam">
-           自动登记，提示条也是写在 <main> 外面的。同文档换页只换 <main> 与页脚，
-           body 属性 / 提示条都搬不过去，彩蛋就永远不会被记为"已发现"。
-           彩蛋页一律走整页加载（与 /main/cq 同一口径）。 */
+        /* DGAM 是彩蛋页，但**可以在试点里**：同文档换页只换 <main> 与页脚，
+           它依赖的两样东西现在已经就位 ——
+             · 登记「已发现」靠 <body data-egg="dgam">，换页后由 syncBody() 搬到 body 上，
+               eggs.js 在 sss:swap 时补登记（所以不要再把它挪出 PILOT 来"绕开"这个问题）
+             · 「彩蛋已发现」提示条写在 <main> 里面，跟着内容一起换进来 / 换出去
+           把它留在 PILOT 里，DGAM 与站内其它页之间才是同文档切换（不再整页跳）。
+           真正不能进 PILOT 的是 /main/cq：画布 + 音频循环没有停止钩子。 */
+        '/archive/organization/dgam': true,
         '/archive/organization/res': true,
         '/archive/personnel': true,
         '/archive/personnel/sam': true,

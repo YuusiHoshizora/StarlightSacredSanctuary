@@ -98,6 +98,10 @@
     <script defer src="../../assets/js/seamless.js"></script>
     <script defer src="../../assets/js/spa.js"></script>
     <script defer src="../../assets/js/navtoggle.js"></script>
+    <!-- 彩蛋登记册：记录 <body data-egg> 的彩蛋、给「关于」页那张卡片填内容。
+         ⚠️ 外壳脚本，站内换页（spa.js）不会重跑它 —— 每页都必须引，否则经由同文档换页
+         进「关于」页 / 进彩蛋页时，登记与卡片都不会发生。 -->
+    <script defer src="../../assets/js/eggs.js"></script>
     <!-- 人员名录：左栏选中 / 右栏档案，链接用 ?person=身份编号 定位 -->
     <script defer src="../../assets/data/personnel.js"></script>
     <script defer src="../../assets/js/personnel.js"></script>

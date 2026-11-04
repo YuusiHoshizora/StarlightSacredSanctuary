@@ -607,8 +607,12 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     换内容根（`.main-layout` 或 `<main>`）与 `.site-footer`、**同步执行目标页脚本**、改标题与 URL。
     所以 Firefox 里也是**真交叉淡化**（同文档过渡），数据驱动的页面在新快照里已经渲染好。
     只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击；其余链接（`/starmap/`、
-    `/main/cq`、`/archive/organization/dgam`）照旧整页跳转（画布 / 循环没有停止钩子，
-    彩蛋页还依赖 `<body data-egg>` 与写在 `<main>` 外的提示条 —— 同文档换页搬不过去）。
+    `/main/cq`）照旧整页跳转（画布 / 音频循环没有停止钩子，同文档换页会把它们留在后台）。
+    · **彩蛋页也能在试点里**：DGAM（`/archive/organization/dgam`）在 `PILOT` 中，前提是
+      ① 登记靠 `<body data-egg>`，换页后由 `syncBody()` 搬到 body、`eggs.js` 在 `sss:swap` 补登记；
+      ② 提示条写在该页 `<main>` **里面**（`#dgam-toast`），跟着内容一起换进换出 ——
+      写到 `<main>` 外面的话，经由站内导航进来时它不会被带进来，提示条永远不弹，
+      离开时还会残留到别的页面上。
     · 星图只有一页：进页面自动跑 Starmap®OS 启动画面，第一帧画好后启动画面淡出、六边形背景淡出、
       坐标背景淡入，随后操作按钮与右栏出现；时序在页面末尾那段内联脚本里
     · 星图本体走 Starmap®OS 一套视觉：`body.starmap-os-page` 作用域下的覆盖块在
@@ -728,6 +732,13 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     激活才记，否则"鼠标扫过去"就算发现了
   · 「关于」页最下面那张「已发现的彩蛋」卡片写在 `about/index.html` 里、**默认 `hidden`**，
     由 eggs.js 填内容并放行；**一个都没发现时它就保持 hidden，整张卡片不出现**
+  · ⚠️ **`eggs.js` 是外壳脚本，每一页都必须引**（放在 `navtoggle.js` 之后）。
+    `spa.js` 的 `SHELL_SCRIPTS` 不会重跑它，只靠「进入的那一页恰好引了」是不行的：
+    从没引它的页面（档案 / 舰队 / 工具 / 人员 / 主页面…）站内换页到「关于」页，
+    卡片会一直保持 `hidden`（表现为「彩蛋菜单失效」）；经由同文档换页进彩蛋页也不会被登记。
+    加新页面时别忘了这一行 —— 和 `navtoggle.js` 同级要求。
+  · 彩蛋提示条（DGAM 的 `#dgam-toast`）必须写在**该页 `<main>` 里面**，
+    理由见上面「站内同文档导航」那条（`<main>` 外面的东西换页搬不过去）
   · 彩蛋页的音频与图片体积都不小（约 5 MB + 10 MB），**故意不进 SW 预缓存**，
     点了才下（`preload="none"` + `loading="lazy"`）；页面的 HTML/CSS/JS 照常进预缓存
   · **入口（DGAM 那个）**：组织档案页（`archive/organization/index.html`）里，把**科研部（RES）、

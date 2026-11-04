@@ -96,6 +96,10 @@
     <script defer src="../../assets/js/seamless.js"></script>
     <script defer src="../../assets/js/spa.js"></script>
     <script defer src="../../assets/js/navtoggle.js"></script>
+    <!-- 彩蛋登记册：记录 <body data-egg> 的彩蛋、给「关于」页那张卡片填内容。
+         ⚠️ 外壳脚本，站内换页（spa.js）不会重跑它 —— 每页都必须引，否则经由同文档换页
+         进「关于」页 / 进彩蛋页时，登记与卡片都不会发生。 -->
+    <script defer src="../../assets/js/eggs.js"></script>
     <!-- 隐藏入口：三张部门卡拖到议会卡上解锁 DGAM（彩蛋，未解锁时什么都不显示） -->
     <script defer src="../../assets/js/org-secret.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
