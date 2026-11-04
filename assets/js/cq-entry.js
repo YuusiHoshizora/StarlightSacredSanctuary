@@ -14,13 +14,14 @@
  * 现身时很小声地放一遍 cq.wav；点这个点进 CQ 页。
  * 进过 CQ 页之后（eggs.js 记下的"已发现"），名字从 "???" 换成 "73"。
  *
- * 入口元素在 <main> 外面，所以站内同文档换页（spa.js）换掉 <main> 时它会
- * **留在 DOM 里**。因此本脚本必须做到"每次运行都把 DOM 同步成 storage 的样子"：
- *   · 进首页时（首次加载 / SPA 换回首页）按记录显示或隐藏；
- *   · 离开首页时（__sssPageCleanup）撤掉监听、把元素收起来，
- *     否则它会以失去样式的裸链接形式出现在别的页面上；
- *   · bfcache 恢复（pageshow）也重新同步一次 —— 回到那个页面时 state 可能已经变了。
- * 监听只注册一次并由清理函数移除，避免来回换页叠出好几份（点击一次响好几声）。
+ * 入口元素在首页的 <main> 里面（**必须**，见 index.html 的注释）：站内同文档换页
+ * （spa.js）只换 <main> 与页脚，所以入口会跟着首页内容一起换进来、换出去 ——
+ * 从别的页面经由站内链接「回首页」时它才会在（以前放在 <main> 外面，从星图/工具页
+ * 换回首页时元素根本不在文档里，入口就"失效"了）。
+ *
+ * 因此本脚本每次运行都要把 DOM 同步成 storage 的样子（首次加载 / SPA 换回首页 /
+ * bfcache 恢复都算），离开首页时把挂在 document 上的监听撤掉（元素本身随 <main>
+ * 一起销毁，不用额外去藏）。
  *
  * 找不到 #cq-dot 就直接退出，所以别的页面误引了也没有副作用。
  * ========================================================================== */
@@ -91,9 +92,6 @@
     }
 
     function show(withSound) {
-        /* 离开首页时清理函数会把 display 设成 none（那时样式表也被 spa.js 撤了）；
-           回到首页必须把它还原，否则元素一直藏着。 */
-        dot.style.display = '';
         if (nameEl) nameEl.textContent = name();
         dot.classList.add('is-found');
         // 无障碍上也要"出现"：它是个 <a>，别让键盘 Tab 到一个看不见的东西
@@ -103,7 +101,6 @@
     }
 
     function hide() {
-        dot.style.display = '';
         dot.classList.remove('is-found');
         dot.setAttribute('aria-hidden', 'true');
         dot.setAttribute('tabindex', '-1');
@@ -142,8 +139,8 @@
     window.addEventListener('pageshow', sync);
 
     /* 站内同文档换页后（spa.js 派发 sss:swap）也同步一次：
-       换回首页时页面脚本本来会重跑（会 sync），但换去别的页再换回来时，
-       这行保证"元素还在 DOM 里"的那份不会停留在旧状态。 */
+       换回首页时页面脚本本来会重跑（会 sync），这行只是兜住"换页后 state 已经变了"
+       （例如刚在别处把它重置 / 完成）。 */
     document.addEventListener('sss:swap', sync);
 
     /* 别的标签页改了记录（storage 事件）：这个页面的点也跟着变 */
@@ -154,17 +151,14 @@
 
     sync();
 
-    /* 离开首页：撤掉监听，并把元素收起来 —— 否则 <main> 换掉、cq-entry.css
-       也被 spa.js 撤掉之后，它会以裸链接的形式出现在别的页面顶部。
-       注意 storage 监听也要撤：留着的话，别的标签页一改记录，sync() 会把
-       display 还原，裸链接又会冒出来。 */
+    /* 离开首页（站内换页）：把挂在 document / window 上的监听撤掉。
+       元素本身在 <main> 里，会随内容一起被换掉，不用额外处理。 */
     if (window.__sssPageCleanup) {
         window.__sssPageCleanup.add('cq-entry', function () {
             document.removeEventListener('pointerdown', onPointerDown);
             window.removeEventListener('pageshow', sync);
             document.removeEventListener('sss:swap', sync);
             window.removeEventListener('storage', onStorage);
-            dot.style.display = 'none';
         });
     }
 })();
