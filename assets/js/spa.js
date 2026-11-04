@@ -37,8 +37,7 @@
              · 登记「已发现」靠 <body data-egg="dgam">，换页后由 syncBody() 搬到 body 上，
                eggs.js 在 sss:swap 时补登记（所以不要再把它挪出 PILOT 来"绕开"这个问题）
              · 「彩蛋已发现」提示条写在 <main> 里面，跟着内容一起换进来 / 换出去
-           把它留在 PILOT 里，DGAM 与站内其它页之间才是同文档切换（不再整页跳）。
-           真正不能进 PILOT 的是 /main/cq：画布 + 音频循环没有停止钩子。 */
+           把它留在 PILOT 里，DGAM 与站内其它页之间才是同文档切换（不再整页跳）。 */
         '/archive/organization/dgam': true,
         '/archive/organization/res': true,
         '/archive/personnel': true,
@@ -49,7 +48,16 @@
         '/archive/vessel': true,
         '/fleet': true,
         '/tool': true,
-        '/main/mainpage': true
+        '/main/mainpage': true,
+        /* CQ 彩蛋页（画布 + 音频 + 大量 rAF）以前整页跳转，现在也在试点里 ——
+           前提是那页自己做全了这几件事，以后改它别退回去：
+             · 弹窗（#cq-modal）与提示条（#cq-toast）写在 <main> 里面
+             · 每进来一次发一个 __cqGen 代号，所有异步回调先核对代号；换页时在
+               __sssPageCleanup 里作废代号、清定时器、**暂停两段音频**（不暂停会在别的
+               页面后台继续响）、取消 rAF、摘掉 <html> 上的 cq-restored / cq-modal-open
+             · <head> 里那支「已发现 → cq-restored」同步脚本换页时不跑，所以页面脚本
+               要按 localStorage 再对齐一次（否则站内进来会从头演一遍） */
+        '/main/cq': true
     };
 
     /* 全站外壳脚本：不参与"换页后重跑" */

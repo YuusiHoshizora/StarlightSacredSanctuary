@@ -606,13 +606,16 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     并行 fetch 目标页 HTML + 页面脚本源码 → 预挂 CSS → `document.startViewTransition()` 里
     换内容根（`.main-layout` 或 `<main>`）与 `.site-footer`、**同步执行目标页脚本**、改标题与 URL。
     所以 Firefox 里也是**真交叉淡化**（同文档过渡），数据驱动的页面在新快照里已经渲染好。
-    只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击；其余链接（`/starmap/`、
-    `/main/cq`）照旧整页跳转（画布 / 音频循环没有停止钩子，同文档换页会把它们留在后台）。
-    · **彩蛋页也能在试点里**：DGAM（`/archive/organization/dgam`）在 `PILOT` 中，前提是
-      ① 登记靠 `<body data-egg>`，换页后由 `syncBody()` 搬到 body、`eggs.js` 在 `sss:swap` 补登记；
-      ② 提示条写在该页 `<main>` **里面**（`#dgam-toast`），跟着内容一起换进换出 ——
-      写到 `<main>` 外面的话，经由站内导航进来时它不会被带进来，提示条永远不弹，
-      离开时还会残留到别的页面上。
+    只接管「当前页和目标页都在 `PILOT` 里」的普通左键点击；唯一的例外是星图
+    （`/tool/starmap/`）：它自带 Starmap®OS 启动序列、坐标画布与成套 rAF，仍走整页跳转。
+    **现在连两个彩蛋页（DGAM / CQ）也在试点里**，所以站内链接基本都不再整页加载了。
+    · **彩蛋页也在试点里**：DGAM（`/archive/organization/dgam`）与 CQ（`/main/cq`）的前提是
+      ① 登记靠 `<body data-egg>`，换页后由 `syncBody()` 搬到 body、`eggs.js` 在 `sss:swap` 补登记
+         （CQ 是"点开解出来的图"才算发现，登记由它自己的脚本调 `SSS_EGGS.findWhenActive`）
+      ② 弹窗 / 提示条写在该页 `<main>` **里面**（`#dgam-toast`、`#cq-modal`、`#cq-toast`），
+         跟着内容一起换进换出 —— 写在 `<main>` 外面的话，经由站内导航进来时它不会被带进来，
+         离开时还会残留到别的页面上
+      ③ 有画布 / 音频 / 循环的页面（CQ）必须自己登记清理，见下面「CQ 页的生命周期」
     · 星图只有一页：进页面自动跑 Starmap®OS 启动画面，第一帧画好后启动画面淡出、六边形背景淡出、
       坐标背景淡入，随后操作按钮与右栏出现；时序在页面末尾那段内联脚本里
     · 星图本体走 Starmap®OS 一套视觉：`body.starmap-os-page` 作用域下的覆盖块在
@@ -873,6 +876,30 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     所以 `finish(t)` 多收一个显式的渲染位置
 - 清键的两处：点开那张图（= 彩蛋发现）时清掉；`eggs.js` 里这条彩蛋的 `resetKeys`
   也带着它，所以「关于」页重置之后是从头再来，而不是接在"全解完"上
+
+### CQ 页的生命周期（它现在在 `PILOT` 里，站内换页会换掉它）
+
+整页换掉 `<main>` 不会替你停掉定时器、rAF、音频 —— 这些必须页面自己登记。改这一页记住五条：
+
+1. **代号**：第一段脚本开头把 `window.__cqGen` 加一，`window.__cqAlive()` 用它判断
+   "这一轮还算数吗"。所有异步回调（定时器、`img` 的 `load`、`fetch`/`decodeAudioData`
+   的 `.then`、`document.fonts.ready`）**先核对代号再动手**，否则换页之后旧回调会去动
+   新页面的 DOM（`__cqRunSteps` 这类全局函数已经是新一轮的了）
+2. **定时器统一用 `window.__cqLater(fn, ms)`**（内部就是带代号保护的 `setTimeout`，
+   并把 id 记进 `window.__cqTimers`），别直接写 `window.setTimeout`
+3. **`__sssPageCleanup` 登记四份**：
+   - `cq-page`：代号作废、清掉所有定时器、摘掉 `<html>` 上的 `cq-restored` / `cq-modal-open`
+     （这两个类挂的是 `<html>`，不会随 `<main>` 换掉，不摘就带到别的页面上了）
+   - `cq-morse` / `cq-sstv`：**`audio.pause()`**（不暂停的话换到别的页面它还在后台响，
+     这是最容易漏的一条）、`stopLoop()` 取消 rAF、`URL.revokeObjectURL(seekSrc)` 释放 blob
+   - `cq-modal`：摘掉挂在 **`document`** 上的 Esc 监听（它不会随 `<main>` 消失）
+4. **弹窗与提示条必须在 `<main>` 里**（`#cq-modal` / `#cq-toast`），换页才带得进带得走
+5. **`cq-restored` 要按 storage 再对齐一次**：整页加载时它由 `<head>` 里那段同步脚本打
+   （首次绘制前决定，不会闪），可站内换页不跑 `<head>` 脚本。所以第一段正文脚本要
+   `document.documentElement.classList.toggle('cq-restored', foundNow)` ——
+   否则经由站内导航进来会从头演一遍，而不是直接摆出"全解完"
+
 - ⚠️ 动过这一页就要 **`sw.js` 的 `CACHE_VERSION` +1**（HTML/CSS/JS 全在预缓存里，
-  不加版本号访问者拿到的还是旧页面）
+  不加版本号访问者拿到的还是旧页面）；CI 的 `stamp-sw-version.yml` 会按内容变动自动打，
+  一般不用手动改
 

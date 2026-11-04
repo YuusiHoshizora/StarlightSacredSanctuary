@@ -135,7 +135,10 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<!-- 本页这个彩蛋**不靠 data-egg 自动登记**：要等用户点开解出来的图、
+<body>
+
+    <!-- 本页这个彩蛋**不靠 data-egg 自动登记**：要等用户点开解出来的图、
+         弹出「彩蛋已发现」时才登记（见页面末尾的脚本）。 -->
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -246,6 +249,26 @@
             <audio id="cq-audio" src="../assets/audio/cq.wav" preload="none"></audio>
             <audio id="cq-audio-sstv" src="../assets/audio/QSL-sstv.wav" preload="none"></audio>
 
+            <!-- 点解出来的图 → 原始 QSL 卡片 + 下载按钮；同时底部弹出「彩蛋已发现」的小提示。
+                 这个彩蛋的"完成点"在这里：不是进页面就算发现，而是这个小提示弹出来才算。
+
+                 ⚠️ 弹窗与提示条必须留在 <main> 里面：站内换页（spa.js）只换 <main> 与页脚，
+                 写在外面的东西既不会被带进来，离开本页时也不会被换掉（会残留到别的页面上）。 -->
+            <div class="cq-modal" id="cq-modal" hidden>
+                <div class="cq-modal__panel" role="dialog" aria-modal="true" aria-label="原始 QSL 卡片">
+                    <button type="button" class="cq-modal__close" id="cq-modal-close" aria-label="关闭">×</button>
+                    <h2 class="cq-modal__title">QSL卡片</h2>
+                    <img class="cq-modal__img" src="../assets/img/QSL.png" alt="原始的 QSL 卡片">
+                    <p class="cq-modal__note">上图为 SSTV（Robot 36）实收画面，本图为原始卡面。
+                        QSL 卡片是业余无线电的联络确认凭证 —— 收到即回卡，73！</p>
+                    <a class="cq-modal__dl" id="cq-download" href="../assets/img/QSL.png" download="QSL.png">下载</a>
+                </div>
+            </div>
+
+            <div class="cq-toast" id="cq-toast" role="status">
+                <span class="cq-toast__dot" aria-hidden="true"></span>彩蛋已发现：神秘信号
+            </div>
+
         </section>
     </main>
 
@@ -258,9 +281,29 @@
        ----------------------------------------------------------------------------
        所有文字（连按钮）按 DOM 顺序**一条一条**出现；其中“日志块”这一步会先逐行
        打字、再折叠起来，然后才轮到下一条。两段解析台共用这一套。
-       节奏固定（不掷随机数，每次刷新一致）；prefers-reduced-motion 直接给终态。 */
+       节奏固定（不掷随机数，每次刷新一致）；prefers-reduced-motion 直接给终态。
+
+       ── 站内换页（spa.js）支持 ──────────────────────────────────────────────
+       这一页现在也在 PILOT 里：换页只换 <main>，脚本会重跑，但**定时器 / rAF /
+       正在播的音频不会自己停**。所以每进来一次发一个代号（__cqGen），所有异步回调
+       先核对代号；离开时 cleanup 把代号作废、清掉定时器，各段脚本再各自停音频 / rAF。
+       换页前 spa.js 会跑一遍 __sssPageCleanup 里登记的函数，见文件末尾。 */
     (function () {
         'use strict';
+
+        var GEN = (window.__cqGen = (window.__cqGen || 0) + 1);
+        window.__cqAlive = function () { return window.__cqGen === GEN; };
+
+        /* 带代号保护的 setTimeout：换页之后到点的回调直接作废 */
+        var timers = (window.__cqTimers = []);
+        window.__cqLater = function (fn, ms) {
+            var id = window.setTimeout(function () {
+                if (!window.__cqAlive()) return;
+                fn();
+            }, ms);
+            timers.push(id);
+            return id;
+        };
 
         var STEP_MS = 340;      // 两条文字之间的间隔
         var FOLD_MS = 480;      // 折叠动画时长（与 CSS 的 transition 对齐）
@@ -305,7 +348,7 @@
             caret.className = 'cq-log__caret';
             var i = 0;
             (function next() {
-                if (i >= lines.length) { window.setTimeout(fold, 240); return; }
+                if (i >= lines.length) { window.__cqLater(fold, 240); return; }
                 var item = lines[i];
                 var row = document.createElement('div');
                 row.className = 'cq-log__line';
@@ -318,11 +361,11 @@
                 logEl.appendChild(row);
                 i++;
                 // 固定但参差的节奏；warn 那行之后停久一点
-                window.setTimeout(next, 52 + ((i * 37) % 46) + (item[0] === 'warn' ? WARN_MS : 0));
+                window.__cqLater(next, 52 + ((i * 37) % 46) + (item[0] === 'warn' ? WARN_MS : 0));
             })();
             function fold() {
                 box.classList.add('is-folded');
-                window.setTimeout(done, FOLD_MS);
+                window.__cqLater(done, FOLD_MS);
             }
         }
 
@@ -337,7 +380,7 @@
                     var logEl = el.querySelector('.cq-log');
                     playLog(el, logEl, LOGS[el.getAttribute('data-log')] || [], next);
                 } else {
-                    window.setTimeout(next, reduced ? 0 : STEP_MS);
+                    window.__cqLater(next, reduced ? 0 : STEP_MS);
                 }
             })();
         }
@@ -403,8 +446,15 @@
              滚到视口正中；往上滚还能看到前面的记录。
            · 否则按中途状态 sss.cq.flow 的 s 分派。
            两段脚本不各自读 storage，只吃这里的 window.__cqBack —— 既免得读三遍，
-           也免得 cq-restored 与流里的 s 打架。 */
-        var restored = document.documentElement.classList.contains('cq-restored');
+           也免得 cq-restored 与流里的 s 打架。
+           ⚠️ 整页加载时这个标记由 <head> 里那段同步脚本打（首次绘制前就决定，不会闪）；
+           站内换页（spa.js）不跑 <head> 脚本，所以这里按 storage 再对齐一次 ——
+           否则经由站内导航进来会从头演一遍，而不是直接摆出"全解完"。 */
+        var foundNow = false;
+        try { foundNow = (localStorage.getItem('sss.eggs') || '').indexOf('cq') >= 0; } catch (e) {}
+        document.documentElement.classList.toggle('cq-restored', foundNow);
+
+        var restored = foundNow;
         var back = restored ? { s: 4, t: 0, playing: false } : window.__cqFlow.read();
         if (restored) window.__cqFlow.clear();     // 走到这一步，中途状态没用了
         window.__cqBack = back;
@@ -429,7 +479,7 @@
             if (!img || !box) return;
             var done = false;
             function go() {
-                if (done) return;
+                if (done || !window.__cqAlive()) return;
                 done = true;
                 var vh = window.innerHeight;
                 var r = box.getBoundingClientRect();
@@ -452,8 +502,22 @@
             }
             if (img.complete && img.naturalHeight) { go(); return; }
             img.addEventListener('load', go, { once: true });
-            window.setTimeout(go, 1500);            // 兜底：图挂了也得滚过去
+            window.__cqLater(go, 1500);             // 兜底：图挂了也得滚过去
         };
+
+        /* ── 离开这一页（站内换页）时收尾 ──────────────────────────────────
+           代号作废 → 所有在途定时器 / load 回调 / fetch 回调都不再动手；
+           定时器一并清掉；<html> 上那两个本页专用的类也要摘掉
+           （否则会带到别的页面上）。音频 / rAF 由下面两段各自登记。 */
+        if (window.__sssPageCleanup) {
+            window.__sssPageCleanup.add('cq-page', function () {
+                window.__cqGen = (window.__cqGen || 0) + 1;      // 作废这一轮的代号
+                for (var k = 0; k < timers.length; k++) window.clearTimeout(timers[k]);
+                timers.length = 0;
+                document.documentElement.classList.remove('cq-restored');
+                document.documentElement.classList.remove('cq-modal-open');
+            });
+        }
     })();
     </script>
 
@@ -608,7 +672,7 @@
         function finish() {
             /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
                不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
-            if (done) return;
+            if (done || !window.__cqAlive()) return;
             setDone(audio.currentTime * 1000);
             /* 中途状态：摩斯收完 → 2（第二段演出中 / 待按第二个「开始」） */
             if (flow) flow.write(2, audio.currentTime, false);
@@ -621,6 +685,7 @@
         }
 
         function sync() {
+            if (!window.__cqAlive()) return;          // 已经换走这一页了
             if (audio.ended) { finish(); return; }   // 播完了就不再是"开始/暂停"了
             var playing = !audio.paused && !audio.ended;
             btn.textContent = playing ? '暂停' : '开始';
@@ -654,12 +719,14 @@
             fetch(SRC)
                 .then(function (r) { return r.arrayBuffer(); })
                 .then(function (buf) {
+                    if (!window.__cqAlive()) return;         // 这一页已经换走了
                     seekSrc = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
                     audio.src = seekSrc;
                     audio.load();
                     done();
                 })
                 .catch(function () {
+                    if (!window.__cqAlive()) return;
                     seekWant = null;             // 取不到就退回流式：从 0 开始播，但页面别坏
                     done();
                 });
@@ -731,6 +798,19 @@
             }
         } else {
             sync();
+        }
+
+        /* ── 站内换页离开本页时：停音频 / 停 rAF / 释放 blob ──────────────────
+           音频不暂停的话，换到别的页面之后它还在后台响（这是最容易漏的一条）。 */
+        if (window.__sssPageCleanup) {
+            window.__sssPageCleanup.add('cq-morse', function () {
+                stopLoop();
+                try { audio.pause(); } catch (e) {}
+                if (seekSrc) {
+                    try { URL.revokeObjectURL(seekSrc); } catch (e) {}
+                    seekSrc = null;
+                }
+            });
         }
     })();
     </script>
@@ -821,18 +901,22 @@
             loading = true;
             fetchAudio()
                 .then(function (buf) {
+                    if (!window.__cqAlive()) return null;   // 这一页已经换走了
                     var AC = window.AudioContext || window.webkitAudioContext;
                     /* slice：decodeAudioData 会把传进去的 ArrayBuffer 拿走（detach），
                        可同一份字节还要留着拼 blob，所以给它一份拷贝 */
                     return new AC().decodeAudioData(buf.slice(0));
                 })
                 .then(function (ab) {
+                    if (!window.__cqAlive()) return;
+                    if (!ab) return;
                     sr = ab.sampleRate;
                     pcm = ab.getChannelData(0);
                     loading = false;
                     flushPcm();
                 })
                 .catch(function () {
+                    if (!window.__cqAlive()) return;
                     loading = false; failed = true;
                     flushPcm();          // 取不到也让等着的调用方往下走（render 会报"样本取回失败"）
                 });
@@ -1090,7 +1174,7 @@
         function finish(t) {
             /* 幂等：pause 与 ended 都会触发 sync()，finish 会被叫两次，
                不做守卫的话“准备演出”会重跑一遍（日志打两遍） */
-            if (done) return;
+            if (done || !window.__cqAlive()) return;
             setDone(typeof t === 'number' ? t : audio.currentTime * 1000);
             /* 中途状态：整段解完 → 4（收尾）。到这里进度就不用再记了 ——
                点开那张图才算发现，那一刻会把键清掉。
@@ -1107,13 +1191,14 @@
                 }
                 /* 等那句与图都摆出来（两步、约 340ms）再把卡滚到正中 ——
                    前面的解析记录一条都不删，往上滚就能看 */
-                window.setTimeout(function () {
+                window.__cqLater(function () {
                     if (window.__cqCenterShot) window.__cqCenterShot(true);
                 }, 800);
             }
         }
 
         function sync() {
+            if (!window.__cqAlive()) return;          // 已经换走这一页了
             if (audio.ended) { finish(); return; }
             var playing = !audio.paused && !audio.ended;
             btn.textContent = playing ? '暂停' : '开始';
@@ -1199,7 +1284,7 @@
             if (window.__cqShowAll) window.__cqShowAll(stage);
             box.hidden = false;
             loadPcm(function () {
-                if (done) return;
+                if (done || !window.__cqAlive()) return;
                 render(99999);       // 一次性把 240 行全解出来（i 会被夹到 LINES）
                 finish(99999);
                 /* 已经发现过：换回高清原始卡面（与点开图那一刻的处理一致） */
@@ -1212,33 +1297,28 @@
                     if (window.__cqCenterShot) window.__cqCenterShot(false);
                 }
                 if (document.fonts && document.fonts.ready) {
-                    document.fonts.ready.then(function () { window.setTimeout(center, 120); });
+                    document.fonts.ready.then(function () { window.__cqLater(center, 120); });
                 } else {
-                    window.setTimeout(center, 400);
+                    window.__cqLater(center, 400);
                 }
             });
         } else {
             sync();
         }
+
+        /* ── 站内换页离开本页时：停音频 / 停 rAF / 释放 blob ────────────────── */
+        if (window.__sssPageCleanup) {
+            window.__sssPageCleanup.add('cq-sstv', function () {
+                stopLoop();
+                try { audio.pause(); } catch (e) {}
+                if (seekSrc) {
+                    try { URL.revokeObjectURL(seekSrc); } catch (e) {}
+                    seekSrc = null;
+                }
+            });
+        }
     })();
     </script>
-
-    <!-- 点解出来的图 → 原始 QSL 卡片 + 下载按钮；同时底部弹出「彩蛋已发现」的小提示。
-         这个彩蛋的"完成点"就在这里：不是进页面就算发现，而是这个小提示弹出来才算。 -->
-    <div class="cq-modal" id="cq-modal" hidden>
-        <div class="cq-modal__panel" role="dialog" aria-modal="true" aria-label="原始 QSL 卡片">
-            <button type="button" class="cq-modal__close" id="cq-modal-close" aria-label="关闭">×</button>
-            <h2 class="cq-modal__title">QSL卡片</h2>
-            <img class="cq-modal__img" src="../assets/img/QSL.png" alt="原始的 QSL 卡片">
-            <p class="cq-modal__note">上图为 SSTV（Robot 36）实收画面，本图为原始卡面。
-                QSL 卡片是业余无线电的联络确认凭证 —— 收到即回卡，73！</p>
-            <a class="cq-modal__dl" id="cq-download" href="../assets/img/QSL.png" download="QSL.png">下载</a>
-        </div>
-    </div>
-
-    <div class="cq-toast" id="cq-toast" role="status">
-        <span class="cq-toast__dot" aria-hidden="true"></span>彩蛋已发现：神秘信号
-    </div>
 
     <script>
     /* 点图 → 原始卡片弹窗 + 「彩蛋已发现」提示
@@ -1266,11 +1346,12 @@
         }
 
         function announce() {
+            if (!window.__cqAlive()) return;
             if (isFound()) return;        // 已经发现过：点图就只是开弹窗，不重复弹提示 / 登记
             if (!announced) {
                 announced = true;
                 toast.classList.add('is-in');
-                window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
+                window.__cqLater(function () { toast.classList.remove('is-in'); }, 5200);
             }
             /* 这一刻才算发现 */
             var eggs = window.SSS_EGGS;
@@ -1284,6 +1365,7 @@
         }
 
         function open() {
+            if (!window.__cqAlive()) return;
             modal.hidden = false;
             document.documentElement.classList.add('cq-modal-open');
             announce();
@@ -1302,9 +1384,20 @@
         });
         closeBtn.addEventListener('click', close);
         modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
-        document.addEventListener('keydown', function (e) {
+
+        /* 这个监听挂在 document 上，**不会**随 <main> 一起被换掉：
+           换页时如果不摘掉，它会一直串到别的页面上，还会抓住已经废弃的元素。 */
+        function onKeydown(e) {
             if (e.key === 'Escape' && !modal.hidden) close();
-        });
+        }
+        document.addEventListener('keydown', onKeydown);
+
+        if (window.__sssPageCleanup) {
+            window.__sssPageCleanup.add('cq-modal', function () {
+                document.removeEventListener('keydown', onKeydown);
+                document.documentElement.classList.remove('cq-modal-open');
+            });
+        }
     })();
     </script>
 </body>
