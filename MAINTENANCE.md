@@ -617,6 +617,20 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       `STARMAP®OS` 在上，状态行在它正下方并与它左对齐（不是并排在同一行）
     · 右侧信息栏：未选中时标题 `NOTICE`、选中星系后 `SYSTEM INFO`；面板外侧的箭头切换展开/收起，
       箭头和面板都装在 `.starmap-panel-wrap` 里一起 translateX，保证同步；进场时整块从右侧滑入
+    · **窄屏（≤900px）信息栏改到底部**：桌面是右侧栏（translateX），窄屏是底部抽屉（translateY），
+      两套规则都在 `assets/css/starmap/index.css` 末尾的「窄屏：信息栏从右侧栏改成底部抽屉」块里，
+      且都带 `.starmap-os-page` 前缀 —— 不带前缀的同名规则会被它盖掉，别在别处重复写
+      · 尺寸由 `--sheet-h`（`clamp(200px, 42svh, 460px)`）与 `--sheet-handle`（34px）两个变量给出，
+        抽屉高度、控制条位置、收起位移都引用它们；改一个就够了
+      · 抽屉 `position:absolute` 贴在 `.starmap-layout` 底部（布局 `overflow:hidden` 负责裁掉滑出去的部分），
+        画布仍是整屏；收起 = `translateY(100%)`，卡片全部滑出、只有把手留在屏幕底边
+      · 把手（`.starmap-panel-toggle`）在抽屉顶边外侧 34px、水平居中，常驻可见；同一个箭头转 90°：
+        展开态 `›` 朝下、收起态 `‹` 朝上。收起后把手再抬一个 `env(safe-area-inset-bottom)`，
+        别压在 iPhone 底部横条上
+      · 比例尺控制条永远浮在抽屉上方（`bottom: 抽屉高 + 把手 + 12px`），抽屉收起 / 全面浏览时
+        落回屏幕底部；≤420px 再收一档尺寸，否则搜索框会被挤出屏幕
+      · 窄屏没有「面板外缘」，`.starmap-edge-arrow` 直接隐藏
+    · 窄屏断点就是 **900px**（不是 768/420）：768 那块只剩字号与触摸微调，版式都在 900 那块
     · 搜索选定星系：调用 `SSS_COORD.panTo`（只平移、保持比例尺），与「回到默认」共用 background 的 `RESET_MS` 指数缓动；不再有单独的 easeOutCubic
     · 选中星系不在可见地图里时，在「视角中点 → 星系」射线与可见区域边缘的交点显示金色箭头；
       信息栏展开时取面板左缘、收起时取画布右缘；面板滑动期间用 rAF 逐帧跟随（箭头内缩 52px 避开把手），
@@ -627,7 +641,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       比例尺回到 ZOOM_MIN，恢复控制；通过搜索选中星系会自动退出并把星系居中
     · 缩放锚点：`+` / `-` 按钮与比例尺条都以**当前视角中心**为锚点（`zoomTweenStep` / `setCoordView`）；
       滚轮 / 双指捏合仍以鼠标 / 双指中点为锚点，回到默认仍把原点飞回中心
-      进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）
+      进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）；
+      窄屏改成从底部滑入，见上面那条「窄屏信息栏改到底部」
     · 页面脚本的全局监听/定时器必须在结束处登记清理：
       `window.__sssPageCleanup.add('名字', function(){ … })`，换页前统一跑一遍
       （personnel / facility / vessel / tool / main / org-secret 已登记；org-member 改成只绑一次）
@@ -775,7 +790,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     改 SVG 里的颜色不会影响导航栏（黑底上也是靠这个才看得见）
   · **标签页图标**：直接引用该 SVG；靠文件内部 `<style>` 的 `prefers-color-scheme`
     在深色主题下把描边转成白色（否则黑线在深色标签栏上等于看不见）
-- **窄屏**：每页各有自己的断点（768px 为主，工具页 900px，主页面 1024px，星图 420px）
+- **窄屏**：每页各有自己的断点（768px 为主，工具页 900px，主页面 1024px，星图 900px）
 
 ---
 ## 设计语言另见
