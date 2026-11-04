@@ -23,6 +23,9 @@
  *      「当前页」的金色标记。用 URL 解析来比，不靠 href 字符串猜 ——
  *      各页链接写法不一（"." / ".." / "starmap/" / "/about/"），
  *      字符串比会同时命中首页和子目录页的父级链接。
+ *      **站内换页不重新加载 navbar**（spa.js 只换 <main>），所以标记不会自己跟着走：
+ *      必须监听 spa.js 换页后派发的 `sss:swap`，以及 popstate，重新标一次。
+ *      少了这一步，窄屏汉堡面板在换页后会一直亮着上一页。
  *   3) 禁 JS 时按钮不出现、导航维持原样（按钮的显隐由 CSS 控制，
  *      HTML 里没有 hidden 属性），所以不存在"点了没反应"的死按钮。
  * ========================================================================== */
@@ -125,12 +128,16 @@
         return p || '/';
     }
 
-    try {
+    /* 站内换页是「同文档」的（spa.js 只换 <main> 与页脚），navbar 连同它上面的
+       aria-current 都不会跟着变 —— 不重标一次，窄屏汉堡面板里就还亮着上一页。
+       `sss:swap` 在换页完成（URL 已 push、页面脚本已跑）之后派发；
+       popstate 兜住「这次没走 spa.js 的 navigate」的极端情况（幂等，多跑无妨）。 */
+    function markCurrent() {
         var here = normalize(window.location.pathname);
         var links = panel.querySelectorAll('a[href]');
         var i;
 
-        // 先清掉上一轮留下的标记（理论上每次加载都是新的，这里只是稳妥）
+        // 先清掉上一轮留下的标记，再按当前地址标一条
         for (i = 0; i < links.length; i++) {
             links[i].removeAttribute('aria-current');
         }
@@ -145,7 +152,14 @@
             link.setAttribute('aria-current', 'page');
             break;
         }
+    }
+
+    try {
+        markCurrent();                                  // 首次加载
     } catch (err) {
         /* 算不出来就不标，导航本身照常可用 */
     }
+
+    document.addEventListener('sss:swap', markCurrent); // 站内换页之后
+    window.addEventListener('popstate', markCurrent);   // 前进 / 后退
 })();
