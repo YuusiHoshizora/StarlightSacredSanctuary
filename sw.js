@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.72+9e9416cf41';
+const CACHE_VERSION = 'v5.73+92c320604c';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -114,6 +114,7 @@ const PRECACHE_URLS = [
     '/assets/js/tool.js',
     '/assets/js/main.js',
     '/assets/js/background.js',
+    '/assets/js/fleet.js',
     '/assets/js/starmap-bg.js',
     '/assets/data/starmap-data.js',
     '/assets/js/starmap.js',

@@ -8,11 +8,14 @@
      4. .hex-bg__fx     鼠标激活区特效
 
    激活区：
-   · 以鼠标为圆心；内圈描边 -> #3a3072，越远越淡，圆外保持 #c0c0c0
-   · 每个六边形中心 -> #ffd700 实心圆点（半径 = 1.5 倍描边）
-   · 相邻圆点用 #ffd700 细线连接，越远越透明
+   · 以鼠标为圆心；内圈描边 -> 页面主题色（默认 #3a3072，紫色基调），越远越淡，圆外保持 #c0c0c0
+   · 每个六边形中心 -> 强调色（默认 #ffd700）实心圆点（半径 = 1.5 倍描边）
+   · 相邻圆点用同一强调色细线连接，越远越透明
+   · 主题色（天空底色 / 激活区 / 柔光 / 极光）可在运行时通过
+     window.SSSHex.setTone() 切换，强调色与银色网格线不随之改变
+     （舰队页悬停卡片时把紫色换成舰队色、金色强调保持原样）
    · 内圈（0 ~ FALLOFF_START 比例）不衰减，只有外层衰减
-   · 边界的细金环 + 移动时掠过的一道浅光（华丽感，但保持暗调）
+   · 边界的细色环 + 移动时掠过的一道浅光（华丽感，但保持暗调）
    ============================================================ */
 (function () {
   'use strict';
@@ -21,8 +24,14 @@
     R: 30,                    // 六边形外接圆半径（CSS px）
     STROKE: 1.8,              // 六边形描边粗细
     BASE_STROKE: '#c0c0c0',   // 普通六边形描边（网格线）
-    ACTIVE_STROKE: '#3a3072', // 激活区内圈描边
-    DOT_COLOR: '#ffd700',     // 圆点与连线颜色
+    ACTIVE_STROKE: '#3a3072', // 页面主题色（激活区内圈描边）
+    DOT_COLOR: '#ffd700',     // 旧配置名，仅为兼容保留；实际强调色见 THEME_COLOR
+    /* 强调色：**始终金色**，不随页面主题色变 —— 圆点 / 连线 / 金环 / 掠光 / 点击波纹 /
+       坐标原点 / 偏金的星星都用它。 */
+    THEME_COLOR: '#ffd700',
+    /* 页面主题色（紫色基调）：激活区描边、柔光、极光、选区（选区在 CSS 侧取同一个值）。
+       舰队页悬停卡片时用 window.SSSHex.setTone() 换成该舰队的颜色。 */
+    TONE_COLOR: '#3a3072',
     RADIUS: 260,              // 激活区半径（CSS px）
     FALLOFF_START: 0.45,      // 内圈比例：该范围内完全不衰减
     FALLOFF_POW: 1.1,         // 衰减曲线指数：越大末端收得越平缓（过渡越柔）
@@ -100,6 +109,24 @@
       }
     }
   })();
+
+  /* 当前强调色（RGB 数组，默认金色，恒定）与它的浅色版（掠光的高光端）。
+     绘制强调色时一律读这两个变量，不再写死 #ffd700。 */
+  var THEME = parseColor(CFG.THEME_COLOR) || parseColor(CFG.DOT_COLOR) || [0xff, 0xd7, 0x00];
+  var THEME_LIGHT = mix(THEME, [0xff, 0xff, 0xff], 0.72);
+
+  /* 当前页面主题色（紫色基调，可运行时切换）与它的浅色 / 深色变体。
+     激活区描边、柔光、极光、天空底色、六边形网格都从这里取色；
+     强调色（THEME）不受影响。 */
+  var TONE = parseColor(CFG.TONE_COLOR) || parseColor(CFG.ACTIVE_STROKE) || [0x3a, 0x30, 0x72];
+  var TONE_LIGHT = mix(TONE, [0xff, 0xff, 0xff], 0.18);
+  var TONE_DEEP = mix(TONE, [0x00, 0x00, 0x00], 0.35);
+
+  /* 主题色变化时，天空底色以「初始主题色下的原始配置」为基准做线性偏移。
+     这样 tone 回到初始紫色时，天空会精确回到配置原值（不会越换越偏、复位也不跳）。
+     六边形网格线是银色结构，不参与换色。 */
+  var TONE_BASE = TONE.slice();
+  var SKY_ORIG = { top: CFG.SKY_TOP, mid: CFG.SKY_MID, bottom: CFG.SKY_BOTTOM };
 
   var W = Math.sqrt(3) * CFG.R;  // 列间距
   var H = 1.5 * CFG.R;           // 行间距
@@ -448,10 +475,10 @@
         }
       }
       ctx.fill();
-      /* 原点单独用金色点一下 */
+      /* 原点单独用主题色点一下 */
       ctx.beginPath();
       ctx.arc(ox + 0.5, oy + 0.5, 2.6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,215,0,' + (0.35 * CFG.COORD_MARK) + ')';
+      ctx.fillStyle = rgb(THEME, 0.35 * CFG.COORD_MARK);
       ctx.fill();
     }
     ctx.restore();
@@ -508,7 +535,7 @@
       }
       ctx.fillStyle = 'rgba(192,192,192,' + (al * 0.5) + ')';
       ctx.fill();
-      /* 一点点金色，呼应整个站点的配色 */
+      /* 一点点强调色，呼应整个站点的配色 */
       ctx.beginPath();
       for (var r3 = r0; r3 <= r1; r3++) {
         var y3 = r3 * H;
@@ -519,7 +546,7 @@
           ctx.arc(x3, y3, rr * 0.45, 0, Math.PI * 2);
         }
       }
-      ctx.fillStyle = 'rgba(255,215,0,' + (al * 0.34) + ')';
+      ctx.fillStyle = rgb(THEME, al * 0.34);
       ctx.fill();
     }
     ctx.restore();
@@ -559,9 +586,9 @@
       var t = skyPhase;
       var blobs = [
         { x: vw * 0.26 + Math.sin(t * 0.13) * vw * 0.06, y: vh * 0.3 + Math.cos(t * 0.11) * vh * 0.05,
-          r: Math.max(vw, vh) * 0.5, c: [58, 48, 114], a: 0.30 },
+          r: Math.max(vw, vh) * 0.5, c: TONE, a: 0.30 },
         { x: vw * 0.76 + Math.cos(t * 0.09) * vw * 0.05, y: vh * 0.68 + Math.sin(t * 0.12) * vh * 0.06,
-          r: Math.max(vw, vh) * 0.42, c: [32, 44, 96], a: 0.24 }
+          r: Math.max(vw, vh) * 0.42, c: TONE_DEEP, a: 0.24 }
       ];
       for (var i = 0; i < blobs.length; i++) {
         var b = blobs[i];
@@ -655,7 +682,7 @@
       n++;
     }
     if (n) {
-      tctx.fillStyle = 'rgba(255,215,0,0.55)';
+      tctx.fillStyle = rgb(THEME, 0.55);
       tctx.fill();
     }
     tctx.restore();
@@ -693,7 +720,7 @@
     fctx.lineWidth = CFG.STROKE;
     for (i = 0; i < list.length; i++) {
       var c = list[i];
-      fctx.strokeStyle = rgb(mix(ACTIVE, BASE, 1 - c.f), 1);
+      fctx.strokeStyle = rgb(mix(TONE, BASE, 1 - c.f), 1);
       for (k = 0; k < 6; k++) {
         var nx = c.x + NDPOS[k][0] * W;
         var ny = c.y + NDPOS[k][1] * H;
@@ -739,8 +766,63 @@
     return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
   }
 
+  /* 颜色解析：'#rgb' / '#rrggbb' / 'rgb(r, g, b)' / 'rgba(...)' / [r, g, b]。
+     解析失败返回 null（调用方据此忽略这次换色，不会把背景画黑）。 */
+  function parseColor(c) {
+    if (Array.isArray(c) && c.length >= 3) {
+      return [c[0] | 0, c[1] | 0, c[2] | 0];
+    }
+    var s = String(c == null ? '' : c).trim();
+    var m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(s);
+    if (m) {
+      var h = m[1];
+      if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    }
+    m = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i.exec(s);
+    if (m) return [+m[1], +m[2], +m[3]];
+    return null;
+  }
+
+  function toHex(c) {
+    return '#' + c.map(function (v) {
+      var h = Math.max(0, Math.min(255, Math.round(v))).toString(16);
+      return h.length < 2 ? '0' + h : h;
+    }).join('').toUpperCase();
+  }
+
+  /* 以「初始主题色」为原点，把 base 颜色沿 tone 的变化方向线性偏移。
+     k 越大，背景被主题色染得越明显；tone === TONE_BASE 时结果与 base 完全相同。 */
+  function shiftColor(base, tone, k) {
+    var b = parseColor(base) || [0, 0, 0];
+    return [
+      Math.max(0, Math.min(255, Math.round(b[0] + (tone[0] - TONE_BASE[0]) * k))),
+      Math.max(0, Math.min(255, Math.round(b[1] + (tone[1] - TONE_BASE[1]) * k))),
+      Math.max(0, Math.min(255, Math.round(b[2] + (tone[2] - TONE_BASE[2]) * k)))
+    ];
+  }
+
+  /* 运行时换页面主题色（激活区描边 / 柔光 / 极光 / 天空底色）。
+     **不动强调色**（圆点、连线、金环、掠光、点击波纹仍是金色），
+     **也不动银色的六边形网格线**。
+     天空按 shiftColor 从原始配置偏移，tone 回到初始色时精确复原。 */
+  function setTone(c) {
+    var next = parseColor(c);
+    if (!next) return false;
+    TONE = next;
+    TONE_LIGHT = mix(TONE, [0xff, 0xff, 0xff], 0.18);
+    TONE_DEEP = mix(TONE, [0x00, 0x00, 0x00], 0.35);
+    CFG.TONE_COLOR = toHex(TONE);
+    CFG.ACTIVE_STROKE = CFG.TONE_COLOR;
+    CFG.SKY_TOP = toHex(shiftColor(SKY_ORIG.top, TONE, 0.30));
+    CFG.SKY_MID = toHex(shiftColor(SKY_ORIG.mid, TONE, 0.22));
+    CFG.SKY_BOTTOM = toHex(shiftColor(SKY_ORIG.bottom, TONE, 0.30));
+    drawSky();
+    draw();
+    return true;
+  }
+
   var BASE = [0xc0, 0xc0, 0xc0];
-  var ACTIVE = [0x3a, 0x30, 0x72];
 
   /* 衰减：内圈（0 ~ FALLOFF_START）恒为 1，之后平滑单调衰减，
      并在半径 RADIUS 处**恰好**归零。这样圆边界上的衰减值为 0，
@@ -775,9 +857,9 @@
     /* --- 1. 激活区底部的柔光（在描边下面，给整个区域一层微光） --- */
     if (CFG.AURA > 0) {
       var aura = fctx.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, CFG.RADIUS);
-      aura.addColorStop(0, 'rgba(86,72,158,' + (0.16 * CFG.AURA) + ')');
-      aura.addColorStop(0.5, 'rgba(58,48,114,' + (0.10 * CFG.AURA) + ')');
-      aura.addColorStop(1, 'rgba(58,48,114,0)');
+      aura.addColorStop(0, rgb(TONE_LIGHT, 0.16 * CFG.AURA));
+      aura.addColorStop(0.5, rgb(TONE, 0.10 * CFG.AURA));
+      aura.addColorStop(1, rgb(TONE, 0));
       fctx.fillStyle = aura;
       fctx.beginPath();
       fctx.arc(cur.x, cur.y, CFG.RADIUS, 0, Math.PI * 2);
@@ -790,9 +872,9 @@
       fctx.translate(cur.x, cur.y);
       fctx.rotate(Math.atan2(rayDy, rayDx));
       var rg = fctx.createLinearGradient(0, 0, CFG.RADIUS, 0);
-      rg.addColorStop(0, 'rgba(255,240,190,' + (0.16 * CFG.RAY * rayPower) + ')');
-      rg.addColorStop(0.45, 'rgba(255,215,0,' + (0.07 * CFG.RAY * rayPower) + ')');
-      rg.addColorStop(1, 'rgba(255,215,0,0)');
+      rg.addColorStop(0, rgb(THEME_LIGHT, 0.16 * CFG.RAY * rayPower));
+      rg.addColorStop(0.45, rgb(THEME, 0.07 * CFG.RAY * rayPower));
+      rg.addColorStop(1, rgb(THEME, 0));
       fctx.fillStyle = rg;
       fctx.beginPath();
       fctx.moveTo(0, 0);
@@ -805,18 +887,18 @@
     /* --- 2. 六边形描边：颜色由 #3a3072 连续过渡到背景的 #c0c0c0 --- */
     strokeActive(list);
 
-    /* --- 2b. 边界一圈会呼吸的细金环 --- */
+    /* --- 2b. 边界一圈会呼吸的细色环 --- */
     if (CFG.RING > 0) {
       var pulse = 0.6 + 0.4 * Math.sin(starPhase * 0.9);
       var rr = CFG.RADIUS * (0.985 + 0.012 * Math.sin(starPhase * 0.9));
       fctx.beginPath();
       fctx.arc(cur.x, cur.y, rr, 0, Math.PI * 2);
       fctx.lineWidth = CFG.STROKE * 0.9;
-      fctx.strokeStyle = 'rgba(255,215,0,' + (0.22 * CFG.RING * pulse) + ')';
+      fctx.strokeStyle = rgb(THEME, 0.22 * CFG.RING * pulse);
       fctx.stroke();
     }
 
-    /* --- 2c. 点击扩散的金色波纹 --- */
+    /* --- 2c. 点击扩散的主题色波纹 --- */
     for (i = bursts.length - 1; i >= 0; i--) {
       var bu = bursts[i];
       var k = (starPhase - bu.t0) / bu.life;
@@ -826,18 +908,18 @@
       fctx.beginPath();
       fctx.arc(bu.x, bu.y, CFG.RADIUS * 0.15 + ease * CFG.RADIUS * 0.95, 0, Math.PI * 2);
       fctx.lineWidth = CFG.STROKE * 2 * (1 - k);
-      fctx.strokeStyle = 'rgba(255,215,0,' + (0.5 * (1 - k) * (1 - k)) + ')';
+      fctx.strokeStyle = rgb(THEME, 0.5 * (1 - k) * (1 - k));
       fctx.stroke();
     }
 
-    /* --- 3. 六边形中心的金色圆点（半径 = 1.5 倍描边，随距离缩小并淡出） --- */
+    /* --- 3. 六边形中心的小圆点（半径 = 1.5 倍描边，随距离缩小并淡出） --- */
     for (i = 0; i < list.length; i++) {
       c = list[i];
       if (c.f <= 0.004) continue;
       var rad = DOT_R * (0.35 + 0.65 * c.f);
       fctx.beginPath();
       fctx.arc(c.x, c.y, rad, 0, Math.PI * 2);
-      fctx.fillStyle = rgb([0xff, 0xd7, 0x00], c.f);
+      fctx.fillStyle = rgb(THEME, c.f);
       fctx.fill();
     }
 
@@ -857,7 +939,7 @@
         fctx.beginPath();
         fctx.moveTo(c.x, c.y);
         fctx.lineTo(nb.x, nb.y);
-        fctx.strokeStyle = rgb([0xff, 0xd7, 0x00], fm * 0.72);
+        fctx.strokeStyle = rgb(THEME, fm * 0.72);
         fctx.stroke();
       }
     }
@@ -914,7 +996,7 @@
     }
   }
 
-  /* 点击：在原处留一圈金色波纹 */
+  /* 点击：在原处留一圈主题色波纹 */
   function onDown(e) {
     if (!CFG.INTERACTIVE || !CFG.CLICK_BURST) return;
     bursts.push({ x: e.clientX, y: e.clientY, t0: starPhase, life: 1.1 });
@@ -1062,7 +1144,15 @@
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerdown', onDown, { passive: true });
     window.addEventListener('blur', function () { pointer.on = false; });
-    window.SSSHex = { cfg: CFG, redraw: resize, center: cur, cells: debugCells };
+    window.SSSHex = {
+      cfg: CFG,
+      redraw: resize,
+      center: cur,
+      cells: debugCells,
+      /* 运行时换页面主题色（紫色基调 → 舰队色）；强调色始终是金色。 */
+      setTone: setTone,
+      tone: function () { return TONE.slice(); }
+    };
     if (CFG.GRID_STYLE === 'coord' && CFG.SNAP) {
       window.SSS_COORD = {
         /* 当前实际格距（含缩放与限幅） */

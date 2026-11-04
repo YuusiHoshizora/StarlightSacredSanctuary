@@ -1,3 +1,32 @@
+/* ==========================================================================
+   舰队主题色
+   --------------------------------------------------------------------------
+   全站主题色是紫色基调（天空底色、激活区、柔光、极光、选区、顶栏）；强调色始终是金色。
+   六边形网格的银描边不是主题色，不参与换色。
+   鼠标移到某张舰队卡片上时，fleet.js 只把「主题色」平滑换成该舰队的颜色，
+   金色强调（导航 / 页脚 hover、焦点、卡片标题）保持不变。
+   这里只给默认值，颜色切换逻辑不在 CSS 里。
+   ========================================================================== */
+:root {
+    --fleet-tone: #3A3072;
+    --fleet-tone-rgb: 58, 48, 114;
+    /* 顶栏底色：默认值与 global.css 完全一致，悬停卡片时由 fleet.js 改写成舰队色 */
+    --fleet-nav-bg: rgba(10, 10, 30, 0.35);
+}
+
+/* 顶栏底色跟随整页主题色（其余玻璃参数仍用 global.css 的） */
+.navbar {
+    background: var(--fleet-nav-bg);
+}
+
+/* 选区跟随页面主题色（默认就是 global.css 里的紫色；换色时一起变） */
+::selection {
+    background-color: rgba(var(--fleet-tone-rgb), 0.25);
+}
+
+/* 不铺半透明遮罩（那样会像加了一层滤镜）：悬停时把页面里的紫色元素
+   （天空底色、极光、激活区、顶栏）换成舰队色；银色的六边形网格线保持银色。 */
+
 .fleet-section {
     /* 高度交给 main 的 flex（见 global.css），不写死 100vh：
        写死再加上页脚就会多出一条滚动条 */
@@ -54,10 +83,22 @@
     border-color: #E0544C;
 }
 
+/* 键盘聚焦与 hover 的强调态仍是金色（强调色不随页面主题色变） */
+.fleet-card:focus-visible {
+    outline: 2px solid var(--ctl-border-hover);
+    outline-offset: 4px;
+}
+
+.fleet-card:hover h2,
+.fleet-card:focus-visible h2 {
+    color: var(--ctl-fg-hover);
+}
+
 .fleet-card h2 {
     font-size: 22px;
     letter-spacing: 4px;
     margin-bottom: 8px;
+    transition: color 0.3s var(--ctl-ease);
 }
 
 .fleet-card .english {
@@ -71,6 +112,12 @@
     font-size: 14px;
     opacity: 0.7;
     line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fleet-card h2 {
+        transition: none;
+    }
 }
 
 /* ==========================================================================

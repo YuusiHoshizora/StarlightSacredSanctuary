@@ -92,6 +92,8 @@
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/fleet/index.css">
     <script defer src="../assets/js/background.js"></script>
+    <!-- 舰队页专属：悬停卡片时把整页主题色（紫色基调）平滑换成该舰队的颜色，金色强调不变 -->
+    <script defer src="../assets/js/fleet.js"></script>
     <script defer src="../assets/js/notice.js"></script>
     <script defer src="../assets/js/seamless.js"></script>
     <script defer src="../assets/js/spa.js"></script>
@@ -158,19 +160,19 @@
         <section class="fleet-section">
             <div class="fleet-grid">
 
-                <a href="#" class="fleet-card fleet-card--research">
+                <a href="#" class="fleet-card fleet-card--research" data-fleet-color="#3DAEFF">
                     <h2>科研与管理舰队</h2>
                     <p class="english">Research & Administration Fleet</p>
                     <p class="desc">科研与管理舰队是星光圣域人口最为密集的舰队，负责星光圣域绝大部分的科研任务。</p>
                 </a>
 
-                <a href="#" class="fleet-card fleet-card--industry">
+                <a href="#" class="fleet-card fleet-card--industry" data-fleet-color="#DBA400">
                     <h2>工业与收集舰队</h2>
                     <p class="english">Industry & Collection Fleet</p>
                     <p class="desc">工业与收集舰队是星光圣域对外交流的主要舰队，负责几乎所有物资的收集和制造。</p>
                 </a>
 
-                <a href="#" class="fleet-card fleet-card--defense">
+                <a href="#" class="fleet-card fleet-card--defense" data-fleet-color="#E0544C">
                     <h2>主防御舰队</h2>
                     <p class="english">Primary Defense Fleet</p>
                     <p class="desc">主防御舰队是星光圣域的军事舰队，负责所有的军事行动。</p>

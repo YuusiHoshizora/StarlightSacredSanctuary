@@ -55,6 +55,7 @@
 │   │
 │   ├── js/
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
+│   │   ├── fleet.js            舰队页：悬停卡片时把整页主题色（紫）切到该舰队的颜色（含背景 / 顶栏）
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── spa.js              站内同文档导航（除星图 / 彩蛋外全站）
@@ -575,6 +576,14 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   背景要在各页面之间长得一模一样，否则每次翻页星位重排、切换时那片星空会跳一下，
   「外壳常驻、只换内容」的跨页过渡立刻露馅。六边形网格与星云本来就是确定的，只有星星是随机的；
   换一片星空就改那个种子
+- **舰队页主题色**：`fleet.js` 监听三张卡片的鼠标悬停与键盘聚焦，把页面的**紫色主题色** ——
+  天空底色 / 激活区描边 / 柔光 / 极光、`::selection`、顶栏底色 —— 平滑换成该舰队的颜色；
+  **银色的六边形网格线保持银色**，**强调色金色保持不动**（导航 / 页脚 hover、焦点、卡片标题、背景圆点 /
+  连线 / 金环 / 掠光 / 点击波纹仍是金色）。
+  背景画布通过 `window.SSSHex.setTone()` 换色，天空以初始配置为基准做线性偏移
+  （`shiftColor`，tone 回到紫色时精确复原，不会越换越偏）；顶栏用 `--fleet-nav-bg`。
+  移出卡片后恢复紫色。**颜色只写在卡片的 `data-fleet-color` 上**，与 CSS 里该卡片的 hover 描边同色。
+  `background.js` 里强调色（`THEME`）与主题色（`TONE`）是两套独立变量，别再合并。
 - **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪；
    navbar 是共享元素（`view-transition-name:site-navbar`），所以它"钉住"不动。
   · ⚠️ **交叉淡化只让新快照淡入**（`::view-transition-old(root){animation:none}`，新快照 220ms 淡入）。
