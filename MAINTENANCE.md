@@ -27,6 +27,7 @@
 ├── archive/organization/cam.html    管理成员议会（最高权力机构；3 列 × 4 位议员）
 ├── archive/organization/dgam.html   管理成员讨论组（机密彩蛋页，无入口、无站内跳转）
 ├── archive/organization/res.html    科研部（部门页模板：题图 / 概要 / 详情 / 四个下属局）
+├── archive/organization/ind.html    工业部（题图 / 概要 / 详情 / 下属「数据损坏」占位）
 ├── archive/personnel/index.html 人员档案（四个等级入口；卡片人数由数据渲染）
 ├── archive/personnel/sxm.html   管理成员（SXM）：HTML 壳，名单/档案由数据渲染
 ├── archive/personnel/sam.html   高级成员（SAM）：HTML 壳，名单/档案由数据渲染

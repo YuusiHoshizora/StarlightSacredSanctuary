@@ -496,16 +496,23 @@
     --org-title-image: url("../../img/Deptlogo/title_Dept.RES.png");
 }
 
-/* 部门页页头：题图 / 一句简介放进同一个 620px 的列里，整列居中；
+.org-title--ind {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.IND.png");
+}
+
+/* 部门页页头：题图 / 一句简介放进同一个居中列里（题图仍按 620px 收窄）；
+   列宽留到 720px，简介才能整行放下不折行。
    小标签不在这个列里，按 CAM 的位置独立贴左（和面包屑同一条竖线）。 */
 .org-hero {
-    width: min(100%, 620px);
+    width: min(100%, 720px);
     margin: 0 auto;
 }
 
 .org-hero .org-lead {
     max-width: none;              /* 跟列同宽，不再用 720px 的阅读宽度 */
     margin: 18px 0 0;
+    text-align: center;           /* 页头简介居中 */
+    white-space: nowrap;          /* 保持一行；窄屏在下方媒体查询里放开 */
 }
 
 /* 只给读屏 / 搜索引擎看的文字（题图 h1 的可访问名称） */
@@ -896,6 +903,11 @@
     /* 部门页：题图窄屏别挤太高；简介标签列收窄；局卡单列 */
     .org-head .org-title {
         margin: 0 auto 16px;
+    }
+
+    .org-hero .org-lead {
+        white-space: normal;      /* 窄屏放回折行，避免整行溢出 */
+        text-wrap: balance;       /* 折行时均分，避免末行只剩两三个字 */
     }
 
     .org-meta__row {

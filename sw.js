@@ -62,6 +62,7 @@ const PRECACHE_URLS = [
     '/archive/organization/cam.html',
     '/archive/organization/dgam.html',
     '/archive/organization/res.html',
+    '/archive/organization/ind.html',
     '/archive/personnel/',
     '/archive/personnel/index.html',
     '/archive/personnel/sxm.html',
@@ -152,7 +153,8 @@ const PRECACHE_URLS = [
     '/assets/img/cursor/nwse-resize.svg',
 
     // 部门题图（只放已建页的那几张，别一次预缓存 15 张）
-    '/assets/img/Deptlogo/title_Dept.RES.png'
+    '/assets/img/Deptlogo/title_Dept.RES.png',
+    '/assets/img/Deptlogo/title_Dept.IND.png'
 ];
 
 /* 本地预览（localhost / 127.0.0.1 / ::1）：SW 完全不插手 ——

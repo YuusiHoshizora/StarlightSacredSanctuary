@@ -40,6 +40,7 @@
            把它留在 PILOT 里，DGAM 与站内其它页之间才是同文档切换（不再整页跳）。 */
         '/archive/organization/dgam': true,
         '/archive/organization/res': true,
+        '/archive/organization/ind': true,
         '/archive/personnel': true,
         '/archive/personnel/sam': true,
         '/archive/personnel/sfm': true,
