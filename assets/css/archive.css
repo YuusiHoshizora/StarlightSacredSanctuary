@@ -441,11 +441,12 @@ body[data-archive="split"] .archive-empty {
     color: rgba(255, 255, 255, 0.45);
 }
 
-/* 切换右栏内容 / 空白态时来一下很短的淡入 + 5px 上浮，避免硬切 */
+/* 切换右栏内容 / 空白态时来一下很短的淡入 + 横向滑入，避免硬切。
+   方向照星图的信息栏 / 星系介绍：从右侧（正 X）滑进来，不用上下位移。 */
 @keyframes archive-swap-in {
     from {
         opacity: 0;
-        transform: translateY(5px);
+        transform: translateX(8px);
     }
     to {
         opacity: 1;
