@@ -337,6 +337,17 @@
         });
     }
 
+    /* 页面最左 / 最右的留白：main 铺满整个视口，正文 section 居中；
+       点在 section 外面的 main 上就取消选择。main 会随 SPA 换页整个替换，
+       不用登记清理。 */
+    var pageMain = document.querySelector('main');
+    if (pageMain) {
+        pageMain.addEventListener('click', function (e) {
+            if (e.target.closest('.archive-section')) return;
+            clearSelection();
+        });
+    }
+
     /* 首次进入：有 #舰船代号 就选中，没有就显示空白态 */
     fromHash();
     initialising = false;

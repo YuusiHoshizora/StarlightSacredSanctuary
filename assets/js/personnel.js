@@ -347,6 +347,17 @@
         });
     }
 
+    /* 页面最左 / 最右的留白：main 铺满整个视口，正文 section 居中；
+       点在 section 外面的 main 上就取消选择。main 会随 SPA 换页整个替换，
+       不用登记清理。 */
+    var pageMain = document.querySelector('main');
+    if (pageMain) {
+        pageMain.addEventListener('click', function (e) {
+            if (e.target.closest('.archive-section')) return;
+            clearSelection();
+        });
+    }
+
     /* 跨文档 View Transition / 预渲染时，脚本可能在 URL 的 query 稳定之前就跑完；
        pageshow 与 load 后再补一次选中，保证从组织页带 ?person= 进来一定落到对应人物 */
     window.addEventListener('pageshow', fromHash);
