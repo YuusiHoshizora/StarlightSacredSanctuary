@@ -83,15 +83,25 @@
     border-color: #E0544C;
 }
 
-/* 键盘聚焦与 hover 的强调态仍是金色（强调色不随页面主题色变） */
 .fleet-card:focus-visible {
     outline: 2px solid var(--ctl-border-hover);
     outline-offset: 4px;
 }
 
-.fleet-card:hover h2,
-.fleet-card:focus-visible h2 {
-    color: var(--ctl-fg-hover);
+/* 悬停 / 键盘聚焦时，舰队名称用该舰队自己的颜色高亮 */
+.fleet-card--research:hover h2,
+.fleet-card--research:focus-visible h2 {
+    color: #3DAEFF;
+}
+
+.fleet-card--industry:hover h2,
+.fleet-card--industry:focus-visible h2 {
+    color: #DBA400;
+}
+
+.fleet-card--defense:hover h2,
+.fleet-card--defense:focus-visible h2 {
+    color: #E0544C;
 }
 
 .fleet-card h2 {
