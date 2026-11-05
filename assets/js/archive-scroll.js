@@ -3,8 +3,11 @@
  * -----------------------------------------------------------------------------
  * 给每个能滚的容器加 .is-scrollable，并连续写 --fade-top / --fade-bottom：
  *
- *   · 滚到顶 → 上端淡出为 0；往下滚多少，上端淡出就长多少（最多 --archive-fade）；
- *   · 快到底 → 下端淡出同样收短，滚到最底部时下端为 0；
+ *   · 滚到顶 → 上端淡出为 0；往下滚时上端淡出按 2 倍速长到 --archive-fade
+ *     （前 60px 滚动就长满，面板框进入视口时已经被压得很淡）；
+ *   · 下端淡出按剩余距离收缩，但内容栏至少保留 --archive-fade-min（64px），
+ *     滚到最底部也不会把面板背景框硬切掉；
+ *   · 名录栏的 --archive-fade / --archive-fade-min 另给一套更短的值（56px / 0）；
  *   · 短内容（不产生滚动）不挂 .is-scrollable，不压暗。
  *
  * 这样淡出是**连续变化**的，不会在"开始滚动 / 滚到底"时突然出现或消失整条
@@ -35,14 +38,17 @@
         }
 
         var limit = parseFloat(window.getComputedStyle(el).getPropertyValue('--archive-fade')) || 0;
+        var minFade = parseFloat(window.getComputedStyle(el).getPropertyValue('--archive-fade-min')) || 0;
         if (!limit) {
             el.style.setProperty('--fade-top', '0px');
             el.style.setProperty('--fade-bottom', '0px');
             return;
         }
 
-        var top = Math.min(Math.max(el.scrollTop, 0), limit);
-        var bottom = Math.min(Math.max(max - el.scrollTop, 0), limit);
+        /* 上端：2 倍速长满，面板框在进入视口时已经淡掉；
+           下端：按剩余距离收缩，但保留 minFade（名录为 0，内容栏 64px）。 */
+        var top = Math.min(Math.max(el.scrollTop, 0) * 2, limit);
+        var bottom = Math.max(Math.min(Math.max(max - el.scrollTop, 0), limit), minFade);
         el.style.setProperty('--fade-top', top + 'px');
         el.style.setProperty('--fade-bottom', bottom + 'px');
     }

@@ -145,8 +145,8 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 - 名录高度沿用 `--archive-list-height`，但在视口框里被改成 `100%`
   （不再是 `100vh - 300px` 的估算值）—— 它现在等于网格行高；
-- 两栏各自 `overflow-y: auto`，按滚动状态挂淡出（桌面 120px / 窄屏 80px；
-  见下面「滚动淡出」）；
+- 两栏各自 `overflow-y: auto`，各自按滚动状态淡出；名录的淡出长度比内容短
+  （桌面 56px / 窄屏 40px，内容栏是 120px / 80px），见下面「滚动淡出」；
 - 页面本身与 `.archive-body` 都不滚，只有这两栏滚；
 - ≤900px 两栏退回上下排：名录摊成网格、`height: auto`，由 `.archive-body` 整页滚。
 
@@ -164,13 +164,17 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 3. **内容在中间滚**：标题以下的一切包进 `.archive-body`。普通档案页由它自己滚；
    `data-archive="split"` 的两栏页里它不滚，改由名录 / 内容两栏各自滚（见上一节）；
 4. **两端淡出**：滚动容器在**还有内容可滚**的方向上淡出
-   （最大 120px；窄屏 80px），由 `assets/js/archive-scroll.js` 连续控制：
+   （内容栏最大 120px；窄屏 80px），由 `assets/js/archive-scroll.js` 连续控制：
    - 能滚才加 `.is-scrollable`（只在"能滚 / 不能滚"切换时变一次，不在滚动中变）；
-   - 滚动时写 `--fade-top` / `--fade-bottom`：滚到顶时上端为 0，往下滚多少长多少；
-     快到底时下端同样收短，滚到最底部时为 0，最后一条能完整读到；
+   - 上端 `--fade-top` 从 0 开始，按 2 倍滚动距离长到 `--archive-fade`
+     （滚 60px 就长满），面板框进入视口时已经被压得很淡；
+   - 下端 `--fade-bottom` 随剩余距离收缩，但内容栏保留 `--archive-fade-min`
+     （64px；窄屏 40px），滚到最底部也不会把面板背景框硬切掉；
    - 短内容没有 `.is-scrollable`，不挂 mask，不会被压暗。
    因为长度是**连续变化**的，开始滚 / 滚到底不会突然挂上或摘掉整条 mask，
    标题和面板框不会"突变"（Firefox 下尤其明显）。
+   **左栏名录的淡出更短**：`--archive-fade: 56px`（窄屏 40px）、
+   `--archive-fade-min: 0`；它只是索引，不需要跟右栏内容一样长的渐变。
    **渐变曲线是前段压得很低、后段才抬起来的（不是线性）**：面板背景 / 1px 描边
    刚进入过渡带时几乎看不见，不会留下一条硬边。
    **渐变长度与留白是两个变量**：`--archive-fade` 管渐变长度，`--archive-pad`

@@ -234,6 +234,7 @@ body[data-archive] {
        滚到顶时上端为 0，往下滚多少长多少；快到底时下端同样收短。
        这样过渡是连续变化的，不会在"开始滚 / 滚到底"时突然挂上或摘掉 mask。 */
     --archive-fade: 120px;
+    --archive-fade-min: 64px;         /* 内容栏滚到底时仍留一段淡出，面板框不会硬切 */
     --archive-pad: 24px;
 
     /* 三种方向组合已经不需要了：淡出长度由 --fade-top / --fade-bottom 连续给出。 */
@@ -347,6 +348,10 @@ body[data-archive="split"] .facility-list,
 body[data-archive="split"] .vessel-list {
     position: static;
     top: auto;
+
+    /* 名录只是索引，淡出长度比右栏内容短一截 —— 120px 在左栏太占视线。 */
+    --archive-fade: 56px;
+    --archive-fade-min: 0px;
 }
 
 /* ── 滚动淡出：只给真的能滚的容器挂 mask，长度随滚动位置连续变化 ──
@@ -439,6 +444,14 @@ body[data-archive] .is-scrollable {
 @media (max-width: 768px) {
     body[data-archive] {
         --archive-fade: 80px;
+        --archive-fade-min: 40px;
         --archive-pad: 16px;
+    }
+
+    body[data-archive="split"] .personnel-list,
+    body[data-archive="split"] .facility-list,
+    body[data-archive="split"] .vessel-list {
+        --archive-fade: 40px;
+        --archive-fade-min: 0px;
     }
 }
