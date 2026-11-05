@@ -237,8 +237,38 @@
     function activate(id) {
         var profile = (id && byId[id]) || null;
 
+        /* 当前稳定选中的档案；正在做离场动画的不算 */
+        var currentProfile = null;
         profiles.forEach(function (p) {
-            p.classList.toggle('is-active', p === profile);
+            if (p.classList.contains('is-active') && !p.classList.contains('is-leaving')) {
+                currentProfile = p;
+            }
+        });
+
+        /* 上一轮还没结束的离场层直接收掉，避免叠两层 */
+        profiles.forEach(function (p) {
+            if (p.classList.contains('is-leaving')) {
+                p.classList.remove('is-active', 'is-leaving');
+            }
+        });
+
+        var wide = window.matchMedia && window.matchMedia('(min-width: 901px)').matches;
+        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var animating = !!currentProfile && currentProfile !== profile && wide && !still;
+
+        if (animating) {
+            currentProfile.classList.add('is-leaving');
+            window.setTimeout(function () {
+                /* 期间又切回这一条的话，is-leaving 已经被清掉，不能误摘 is-active */
+                if (currentProfile.classList.contains('is-leaving')) {
+                    currentProfile.classList.remove('is-active', 'is-leaving');
+                }
+            }, 190);
+        }
+
+        profiles.forEach(function (p) {
+            if (p === profile) p.classList.add('is-active');
+            else if (p !== currentProfile || !animating) p.classList.remove('is-active');
         });
 
         var current = null;

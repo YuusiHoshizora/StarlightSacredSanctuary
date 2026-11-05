@@ -364,6 +364,7 @@ body[data-archive="split"] .vessel-list__scroll {
 body[data-archive="split"] .personnel-detail,
 body[data-archive="split"] .facility-detail,
 body[data-archive="split"] .vessel-detail {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -467,6 +468,31 @@ body[data-archive="split"] .archive-empty:not([hidden]) {
     body[data-archive="split"] .vessel-profile.is-active,
     body[data-archive="split"] .archive-empty:not([hidden]) {
         animation: none;
+    }
+}
+
+/* 离场：旧档案浮在新内容 / 空白态上面，向左淡出；新内容同时从右侧淡入。
+   旧档案在 .is-leaving 期间仍带 .is-active，190ms 后由页面脚本摘掉。 */
+@keyframes archive-swap-out {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+}
+
+@media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+    body[data-archive="split"] .personnel-profile.is-leaving,
+    body[data-archive="split"] .facility-profile.is-leaving,
+    body[data-archive="split"] .vessel-profile.is-leaving {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+        animation: archive-swap-out 0.18s cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
     }
 }
 
