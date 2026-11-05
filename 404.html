@@ -152,24 +152,24 @@
             <div class="error-panel__bar">
                 <span class="error-panel__tag">
                     <span class="error-panel__dot" aria-hidden="true"></span>
-                    导航错误 / NAVIGATION
+                    <span id="error-tag">导航错误 / NAVIGATION</span>
                 </span>
-                <span class="error-panel__id">SSS · ERR 404</span>
+                <span class="error-panel__id" id="error-id">SSS · ERR 404</span>
             </div>
 
             <div class="error-panel__body">
 
                 <div class="error-head">
                     <!-- 全页只有这一个金色元素：错误码是这一屏的「关键读数」 -->
-                    <div class="error-code" aria-hidden="true">404</div>
+                    <div class="error-code" id="error-code" aria-hidden="true">404</div>
                     <div class="error-head__rule" aria-hidden="true"></div>
                     <div class="error-head__text">
                         <h1 id="error-title">该坐标未登记于星图</h1>
-                        <p class="error-sub">COORDINATE NOT FOUND</p>
+                        <p class="error-sub" id="error-sub">COORDINATE NOT FOUND</p>
                     </div>
                 </div>
 
-                <p class="error-desc">
+                <p class="error-desc" id="error-desc">
                     请求的地址没有对应的档案，或它已被迁往别处。<br>
                     请返回首页，或从档案中重新检索。
                 </p>
@@ -194,24 +194,169 @@
             <div class="error-panel__foot">
                 <span class="error-status">
                     <span class="error-status__dot" aria-hidden="true"></span>
-                    通信链路中断 · 该坐标无响应
+                    <span id="error-status-text">通信链路中断 · 该坐标无响应</span>
                 </span>
-                <span class="error-panel__id">LINK / LOST</span>
+                <span class="error-panel__id" id="error-signal">LINK / LOST</span>
             </div>
 
         </section>
     </main>
 
-    <!-- 把请求路径写进读数区：这一页会被任意地址渲染，坐标本身就是最直接的线索。
-         用 textContent 写入，地址里带什么都不当 HTML 解析。 -->
+    <!-- 错误页同时是状态码展示页：
+         · /error/403、/error/500 …（静态托管把未匹配路径交给本页，HTTP 状态仍然是 404）
+         · 或 /404.html?code=403 显式指定
+         常用码在下面的 STATES 表里，未列出的 4xx / 5xx 走通用文案；
+         不是 4xx / 5xx 的参数一律按 404 处理。
+         真正的 403 / 500 等 HTTP 状态要由 Worker 或 Cloudflare 自定义错误页触发。 -->
     <script>
         (function () {
-            var el = document.getElementById('error-path');
-            if (!el) return;
+            /* 状态码 → 文案。标题控制在 10 个汉字以内，320px 窄屏也能和错误码并排一行。 */
+            var STATES = {
+                '400': {
+                    tag: '请求错误 / REQUEST',
+                    title: '请求无法被解析',
+                    sub: 'BAD REQUEST',
+                    desc: ['请求的内容格式有误。', '请检查地址后重新进入。'],
+                    status: '请求未通过校验 · 未建立连接',
+                    link: 'REQ / INVALID'
+                },
+                '401': {
+                    tag: '身份验证 / AUTH',
+                    title: '该坐标需要有效身份',
+                    sub: 'UNAUTHORIZED',
+                    desc: ['该坐标仅对已验证的身份开放。', '请完成验证后再试。'],
+                    status: '身份未验证 · 访问被拒绝',
+                    link: 'AUTH / REQUIRED'
+                },
+                '403': {
+                    tag: '访问控制 / ACCESS',
+                    title: '该坐标不在许可范围内',
+                    sub: 'FORBIDDEN',
+                    desc: ['该坐标不在当前身份的许可范围内。', '若为误判，请联系站点维护者。'],
+                    status: '权限不足 · 访问被拒绝',
+                    link: 'ACCESS / DENIED'
+                },
+                '404': {
+                    tag: '导航错误 / NAVIGATION',
+                    title: '该坐标未登记于星图',
+                    sub: 'COORDINATE NOT FOUND',
+                    desc: ['请求的地址没有对应的档案，或它已被迁往别处。', '请返回首页，或从档案中重新检索。'],
+                    status: '通信链路中断 · 该坐标无响应',
+                    link: 'LINK / LOST'
+                },
+                '405': {
+                    tag: '请求错误 / REQUEST',
+                    title: '该地址不接受此请求',
+                    sub: 'METHOD NOT ALLOWED',
+                    desc: ['该地址不接受当前的访问方式。', '请通过站内入口重新访问。'],
+                    status: '请求方式不符 · 未建立连接',
+                    link: 'REQ / REJECTED'
+                },
+                '408': {
+                    tag: '请求超时 / TIMEOUT',
+                    title: '请求在完成前中断',
+                    sub: 'REQUEST TIMEOUT',
+                    desc: ['等待响应的时间超过了上限。', '请检查网络后重试。'],
+                    status: '通信超时 · 该坐标无响应',
+                    link: 'LINK / TIMEOUT'
+                },
+                '429': {
+                    tag: '请求限制 / LIMIT',
+                    title: '请求次数超出限制',
+                    sub: 'TOO MANY REQUESTS',
+                    desc: ['短时间内的请求次数过多。', '请稍等片刻再试。'],
+                    status: '请求被限流 · 请稍后重试',
+                    link: 'LINK / THROTTLED'
+                },
+                '500': {
+                    tag: '系统异常 / SYSTEM',
+                    title: '站点读取该坐标时异常',
+                    sub: 'INTERNAL ERROR',
+                    desc: ['本次请求没有完成，异常已被记录。', '请稍后重试，或返回首页。'],
+                    status: '内部异常 · 该坐标无响应',
+                    link: 'SIGNAL / LOST'
+                },
+                '502': {
+                    tag: '上游异常 / UPSTREAM',
+                    title: '上游节点没有响应',
+                    sub: 'BAD GATEWAY',
+                    desc: ['上游节点没有返回有效响应。', '请稍后重试。'],
+                    status: '上游无响应 · 链路中断',
+                    link: 'UPLINK / LOST'
+                },
+                '503': {
+                    tag: '服务状态 / SERVICE',
+                    title: '服务暂不可用',
+                    sub: 'SERVICE UNAVAILABLE',
+                    desc: ['站点正在维护或暂时过载。', '请稍后重试，或返回首页。'],
+                    status: '服务暂不可用 · 请稍后重试',
+                    link: 'SERVICE / DOWN'
+                },
+                '504': {
+                    tag: '上游超时 / UPSTREAM',
+                    title: '上游节点响应超时',
+                    sub: 'GATEWAY TIMEOUT',
+                    desc: ['上游节点没有在时限内完成请求。', '请稍后重试。'],
+                    status: '上游超时 · 链路中断',
+                    link: 'UPLINK / TIMEOUT'
+                }
+            };
+
+            var code = '404';
+
+            /* 路径形式：/error/403（静态托管的 404 处理会把该路径交给本页） */
+            var pathMatch = location.pathname.match(/^\/error\/([45]\d{2})(?:\.html)?\/?$/i);
+            if (pathMatch) code = pathMatch[1];
+
+            /* 参数形式：?code=403，优先于路径；非 4xx / 5xx 的参数忽略 */
+            try {
+                var raw = new URLSearchParams(location.search).get('code');
+                if (raw && /^[45]\d{2}$/.test(raw)) code = raw;
+            } catch (e) {}
+
+            var state = STATES[code] || {
+                tag: '状态异常 / STATUS',
+                title: '请求未能完成',
+                sub: 'STATUS ' + code,
+                desc: ['站点返回了状态码 ' + code + '。', '请稍后重试，或返回首页。'],
+                status: '请求未完成 · 该坐标无响应',
+                link: 'STATUS / ' + code
+            };
+
+            function setText(id, text) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = text;
+            }
+
+            /* 说明固定两行：用 DOM 节点拼 <br>，不把表里的字符串当 HTML 解析 */
+            function setLines(id, lines) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                while (el.firstChild) el.removeChild(el.firstChild);
+                for (var i = 0; i < lines.length; i++) {
+                    if (i) el.appendChild(document.createElement('br'));
+                    el.appendChild(document.createTextNode(lines[i]));
+                }
+            }
+
+            document.title = code + ' · 星光圣域';
+            setText('error-tag', state.tag);
+            setText('error-id', 'SSS · ERR ' + code);
+            setText('error-code', code);
+            setText('error-title', state.title);
+            setText('error-sub', state.sub);
+            setLines('error-desc', state.desc);
+            setText('error-status-text', state.status);
+            setText('error-signal', state.link);
+
+            /* 请求坐标：这一页会被任意地址渲染，坐标本身就是最直接的线索。
+               用 textContent 写入，地址里带什么都不当 HTML 解析。 */
+            var pathEl = document.getElementById('error-path');
+            if (!pathEl) return;
             var p = location.pathname || '/';
             try { p = decodeURI(p); } catch (e) {}
-            el.textContent = p;
-            el.title = p;
+            pathEl.textContent = p;
+            pathEl.title = p;
         })();
     </script>
 

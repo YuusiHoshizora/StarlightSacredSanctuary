@@ -345,6 +345,10 @@ Redirect Rule 301 过来，见下）。
   才出现在列表里；网络不通时再退回缓存（离线照样能看列表）
 - 错误页只有一份 `404.html`（原先 `error.html` + `404.html` 两份内容相同，已合并成一份）：
   CF 的 404 页与 SW 的离线页都用它；自检脚本会把线上 404 响应与它逐字比对（不一致报 WARN）
+- 同一份 `404.html` 也承担状态码展示：`/error/403`、`/error/500` 这类路径（静态托管会把未匹配
+  路径交给本页）或 `?code=403` 会换用页内 `STATES` 表里对应的文案。**静态托管只发得出 404
+  状态**，真正的 403 / 500 需要 Worker 或 Cloudflare 自定义错误页来触发；SW 的离线兜底
+  也用这份文件，地址仍是请求时的 URL，所以离线打开 `/error/503` 同样显示 503。
 - 自检：`powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1`
   （可加 `-ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`）。
   迁移前基线 PASS 16 / FAIL 0；出现 FAIL 都值得查
