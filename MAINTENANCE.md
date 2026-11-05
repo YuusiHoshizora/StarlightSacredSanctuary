@@ -61,7 +61,7 @@
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── spa.js              站内同文档导航（除星图 / 彩蛋外全站）
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
-│   │   ├── archive-scroll.js   档案页：按滚动状态给滚动容器挂 can-up / can-down（上下淡出）
+│   │   ├── archive-scroll.js   档案页：给能滚的容器挂 .is-scrollable 并连续写上下淡出长度
 │   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
 │   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案（# 不滚页）
 │   │   ├── vessel.js           舰船档案：左栏名录 / 右栏档案（# 不滚页）
@@ -164,11 +164,13 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 3. **内容在中间滚**：标题以下的一切包进 `.archive-body`。普通档案页由它自己滚；
    `data-archive="split"` 的两栏页里它不滚，改由名录 / 内容两栏各自滚（见上一节）；
 4. **两端淡出**：滚动容器在**还有内容可滚**的方向上淡出
-   （桌面 120px / 窄屏 80px），由 `assets/js/archive-scroll.js` 按滚动状态挂类：
-   - `can-down`（下面还有内容）→ 下端淡出，第一屏就能看到；
-   - `can-up`（已经往下滚过、上面还有内容）→ 上端淡出；
-   - 两个类都没有（短内容 / 已滚到顶 / 已滚到底）→ 不挂 mask。
-   所以短内容不会被两端渐变平白压暗，最后一条也能完整读到。
+   （最大 120px；窄屏 80px），由 `assets/js/archive-scroll.js` 连续控制：
+   - 能滚才加 `.is-scrollable`（只在"能滚 / 不能滚"切换时变一次，不在滚动中变）；
+   - 滚动时写 `--fade-top` / `--fade-bottom`：滚到顶时上端为 0，往下滚多少长多少；
+     快到底时下端同样收短，滚到最底部时为 0，最后一条能完整读到；
+   - 短内容没有 `.is-scrollable`，不挂 mask，不会被压暗。
+   因为长度是**连续变化**的，开始滚 / 滚到底不会突然挂上或摘掉整条 mask，
+   标题和面板框不会"突变"（Firefox 下尤其明显）。
    **渐变曲线是前段压得很低、后段才抬起来的（不是线性）**：面板背景 / 1px 描边
    刚进入过渡带时几乎看不见，不会留下一条硬边。
    **渐变长度与留白是两个变量**：`--archive-fade` 管渐变长度，`--archive-pad`
@@ -208,10 +210,10 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   只在 `archive.css` 的 `body[data-archive]` 上改。
 - **`mask-image` 必须同时写 `-webkit-mask-image`**（Safari 只认带前缀的那条）；
   mask 的渐变坐标相对容器的边框盒，所以它固定在窗口两端。
-- **滚动淡出靠 `assets/js/archive-scroll.js`**：它给还有内容可滚的容器挂
-  `can-up` / `can-down`，短内容两个类都没有、不会被压暗；滚到最底部时
-  `can-down` 摘掉，最后一条能完整读到。**每个档案页都要引它**，放在页面自己的
-  脚本之后（人员 / 设施 / 舰船是 `.xxx.js` 之后）；切换条目后页面脚本会调
+- **滚动淡出靠 `assets/js/archive-scroll.js`**：它只给能滚的容器加
+  `.is-scrollable`，并连续写 `--fade-top` / `--fade-bottom`；短内容不挂 mask。
+  **每个档案页都要引它**，放在页面自己的脚本之后（人员 / 设施 / 舰船是
+  `.xxx.js` 之后）；切换条目后页面脚本会调
   `window.__sssArchiveScroll.refresh()` 重算。
 - 窄屏**不退回整页滚动**（普通档案页）：`100dvh` 保证页脚始终可见；
   两栏页在 ≤900px 才退回整页滚动，名录摊成网格（`height: auto`）；

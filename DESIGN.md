@@ -122,7 +122,8 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 - 「左名录 + 右档案」的两栏页写 `data-archive="split"`：名录与内容各自滚动、
   **下界对齐（以名录为准）**，两栏都有同一套上下淡出；
 - **淡出只在还有内容的那一侧出现**：下面还有 → 下端淡出；上面还有 → 上端淡出；
-  短内容 / 已到顶 / 已到底都不压暗（`assets/js/archive-scroll.js` 挂类）；
+  长度随滚动位置连续变化，短内容 / 已到顶 / 已到底都不压暗；
+  标题与面板框不会在开始滚 / 滚到底时突变（`assets/js/archive-scroll.js`）；
 - 结构、滚动区变量与踩点见 [MAINTENANCE.md](MAINTENANCE.md) 的「档案页的视口框」。
 
 ---

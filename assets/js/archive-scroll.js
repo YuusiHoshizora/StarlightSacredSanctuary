@@ -1,17 +1,14 @@
 /* =============================================================================
- * archive-scroll.js — 档案页滚动区的上下淡出开关
+ * archive-scroll.js — 档案页滚动区的上下淡出
  * -----------------------------------------------------------------------------
- * 档案页的滚动容器（普通页的 .archive-body，两栏页的名录 / 内容栏）只在
- * **真的还有内容要滚**时才挂 mask 渐变：
+ * 给每个能滚的容器加 .is-scrollable，并连续写 --fade-top / --fade-bottom：
  *
- *   · can-down —— 下面还有内容 → 下端淡出（第一屏就能看见的边界）
- *   · can-up   —— 上面还有内容（已经往下滚过）→ 上端淡出
+ *   · 滚到顶 → 上端淡出为 0；往下滚多少，上端淡出就长多少（最多 --archive-fade）；
+ *   · 快到底 → 下端淡出同样收短，滚到最底部时下端为 0；
+ *   · 短内容（不产生滚动）不挂 .is-scrollable，不压暗。
  *
- * 所以：
- *   · 短内容（不产生滚动）一个类都不加，不会被两端渐变平白压暗；
- *   · 停在顶部时只淡出下端，第一行的标题 / 第一条不会被压暗；
- *   · 滚到最底部时只淡出上端，最后一条能完整读到。
- * 渐变长度由 archive.css 的 --archive-fade 给出（桌面 120px / 窄屏 80px）。
+ * 这样淡出是**连续变化**的，不会在"开始滚动 / 滚到底"时突然出现或消失整条
+ * mask —— Firefox 下尤其明显；也避免切换 mask 时文字 / 标题重新栅格化的突变。
  *
  * 页面脚本（personnel / facility / vessel）切换条目后要调一次
  * window.__sssArchiveScroll.refresh()，因为右栏内容的 scrollHeight 变了。
@@ -28,9 +25,26 @@
 
     function update(el) {
         var max = el.scrollHeight - el.clientHeight;
-        var overflow = max > 1;
-        el.classList.toggle('can-up', overflow && el.scrollTop > 1);
-        el.classList.toggle('can-down', overflow && el.scrollTop < max - 1);
+        var scrollable = max > 1;
+        el.classList.toggle('is-scrollable', scrollable);
+
+        if (!scrollable) {
+            el.style.setProperty('--fade-top', '0px');
+            el.style.setProperty('--fade-bottom', '0px');
+            return;
+        }
+
+        var limit = parseFloat(window.getComputedStyle(el).getPropertyValue('--archive-fade')) || 0;
+        if (!limit) {
+            el.style.setProperty('--fade-top', '0px');
+            el.style.setProperty('--fade-bottom', '0px');
+            return;
+        }
+
+        var top = Math.min(Math.max(el.scrollTop, 0), limit);
+        var bottom = Math.min(Math.max(max - el.scrollTop, 0), limit);
+        el.style.setProperty('--fade-top', top + 'px');
+        el.style.setProperty('--fade-bottom', bottom + 'px');
     }
 
     function updateAll() {
@@ -74,6 +88,9 @@
         window.__sssPageCleanup.add('archive-scroll', function () {
             nodes.forEach(function (el) {
                 el.removeEventListener('scroll', schedule);
+                el.classList.remove('is-scrollable');
+                el.style.removeProperty('--fade-top');
+                el.style.removeProperty('--fade-bottom');
             });
             window.removeEventListener('resize', schedule);
             window.removeEventListener('load', schedule);
