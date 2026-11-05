@@ -115,7 +115,7 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 
 档案页是"允许长内容"的那一类，但**整页不滚**：面包屑 + 标题 + 英文副题 + 简介
 （页头）与页脚都固定在视口里，标题以下的内容在滚动窗口里滚，
-并在还有内容可滚的那一侧用渐变淡出（桌面 84px、窄屏 56px）。
+并在还有内容可滚的那一侧用渐变淡出（桌面 120px、窄屏 80px）。
 
 - **标题与英文副题不得随页面滚走；页脚始终贴在视口底部**；
 - 页面 `<body>` 带 `data-archive`，标题以下的内容全部包进 `.archive-body`；

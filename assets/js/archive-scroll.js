@@ -11,7 +11,7 @@
  *   · 短内容（不产生滚动）一个类都不加，不会被两端渐变平白压暗；
  *   · 停在顶部时只淡出下端，第一行的标题 / 第一条不会被压暗；
  *   · 滚到最底部时只淡出上端，最后一条能完整读到。
- * 渐变长度由 archive.css 的 --archive-fade 给出（桌面 84px / 窄屏 56px）。
+ * 渐变长度由 archive.css 的 --archive-fade 给出（桌面 120px / 窄屏 80px）。
  *
  * 页面脚本（personnel / facility / vessel）切换条目后要调一次
  * window.__sssArchiveScroll.refresh()，因为右栏内容的 scrollHeight 变了。

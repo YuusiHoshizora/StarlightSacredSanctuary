@@ -145,7 +145,7 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 - 名录高度沿用 `--archive-list-height`，但在视口框里被改成 `100%`
   （不再是 `100vh - 300px` 的估算值）—— 它现在等于网格行高；
-- 两栏各自 `overflow-y: auto`，按滚动状态挂淡出（桌面 84px / 窄屏 56px；
+- 两栏各自 `overflow-y: auto`，按滚动状态挂淡出（桌面 120px / 窄屏 80px；
   见下面「滚动淡出」）；
 - 页面本身与 `.archive-body` 都不滚，只有这两栏滚；
 - ≤900px 两栏退回上下排：名录摊成网格、`height: auto`，由 `.archive-body` 整页滚。
@@ -164,11 +164,13 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 3. **内容在中间滚**：标题以下的一切包进 `.archive-body`。普通档案页由它自己滚；
    `data-archive="split"` 的两栏页里它不滚，改由名录 / 内容两栏各自滚（见上一节）；
 4. **两端淡出**：滚动容器在**还有内容可滚**的方向上淡出
-   （桌面 84px / 窄屏 56px），由 `assets/js/archive-scroll.js` 按滚动状态挂类：
+   （桌面 120px / 窄屏 80px），由 `assets/js/archive-scroll.js` 按滚动状态挂类：
    - `can-down`（下面还有内容）→ 下端淡出，第一屏就能看到；
    - `can-up`（已经往下滚过、上面还有内容）→ 上端淡出；
    - 两个类都没有（短内容 / 已滚到顶 / 已滚到底）→ 不挂 mask。
    所以短内容不会被两端渐变平白压暗，最后一条也能完整读到。
+   **渐变曲线是前段压得很低、后段才抬起来的（不是线性）**：面板背景 / 1px 描边
+   刚进入过渡带时几乎看不见，不会留下一条硬边。
    **渐变长度与留白是两个变量**：`--archive-fade` 管渐变长度，`--archive-pad`
    管内容与盒边的呼吸留白，别混在一起。
 
@@ -213,7 +215,7 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   `window.__sssArchiveScroll.refresh()` 重算。
 - 窄屏**不退回整页滚动**（普通档案页）：`100dvh` 保证页脚始终可见；
   两栏页在 ≤900px 才退回整页滚动，名录摊成网格（`height: auto`）；
-  ≤768px 渐变缩到 56px、留白缩到 16px。
+  ≤768px 渐变缩到 80px、留白缩到 16px。
 - `body[data-archive]` 下 `main` / `section` 都要带 `min-height: 0`（flex 子项默认
   `min-height: auto`，不给的话内部滚动区会被内容撑高、页脚重新被顶出视口）。
 

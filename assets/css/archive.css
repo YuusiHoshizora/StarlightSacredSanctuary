@@ -212,8 +212,9 @@ a.archive-card:focus-visible {
        · 上面还有内容（can-up）→ 上端淡出（往下滚过之后才出现）；
        · 短内容两个类都没有 → 不挂 mask，不会被压暗；
        · 滚到最底部 can-down 摘掉，最后一条能完整读到。
-     渐变长度是 --archive-fade（桌面 84px / 窄屏 56px），
-     内容留白是另一个变量 --archive-pad，别把两者混在一起。
+     渐变长度是 --archive-fade（桌面 120px / 窄屏 80px），
+     曲线是前段压得很低、后段才抬起来 —— 面板背景 / 1px 描边刚进入过渡带时
+     几乎看不见，不会留下一条硬边；
      ⚠️ 别省掉 -webkit-mask-image（Safari 只认带前缀的那条）。
      ⚠️ data-archive 用属性而不是 body 的 class：spa.js 的 syncBody() 只搬 data-*，
         站内换页进出档案页时这套版式才会跟着切；写成 class 会在换页后残留 / 丢失。
@@ -227,26 +228,45 @@ body[data-archive] {
     /* 滚动边界淡出：长度 + 呼吸留白分开。
        --archive-fade 是 mask 渐变的长度（要看得见，所以给得比较足）；
        --archive-pad 是滚动容器内容与盒边之间的留白，别跟渐变长度混在一起。 */
-    --archive-fade: 84px;
+    --archive-fade: 120px;
     --archive-pad: 24px;
 
     /* 三种方向组合：只淡上 / 只淡下 / 两端都淡。
-       由 archive-scroll.js 根据「还能不能往上 / 往下滚」挂 can-up / can-down 类。 */
+       由 archive-scroll.js 根据「还能不能往上 / 往下滚」挂 can-up / can-down 类。
+       ⚠️ 曲线是前段压得很低、后段才抬起来的（不是线性）：面板的描边 / 背景框
+       刚进入过渡带时几乎看不见，否则那圈 1px 描边在 50% 透明度下仍是一条硬线。 */
     --archive-mask-up: linear-gradient(
         to bottom,
         transparent 0,
+        rgba(0, 0, 0, 0.03) calc(var(--archive-fade) * 0.25),
+        rgba(0, 0, 0, 0.10) calc(var(--archive-fade) * 0.50),
+        rgba(0, 0, 0, 0.32) calc(var(--archive-fade) * 0.75),
+        rgba(0, 0, 0, 0.70) calc(var(--archive-fade) * 0.90),
         #000 var(--archive-fade)
     );
     --archive-mask-down: linear-gradient(
         to bottom,
+        #000 0,
         #000 calc(100% - var(--archive-fade)),
+        rgba(0, 0, 0, 0.70) calc(100% - var(--archive-fade) * 0.90),
+        rgba(0, 0, 0, 0.32) calc(100% - var(--archive-fade) * 0.75),
+        rgba(0, 0, 0, 0.10) calc(100% - var(--archive-fade) * 0.50),
+        rgba(0, 0, 0, 0.03) calc(100% - var(--archive-fade) * 0.25),
         transparent 100%
     );
     --archive-mask-both: linear-gradient(
         to bottom,
         transparent 0,
+        rgba(0, 0, 0, 0.03) calc(var(--archive-fade) * 0.25),
+        rgba(0, 0, 0, 0.10) calc(var(--archive-fade) * 0.50),
+        rgba(0, 0, 0, 0.32) calc(var(--archive-fade) * 0.75),
+        rgba(0, 0, 0, 0.70) calc(var(--archive-fade) * 0.90),
         #000 var(--archive-fade),
         #000 calc(100% - var(--archive-fade)),
+        rgba(0, 0, 0, 0.70) calc(100% - var(--archive-fade) * 0.90),
+        rgba(0, 0, 0, 0.32) calc(100% - var(--archive-fade) * 0.75),
+        rgba(0, 0, 0, 0.10) calc(100% - var(--archive-fade) * 0.50),
+        rgba(0, 0, 0, 0.03) calc(100% - var(--archive-fade) * 0.25),
         transparent 100%
     );
 }
@@ -316,7 +336,7 @@ body[data-archive] .vessel-profile {
      · 名录与内容装进同一个 1fr 网格行，两栏都 height:100% ——
        所以它们的盒子下界严格对齐（名录这一栏就是基准）；
      · 两栏各自 overflow-y:auto，各自按滚动状态挂上下 mask：
-       滚到边缘的条目 / 面板在 --archive-fade（桌面 84px / 窄屏 56px）里淡出，不会硬裁；
+       滚到边缘的条目 / 面板在 --archive-fade（桌面 120px / 窄屏 80px）里淡出，不会硬裁；
      · 窄屏（≤900px）退回原来的一栏排版：名录摊平在档案前面，整页由
        .archive-body 滚（见下面的媒体查询）。
    ⚠️ 新增这类页面：body 写 data-archive="split"，标题以下包 .archive-body，
@@ -434,7 +454,7 @@ body[data-archive] .can-up.can-down {
 
 @media (max-width: 768px) {
     body[data-archive] {
-        --archive-fade: 56px;
+        --archive-fade: 80px;
         --archive-pad: 16px;
     }
 }
