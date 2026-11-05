@@ -18,7 +18,8 @@
  * · 拖动经过议会卡时，卡片**边缘**用被拖的那个部门的颜色高亮，不是金色：
  *     科研部 #50F2E0 / 工业部 #EB7B25 / 战术战略部 #EE0034
  *   （颜色写在各卡的 data-color 上，脚本把它塞进 --drag-color / --dept-color 交给 CSS）
- * · 战术战略部那张在页面靠下，所以拖动时指针靠近视口上下边缘会自动滚动。
+ * · 战术战略部那张在页面靠下，所以拖动时指针靠近**实际滚动容器**（档案页视口框里的
+ *   .archive-body，不是 window）上下边缘会自动滚动。
  * · sss-dgam 存的是"拖上去过的部门 key 数组"（老版本的 '1' 当作三张都拖过）；
  *   「关于」页重置这条彩蛋会把这个键一并清掉。
  *
@@ -44,6 +45,7 @@
     var cards = {};              // 部门 key → 卡片元素
     var got = {};                // 已经拖上去的部门
     var dragging = null;         // 正在拖的部门 key
+    var scrollEl = null;         // 拖动时真正要滚的容器（档案页是 .archive-body，不是 window）
     var rafId = 0;
     var dir = 0;                 // -1 上滚 / +1 下滚 / 0 不动
     var speed = 0;
@@ -128,6 +130,7 @@
                 e.dataTransfer.effectAllowed = 'copy';
                 try { e.dataTransfer.setData('text/plain', key); } catch (err) {}
             }
+            scrollEl = findScroller();
             startScroll();
         });
 
@@ -136,6 +139,7 @@
             el.classList.remove('is-dragging');
             slot.classList.remove('is-drag-over');
             stopScroll();
+            scrollEl = null;
         });
     });
 
@@ -198,10 +202,38 @@
         apply(secretCard.hidden);
     });
 
-    /* ── 拖动时靠近视口上下边缘自动滚动（战术战略部在下面，用得上） ── */
+    /* ── 拖动时靠近实际滚动容器的上下边缘自动滚动 ──
+       档案页整页不滚，内容滚在 .archive-body 里，所以不能再用 window.scrollBy；
+       从卡片往上找最近的可滚祖先，找不到再退回文档滚动。 */
+    function findScroller() {
+        var node = slot.parentElement;
+        while (node && node !== document.body && node !== document.documentElement) {
+            var cs = window.getComputedStyle(node);
+            if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') &&
+                node.scrollHeight > node.clientHeight + 1) {
+                return node;
+            }
+            node = node.parentElement;
+        }
+
+        var ab = document.querySelector('body[data-archive] .archive-body');
+        if (ab && ab.scrollHeight > ab.clientHeight + 1) {
+            var as = window.getComputedStyle(ab);
+            if (as.overflowY === 'auto' || as.overflowY === 'scroll') return ab;
+        }
+
+        return document.scrollingElement || document.documentElement;
+    }
+
     function tick() {
         if (!dragging) { rafId = 0; return; }
-        if (dir) window.scrollBy(0, dir * Math.max(4, speed));
+        if (dir && scrollEl) {
+            var step = dir * Math.max(4, speed);
+            var before = scrollEl.scrollTop;
+            scrollEl.scrollTop = before + step;
+            /* 到顶 / 到底时停下，别空转 */
+            if (scrollEl.scrollTop === before) dir = 0;
+        }
         rafId = window.requestAnimationFrame(tick);
     }
 
@@ -217,14 +249,27 @@
 
     function onDocDragOver(e) {
         if (!dragging) return;
-        var h = window.innerHeight || document.documentElement.clientHeight;
+
+        var rect;
+        if (!scrollEl || scrollEl === document.scrollingElement || scrollEl === document.documentElement) {
+            rect = {
+                top: 0,
+                bottom: window.innerHeight || document.documentElement.clientHeight
+            };
+        } else {
+            rect = scrollEl.getBoundingClientRect();
+        }
+
         var y = e.clientY;
-        if (y < EDGE) {
+        var topDist = y - rect.top;
+        var bottomDist = rect.bottom - y;
+
+        if (topDist < EDGE) {
             dir = -1;
-            speed = SPEED * (1 - y / EDGE);
-        } else if (y > h - EDGE) {
+            speed = SPEED * Math.min(1, Math.max(0, 1 - topDist / EDGE));
+        } else if (bottomDist < EDGE) {
             dir = 1;
-            speed = SPEED * (1 - (h - y) / EDGE);
+            speed = SPEED * Math.min(1, Math.max(0, 1 - bottomDist / EDGE));
         } else {
             dir = 0;
         }
