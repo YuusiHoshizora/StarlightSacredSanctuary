@@ -433,6 +433,11 @@
                 }
             }
         }
+
+        /* 右栏内容换了，滚动状态（还能不能往上 / 往下滚）要重算 */
+        if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {
+            window.__sssArchiveScroll.refresh();
+        }
     }
 
     function setHash(id) {

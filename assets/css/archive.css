@@ -207,11 +207,14 @@ a.archive-card:focus-visible {
        所以页脚始终贴着视口底部，不会随内容滚走。
 
    淡出为什么能"只在内容连续时"出现：
-     .archive-body 的上下 padding 正好等于过渡区 --archive-fade。
-     内容还没滚到边缘时，渐变落在空白 padding 上，第一行 / 最后一行不会被压暗；
-     一旦内容滚过上下边缘，它才在 36px 的 mask 渐变里淡出 / 淡入。
-     ⚠️ 别把 padding 改成 0（短内容会被凭空压暗）；
-        也别省掉 -webkit-mask-image（Safari 只认带前缀的那条）。
+     mask 不常驻，由 archive-scroll.js 按滚动状态挂 can-up / can-down：
+       · 下面还有内容（can-down）→ 下端淡出；第一屏就能看到这条淡出；
+       · 上面还有内容（can-up）→ 上端淡出（往下滚过之后才出现）；
+       · 短内容两个类都没有 → 不挂 mask，不会被压暗；
+       · 滚到最底部 can-down 摘掉，最后一条能完整读到。
+     渐变长度是 --archive-fade（桌面 84px / 窄屏 56px），
+     内容留白是另一个变量 --archive-pad，别把两者混在一起。
+     ⚠️ 别省掉 -webkit-mask-image（Safari 只认带前缀的那条）。
      ⚠️ data-archive 用属性而不是 body 的 class：spa.js 的 syncBody() 只搬 data-*，
         站内换页进出档案页时这套版式才会跟着切；写成 class 会在换页后残留 / 丢失。
    ========================================================================== */
@@ -220,6 +223,32 @@ body[data-archive] {
     height: 100vh;
     height: 100dvh;               /* 有 dvh 的浏览器用它，避免手机地址栏收起后底部留缝 */
     overflow: hidden;             /* 页面本身不滚 —— 只有 .archive-body 滚 */
+
+    /* 滚动边界淡出：长度 + 呼吸留白分开。
+       --archive-fade 是 mask 渐变的长度（要看得见，所以给得比较足）；
+       --archive-pad 是滚动容器内容与盒边之间的留白，别跟渐变长度混在一起。 */
+    --archive-fade: 84px;
+    --archive-pad: 24px;
+
+    /* 三种方向组合：只淡上 / 只淡下 / 两端都淡。
+       由 archive-scroll.js 根据「还能不能往上 / 往下滚」挂 can-up / can-down 类。 */
+    --archive-mask-up: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--archive-fade)
+    );
+    --archive-mask-down: linear-gradient(
+        to bottom,
+        #000 calc(100% - var(--archive-fade)),
+        transparent 100%
+    );
+    --archive-mask-both: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--archive-fade),
+        #000 calc(100% - var(--archive-fade)),
+        transparent 100%
+    );
 }
 
 body[data-archive] > main {
@@ -231,8 +260,6 @@ body[data-archive] > main {
    中间那块（.archive-body）吃掉页头与页脚之间的全部高度。 */
 body[data-archive] > main > .archive-section,
 body[data-archive] > main > .org-section {
-    --archive-fade: 36px;
-
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
@@ -241,7 +268,7 @@ body[data-archive] > main > .org-section {
     padding-bottom: 0;            /* 底部呼吸交给 .archive-body 的 padding */
 }
 
-/* 页头不再留底边距：它与滚动内容之间的空隙由 .archive-body 的顶部过渡区给。 */
+/* 页头不再留底边距：它与滚动内容之间的空隙由 .archive-body 的顶部留白给。 */
 body[data-archive] .archive-head,
 body[data-archive] .org-head {
     margin-bottom: 0;
@@ -258,25 +285,10 @@ body[data-archive] .archive-body {
     overflow-y: auto;
     overscroll-behavior: contain;
 
-    /* 过渡区 = 上下留白。mask 的渐变坐标相对 .archive-body 的边框盒，
-       所以它固定在滚动窗口的两端，内容从下面滚过去时才被淡化。 */
-    padding-top: var(--archive-fade);
-    padding-bottom: var(--archive-fade);
-
-    -webkit-mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        #000 var(--archive-fade),
-        #000 calc(100% - var(--archive-fade)),
-        transparent 100%
-    );
-            mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        #000 var(--archive-fade),
-        #000 calc(100% - var(--archive-fade)),
-        transparent 100%
-    );
+    /* 内容与盒边的留白（不是淡出长度，淡出长度见 --archive-fade）。
+       mask 由下面的滚动状态类决定；短内容不会挂 mask。 */
+    padding-top: var(--archive-pad);
+    padding-bottom: var(--archive-pad);
 }
 
 /* 左栏名录高度：两栏档案里它等于网格行高，与右栏内容同高 ——
@@ -291,7 +303,7 @@ body[data-archive] .vessel-list {
     top: 0;
 }
 
-/* 锚点定位：滚动窗口顶部有一条 36px 的淡出区，别让标题正好落进去。 */
+/* 锚点定位：滚动窗口顶部有一条淡出区，别让标题正好落进去。 */
 body[data-archive] .personnel-profile,
 body[data-archive] .facility-profile,
 body[data-archive] .vessel-profile {
@@ -303,8 +315,8 @@ body[data-archive] .vessel-profile {
      · .archive-body 不再滚，只负责给出一个确定的高度；
      · 名录与内容装进同一个 1fr 网格行，两栏都 height:100% ——
        所以它们的盒子下界严格对齐（名录这一栏就是基准）；
-     · 两栏各自 overflow-y:auto，各自有上下过渡带与 mask：
-       滚到边缘的条目 / 面板在 36px（窄屏 28px）里淡出，不会硬裁；
+     · 两栏各自 overflow-y:auto，各自按滚动状态挂上下 mask：
+       滚到边缘的条目 / 面板在 --archive-fade（桌面 84px / 窄屏 56px）里淡出，不会硬裁；
      · 窄屏（≤900px）退回原来的一栏排版：名录摊平在档案前面，整页由
        .archive-body 滚（见下面的媒体查询）。
    ⚠️ 新增这类页面：body 写 data-archive="split"，标题以下包 .archive-body，
@@ -326,7 +338,7 @@ body[data-archive="split"] .vessel-layout {
     align-items: stretch;
 }
 
-/* 两栏共用的上下淡出：padding 给过渡区，mask 固定在盒子两端。 */
+/* 两栏共用的留白；mask 由滚动状态类决定（见下面「滚动淡出」）。 */
 body[data-archive="split"] .personnel-list,
 body[data-archive="split"] .facility-list,
 body[data-archive="split"] .vessel-list,
@@ -337,23 +349,8 @@ body[data-archive="split"] .vessel-detail {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding-top: var(--archive-fade);
-    padding-bottom: var(--archive-fade);
-
-    -webkit-mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        #000 var(--archive-fade),
-        #000 calc(100% - var(--archive-fade)),
-        transparent 100%
-    );
-            mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        #000 var(--archive-fade),
-        #000 calc(100% - var(--archive-fade)),
-        transparent 100%
-    );
+    padding-top: var(--archive-pad);
+    padding-bottom: var(--archive-pad);
 }
 
 /* 名录在两栏里不再需要 sticky：它自己就是滚动容器，且正好占满网格行。 */
@@ -362,6 +359,35 @@ body[data-archive="split"] .facility-list,
 body[data-archive="split"] .vessel-list {
     position: static;
     top: auto;
+}
+
+/* ── 滚动淡出：只在真的还能往某个方向滚时挂 mask ──
+   archive-scroll.js 给滚动容器加 can-up / can-down：
+     · can-down = 下面还有 → 下端淡出（第一屏就能看到的那条边界）
+     · can-up   = 上面还有 → 上端淡出（往下滚过之后才出现）
+   短内容两个类都没有 → var(--archive-mask, none) 落到 none，不会被压暗；
+   滚到最底部时 can-down 摘掉，最后一条能完整读到。 */
+body[data-archive] .archive-body,
+body[data-archive="split"] .personnel-list,
+body[data-archive="split"] .facility-list,
+body[data-archive="split"] .vessel-list,
+body[data-archive="split"] .personnel-detail,
+body[data-archive="split"] .facility-detail,
+body[data-archive="split"] .vessel-detail {
+    -webkit-mask-image: var(--archive-mask, none);
+            mask-image: var(--archive-mask, none);
+}
+
+body[data-archive] .can-up {
+    --archive-mask: var(--archive-mask-up);
+}
+
+body[data-archive] .can-down {
+    --archive-mask: var(--archive-mask-down);
+}
+
+body[data-archive] .can-up.can-down {
+    --archive-mask: var(--archive-mask-both);
 }
 
 @media (max-width: 900px) {
@@ -375,25 +401,11 @@ body[data-archive="split"] .vessel-list {
     }
 
     /* 两栏档案在窄屏退回「整页滚动」：两栏不再各自滚动 / 淡出，
-       交回 .archive-body（这里把它的过渡带与 mask 还回来）。 */
+       交回 .archive-body（它的滚动状态仍由 archive-scroll.js 管）。 */
     body[data-archive="split"] .archive-body {
         overflow-y: auto;
-        padding-top: var(--archive-fade);
-        padding-bottom: var(--archive-fade);
-        -webkit-mask-image: linear-gradient(
-            to bottom,
-            transparent 0,
-            #000 var(--archive-fade),
-            #000 calc(100% - var(--archive-fade)),
-            transparent 100%
-        );
-                mask-image: linear-gradient(
-            to bottom,
-            transparent 0,
-            #000 var(--archive-fade),
-            #000 calc(100% - var(--archive-fade)),
-            transparent 100%
-        );
+        padding-top: var(--archive-pad);
+        padding-bottom: var(--archive-pad);
     }
 
     body[data-archive="split"] .personnel-layout,
@@ -421,8 +433,8 @@ body[data-archive="split"] .vessel-list {
 }
 
 @media (max-width: 768px) {
-    body[data-archive] > main > .archive-section,
-    body[data-archive] > main > .org-section {
-        --archive-fade: 28px;
+    body[data-archive] {
+        --archive-fade: 56px;
+        --archive-pad: 16px;
     }
 }

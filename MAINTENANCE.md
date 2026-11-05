@@ -61,6 +61,7 @@
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── spa.js              站内同文档导航（除星图 / 彩蛋外全站）
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
+│   │   ├── archive-scroll.js   档案页：按滚动状态给滚动容器挂 can-up / can-down（上下淡出）
 │   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
 │   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案（# 不滚页）
 │   │   ├── vessel.js           舰船档案：左栏名录 / 右栏档案（# 不滚页）
@@ -144,7 +145,8 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 - 名录高度沿用 `--archive-list-height`，但在视口框里被改成 `100%`
   （不再是 `100vh - 300px` 的估算值）—— 它现在等于网格行高；
-- 两栏各自 `overflow-y: auto`，各自有上下 36px（窄屏 28px）的淡出带；
+- 两栏各自 `overflow-y: auto`，按滚动状态挂淡出（桌面 84px / 窄屏 56px；
+  见下面「滚动淡出」）；
 - 页面本身与 `.archive-body` 都不滚，只有这两栏滚；
 - ≤900px 两栏退回上下排：名录摊成网格、`height: auto`，由 `.archive-body` 整页滚。
 
@@ -161,10 +163,14 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
    所以它**始终贴着视口底部**，不会随内容滚走；
 3. **内容在中间滚**：标题以下的一切包进 `.archive-body`。普通档案页由它自己滚；
    `data-archive="split"` 的两栏页里它不滚，改由名录 / 内容两栏各自滚（见上一节）；
-4. **两端淡出**：滚动容器的上下各有 36px（窄屏 28px）过渡区，
-   内容滚到窗口上下边缘时用 `mask-image` 渐变淡出 / 淡入，而不是被一条硬边裁掉。
-   内容还没滚到边缘时，渐变落在容器的空白 padding 上，
-   所以**短内容（不产生滚动）不会平白被压暗**。
+4. **两端淡出**：滚动容器在**还有内容可滚**的方向上淡出
+   （桌面 84px / 窄屏 56px），由 `assets/js/archive-scroll.js` 按滚动状态挂类：
+   - `can-down`（下面还有内容）→ 下端淡出，第一屏就能看到；
+   - `can-up`（已经往下滚过、上面还有内容）→ 上端淡出；
+   - 两个类都没有（短内容 / 已滚到顶 / 已滚到底）→ 不挂 mask。
+   所以短内容不会被两端渐变平白压暗，最后一条也能完整读到。
+   **渐变长度与留白是两个变量**：`--archive-fade` 管渐变长度，`--archive-pad`
+   管内容与盒边的呼吸留白，别混在一起。
 
 实现全在 `assets/css/archive.css` 末尾的「档案页视口框」块，页面侧只有两处标记：
 
@@ -195,14 +201,19 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   `data-archive` 的值也会跟着搬，所以两栏页进出站内换页同样会自动切对。
 - **别把滚动内容放到 `.archive-body` 外面**：`.archive-body` 之外的部分不会滚，
   超出一屏会被 `overflow: hidden` 直接裁掉（页头和页脚本来就要留在外面）。
-- **别把滚动容器的上下 padding 改成 0**：短内容会被两端渐变凭空压暗。
-  过渡宽度只在 `archive.css` 里档案页容器（`.archive-section` / `.org-section`）的
-  `--archive-fade` 上改。
+- **别把滚动容器的上下 padding 改成 0**：`--archive-pad` 是内容与盒边的呼吸留白，
+  改小会让第一行贴着页头 / 页脚。渐变长度是另一个变量 `--archive-fade`，
+  只在 `archive.css` 的 `body[data-archive]` 上改。
 - **`mask-image` 必须同时写 `-webkit-mask-image`**（Safari 只认带前缀的那条）；
   mask 的渐变坐标相对容器的边框盒，所以它固定在窗口两端。
+- **滚动淡出靠 `assets/js/archive-scroll.js`**：它给还有内容可滚的容器挂
+  `can-up` / `can-down`，短内容两个类都没有、不会被压暗；滚到最底部时
+  `can-down` 摘掉，最后一条能完整读到。**每个档案页都要引它**，放在页面自己的
+  脚本之后（人员 / 设施 / 舰船是 `.xxx.js` 之后）；切换条目后页面脚本会调
+  `window.__sssArchiveScroll.refresh()` 重算。
 - 窄屏**不退回整页滚动**（普通档案页）：`100dvh` 保证页脚始终可见；
   两栏页在 ≤900px 才退回整页滚动，名录摊成网格（`height: auto`）；
-  ≤768px 过渡区缩到 28px。
+  ≤768px 渐变缩到 56px、留白缩到 16px。
 - `body[data-archive]` 下 `main` / `section` 都要带 `min-height: 0`（flex 子项默认
   `min-height: auto`，不给的话内部滚动区会被内容撑高、页脚重新被顶出视口）。
 
@@ -214,9 +225,10 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   在桌面两栏页里滚右栏（`.facility-detail` / `.vessel-detail`），窄屏滚
   `.archive-body`（顶部留出过渡区，标题不会落进淡出带里）；`.facility-profile` /
   `.vessel-profile` 的 `scroll-margin-top` 也改成了 `var(--archive-fade)`。
-- **加新的档案页**：除了「加新页面时要一起做的七件事」，再补两步 ——
+- **加新的档案页**：除了「加新页面时要一起做的七件事」，再补三步 ——
   ① `<body data-archive>`（两栏版式再加 `="split"`）；② 用 `.archive-body` 包住标题以下的内容
-  （放在页头之后、`</section>` 之前）。别忘 `sw.js` 的 `PRECACHE_URLS`。
+  （放在页头之后、`</section>` 之前）；③ 引入 `assets/js/archive-scroll.js`
+  （放在页面自己的脚本之后）。别忘 `sw.js` 的 `PRECACHE_URLS`。
 - 这一页的滚动位置**不参与浏览器的整页滚动恢复**（滚的是内层容器）。
   从站内导航回来时内容从顶部开始；带 `#` / `?person=` 的深链仍由页面脚本定位。
 

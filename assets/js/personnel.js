@@ -234,6 +234,11 @@
             if (ir.top < lr.top) list.scrollTop += ir.top - lr.top;
             else if (ir.bottom > lr.bottom) list.scrollTop += ir.bottom - lr.bottom;
         }
+
+        /* 右栏内容换了，滚动状态（还能不能往上 / 往下滚）要重算 */
+        if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {
+            window.__sssArchiveScroll.refresh();
+        }
     }
 
     function fromHash() {
