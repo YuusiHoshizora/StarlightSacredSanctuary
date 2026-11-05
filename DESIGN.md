@@ -121,6 +121,9 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 - 页面 `<body>` 带 `data-archive`，标题以下的内容全部包进 `.archive-body`；
 - 「左名录 + 右档案」的两栏页写 `data-archive="split"`：名录与内容各自滚动、
   **下界对齐（以名录为准）**，两栏都有同一套上下淡出；
+- 两栏页的**右栏档案标题不跟着正文滚**（标题在滚动区外）；左栏的
+  「名录 N + 搜索」也不跟着名录滚，搜索框按名称就地过滤名录
+  （外观 / 交互照星图搜索）；
 - **淡出只在还有内容的那一侧出现**：下面还有 → 下端淡出；上面还有 → 上端淡出；
   长度随滚动位置连续变化，短内容 / 已到顶 / 已到底都不压暗；
   标题与面板框不会在开始滚 / 滚到底时突变（`assets/js/archive-scroll.js`）；

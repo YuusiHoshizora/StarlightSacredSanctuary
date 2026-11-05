@@ -182,6 +182,7 @@
             '                        <h2 class="personnel-profile__name">' + esc(m.name) + '</h2>\n' +
             '                        <p class="personnel-profile__latin">' + esc(m.latin) + '</p>\n' +
             '                    </header>\n\n' +
+            '                    <div class="personnel-profile__body">\n' +
             '                    <div class="personnel-profile__cols">\n' +
             '                        <div class="personnel-profile__col personnel-profile__col--left">\n' +
             basic + '\n' + identity + relatives + '\n' +
@@ -190,22 +191,42 @@
             researchBlock + '\n' + feedbackBlock + '\n' +
             '                        </div>\n' +
             '                    </div>\n' +
+            '                    </div>\n' +
             '                </article>';
     }
 
     root.innerHTML = '<aside class="personnel-list" aria-label="成员名录">\n' +
-        '                    <p class="personnel-list__title">名录 <span>' + members.length + '</span></p>\n' +
+        '                    <div class="personnel-list__head">\n' +
+        '                        <p class="personnel-list__title">名录 <span>' + members.length + '</span></p>\n' +
+        '                        <div class="archive-search">\n' +
+        '                            <input type="search" class="archive-search__input" placeholder="搜索成员" aria-label="按名称搜索成员" autocomplete="off" spellcheck="false">\n' +
+        '                            <p class="archive-search__empty" hidden>没有找到匹配的条目</p>\n' +
+        '                        </div>\n' +
+        '                    </div>\n' +
+        '                    <div class="personnel-list__scroll">\n' +
         listHtml() +
+        '                    </div>\n' +
         '                </aside>\n\n' +
         '                <div class="personnel-detail">\n' +
         members.map(function (m, i) {
             return profileHtml(m, i === 0);
         }).join('\n\n') + '\n                </div>';
 
-    var list = root.querySelector('.personnel-list');
+    var list = root.querySelector('.personnel-list__scroll');
     var items = Array.prototype.slice.call(root.querySelectorAll('.personnel-list__item'));
     var profiles = Array.prototype.slice.call(root.querySelectorAll('.personnel-profile'));
     if (!profiles.length) return;
+
+    if (window.SSSArchiveSearch) {
+        window.SSSArchiveSearch.attach({
+            input: root.querySelector('.archive-search__input'),
+            empty: root.querySelector('.archive-search__empty'),
+            scroll: list,
+            items: items,
+            groups: Array.prototype.slice.call(root.querySelectorAll('.personnel-list__group')),
+            groupSelector: '.personnel-list__group'
+        });
+    }
 
     var byId = {};
     profiles.forEach(function (p) {
@@ -234,6 +255,10 @@
             if (ir.top < lr.top) list.scrollTop += ir.top - lr.top;
             else if (ir.bottom > lr.bottom) list.scrollTop += ir.bottom - lr.bottom;
         }
+
+        /* 右栏标题固定在顶上，换人时把正文送回到开头 */
+        var body = profile.querySelector('.personnel-profile__body');
+        if (body) body.scrollTop = 0;
 
         /* 右栏内容换了，滚动状态（还能不能往上 / 往下滚）要重算 */
         if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {

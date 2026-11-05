@@ -293,19 +293,16 @@ body[data-archive] .vessel-list {
 }
 
 /* 锚点定位：滚动窗口顶部有一条淡出区，别让标题正好落进去。 */
-body[data-archive] .personnel-profile,
-body[data-archive] .facility-profile,
-body[data-archive] .vessel-profile {
-    scroll-margin-top: var(--archive-fade);
-}
+/* 档案头不再需要 scroll-margin：标题固定在正文外面，不再被滚进锚点位置。 */
 
 /* ── 两栏档案（人员等级页 / 舰船 / 深空设施）：名录与内容各自滚动、下界对齐 ──
    body 写成 data-archive="split" 的 6 个页面走这一套：
      · .archive-body 不再滚，只负责给出一个确定的高度；
      · 名录与内容装进同一个 1fr 网格行，两栏都 height:100% ——
        所以它们的盒子下界严格对齐（名录这一栏就是基准）；
-     · 两栏各自 overflow-y:auto，各自按滚动状态挂上下 mask：
-       滚到边缘的条目 / 面板在 --archive-fade（桌面 120px / 窄屏 80px）里淡出，不会硬裁；
+     · 左栏：固定的「名录 N + 搜索」，下面 .xxx-list__scroll 自己滚；
+     · 右栏：固定的档案标题（.xxx-profile__head），下面 .xxx-profile__body 自己滚 ——
+       标题不跟着正文走；
      · 窄屏（≤900px）退回原来的一栏排版：名录摊平在档案前面，整页由
        .archive-body 滚（见下面的媒体查询）。
    ⚠️ 新增这类页面：body 写 data-archive="split"，标题以下包 .archive-body，
@@ -327,31 +324,150 @@ body[data-archive="split"] .vessel-layout {
     align-items: stretch;
 }
 
-/* 两栏共用的留白；mask 由滚动状态类决定（见下面「滚动淡出」）。 */
-body[data-archive="split"] .personnel-list,
-body[data-archive="split"] .facility-list,
-body[data-archive="split"] .vessel-list,
-body[data-archive="split"] .personnel-detail,
-body[data-archive="split"] .facility-detail,
-body[data-archive="split"] .vessel-detail {
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-top: var(--archive-pad);
-    padding-bottom: var(--archive-pad);
-}
-
-/* 名录在两栏里不再需要 sticky：它自己就是滚动容器，且正好占满网格行。 */
+/* 左栏：整栏不滚，头（标题 + 搜索）固定在滚动区外面。 */
 body[data-archive="split"] .personnel-list,
 body[data-archive="split"] .facility-list,
 body[data-archive="split"] .vessel-list {
     position: static;
     top: auto;
 
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+
     /* 名录只是索引，淡出长度比右栏内容短一截 —— 120px 在左栏太占视线。 */
     --archive-fade: 56px;
     --archive-fade-min: 0px;
+}
+
+body[data-archive="split"] .personnel-list__head,
+body[data-archive="split"] .facility-list__head,
+body[data-archive="split"] .vessel-list__head {
+    flex: 0 0 auto;
+    padding: var(--archive-pad) 6px 10px 0;
+}
+
+body[data-archive="split"] .personnel-list__scroll,
+body[data-archive="split"] .facility-list__scroll,
+body[data-archive="split"] .vessel-list__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px var(--archive-pad) 0;
+}
+
+/* 右栏：整栏不滚；档案头固定，正文（.xxx-profile__body）自己滚。 */
+body[data-archive="split"] .personnel-detail,
+body[data-archive="split"] .facility-detail,
+body[data-archive="split"] .vessel-detail {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body[data-archive="split"] .personnel-profile.is-active,
+body[data-archive="split"] .facility-profile.is-active,
+body[data-archive="split"] .vessel-profile.is-active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+body[data-archive="split"] .personnel-profile__head,
+body[data-archive="split"] .facility-profile__head,
+body[data-archive="split"] .vessel-profile__head {
+    flex: 0 0 auto;
+    padding-top: var(--archive-pad);
+}
+
+body[data-archive="split"] .personnel-profile__body,
+body[data-archive="split"] .facility-profile__body,
+body[data-archive="split"] .vessel-profile__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px 0 var(--archive-pad);
+}
+
+/* ── 左栏搜索：外观与交互照星图搜索 ──
+   放大镜图标 / 半透明底 / 聚焦金边 / 原生清除按钮；过滤在下方名录里就地完成。 */
+.archive-search {
+    position: relative;
+    margin-top: 10px;
+}
+
+.archive-search__input {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px 0 30px;
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    background-color: var(--ctl-bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.45' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 9px center;
+    background-size: 15px 15px;
+    border: 1px solid var(--ctl-border);
+    border-radius: var(--ctl-radius);
+    appearance: none;
+    -webkit-appearance: none;
+    transition: var(--ctl-transition);
+}
+
+.archive-search__input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.archive-search__input:hover {
+    border-color: rgba(255, 215, 0, 0.35);
+}
+
+.archive-search__input:focus {
+    border-color: var(--ctl-border-hover);
+    background-color: var(--ctl-bg-focus);
+    outline: none;
+}
+
+.archive-search__input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    cursor: var(--cur-pointer);
+    background-color: rgba(255, 255, 255, 0.45);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
+}
+
+.archive-search__input::-webkit-search-cancel-button:hover {
+    background-color: #ffd700;
+}
+
+.archive-search__empty {
+    margin: 8px 2px 0;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.archive-search__empty[hidden] {
+    display: none;
+}
+
+/* 搜索过滤用 [hidden] 藏条目。名录里的条目 / 分组是 flex 布局，
+   author 的 display 会盖掉 UA 的 [hidden] —— 这里显式压回去。 */
+body[data-archive="split"] .personnel-list__scroll [hidden],
+body[data-archive="split"] .facility-list__scroll [hidden],
+body[data-archive="split"] .vessel-list__scroll [hidden] {
+    display: none !important;
 }
 
 /* ── 滚动淡出：只给真的能滚的容器挂 mask，长度随滚动位置连续变化 ──
@@ -425,17 +541,82 @@ body[data-archive] .is-scrollable {
         align-items: start;
     }
 
+    /* 左栏拆回静态流：标题 / 搜索 / 名录都依次排下去，由页面滚。 */
     body[data-archive="split"] .personnel-list,
     body[data-archive="split"] .facility-list,
-    body[data-archive="split"] .vessel-list,
-    body[data-archive="split"] .personnel-detail,
-    body[data-archive="split"] .facility-detail,
-    body[data-archive="split"] .vessel-detail {
+    body[data-archive="split"] .vessel-list {
+        display: block;
         height: auto;
         max-height: none;
         overflow: visible;
+        padding: 0;
+    }
+
+    body[data-archive="split"] .personnel-list__head,
+    body[data-archive="split"] .facility-list__head,
+    body[data-archive="split"] .vessel-list__head {
+        padding: 0 0 12px;
+    }
+
+    body[data-archive="split"] .personnel-list__scroll,
+    body[data-archive="split"] .facility-list__scroll,
+    body[data-archive="split"] .vessel-list__scroll {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        -webkit-mask-image: none;
+                mask-image: none;
+    }
+
+    /* 设施 / 舰船名录在窄屏铺成网格（原来是直接铺在 .xxx-list 上）。 */
+    body[data-archive="split"] .facility-list__scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        column-gap: 8px;
+    }
+
+    body[data-archive="split"] .vessel-list__scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        column-gap: 8px;
+    }
+
+    body[data-archive="split"] .facility-list__scroll > .facility-list__group,
+    body[data-archive="split"] .facility-list__scroll > .facility-list__branch,
+    body[data-archive="split"] .vessel-list__scroll > .vessel-list__group {
+        grid-column: 1 / -1;
+    }
+
+    /* 右栏：档案头回到正常流，正文也不再单独滚。 */
+    body[data-archive="split"] .personnel-detail,
+    body[data-archive="split"] .facility-detail,
+    body[data-archive="split"] .vessel-detail {
+        display: block;
+        height: auto;
+        overflow: visible;
+    }
+
+    body[data-archive="split"] .personnel-profile.is-active,
+    body[data-archive="split"] .facility-profile.is-active,
+    body[data-archive="split"] .vessel-profile.is-active {
+        display: block;
+        height: auto;
+    }
+
+    body[data-archive="split"] .personnel-profile__head,
+    body[data-archive="split"] .facility-profile__head,
+    body[data-archive="split"] .vessel-profile__head {
         padding-top: 0;
-        padding-bottom: 0;
+    }
+
+    body[data-archive="split"] .personnel-profile__body,
+    body[data-archive="split"] .facility-profile__body,
+    body[data-archive="split"] .vessel-profile__body {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
         -webkit-mask-image: none;
                 mask-image: none;
     }

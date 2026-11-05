@@ -20,8 +20,8 @@
 (function () {
     'use strict';
 
-    var SCROLLERS = '.archive-body, .personnel-list, .facility-list, .vessel-list,' +
-        ' .personnel-detail, .facility-detail, .vessel-detail';
+    var SCROLLERS = '.archive-body, .personnel-list__scroll, .facility-list__scroll, .vessel-list__scroll,' +
+        ' .personnel-profile__body, .facility-profile__body, .vessel-profile__body';
 
     var nodes = [];
     var frame = 0;

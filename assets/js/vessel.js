@@ -120,7 +120,8 @@
             '</header>';
 
         var out = '<article class="vessel-profile' + (active ? ' is-active' : '') + '" id="' + esc(s.id) + '">\n' +
-            indent(head, 4) + '\n';
+            indent(head, 4) + '\n' +
+            '    <div class="vessel-profile__body">\n';
 
         out += indent(block('基本信息', 'Basic Information',
             '<dl class="org-meta">\n' + indent(metaHtml(s), 4) + '\n</dl>' +
@@ -131,7 +132,7 @@
         }
         out += indent(equipmentHtml(s), 4) + '\n';
 
-        return out + '</article>';
+        return out + '    </div>\n</article>';
     }
 
     /* ── 渲染：左栏名录 + 右栏所有档案 ── */
@@ -187,8 +188,16 @@
     }
 
     root.innerHTML = '<aside class="vessel-list" aria-label="舰船名录">\n' +
-        '    <p class="vessel-list__title">名录 <span>' + DATA.vessels.length + '</span></p>\n' +
+        '    <div class="vessel-list__head">\n' +
+        '        <p class="vessel-list__title">名录 <span>' + DATA.vessels.length + '</span></p>\n' +
+        '        <div class="archive-search">\n' +
+        '            <input type="search" class="archive-search__input" placeholder="搜索舰船" aria-label="按名称搜索舰船" autocomplete="off" spellcheck="false">\n' +
+        '            <p class="archive-search__empty" hidden>没有找到匹配的条目</p>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '    <div class="vessel-list__scroll">\n' +
         listHtml() + '\n' +
+        '    </div>\n' +
         '</aside>\n' +
         '<div class="vessel-detail">\n' +
         DATA.vessels.map(function (s, i) {
@@ -196,10 +205,21 @@
         }).join('\n\n') + '\n' +
         '</div>';
 
-    var list = root.querySelector('.vessel-list');
+    var list = root.querySelector('.vessel-list__scroll');
     var items = Array.prototype.slice.call(root.querySelectorAll('.vessel-list__item'));
     var profiles = Array.prototype.slice.call(root.querySelectorAll('.vessel-profile'));
     if (!profiles.length) return;
+
+    if (window.SSSArchiveSearch) {
+        window.SSSArchiveSearch.attach({
+            input: root.querySelector('.archive-search__input'),
+            empty: root.querySelector('.archive-search__empty'),
+            scroll: list,
+            items: items,
+            groups: Array.prototype.slice.call(root.querySelectorAll('.vessel-list__group')),
+            groupSelector: '.vessel-list__group'
+        });
+    }
 
     var byId = {};
     profiles.forEach(function (p) {
@@ -234,35 +254,10 @@
             else if (ir.bottom > lr.bottom) list.scrollTop += ir.bottom - lr.bottom;
         }
 
-        /* 读到一半切到另一条舰船：档案标题已经被滚出视口时把它拉回来，
-           否则页面停在新档案的中段。没滚过就什么都不做。
-           窄屏（名录在上、档案在下）换档案时也要把标题带进来，
-           否则点完名录还停在名录那一段。首次渲染不动页面。
-           两栏档案（data-archive="split"）里右栏自己滚，页面与 .archive-body 都不滚；
-           窄屏退回整页滚动时滚 .archive-body；都没有才退回整页滚动。 */
-        var head = profile.querySelector('.vessel-profile__head');
-        if (head && !initialising) {
-            var stacked = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
-            var pane = profile.parentElement;
-            var scroller = (!stacked && pane && window.getComputedStyle(pane).overflowY === 'auto')
-                ? pane
-                : document.querySelector('body[data-archive] .archive-body');
-            if (scroller) {
-                /* 容器顶部是一条淡出区（宽度 = 容器的 padding-top），
-                   标题停在它下面才不会被压暗 */
-                var sr = scroller.getBoundingClientRect();
-                var line = sr.top + (parseFloat(window.getComputedStyle(scroller).paddingTop) || 0);
-                var hr = head.getBoundingClientRect();
-                if (hr.top < line || (stacked && hr.top > line)) {
-                    scroller.scrollTop += hr.top - line;
-                }
-            } else {
-                var hrLegacy = head.getBoundingClientRect();
-                if (hrLegacy.top < 96 || (stacked && hrLegacy.top > 96)) {
-                    window.scrollTo(0, window.scrollY + hrLegacy.top - 96);
-                }
-            }
-        }
+        /* 右栏标题固定在顶上，换舰船时把正文送回到开头；
+           窄屏（标题回到正常流）也回到正文开头，别停在上一份档案的中段。 */
+        var body = profile.querySelector('.vessel-profile__body');
+        if (body) body.scrollTop = 0;
 
         /* 右栏内容换了，滚动状态（还能不能往上 / 往下滚）要重算 */
         if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {
