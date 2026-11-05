@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>错误：无法访问该页面</title>
+    <title>404 · 星光圣域</title>
 
     <!-- 站点图标：SVG，跟随浏览器主题切换黑/白描边（本页会被任意 URL 渲染，故用绝对路径） -->
     <link rel="icon" type="image/svg+xml" href="/assets/img/logo_SSS.svg">
@@ -146,22 +146,74 @@
 
     <!-- ===== 错误内容（统一页面） ===== -->
     <main class="error-container">
-        <div class="error-code">ERROR</div>
-        <div class="error-sub">SIGNAL LOST</div>
-        <div class="error-message">
-             错误：无法访问该页面
-            <span>由于当前处于极端异常情况，星光圣域推荐您向最近的星光圣域永恒协议成员获取帮助</span>
-        </div>
+        <section class="error-panel" aria-labelledby="error-title">
 
-        <a href="/" class="btn-return">
-            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9.5 3L5 8l4.5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            返回星光圣域首页
-        </a>
+            <!-- 读数条：左「导航错误」右「站点代号 + 错误码」，把这一页当成一台仪器 -->
+            <div class="error-panel__bar">
+                <span class="error-panel__tag">
+                    <span class="error-panel__dot" aria-hidden="true"></span>
+                    导航错误 / NAVIGATION
+                </span>
+                <span class="error-panel__id">SSS · ERR 404</span>
+            </div>
 
-        <div class="glitch-line">⚠ 通信链路中断 — 正在尝试重新连接…</div>
+            <div class="error-panel__body">
+
+                <div class="error-head">
+                    <!-- 全页只有这一个金色元素：错误码是这一屏的「关键读数」 -->
+                    <div class="error-code" aria-hidden="true">404</div>
+                    <div class="error-head__rule" aria-hidden="true"></div>
+                    <div class="error-head__text">
+                        <h1 id="error-title">该坐标未登记于星图</h1>
+                        <p class="error-sub">COORDINATE NOT FOUND</p>
+                    </div>
+                </div>
+
+                <p class="error-desc">
+                    请求的地址没有对应的档案，或它已被迁往别处。<br>
+                    请返回首页，或从档案中重新检索。
+                </p>
+
+                <p class="error-path">
+                    <span class="error-path__label">请求坐标</span>
+                    <code class="error-path__value" id="error-path">/</code>
+                </p>
+
+                <div class="error-actions">
+                    <a href="/" class="btn-return">
+                        返回首页
+                        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                    <a href="/archive/" class="error-link">浏览档案</a>
+                </div>
+
+            </div>
+
+            <div class="error-panel__foot">
+                <span class="error-status">
+                    <span class="error-status__dot" aria-hidden="true"></span>
+                    通信链路中断 · 该坐标无响应
+                </span>
+                <span class="error-panel__id">LINK / LOST</span>
+            </div>
+
+        </section>
     </main>
+
+    <!-- 把请求路径写进读数区：这一页会被任意地址渲染，坐标本身就是最直接的线索。
+         用 textContent 写入，地址里带什么都不当 HTML 解析。 -->
+    <script>
+        (function () {
+            var el = document.getElementById('error-path');
+            if (!el) return;
+            var p = location.pathname || '/';
+            try { p = decodeURI(p); } catch (e) {}
+            el.textContent = p;
+            el.title = p;
+        })();
+    </script>
 
     <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
     <footer class="site-footer">

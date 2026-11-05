@@ -34,7 +34,7 @@
 | `--ctl-fg-hover` | `#FFD700` | 强调态文字 |
 | `--ctl-radius` | `4px` | **按钮 / 输入框**圆角 |
 | `--ctl-panel-radius` | `16px` | **面板 / 卡片**圆角 |
-| `--ctl-err` | `#ff6b6b` | **仅用于失败提示 / 破坏性操作**（复用错误页那支红）|
+| `--ctl-err` | `#ff6b6b` | **仅用于失败提示 / 破坏性操作**（404 页已不用红色，见 `error.css`）|
 | `--ctl-ease` | `0.25s` | ⚠️ 是**时长**，不是缓动函数（见第 11 节）|
 | `--ctl-transition` | `color/bg/border` 各 `var(--ctl-ease)` | 控件的标准过渡 |
 

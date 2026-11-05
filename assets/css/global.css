@@ -40,7 +40,7 @@
     --ctl-transition: color var(--ctl-ease), background-color var(--ctl-ease),
                       border-color var(--ctl-ease);
     --ctl-panel-radius: 16px;                     /* 面板 / 卡片统一圆角 */
-    --ctl-err: #ff6b6b;                           /* 复用错误页那支红，仅用于失败提示 */
+    --ctl-err: #ff6b6b;                           /* 站内失败提示红，仅用于失败提示 / 破坏性操作 */
 
     /* ==========================================================================
        指针（鼠标光标）
