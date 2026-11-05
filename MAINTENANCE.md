@@ -135,17 +135,18 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 ---
 
-## 档案页左栏名录：三页共用同一高度
+## 档案页左栏名录：与右栏内容同高、下界对齐
 
-人员档案等级页、舰船档案、深空设施档案的左栏名录共用 `archive.css` 里的
-`--archive-list-height`（`calc(100vh - 300px)`）：内容不够长时也占满，
-三页来回切换时左栏不会一页高、一页矮。要调整高度只改这一个变量；
-三页在 ≤900px 都退回 `height: auto`（名录摊成网格、直接接在档案前面）。
+人员档案等级页、舰船档案、深空设施档案的版式是「左名录 + 右档案」两栏。
+这 6 个页面（4 个人员等级页 + 舰船 + 深空设施）的 `<body>` 写
+`data-archive="split"`：名录与内容装进同一个 `1fr` 网格行、两栏都是 `height: 100%`，
+所以**两栏的上下界严格对齐**，下界以名录这一栏为基准。
 
-> 档案页现在套了「视口框」（下一节）：整体不滚、只有中间的 `.archive-body` 滚，
-> 所以 `archive.css` 在 `body[data-archive]` 下把这个变量改成了
-> `calc(100dvh - 340px)`（减掉顶栏 / 页头 / 滚动区上下过渡 / 页脚），
-> 同时把 `position: sticky` 的 `top` 从 `96px` 改成 `0`（参照系变成了滚动窗口）。
+- 名录高度沿用 `--archive-list-height`，但在视口框里被改成 `100%`
+  （不再是 `100vh - 300px` 的估算值）—— 它现在等于网格行高；
+- 两栏各自 `overflow-y: auto`，各自有上下 36px（窄屏 28px）的淡出带；
+- 页面本身与 `.archive-body` 都不滚，只有这两栏滚；
+- ≤900px 两栏退回上下排：名录摊成网格、`height: auto`，由 `.archive-body` 整页滚。
 
 ---
 
@@ -158,16 +159,17 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
    页面怎么滚，它们都不动；
 2. **页脚常驻**：`body` 高度锁在视口高度（`100dvh`），页脚仍是竖排 flex 的最后一格，
    所以它**始终贴着视口底部**，不会随内容滚走；
-3. **内容在中间滚**：标题以下的一切包进 `.archive-body`，它是这一页**唯一的滚动容器**；
-4. **两端淡出**：`.archive-body` 的上下各有 36px（窄屏 28px）过渡区，
+3. **内容在中间滚**：标题以下的一切包进 `.archive-body`。普通档案页由它自己滚；
+   `data-archive="split"` 的两栏页里它不滚，改由名录 / 内容两栏各自滚（见上一节）；
+4. **两端淡出**：滚动容器的上下各有 36px（窄屏 28px）过渡区，
    内容滚到窗口上下边缘时用 `mask-image` 渐变淡出 / 淡入，而不是被一条硬边裁掉。
-   内容还没滚到边缘时，渐变落在 `.archive-body` 的空白 padding 上，
+   内容还没滚到边缘时，渐变落在容器的空白 padding 上，
    所以**短内容（不产生滚动）不会平白被压暗**。
 
 实现全在 `assets/css/archive.css` 末尾的「档案页视口框」块，页面侧只有两处标记：
 
 ```html
-<body data-archive>
+<body data-archive>                 <!-- 两栏页写 data-archive="split" -->
     …
     <main>
         <section class="archive-section（或 .org-section）">
@@ -178,7 +180,7 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
             </header>
 
             <div class="archive-body">
-                <!-- 这一页会滚动的内容全放这里 -->
+                <!-- 这一页会滚动的内容全放这里；两栏页里是 .xxx-layout -->
             </div>
         </section>
     </main>
@@ -190,29 +192,30 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   站内同文档换页（`spa.js`）只把目标页的 `data-*` 搬到 body（`syncBody()`），
   换页进出档案页时这套版式才会自动切换。写成 class 会在换页后残留 / 丢失，
   表现为「从档案页跳到别的页后页面不滚 / 进了档案页却仍整页滚动」。
+  `data-archive` 的值也会跟着搬，所以两栏页进出站内换页同样会自动切对。
 - **别把滚动内容放到 `.archive-body` 外面**：`.archive-body` 之外的部分不会滚，
   超出一屏会被 `overflow: hidden` 直接裁掉（页头和页脚本来就要留在外面）。
-- **别把 `.archive-body` 的上下 padding 改成 0**：短内容会被两端渐变凭空压暗。
+- **别把滚动容器的上下 padding 改成 0**：短内容会被两端渐变凭空压暗。
   过渡宽度只在 `archive.css` 里档案页容器（`.archive-section` / `.org-section`）的
   `--archive-fade` 上改。
 - **`mask-image` 必须同时写 `-webkit-mask-image`**（Safari 只认带前缀的那条）；
-  mask 的渐变坐标相对 `.archive-body` 的边框盒，所以它固定在窗口两端。
-- 窄屏**不退回整页滚动**：`100dvh` 保证页脚始终可见；≤900px 时三页左栏名录
-  照旧摊成网格（`height: auto`），≤768px 过渡区缩到 28px。
+  mask 的渐变坐标相对容器的边框盒，所以它固定在窗口两端。
+- 窄屏**不退回整页滚动**（普通档案页）：`100dvh` 保证页脚始终可见；
+  两栏页在 ≤900px 才退回整页滚动，名录摊成网格（`height: auto`）；
+  ≤768px 过渡区缩到 28px。
 - `body[data-archive]` 下 `main` / `section` 都要带 `min-height: 0`（flex 子项默认
   `min-height: auto`，不给的话内部滚动区会被内容撑高、页脚重新被顶出视口）。
 
 ### 跟这个框有关的几个联动点
 
-- **左栏名录**（人员等级页 / 舰船 / 深空设施）：`position: sticky` 的参照系从整页
-  变成 `.archive-body`，所以 `top` 改为 `0`，高度改用 `calc(100dvh - 340px)`
-  （见上一节）；≤900px 照旧退回 `height: auto`。
+- **两栏页的名录**（人员等级页 / 舰船 / 深空设施）：两栏同高（`--archive-list-height: 100%`），
+  名录不再 `position: sticky`，它本身就是固定高度的滚动容器；≤900px 退回 `height: auto`。
 - **`#设施代号` / `#舰船代号` 深链与切换条目后的回滚**：`facility.js` / `vessel.js`
-  不再 `window.scrollTo`，而是优先滚 `.archive-body`（顶部留出 36px 过渡区，
-  标题不会落进淡出带里）；`.facility-profile` / `.vessel-profile` 的
-  `scroll-margin-top` 也改成了 `var(--archive-fade)`。
+  在桌面两栏页里滚右栏（`.facility-detail` / `.vessel-detail`），窄屏滚
+  `.archive-body`（顶部留出过渡区，标题不会落进淡出带里）；`.facility-profile` /
+  `.vessel-profile` 的 `scroll-margin-top` 也改成了 `var(--archive-fade)`。
 - **加新的档案页**：除了「加新页面时要一起做的七件事」，再补两步 ——
-  ① `<body data-archive>`；② 用 `.archive-body` 包住标题以下的内容
+  ① `<body data-archive>`（两栏版式再加 `="split"`）；② 用 `.archive-body` 包住标题以下的内容
   （放在页头之后、`</section>` 之前）。别忘 `sw.js` 的 `PRECACHE_URLS`。
 - 这一页的滚动位置**不参与浏览器的整页滚动恢复**（滚的是内层容器）。
   从站内导航回来时内容从顶部开始；带 `#` / `?person=` 的深链仍由页面脚本定位。

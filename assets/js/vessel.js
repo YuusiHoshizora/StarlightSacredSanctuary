@@ -238,17 +238,20 @@
            否则页面停在新档案的中段。没滚过就什么都不做。
            窄屏（名录在上、档案在下）换档案时也要把标题带进来，
            否则点完名录还停在名录那一段。首次渲染不动页面。
-           档案页现在有自己的滚动窗口（.archive-body，见 archive.css「档案页视口框」），
-           页面本身不滚 —— 所以优先滚那个容器，只有它不存在时才退回整页滚动。 */
+           两栏档案（data-archive="split"）里右栏自己滚，页面与 .archive-body 都不滚；
+           窄屏退回整页滚动时滚 .archive-body；都没有才退回整页滚动。 */
         var head = profile.querySelector('.vessel-profile__head');
         if (head && !initialising) {
             var stacked = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
-            var scroller = document.querySelector('body[data-archive] .archive-body');
+            var pane = profile.parentElement;
+            var scroller = (!stacked && pane && window.getComputedStyle(pane).overflowY === 'auto')
+                ? pane
+                : document.querySelector('body[data-archive] .archive-body');
             if (scroller) {
-                /* 滚动窗口顶部是一条淡出区（宽度 = .archive-body 的 padding-top），
+                /* 容器顶部是一条淡出区（宽度 = 容器的 padding-top），
                    标题停在它下面才不会被压暗 */
                 var sr = scroller.getBoundingClientRect();
-                var line = sr.top + (parseFloat(window.getComputedStyle(scroller).paddingTop) || 36);
+                var line = sr.top + (parseFloat(window.getComputedStyle(scroller).paddingTop) || 0);
                 var hr = head.getBoundingClientRect();
                 if (hr.top < line || (stacked && hr.top > line)) {
                     scroller.scrollTop += hr.top - line;

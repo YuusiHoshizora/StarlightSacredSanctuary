@@ -24,9 +24,10 @@
     padding: 96px 60px 80px;
     flex: 1 1 auto;
 
-    /* 三份档案页（人员 / 舰船 / 深空设施）的左栏名录共用同一个高度：
-       内容不够长时也占满，切页面时左栏不会一页高、一页矮。
-       要调整只改这一个变量；窄屏（≤900px）三页各自退回 height: auto。 */
+    /* 三份两栏档案页（人员 / 舰船 / 深空设施）的左栏名录共用同一高度变量。
+       视口框（body[data-archive]，见文件末尾）会把它改成 100% —— 等于两栏网格行高，
+       名录与右栏因此严格同高、下界对齐。这里的 calc(100vh - 300px) 只是脱离
+       视口框时的兜底；窄屏（≤900px）三页各自退回 height: auto。 */
     --archive-list-height: calc(100vh - 300px);
 }
 
@@ -200,7 +201,8 @@ a.archive-card:focus-visible {
    规范（改档案页前先读这一条，细节见 MAINTENANCE.md「档案页的视口框」）：
      · 所有 archive/ 下的页面，<body> 都带 data-archive；
      · 页头（面包屑 + 标题 + 英文 + 简介）在 .archive-body **外面**，永远不动；
-     · 标题以下的内容全部包进 .archive-body —— 它是这一页**唯一**的滚动容器；
+     · 标题以下的内容全部包进 .archive-body；两栏档案（data-archive="split"）里
+       它不再自己滚，改由名录 / 内容两栏各自滚（见下面的「两栏档案」）；
      · 页脚仍在 body 竖排 flex 的末尾。body 高度锁在视口高度上，
        所以页脚始终贴着视口底部，不会随内容滚走。
 
@@ -277,12 +279,10 @@ body[data-archive] .archive-body {
     );
 }
 
-/* 目录高度原来是按整页滚动算的（100vh - 300px）。现在整页不滚了，
-   左栏要减掉「顶栏 + 页头 + 滚动区上下过渡 + 页脚」，否则会伸到滚动区外面；
-   同时 sticky 的参照系变成了 .archive-body，top 从 96px 改成 0。 */
+/* 左栏名录高度：两栏档案里它等于网格行高，与右栏内容同高 ——
+   两边的下界落在同一条线上（以名录这一栏为基准，右侧内容窗跟着它走）。 */
 body[data-archive] .archive-section {
-    --archive-list-height: calc(100vh - 340px);
-    --archive-list-height: calc(100dvh - 340px);
+    --archive-list-height: 100%;
 }
 
 body[data-archive] .personnel-list,
@@ -298,6 +298,72 @@ body[data-archive] .vessel-profile {
     scroll-margin-top: var(--archive-fade);
 }
 
+/* ── 两栏档案（人员等级页 / 舰船 / 深空设施）：名录与内容各自滚动、下界对齐 ──
+   body 写成 data-archive="split" 的 6 个页面走这一套：
+     · .archive-body 不再滚，只负责给出一个确定的高度；
+     · 名录与内容装进同一个 1fr 网格行，两栏都 height:100% ——
+       所以它们的盒子下界严格对齐（名录这一栏就是基准）；
+     · 两栏各自 overflow-y:auto，各自有上下过渡带与 mask：
+       滚到边缘的条目 / 面板在 36px（窄屏 28px）里淡出，不会硬裁；
+     · 窄屏（≤900px）退回原来的一栏排版：名录摊平在档案前面，整页由
+       .archive-body 滚（见下面的媒体查询）。
+   ⚠️ 新增这类页面：body 写 data-archive="split"，标题以下包 .archive-body，
+      内容根用 .personnel-layout / .facility-layout / .vessel-layout 之一。 */
+body[data-archive="split"] .archive-body {
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    -webkit-mask-image: none;
+            mask-image: none;
+}
+
+body[data-archive="split"] .personnel-layout,
+body[data-archive="split"] .facility-layout,
+body[data-archive="split"] .vessel-layout {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+}
+
+/* 两栏共用的上下淡出：padding 给过渡区，mask 固定在盒子两端。 */
+body[data-archive="split"] .personnel-list,
+body[data-archive="split"] .facility-list,
+body[data-archive="split"] .vessel-list,
+body[data-archive="split"] .personnel-detail,
+body[data-archive="split"] .facility-detail,
+body[data-archive="split"] .vessel-detail {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: var(--archive-fade);
+    padding-bottom: var(--archive-fade);
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--archive-fade),
+        #000 calc(100% - var(--archive-fade)),
+        transparent 100%
+    );
+            mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--archive-fade),
+        #000 calc(100% - var(--archive-fade)),
+        transparent 100%
+    );
+}
+
+/* 名录在两栏里不再需要 sticky：它自己就是滚动容器，且正好占满网格行。 */
+body[data-archive="split"] .personnel-list,
+body[data-archive="split"] .facility-list,
+body[data-archive="split"] .vessel-list {
+    position: static;
+    top: auto;
+}
+
 @media (max-width: 900px) {
     /* 窄屏三页都把名录摊成网格、接在档案前面 —— 不要再给它一个视口高度。 */
     body[data-archive] .personnel-list,
@@ -306,6 +372,51 @@ body[data-archive] .vessel-profile {
         top: auto;
         height: auto;
         max-height: none;
+    }
+
+    /* 两栏档案在窄屏退回「整页滚动」：两栏不再各自滚动 / 淡出，
+       交回 .archive-body（这里把它的过渡带与 mask 还回来）。 */
+    body[data-archive="split"] .archive-body {
+        overflow-y: auto;
+        padding-top: var(--archive-fade);
+        padding-bottom: var(--archive-fade);
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            transparent 0,
+            #000 var(--archive-fade),
+            #000 calc(100% - var(--archive-fade)),
+            transparent 100%
+        );
+                mask-image: linear-gradient(
+            to bottom,
+            transparent 0,
+            #000 var(--archive-fade),
+            #000 calc(100% - var(--archive-fade)),
+            transparent 100%
+        );
+    }
+
+    body[data-archive="split"] .personnel-layout,
+    body[data-archive="split"] .facility-layout,
+    body[data-archive="split"] .vessel-layout {
+        height: auto;
+        grid-template-rows: none;
+        align-items: start;
+    }
+
+    body[data-archive="split"] .personnel-list,
+    body[data-archive="split"] .facility-list,
+    body[data-archive="split"] .vessel-list,
+    body[data-archive="split"] .personnel-detail,
+    body[data-archive="split"] .facility-detail,
+    body[data-archive="split"] .vessel-detail {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding-top: 0;
+        padding-bottom: 0;
+        -webkit-mask-image: none;
+                mask-image: none;
     }
 }
 
