@@ -126,6 +126,73 @@
     line-height: 1.6;
 }
 
+/* ==========================================================================
+   点击卡片的错误提示条
+   --------------------------------------------------------------------------
+   形式照彩蛋页「彩蛋已发现」的底部提示条：固定底部居中、玻璃面板、小方点、
+   上移 14px 淡入；报错配错误红（与档案页的 .org-toast 同一套）。
+   ========================================================================== */
+.fleet-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 210;
+
+    max-width: calc(100vw - 48px);
+    padding: 12px 20px;
+
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+
+    background: rgba(18, 18, 42, 0.97);
+    border: 1px solid rgba(255, 107, 107, 0.4);
+    border-radius: var(--ctl-panel-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 14px);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.fleet-toast.is-in {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s;
+}
+
+/* 小方点：与彩蛋提示条、加载屏「这一步已完成」同一套，报错时用错误红 */
+.fleet-toast__dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 8px;
+    border-radius: 1px;
+    background: var(--ctl-err);
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.85);
+    vertical-align: 1px;
+}
+
+/* 「减少动态效果」：提示条不滑动，直接出现 */
+@media (prefers-reduced-motion: reduce) {
+    .fleet-toast,
+    .fleet-toast.is-in {
+        transition: none;
+    }
+}
+
+/* 移动端：贴边一点，别顶到屏幕两侧 */
+@media (max-width: 768px) {
+    .fleet-toast {
+        bottom: 18px;
+        max-width: calc(100vw - 24px);
+        padding: 11px 16px;
+    }
+}
+
 /* 「减少动态」：与 fleet.js 的 reduced 分支一致，直接切换 */
 @media (prefers-reduced-motion: reduce) {
     .fleet-card,

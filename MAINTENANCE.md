@@ -727,6 +727,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   （`shiftColor`，tone 回到紫色时精确复原，不会越换越偏）；顶栏用 `--fleet-nav-bg`。
   移出卡片后恢复紫色。**颜色只写在卡片的 `data-fleet-color` 上**，与 CSS 里该卡片的 hover 描边同色。
   `background.js` 里强调色（`THEME`）与主题色（`TONE`）是两套独立变量，别再合并。
+  点击卡片目前没有目标页，底部会弹 `.fleet-toast`（「错误：拒绝访问：无法连接至星域网。」）：
+  形式照彩蛋页的底部提示条，5.2 秒自动收起，点提示条或按 Esc 也可关闭。
 - **页面切换动画**：跨文档 View Transitions（纯 CSS），`seamless.js` 只负责让下一页提前就绪；
    navbar 是共享元素（`view-transition-name:site-navbar`），所以它"钉住"不动。
   · ⚠️ **交叉淡化只让新快照淡入**（`::view-transition-old(root){animation:none}`，新快照 220ms 淡入）。

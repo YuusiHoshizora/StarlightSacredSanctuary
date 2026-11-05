@@ -20,6 +20,7 @@
 
    移出卡片（或失焦）后平滑回到紫色。颜色写在卡片的 data-fleet-color 上。
    动效：320ms easeOutCubic；系统偏好「减少动态」时直接切换。
+   点击卡片：三支舰队目前都无法打开，从底部弹错误说明（.fleet-toast）。
    ============================================================ */
 (function () {
   'use strict';
@@ -187,6 +188,71 @@
     card.addEventListener('blur', onBlur, false);
   }
 
+  /* ------------------------------------------------------------------
+     点击卡片：三支舰队目前都无法打开，底部弹一条错误说明
+     ------------------------------------------------------------------
+     形式照彩蛋页的底部提示条：玻璃面板 + 小方点，上移淡入，5.2 秒后自动收起；
+     点提示条本身或按 Esc 也能收起。文案固定为「拒绝访问：无法连接至星域网」。 */
+  var TOAST_MSG = '错误：拒绝访问：无法连接至星域网。';
+  var TOAST_HOLD = 5200;
+  var toastEl = null;
+  var toastText = null;
+  var toastTimer = 0;
+
+  function hideToast() {
+    window.clearTimeout(toastTimer);
+    toastTimer = 0;
+    if (toastEl) toastEl.classList.remove('is-in');
+  }
+
+  function buildToast() {
+    toastEl = document.createElement('div');
+    toastEl.className = 'fleet-toast';
+    toastEl.setAttribute('role', 'status');    // 读屏会念出来，但不抢焦点
+    var dot = document.createElement('span');
+    dot.className = 'fleet-toast__dot';
+    dot.setAttribute('aria-hidden', 'true');
+    toastEl.appendChild(dot);
+    toastText = document.createTextNode(TOAST_MSG);
+    toastEl.appendChild(toastText);
+    document.body.appendChild(toastEl);
+
+    toastEl.addEventListener('click', hideToast);
+
+    /* 键盘用户：Esc 收起。用全局标记保证 SPA 反复进入本页也只绑一次 */
+    if (!window.__sssFleetToastKey) {
+      window.__sssFleetToastKey = true;
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        var t = document.querySelector('.fleet-toast.is-in');
+        if (t) t.classList.remove('is-in');
+      });
+    }
+    return toastEl;
+  }
+
+  function showToast() {
+    var t = toastEl || buildToast();
+    if (toastText.nodeValue !== TOAST_MSG) toastText.nodeValue = TOAST_MSG;
+    window.clearTimeout(toastTimer);
+    if (!t.classList.contains('is-in')) {
+      /* 先按"没进来"的初态上屏，下一帧再加 is-in，否则浏览器会跳过过渡 */
+      void t.offsetWidth;
+      window.requestAnimationFrame(function () {
+        t.classList.add('is-in');
+      });
+    }
+    toastTimer = window.setTimeout(hideToast, TOAST_HOLD);   // 连点会重新计时
+  }
+
+  /* 一个委托监听就够：以后加舰队卡片不用重新绑 */
+  document.addEventListener('click', function (e) {
+    var card = e.target && e.target.closest ? e.target.closest('.fleet-card') : null;
+    if (!card) return;
+    e.preventDefault();          // href="#"：别让浏览器滚回页面顶部
+    showToast();
+  });
+
   /* 站内同文档换页（spa.js）后 <html> 上的内联令牌会留下来，
      必须清掉，否则下一页的强调色会停在这张舰队的颜色上。
      清内联值而不是写回金色：让下一页回到 global.css 的 :root 默认。 */
@@ -206,6 +272,13 @@
     root.style.removeProperty('--fleet-nav-bg');
     if (window.SSSHex && typeof window.SSSHex.setTone === 'function') {
       window.SSSHex.setTone(DEFAULT_RGB);
+    }
+    /* 换页后别把提示条留在下一页 */
+    if (toastEl) {
+      hideToast();
+      if (toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
+      toastEl = null;
+      toastText = null;
     }
   }
 
