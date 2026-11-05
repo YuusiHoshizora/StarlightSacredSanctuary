@@ -200,9 +200,9 @@
         '    </div>\n' +
         '</aside>\n' +
         '<div class="vessel-detail">\n' +
-        '    <div class="archive-empty" role="status">\n' +
+        '    <div class="archive-empty" role="status" aria-label="未选择舰船">\n' +
         '        <span class="archive-empty__dot" aria-hidden="true"></span>\n' +
-        '        <p class="archive-empty__text">从左侧名录选择一艘舰船</p>\n' +
+        '        <p class="archive-empty__text">NO / INFO</p>\n' +
         '    </div>\n' +
         DATA.vessels.map(function (s) {
             return indent(profileHtml(s, false), 4);
@@ -306,7 +306,31 @@
     window.addEventListener('hashchange', fromHash);
     window.addEventListener('popstate', fromHash);
 
-    /* 首次进入：有 #舰船代号 就选中，没有就显示第一条 */
+    /* 点左栏 / 右栏的空白处取消选择 */
+    var listPane = root.querySelector('.vessel-list');
+    var detailPane = root.querySelector('.vessel-detail');
+
+    function clearSelection() {
+        if (!profiles.some(function (p) { return p.classList.contains('is-active'); })) return;
+        try { history.pushState(null, '', location.pathname); } catch (e) { }
+        activate('');
+    }
+
+    if (listPane) {
+        listPane.addEventListener('click', function (e) {
+            if (e.target.closest('.vessel-list__item, .archive-search')) return;
+            clearSelection();
+        });
+    }
+
+    if (detailPane) {
+        detailPane.addEventListener('click', function (e) {
+            if (e.target.closest('.org-block, .vessel-profile__head, a, button')) return;
+            clearSelection();
+        });
+    }
+
+    /* 首次进入：有 #舰船代号 就选中，没有就显示空白态 */
     fromHash();
     initialising = false;
 

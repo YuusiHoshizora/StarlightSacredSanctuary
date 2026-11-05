@@ -435,6 +435,38 @@ body[data-archive="split"] .archive-empty {
 
 .archive-empty__text {
     margin: 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* 切换右栏内容 / 空白态时来一下很短的淡入 + 5px 上浮，避免硬切 */
+@keyframes archive-swap-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+body[data-archive="split"] .personnel-profile.is-active,
+body[data-archive="split"] .facility-profile.is-active,
+body[data-archive="split"] .vessel-profile.is-active,
+body[data-archive="split"] .archive-empty:not([hidden]) {
+    animation: archive-swap-in 0.22s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body[data-archive="split"] .personnel-profile.is-active,
+    body[data-archive="split"] .facility-profile.is-active,
+    body[data-archive="split"] .vessel-profile.is-active,
+    body[data-archive="split"] .archive-empty:not([hidden]) {
+        animation: none;
+    }
 }
 
 /* ── 左栏搜索：外观与交互照星图搜索 ──

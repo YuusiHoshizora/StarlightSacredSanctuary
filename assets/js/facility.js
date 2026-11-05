@@ -353,9 +353,9 @@
         '    </div>\n' +
         '</aside>\n' +
         '<div class="facility-detail">\n' +
-        '    <div class="archive-empty" role="status">\n' +
+        '    <div class="archive-empty" role="status" aria-label="未选择设施">\n' +
         '        <span class="archive-empty__dot" aria-hidden="true"></span>\n' +
-        '        <p class="archive-empty__text">从左侧名录选择一项设施</p>\n' +
+        '        <p class="archive-empty__text">NO / INFO</p>\n' +
         '    </div>\n' +
         DATA.facilities.map(function (f) {
             return indent(profileHtml(f, false), 4);
@@ -485,7 +485,31 @@
     window.addEventListener('hashchange', fromHash);
     window.addEventListener('popstate', fromHash);
 
-    /* 首次进入：有 #设施代号 就选中，没有就显示第一条 */
+    /* 点左栏 / 右栏的空白处取消选择 */
+    var listPane = root.querySelector('.facility-list');
+    var detailPane = root.querySelector('.facility-detail');
+
+    function clearSelection() {
+        if (!profiles.some(function (p) { return p.classList.contains('is-active'); })) return;
+        try { history.pushState(null, '', location.pathname); } catch (e) { }
+        activate('');
+    }
+
+    if (listPane) {
+        listPane.addEventListener('click', function (e) {
+            if (e.target.closest('.facility-list__item, .archive-search, .facility-list__toggle')) return;
+            clearSelection();
+        });
+    }
+
+    if (detailPane) {
+        detailPane.addEventListener('click', function (e) {
+            if (e.target.closest('.org-block, .facility-profile__head, a, button')) return;
+            clearSelection();
+        });
+    }
+
+    /* 首次进入：有 #设施代号 就选中，没有就显示空白态 */
     fromHash();
     initialising = false;
 

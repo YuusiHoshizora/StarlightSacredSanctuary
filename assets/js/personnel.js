@@ -208,9 +208,9 @@
         '                    </div>\n' +
         '                </aside>\n\n' +
         '                <div class="personnel-detail">\n' +
-        '                    <div class="archive-empty" role="status">\n' +
+        '                    <div class="archive-empty" role="status" aria-label="未选择成员">\n' +
         '                        <span class="archive-empty__dot" aria-hidden="true"></span>\n' +
-        '                        <p class="archive-empty__text">从左侧名录选择一位成员</p>\n' +
+        '                        <p class="archive-empty__text">NO / INFO</p>\n' +
         '                    </div>\n' +
         members.map(function (m) {
             return profileHtml(m, false);
@@ -317,6 +317,30 @@
     window.addEventListener('hashchange', fromHash);
     window.addEventListener('popstate', fromHash);
 
+    /* 点左栏 / 右栏的空白处取消选择 */
+    var listPane = root.querySelector('.personnel-list');
+    var detailPane = root.querySelector('.personnel-detail');
+
+    function clearSelection() {
+        if (!profiles.some(function (p) { return p.classList.contains('is-active'); })) return;
+        try { history.pushState(null, '', location.pathname); } catch (e) { }
+        activate('');
+    }
+
+    if (listPane) {
+        listPane.addEventListener('click', function (e) {
+            if (e.target.closest('.personnel-list__item, .archive-search')) return;
+            clearSelection();
+        });
+    }
+
+    if (detailPane) {
+        detailPane.addEventListener('click', function (e) {
+            if (e.target.closest('.org-block, .personnel-profile__head, a, button')) return;
+            clearSelection();
+        });
+    }
+
     /* 跨文档 View Transition / 预渲染时，脚本可能在 URL 的 query 稳定之前就跑完；
        pageshow 与 load 后再补一次选中，保证从组织页带 ?person= 进来一定落到对应人物 */
     window.addEventListener('pageshow', fromHash);
@@ -324,7 +348,7 @@
         window.setTimeout(fromHash, 60);
     });
 
-    /* 首次进入：有 ?person= / #身份编号 就选中，没有就显示第一位；都不滚动页面 */
+    /* 首次进入：有 ?person= / #身份编号 就选中，没有就显示空白态；都不滚动页面 */
     fromHash();
 
     if (window.__sssPageCleanup) {
