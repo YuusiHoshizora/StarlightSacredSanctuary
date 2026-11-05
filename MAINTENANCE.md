@@ -150,6 +150,10 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   下面 `.xxx-list__scroll` 自己滚 —— 标题和搜索不会跟着名录滚走；
 - **右栏**：固定的档案标题（`.xxx-profile__head`）在上面，
   下面 `.xxx-profile__body` 自己滚 —— 标题不会跟着正文滚走；
+- **默认空白**：没有 `#…` / `?person=` 时什么条目都不选（左栏没有 `.is-active`，
+  右栏也不预开第一条），右栏显示 `.archive-empty` 占位面板；
+  点条目、搜索回车或带深链进来才激活。页面脚本在 `activate()` 里同时切换
+  `.is-active` 和 `empty.hidden`；没有有效 id 时回到空白态；
 - 两栏各自按滚动状态淡出；名录的淡出长度比内容短
   （桌面 56px / 窄屏 40px，内容栏是 120px / 80px），见下面「滚动淡出」；
 - 页面本身与 `.archive-body` 都不滚，只有上面这两个内层容器滚；

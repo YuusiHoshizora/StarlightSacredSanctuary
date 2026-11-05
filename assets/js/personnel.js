@@ -84,7 +84,7 @@
                 last = initial;
                 out += '                <p class="personnel-list__group">' + esc(initial) + '</p>\n';
             }
-            out += '                <a class="personnel-list__item' + (i === 0 ? ' is-active' : '') + '" href="#' + esc(m.anchor) + '" data-id="' + esc(m.anchor) + '">\n' +
+            out += '                <a class="personnel-list__item" href="#' + esc(m.anchor) + '" data-id="' + esc(m.anchor) + '">\n' +
                 '                    <span class="personnel-list__name">' + esc(m.name) + '</span>\n' +
                 '                    <span class="personnel-list__latin">' + esc(m.latin) + '</span>\n' +
                 '                </a>\n';
@@ -208,13 +208,18 @@
         '                    </div>\n' +
         '                </aside>\n\n' +
         '                <div class="personnel-detail">\n' +
-        members.map(function (m, i) {
-            return profileHtml(m, i === 0);
+        '                    <div class="archive-empty" role="status">\n' +
+        '                        <span class="archive-empty__dot" aria-hidden="true"></span>\n' +
+        '                        <p class="archive-empty__text">从左侧名录选择一位成员</p>\n' +
+        '                    </div>\n' +
+        members.map(function (m) {
+            return profileHtml(m, false);
         }).join('\n\n') + '\n                </div>';
 
     var list = root.querySelector('.personnel-list__scroll');
     var items = Array.prototype.slice.call(root.querySelectorAll('.personnel-list__item'));
     var profiles = Array.prototype.slice.call(root.querySelectorAll('.personnel-profile'));
+    var empty = root.querySelector('.archive-empty');
     if (!profiles.length) return;
 
     if (window.SSSArchiveSearch) {
@@ -234,8 +239,7 @@
     });
 
     function activate(id) {
-        var profile = byId[id] || profiles[0];
-        if (!profile) return;
+        var profile = (id && byId[id]) || null;
 
         profiles.forEach(function (p) {
             p.classList.toggle('is-active', p === profile);
@@ -243,10 +247,12 @@
 
         var current = null;
         items.forEach(function (a) {
-            var on = a.getAttribute('data-id') === profile.id;
+            var on = profile && a.getAttribute('data-id') === profile.id;
             a.classList.toggle('is-active', on);
             if (on) current = a;
         });
+
+        if (empty) empty.hidden = !!profile;
 
         /* 只滚左栏自己的滚动条，页面保持原位 */
         if (list && current) {
@@ -257,10 +263,12 @@
         }
 
         /* 右栏标题固定在顶上，换人时把正文送回到开头 */
-        var body = profile.querySelector('.personnel-profile__body');
-        if (body) body.scrollTop = 0;
+        if (profile) {
+            var body = profile.querySelector('.personnel-profile__body');
+            if (body) body.scrollTop = 0;
+        }
 
-        /* 右栏内容换了，滚动状态（还能不能往上 / 往下滚）要重算 */
+        /* 右栏内容换了（或回到空白），滚动状态要重算 */
         if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {
             window.__sssArchiveScroll.refresh();
         }
@@ -282,7 +290,7 @@
             } catch (e) { /* 保留原值 */ }
         }
 
-        activate(id || (profiles[0] && profiles[0].id));
+        activate(id || '');
     }
 
     items.forEach(function (a) {

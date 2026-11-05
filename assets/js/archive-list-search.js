@@ -109,12 +109,14 @@
                 filter();
                 input.blur();
             } else if (e.key === 'Enter') {
+                if (!input.value.trim()) return;
                 var first = items.filter(isVisible)[0];
                 if (first) {
                     e.preventDefault();
                     first.click();
                 }
             } else if (e.key === 'ArrowDown') {
+                if (!input.value.trim()) return;
                 var firstDown = items.filter(isVisible)[0];
                 if (firstDown) {
                     e.preventDefault();

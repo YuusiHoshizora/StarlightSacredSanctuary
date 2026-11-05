@@ -397,6 +397,46 @@ body[data-archive="split"] .vessel-profile__body {
     padding: 8px 0 var(--archive-pad);
 }
 
+/* 空白态：默认什么都不选时，右栏显示一块占位面板，而不是自动打开第一条。
+   选中条目后由页面脚本 hidden 掉。 */
+body[data-archive="split"] .archive-empty {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: var(--archive-pad) 0;
+    padding: 40px 24px;
+    text-align: center;
+
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 13px;
+    letter-spacing: 1px;
+
+    background: rgba(20, 20, 50, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--ctl-panel-radius);
+}
+
+.archive-empty[hidden] {
+    display: none !important;
+}
+
+.archive-empty__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+    opacity: 0.55;
+}
+
+.archive-empty__text {
+    margin: 0;
+}
+
 /* ── 左栏搜索：外观与交互照星图搜索 ──
    放大镜图标 / 半透明底 / 聚焦金边 / 原生清除按钮；过滤在下方名录里就地完成。 */
 .archive-search {
@@ -619,6 +659,11 @@ body[data-archive] .is-scrollable {
         padding: 0;
         -webkit-mask-image: none;
                 mask-image: none;
+    }
+
+    body[data-archive="split"] .archive-empty {
+        min-height: 220px;
+        margin: 0 0 24px;
     }
 }
 

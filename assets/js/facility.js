@@ -294,7 +294,6 @@
 
     function itemHtml(f, isChild) {
         var item = '<a class="facility-list__item' + (isChild ? ' facility-list__item--child' : '') +
-            (index === 0 ? ' is-active' : '') +
             '" href="#' + esc(f.id) + '" data-id="' + esc(f.id) + '">\n' +
             '    <span class="facility-list__name">' + esc(listName(f)) + '</span>\n' +
             (f.kindEn ? '    <span class="facility-list__en">' + esc(f.kindEn) + childTag(f) + '</span>\n' : '') +
@@ -354,14 +353,19 @@
         '    </div>\n' +
         '</aside>\n' +
         '<div class="facility-detail">\n' +
-        DATA.facilities.map(function (f, i) {
-            return indent(profileHtml(f, i === 0), 4);
+        '    <div class="archive-empty" role="status">\n' +
+        '        <span class="archive-empty__dot" aria-hidden="true"></span>\n' +
+        '        <p class="archive-empty__text">从左侧名录选择一项设施</p>\n' +
+        '    </div>\n' +
+        DATA.facilities.map(function (f) {
+            return indent(profileHtml(f, false), 4);
         }).join('\n\n') + '\n' +
         '</div>';
 
     var list = root.querySelector('.facility-list__scroll');
     var items = Array.prototype.slice.call(root.querySelectorAll('.facility-list__item'));
     var profiles = Array.prototype.slice.call(root.querySelectorAll('.facility-profile'));
+    var empty = root.querySelector('.archive-empty');
     if (!profiles.length) return;
 
     if (window.SSSArchiveSearch) {
@@ -396,8 +400,7 @@
     var initialising = true;
 
     function activate(id) {
-        var profile = byId[id] || profiles[0];
-        if (!profile) return;
+        var profile = (id && byId[id]) || null;
 
         profiles.forEach(function (p) {
             p.classList.toggle('is-active', p === profile);
@@ -405,12 +408,14 @@
 
         var current = null;
         items.forEach(function (a) {
-            var on = a.getAttribute('data-id') === profile.id;
+            var on = profile && a.getAttribute('data-id') === profile.id;
             a.classList.toggle('is-active', on);
             if (on) a.setAttribute('aria-current', 'true');
             else a.removeAttribute('aria-current');
             if (on) current = a;
         });
+
+        if (empty) empty.hidden = !!profile;
 
         /* 选中的是子设施（或父设施）时，把它的「文件夹」展开，否则左栏里看不到选中项 */
         if (current) {
@@ -428,10 +433,12 @@
 
         /* 右栏标题固定在顶上，换设施时把正文送回到开头；
            窄屏（标题回到正常流）也回到正文开头，别停在上一份档案的中段。 */
-        var body = profile.querySelector('.facility-profile__body');
-        if (body) body.scrollTop = 0;
+        if (profile) {
+            var body = profile.querySelector('.facility-profile__body');
+            if (body) body.scrollTop = 0;
+        }
 
-        /* 右栏内容换了，滚动状态（还能不能往上 / 往下滚）要重算 */
+        /* 右栏内容换了（或回到空白），滚动状态要重算 */
         if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {
             window.__sssArchiveScroll.refresh();
         }
@@ -452,7 +459,7 @@
         try {
             id = decodeURIComponent(raw);
         } catch (e) { /* 保留原值 */ }
-        activate(id || profiles[0].id);
+        activate(id || '');
     }
 
     /* 名录与档案里的设施交叉链接走同一套：只切右栏，不让浏览器跳锚点。
