@@ -407,13 +407,27 @@
         /* 读到一半切到另一条设施：档案标题已经被滚出视口时把它拉回来，
            否则页面停在新档案的中段。没滚过就什么都不做。
            窄屏（名录在上、档案在下）换档案时也要把标题带进来，
-           否则点完名录还停在名录那一段。首次渲染不动页面。 */
+           否则点完名录还停在名录那一段。首次渲染不动页面。
+           档案页现在有自己的滚动窗口（.archive-body，见 archive.css「档案页视口框」），
+           页面本身不滚 —— 所以优先滚那个容器，只有它不存在时才退回整页滚动。 */
         var head = profile.querySelector('.facility-profile__head');
         if (head && !initialising) {
-            var hr = head.getBoundingClientRect();
             var stacked = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
-            if (hr.top < 96 || (stacked && hr.top > 96)) {
-                window.scrollTo(0, window.scrollY + hr.top - 96);
+            var scroller = document.querySelector('body[data-archive] .archive-body');
+            if (scroller) {
+                /* 滚动窗口顶部是一条淡出区（宽度 = .archive-body 的 padding-top），
+                   标题停在它下面才不会被压暗 */
+                var sr = scroller.getBoundingClientRect();
+                var line = sr.top + (parseFloat(window.getComputedStyle(scroller).paddingTop) || 36);
+                var hr = head.getBoundingClientRect();
+                if (hr.top < line || (stacked && hr.top > line)) {
+                    scroller.scrollTop += hr.top - line;
+                }
+            } else {
+                var hrLegacy = head.getBoundingClientRect();
+                if (hrLegacy.top < 96 || (stacked && hrLegacy.top > 96)) {
+                    window.scrollTo(0, window.scrollY + hrLegacy.top - 96);
+                }
             }
         }
     }

@@ -111,6 +111,17 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 **导航栏是全站唯一的"常驻外壳"**：背景画布与它跨页不变，所以它带
 `view-transition-name: site-navbar`，跨页过渡时它不动、只有内容在换。
 
+### 档案页的视口框（`archive/` 下的所有页面）
+
+档案页是"允许长内容"的那一类，但**整页不滚**：面包屑 + 标题 + 英文副题 + 简介
+（页头）与页脚都固定在视口里，只有标题以下的内容在 `.archive-body` 里滚动，
+并在滚动窗口的上下两端用渐变淡出（桌面 36px、窄屏 28px）。
+
+- **标题与英文副题不得随页面滚走；页脚始终贴在视口底部**；
+- 页面 `<body>` 带 `data-archive`，标题以下的内容全部包进 `.archive-body`；
+- 短内容同样适用：两端渐变落在滚动区的空白 padding 上，不会把第一行 / 最后一行压暗；
+- 结构、滚动区变量与踩点见 [MAINTENANCE.md](MAINTENANCE.md) 的「档案页的视口框」。
+
 ---
 
 ## 五、组件约定

@@ -142,6 +142,81 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 三页来回切换时左栏不会一页高、一页矮。要调整高度只改这一个变量；
 三页在 ≤900px 都退回 `height: auto`（名录摊成网格、直接接在档案前面）。
 
+> 档案页现在套了「视口框」（下一节）：整体不滚、只有中间的 `.archive-body` 滚，
+> 所以 `archive.css` 在 `body[data-archive]` 下把这个变量改成了
+> `calc(100dvh - 340px)`（减掉顶栏 / 页头 / 滚动区上下过渡 / 页脚），
+> 同时把 `position: sticky` 的 `top` 从 `96px` 改成 `0`（参照系变成了滚动窗口）。
+
+---
+
+## 档案页的视口框：页头常驻 / 页脚常驻 / 内容两端淡出
+
+**这是档案页的版式规范**（2026-11 起）：`archive/` 下**所有**页面都不整页滚动，
+而是像一块仪表屏 ——
+
+1. **页头常驻**：面包屑 + 标题（h1 / 部门题图）+ 英文副题 + 简介在滚动区**外面**，
+   页面怎么滚，它们都不动；
+2. **页脚常驻**：`body` 高度锁在视口高度（`100dvh`），页脚仍是竖排 flex 的最后一格，
+   所以它**始终贴着视口底部**，不会随内容滚走；
+3. **内容在中间滚**：标题以下的一切包进 `.archive-body`，它是这一页**唯一的滚动容器**；
+4. **两端淡出**：`.archive-body` 的上下各有 36px（窄屏 28px）过渡区，
+   内容滚到窗口上下边缘时用 `mask-image` 渐变淡出 / 淡入，而不是被一条硬边裁掉。
+   内容还没滚到边缘时，渐变落在 `.archive-body` 的空白 padding 上，
+   所以**短内容（不产生滚动）不会平白被压暗**。
+
+实现全在 `assets/css/archive.css` 末尾的「档案页视口框」块，页面侧只有两处标记：
+
+```html
+<body data-archive>
+    …
+    <main>
+        <section class="archive-section（或 .org-section）">
+            <nav class="crumb">…</nav>
+            <header class="archive-head（或 .org-head）">
+                <h1>…</h1>
+                <p class="archive-sub（或 .org-sub）">…</p>
+            </header>
+
+            <div class="archive-body">
+                <!-- 这一页会滚动的内容全放这里 -->
+            </div>
+        </section>
+    </main>
+    <footer class="site-footer">…</footer>
+</body>
+```
+
+- **`data-archive` 必须写成 body 的 `data-*` 属性，不要写成 class**：
+  站内同文档换页（`spa.js`）只把目标页的 `data-*` 搬到 body（`syncBody()`），
+  换页进出档案页时这套版式才会自动切换。写成 class 会在换页后残留 / 丢失，
+  表现为「从档案页跳到别的页后页面不滚 / 进了档案页却仍整页滚动」。
+- **别把滚动内容放到 `.archive-body` 外面**：`.archive-body` 之外的部分不会滚，
+  超出一屏会被 `overflow: hidden` 直接裁掉（页头和页脚本来就要留在外面）。
+- **别把 `.archive-body` 的上下 padding 改成 0**：短内容会被两端渐变凭空压暗。
+  过渡宽度只在 `archive.css` 里档案页容器（`.archive-section` / `.org-section`）的
+  `--archive-fade` 上改。
+- **`mask-image` 必须同时写 `-webkit-mask-image`**（Safari 只认带前缀的那条）；
+  mask 的渐变坐标相对 `.archive-body` 的边框盒，所以它固定在窗口两端。
+- 窄屏**不退回整页滚动**：`100dvh` 保证页脚始终可见；≤900px 时三页左栏名录
+  照旧摊成网格（`height: auto`），≤768px 过渡区缩到 28px。
+- `body[data-archive]` 下 `main` / `section` 都要带 `min-height: 0`（flex 子项默认
+  `min-height: auto`，不给的话内部滚动区会被内容撑高、页脚重新被顶出视口）。
+
+### 跟这个框有关的几个联动点
+
+- **左栏名录**（人员等级页 / 舰船 / 深空设施）：`position: sticky` 的参照系从整页
+  变成 `.archive-body`，所以 `top` 改为 `0`，高度改用 `calc(100dvh - 340px)`
+  （见上一节）；≤900px 照旧退回 `height: auto`。
+- **`#设施代号` / `#舰船代号` 深链与切换条目后的回滚**：`facility.js` / `vessel.js`
+  不再 `window.scrollTo`，而是优先滚 `.archive-body`（顶部留出 36px 过渡区，
+  标题不会落进淡出带里）；`.facility-profile` / `.vessel-profile` 的
+  `scroll-margin-top` 也改成了 `var(--archive-fade)`。
+- **加新的档案页**：除了「加新页面时要一起做的七件事」，再补两步 ——
+  ① `<body data-archive>`；② 用 `.archive-body` 包住标题以下的内容
+  （放在页头之后、`</section>` 之前）。别忘 `sw.js` 的 `PRECACHE_URLS`。
+- 这一页的滚动位置**不参与浏览器的整页滚动恢复**（滚的是内层容器）。
+  从站内导航回来时内容从顶部开始；带 `#` / `?person=` 的深链仍由页面脚本定位。
+
 ---
 
 ## 深空设施档案：一个页面，左名录右档案
@@ -534,6 +609,9 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 
 ## 设计约定
 
+- **档案页的视口框**：`archive/` 下所有页面的标题与英文副题不随页面滚动、页脚常驻
+  视口底部，只有中间的内容滚动并在窗口两端淡出。做法、结构与踩点见
+  「档案页的视口框」一节；别在单个档案页里另写一套。
 - **配色**：深蓝黑底 + 金色 `#FFD700` 作为唯一的强调色 + 紫色 `#3A3072` 作点缀。
   金色只用于 hover / 键盘聚焦 / 选中，不做默认态，也不引入新颜色
 - **控件**：按钮与输入框统一使用 `global.css` 里 `:root` 的 `--ctl-*` 令牌

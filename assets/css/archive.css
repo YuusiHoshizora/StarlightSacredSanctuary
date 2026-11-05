@@ -193,3 +193,125 @@ a.archive-card:focus-visible {
         gap: 16px;
     }
 }
+
+/* ==========================================================================
+   档案页视口框：页头常驻 + 页脚常驻 + 内容在中间滚动并在两端淡出
+   --------------------------------------------------------------------------
+   规范（改档案页前先读这一条，细节见 MAINTENANCE.md「档案页的视口框」）：
+     · 所有 archive/ 下的页面，<body> 都带 data-archive；
+     · 页头（面包屑 + 标题 + 英文 + 简介）在 .archive-body **外面**，永远不动；
+     · 标题以下的内容全部包进 .archive-body —— 它是这一页**唯一**的滚动容器；
+     · 页脚仍在 body 竖排 flex 的末尾。body 高度锁在视口高度上，
+       所以页脚始终贴着视口底部，不会随内容滚走。
+
+   淡出为什么能"只在内容连续时"出现：
+     .archive-body 的上下 padding 正好等于过渡区 --archive-fade。
+     内容还没滚到边缘时，渐变落在空白 padding 上，第一行 / 最后一行不会被压暗；
+     一旦内容滚过上下边缘，它才在 36px 的 mask 渐变里淡出 / 淡入。
+     ⚠️ 别把 padding 改成 0（短内容会被凭空压暗）；
+        也别省掉 -webkit-mask-image（Safari 只认带前缀的那条）。
+     ⚠️ data-archive 用属性而不是 body 的 class：spa.js 的 syncBody() 只搬 data-*，
+        站内换页进出档案页时这套版式才会跟着切；写成 class 会在换页后残留 / 丢失。
+   ========================================================================== */
+
+body[data-archive] {
+    height: 100vh;
+    height: 100dvh;               /* 有 dvh 的浏览器用它，避免手机地址栏收起后底部留缝 */
+    overflow: hidden;             /* 页面本身不滚 —— 只有 .archive-body 滚 */
+}
+
+body[data-archive] > main {
+    min-height: 0;                /* flex 子项必须给，否则内部滚动区会被内容撑高 */
+    overflow: hidden;
+}
+
+/* 档案总览 / 人员 / 舰船 / 深空设施 / 组织页的容器：竖向 flex，
+   中间那块（.archive-body）吃掉页头与页脚之间的全部高度。 */
+body[data-archive] > main > .archive-section,
+body[data-archive] > main > .org-section {
+    --archive-fade: 36px;
+
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    padding-bottom: 0;            /* 底部呼吸交给 .archive-body 的 padding */
+}
+
+/* 页头不再留底边距：它与滚动内容之间的空隙由 .archive-body 的顶部过渡区给。 */
+body[data-archive] .archive-head,
+body[data-archive] .org-head {
+    margin-bottom: 0;
+}
+
+/* 分类标题如果正好是滚动区的第一块，别在顶部多顶 56px。 */
+body[data-archive] .archive-body > .org-group-head:first-child {
+    margin-top: 0;
+}
+
+body[data-archive] .archive-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    /* 过渡区 = 上下留白。mask 的渐变坐标相对 .archive-body 的边框盒，
+       所以它固定在滚动窗口的两端，内容从下面滚过去时才被淡化。 */
+    padding-top: var(--archive-fade);
+    padding-bottom: var(--archive-fade);
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--archive-fade),
+        #000 calc(100% - var(--archive-fade)),
+        transparent 100%
+    );
+            mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--archive-fade),
+        #000 calc(100% - var(--archive-fade)),
+        transparent 100%
+    );
+}
+
+/* 目录高度原来是按整页滚动算的（100vh - 300px）。现在整页不滚了，
+   左栏要减掉「顶栏 + 页头 + 滚动区上下过渡 + 页脚」，否则会伸到滚动区外面；
+   同时 sticky 的参照系变成了 .archive-body，top 从 96px 改成 0。 */
+body[data-archive] .archive-section {
+    --archive-list-height: calc(100vh - 340px);
+    --archive-list-height: calc(100dvh - 340px);
+}
+
+body[data-archive] .personnel-list,
+body[data-archive] .facility-list,
+body[data-archive] .vessel-list {
+    top: 0;
+}
+
+/* 锚点定位：滚动窗口顶部有一条 36px 的淡出区，别让标题正好落进去。 */
+body[data-archive] .personnel-profile,
+body[data-archive] .facility-profile,
+body[data-archive] .vessel-profile {
+    scroll-margin-top: var(--archive-fade);
+}
+
+@media (max-width: 900px) {
+    /* 窄屏三页都把名录摊成网格、接在档案前面 —— 不要再给它一个视口高度。 */
+    body[data-archive] .personnel-list,
+    body[data-archive] .facility-list,
+    body[data-archive] .vessel-list {
+        top: auto;
+        height: auto;
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    body[data-archive] > main > .archive-section,
+    body[data-archive] > main > .org-section {
+        --archive-fade: 28px;
+    }
+}

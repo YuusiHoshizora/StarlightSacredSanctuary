@@ -128,7 +128,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<body>
+<body data-archive>
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -177,8 +177,14 @@
                 <p class="archive-sub personnel-class-en">SSS Administrative Member</p>
             </header>
 
+            <!-- 标题以下才是滚动区：页头与页脚固定在视口里，内容在中间滚动并在两端淡出。
+                 详见 assets/css/archive.css 的「档案页视口框」与 MAINTENANCE.md。 -->
+            <div class="archive-body">
+
             <div class="personnel-layout" data-personnel data-class="sxm">
                 <noscript><p class="personnel-missing">成员名录需要启用 JavaScript。</p></noscript>
+            </div>
+
             </div>
         </section>
     </main>
