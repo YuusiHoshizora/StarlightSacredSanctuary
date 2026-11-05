@@ -131,6 +131,12 @@
     margin-bottom: 0;               /* 间距挪到 slot 上，按钮才能居中于卡片 */
 }
 
+/* 档案页视口框的 .archive-body 会裁掉横向溢出：右侧给 20px 留白，
+   right:-14px 的切换按钮才能整个露出来，而不是被切掉右半个圆。 */
+body[data-archive] .archive-body.org-index-body {
+    padding-right: 20px;
+}
+
 .org-supreme[hidden] {
     display: none;
 }

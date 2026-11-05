@@ -903,6 +903,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     （顺序无关，拖动时指针靠近**实际滚动容器 `.archive-body`** 的上下边缘会自动滚动；
     档案页整页不滚，不能再对 `window` 调 `scrollBy`）。三张都到位后议会卡右侧浮出一个小圆形
     切换按钮（`.org-switch`），按一下卡片就换成 DGAM 那张，再按一下换回来。
+    · 切换按钮 `right: -14px` 压在卡片右边缘上；组织档案页的 `.archive-body` 带
+      `.org-index-body` 类，留 20px 右内边距，按钮才不会被视口框的 `overflow` 裁掉。
     · 拖动经过议会卡时，卡片边缘用**被拖那个部门的颜色**高亮（不是金色）：
       科研部 `#50F2E0` / 工业部 `#EB7B25` / 战术战略部 `#EE0034`（写在各卡 `data-color` 上，
       经 `--drag-color` 交给 CSS）
