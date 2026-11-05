@@ -156,6 +156,7 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   `.is-active` 和 `empty.hidden`；没有有效 id 时回到空白态；
 - **点空白处取消选择**：左栏点条目 / 搜索 / 展开按钮以外的地方、右栏点面板 /
   档案头 / 链接按钮以外的地方，都会清空当前选择回到 NO / INFO；
+  **再点一次已经高亮的条目光标也会取消选择**（切换开关语义）；
   清除时用 `pushState` 去掉 `#…` / `?person=`（浏览器后退能回到原选择）；
 - **切换动画**：右栏档案与空白态用 220ms 的淡入 + 从右侧 8px 横向滑入
   （`archive-swap-in`，方向照星图的星系介绍），`prefers-reduced-motion` 下关闭 ——

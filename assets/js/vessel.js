@@ -298,6 +298,13 @@
         var id = a.getAttribute('href').slice(1);
         if (!byId[id]) return;
         e.preventDefault();
+
+        /* 再点一次已高亮的条目 = 取消选择，回到空白态 */
+        if (a.classList.contains('is-active')) {
+            clearSelection();
+            return;
+        }
+
         setHash(id);
         activate(id);
     });

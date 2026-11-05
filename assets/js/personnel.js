@@ -301,6 +301,12 @@
             /* 不让 <a href="#…"> 触发浏览器的锚点滚动 */
             e.preventDefault();
 
+            /* 再点一次已高亮的条目 = 取消选择，回到空白态 */
+            if (a.classList.contains('is-active')) {
+                clearSelection();
+                return;
+            }
+
             if (location.hash !== '#' + id) {
                 try {
                     history.pushState(null, '', '#' + id);
