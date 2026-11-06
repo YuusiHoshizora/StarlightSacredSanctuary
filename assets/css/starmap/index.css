@@ -809,11 +809,21 @@ html.starmap-ui .starmap-panel-wrap{
 /* 没有导航栏：页面从最顶上开始 */
 .starmap-os-page .starmap-layout{ padding-top: 0; }
 
-/* 全面浏览：信息栏与其把手淡出、不可点，边缘箭头也收起 */
+/* 全面浏览：信息栏"收起"而不是淡出 —— 与点面板上的箭头收起是同一个动作
+   （整块 translateX(100%) 滑出右侧，把手也一起藏起来，边缘箭头同样收起）。
+   窄屏是底部抽屉，滑出方向由末尾「窄屏：信息栏改成底部抽屉」那块改成 translateY，
+   两处选择器权重相同、那里在前，别在这边写死方向。 */
 .starmap-os-page .starmap-layout.is-overview .starmap-panel-wrap{
+    transform: translateX(100%);
+    pointer-events: none;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* 全面浏览里面板是收起的，把手点它也不会有反应（面板照样不出现）——
+   留着等于一个死按钮，索性一起收起来 */
+.starmap-os-page .starmap-layout.is-overview .starmap-panel-toggle{
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
 }
 .starmap-os-page .starmap-layout.is-overview .starmap-edge-arrow{ display: none; }
 /* 全面浏览中比例尺条与放大 / 缩小按钮同款禁用态 */
@@ -1061,8 +1071,10 @@ html.starmap-ui .starmap-panel-wrap{
     transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
   /* 收起：抽屉整体下滑一个自身高度 —— 卡片全部滑出可视区（布局 overflow:hidden 裁掉），
-     只有把手还留在屏幕底边（把手本来就在抽屉顶边之外 34px 处） */
-  .starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-wrap {
+     只有把手还留在屏幕底边（把手本来就在抽屉顶边之外 34px 处）。
+     全面浏览（.is-overview）走同一个方向：收起，不是淡出。 */
+  .starmap-os-page .starmap-layout.is-panel-collapsed .starmap-panel-wrap,
+  .starmap-os-page .starmap-layout.is-overview .starmap-panel-wrap {
     opacity: 1;
     transform: translateY(100%);
     transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
