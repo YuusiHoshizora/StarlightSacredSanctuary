@@ -100,13 +100,40 @@ function sssSupportsCrossDocVT() {
         var lastActivity = Date.now();
         var firstPost = null;
 
+        /* 结构与样式一一对应，见 assets/css/boot.css。
+           ⚠️ 读数区只放数据，不放说明性文案（不写"正在预缓存页面…"这类句子）。 */
         boot.innerHTML =
             '<div class="boot__half boot__half--top"></div>' +
             '<div class="boot__half boot__half--bottom"></div>' +
-            '<div class="boot__seam"></div>' +
-            '<div class="boot__bg" aria-hidden="true"></div>' +
-            '<div class="boot__frame"></div>' +
+            '<div class="boot__grid" aria-hidden="true"></div>' +
+            '<div class="boot__sweep" aria-hidden="true"></div>' +
+            '<div class="boot__seam" aria-hidden="true"></div>' +
+            '<div class="boot__hatch boot__hatch--tl" aria-hidden="true"></div>' +
+            '<div class="boot__hatch boot__hatch--br" aria-hidden="true"></div>' +
+            '<div class="boot__ruler boot__ruler--h" aria-hidden="true"></div>' +
+            '<div class="boot__ruler boot__ruler--v" aria-hidden="true"></div>' +
+            '<div class="boot__frame" aria-hidden="true">' +
+                '<i class="boot__corner boot__corner--tl"></i>' +
+                '<i class="boot__corner boot__corner--tr"></i>' +
+                '<i class="boot__corner boot__corner--bl"></i>' +
+                '<i class="boot__corner boot__corner--br"></i>' +
+            '</div>' +
+            '<div class="boot__code boot__code--tl" aria-hidden="true">SSS<b>//</b>SYS</div>' +
+            '<div class="boot__code boot__code--tr" aria-hidden="true">BOOT<b>//</b>01</div>' +
+            '<div class="boot__code boot__code--bl" aria-hidden="true">T+ <b id="boot-clock">00:00.0</b></div>' +
+            '<div class="boot__code boot__code--br" aria-hidden="true"><b id="boot-count">00/00</b></div>' +
+            '<div class="boot__emblem" aria-hidden="true">' +
+                '<div class="boot__emblem-bg"></div>' +
+                '<div class="boot__ring"></div>' +
+                '<div class="boot__ring boot__ring--in"></div>' +
+                '<div class="boot__progress"></div>' +
+                '<div class="boot__ticks"></div>' +
+                '<div class="boot__arc"></div>' +
+                '<div class="boot__arc boot__arc--rev"></div>' +
+                '<div class="boot__radar"></div>' +
+            '</div>' +
             '<div class="boot__inner">' +
+                '<div class="boot__tag"><i></i>LOADING<i></i></div>' +
                 '<div class="boot__head">' +
                     '<div class="boot__title">星光圣域</div>' +
                     '<div class="boot__sub">STARLIGHT SACRED SANCTUARY</div>' +
@@ -115,28 +142,23 @@ function sssSupportsCrossDocVT() {
                     '<div class="boot__meter-row">' +
                         '<div class="boot__pct"><span id="boot-pct">00</span><em>%</em></div>' +
                         '<div class="boot__meter-meta">' +
-                            '<span><b id="boot-done">0</b> / <b id="boot-total">0</b> 项</span>' +
+                            '<span><b id="boot-done">00</b>/<b id="boot-total">00</b></span>' +
                             '<span id="boot-bytes">0 KB</span>' +
                         '</div>' +
                     '</div>' +
                     '<div class="boot__bar"><i id="boot-bar"></i></div>' +
                 '</div>' +
                 '<div class="boot__steps" id="boot-steps">' +
-                    '<div class="boot__step" data-step="cache"><i></i><span>本地缓存</span></div>' +
-                    '<div class="boot__step" data-step="fonts"><i></i><span>字体</span></div>' +
-                    '<div class="boot__step" data-step="data"><i></i><span>数据</span></div>' +
-                    '<div class="boot__step" data-step="ready"><i></i><span>就绪</span></div>' +
+                    '<div class="boot__step" data-step="cache"><em>01</em><span>缓存</span></div>' +
+                    '<div class="boot__step" data-step="fonts"><em>02</em><span>字体</span></div>' +
+                    '<div class="boot__step" data-step="data"><em>03</em><span>数据</span></div>' +
+                    '<div class="boot__step" data-step="ready"><em>04</em><span>就绪</span></div>' +
                 '</div>' +
                 '<div class="boot__now">' +
                     '<i class="boot__now-dot"></i>' +
                     '<span class="boot__now-label" id="boot-now-label">初始化</span>' +
                     '<span class="boot__now-file" id="boot-now">—</span>' +
                 '</div>' +
-                '<details class="boot__log" id="boot-log-wrap">' +
-                    '<summary><span>载入明细</span><b id="boot-log-count">0</b><span>项</span><i class="boot__chev"></i></summary>' +
-                    '<div class="boot__log-body" id="boot-log"></div>' +
-                '</details>' +
-                '<div class="boot__hint">字体 7 种 · 约 42.8 MB，仅首次下载；之后从本地缓存读取</div>' +
             '</div>';
 
         var byId = function (id) { return document.getElementById(id); };
@@ -146,11 +168,10 @@ function sssSupportsCrossDocVT() {
             total: byId('boot-total'),
             bytes: byId('boot-bytes'),
             bar: byId('boot-bar'),
+            count: byId('boot-count'),
+            clock: byId('boot-clock'),
             now: byId('boot-now'),
             nowLabel: byId('boot-now-label'),
-            log: byId('boot-log'),
-            logCount: byId('boot-log-count'),
-            logWrap: byId('boot-log-wrap'),
             steps: byId('boot-steps')
         };
 
@@ -163,38 +184,66 @@ function sssSupportsCrossDocVT() {
             return (n / 1048576).toFixed(1) + ' MB';
         }
 
-        function fmtMs(n) {
-            if (!n && n !== 0) return '—';
-            return n < 1000 ? Math.round(n) + ' ms' : (n / 1000).toFixed(1) + ' s';
-        }
-
         function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
-        function kindOf(name) {
-            var m = /\.([a-z0-9]+)$/i.exec(name);
-            var e = m ? m[1].toLowerCase() : '';
-            if (e === 'woff2' || e === 'woff' || e === 'ttf' || e === 'otf') return '字体';
-            if (e === 'css') return '样式';
-            if (e === 'js' || e === 'mjs') return '脚本';
-            if (e === 'json') return '数据';
-            if (e === 'md') return '正文';
-            if (e === 'png' || e === 'jpg' || e === 'jpeg' || e === 'webp' || e === 'gif' || e === 'svg' || e === 'ico') return '图片';
-            if (e === 'html') return '页面';
-            return '资源';
+        /* T+ 00:04.2 —— 只显示"已经跑了多久"，不做任何解释 */
+        function fmtClock(ms) {
+            var t = Math.max(0, ms) / 1000;
+            var m = Math.floor(t / 60);
+            var s = Math.floor(t % 60);
+            var d = Math.floor((t * 10) % 10);
+            return pad2(m) + ':' + pad2(s) + '.' + d;
         }
 
         function tick() {
             var pct = totalCount ? Math.round(doneCount / totalCount * 100) : 0;
-            els.pct.textContent = pad2(pct);
             els.bar.style.width = pct + '%';
-            els.done.textContent = String(doneCount);
-            els.total.textContent = String(totalCount);
+            els.done.textContent = pad2(doneCount);
+            els.total.textContent = pad2(totalCount);
             els.bytes.textContent = fmtSize(bytes);
+            els.count.textContent = pad2(doneCount) + '/' + pad2(totalCount);
+            pumpPct(pct);
         }
+
+        /* 百分比平滑爬到目标值：读数一下一下跳太生硬，滚一点才像仪表 */
+        var pctShown = 0;
+        var pctTarget = 0;
+        var pctRaf = 0;
+
+        function pumpPct(target) {
+            pctTarget = target;
+            if (pctRaf) return;
+            pctRaf = window.requestAnimationFrame(function step() {
+                pctRaf = 0;
+                if (pctShown === pctTarget) {
+                    els.pct.textContent = pad2(pctTarget);
+                    return;
+                }
+                var d = pctTarget - pctShown;
+                var jump = Math.ceil(Math.abs(d) / 5);
+                pctShown += d > 0 ? Math.max(1, jump) : -Math.max(1, jump);
+                if ((d > 0 && pctShown > pctTarget) || (d < 0 && pctShown < pctTarget)) pctShown = pctTarget;
+                boot.style.setProperty('--boot-p', pctShown.toFixed(1));
+                els.pct.textContent = pad2(Math.round(pctShown));
+                if (pctShown !== pctTarget) pctRaf = window.requestAnimationFrame(step);
+            });
+        }
+
+        /* 当前阶段：正在跑的接线段走白，完成的走金（见 boot.css 的 .is-active / .is-done） */
+        var STEP_OF = { '缓存': 'cache', '字体': 'fonts', '数据': 'data', '就绪': 'ready' };
 
         function setNow(label, file) {
             els.nowLabel.textContent = label;
             els.now.textContent = file || '—';
+
+            var step = STEP_OF[label];
+            var list = els.steps.querySelectorAll('.boot__step');
+            for (var i = 0; i < list.length; i++) {
+                var el = list[i];
+                if (el.classList.contains('is-done')) continue;
+                if (step && el.getAttribute('data-step') === step) el.classList.add('is-active');
+                else el.classList.remove('is-active');
+            }
         }
 
         function markStep(name) {
@@ -202,64 +251,38 @@ function sssSupportsCrossDocVT() {
             if (el) el.className = 'boot__step is-done';
         }
 
-        /* --------------------------- 载入明细（真实时序） --------------------------- */
+        /* --------------------------- 资源活动（只记时间） ---------------------------
+           原来这里会把每条 Resource Timing 写成一行明细。加载屏不再展示明细，
+           但"最后一条资源什么时候到"仍然有用 —— 开门前要等它安静下来。 */
 
         var seen = Object.create(null);
 
-        function addRow(entry) {
-            var url = entry.name;
-            if (seen[url]) return;
-            seen[url] = true;
+        function noteActivity(entry) {
+            if (!entry || !entry.name) return;
+            if (seen[entry.name]) return;
+            seen[entry.name] = true;
             lastActivity = Date.now();
-            if (!/^https?:/i.test(url)) return;
-
-            var file = url.split('/').pop().split('?')[0];
-            try { file = decodeURIComponent(file); } catch (e) { /* 保持原样 */ }
-            var size = entry.decodedBodySize || entry.transferSize || 0;
-            var source = entry.transferSize > 0 ? '网络' : '缓存';
-
-            var row = document.createElement('div');
-            row.className = 'boot__log-row';
-            row.title = url;
-
-            var kind = document.createElement('i');
-            kind.className = 'boot__log-kind';
-            kind.textContent = kindOf(file);
-
-            var name = document.createElement('b');
-            name.className = 'boot__log-name';
-            name.textContent = file;
-
-            var sizeEl = document.createElement('em');
-            sizeEl.className = 'boot__log-size';
-            sizeEl.textContent = size ? fmtSize(size) : '—';
-
-            var meta = document.createElement('span');
-            meta.className = 'boot__log-meta';
-            meta.textContent = fmtMs(entry.duration) + ' · ' + source;
-
-            row.appendChild(kind);
-            row.appendChild(name);
-            row.appendChild(sizeEl);
-            row.appendChild(meta);
-            els.log.appendChild(row);
-            els.logCount.textContent = String(els.log.children.length);
-            if (els.logWrap.open) els.log.scrollTop = els.log.scrollHeight;
         }
 
         try {
-            performance.getEntriesByType('resource').forEach(addRow);
+            performance.getEntriesByType('resource').forEach(noteActivity);
         } catch (e) { /* 忽略 */ }
 
         var observer = null;
         if (window.PerformanceObserver) {
             try {
                 observer = new PerformanceObserver(function (list) {
-                    list.getEntries().forEach(addRow);
+                    list.getEntries().forEach(noteActivity);
                 });
                 observer.observe({ type: 'resource', buffered: true });
             } catch (e) { /* 老内核没有 type/buffered，忽略 */ }
         }
+
+        /* T+ 计时：100ms 一跳，和百分比共用一屏读数 */
+        var clockTimer = window.setInterval(function () {
+            if (opened) { window.clearInterval(clockTimer); return; }
+            if (els.clock) els.clock.textContent = fmtClock(Date.now() - t0);
+        }, 100);
 
         /* ------------------------------- 任务框架 ------------------------------- */
 
@@ -353,13 +376,13 @@ function sssSupportsCrossDocVT() {
         }
 
         function runCache() {
-            setNow('本地缓存', '预缓存页面、样式与脚本');
+            setNow('缓存', '索引');
             return runOne(function () {
                 return waitForReady().then(function (ok) {
                     if (!ok) return 0;
-                    setNow('本地缓存', '校验缓存清单');
+                    setNow('缓存', '校验');
                     return countCache().then(function (n) {
-                        setNow('本地缓存', n == null ? '已就绪' : '已就绪 · ' + n + ' 项');
+                        setNow('缓存', n == null ? '就绪' : '就绪 · ' + n);
                         return 0;
                     });
                 });
@@ -423,7 +446,7 @@ function sssSupportsCrossDocVT() {
                 }
                 var font = FONTS[i++];
                 var short = font.file.split('/').pop();
-                setNow('载入字体', short);
+                setNow('字体', short);
                 return runOne(function () { return warmFont(font); }, CAP_TASK).then(next);
             }
 
@@ -433,7 +456,7 @@ function sssSupportsCrossDocVT() {
         /* ------------------------------ ③ 文章数据 ------------------------------ */
 
         function runData() {
-            setNow('预载数据', 'index.json');
+            setNow('数据', 'index.json');
             return runOne(function () {
                 return fetch(SSS_SITE_ROOT + 'assets/post/index.json', { credentials: 'same-origin' })
                     .then(function (res) {
@@ -446,7 +469,7 @@ function sssSupportsCrossDocVT() {
                     });
             }, CAP_TASK).then(function () {
                 if (!firstPost) { doneCount++; tick(); return; }   // 没有文章：这一项直接算完
-                setNow('预载数据', firstPost);
+                setNow('数据', firstPost);
                 return runOne(function () {
                     return warmFile(SSS_SITE_ROOT + 'assets/post/' + encodeURIComponent(firstPost), false);
                 }, CAP_TASK);
@@ -463,7 +486,7 @@ function sssSupportsCrossDocVT() {
         }
 
         function runLoad() {
-            setNow('系统就绪', '等待页面自身资源');
+            setNow('就绪', '—');
             return runOne(waitLoad, CAP_TASK).then(function () { markStep('ready'); });
         }
 
@@ -491,7 +514,7 @@ function sssSupportsCrossDocVT() {
         var loadDone = runLoad();
 
         Promise.all([cacheDone, fontsDone, dataDone, loadDone]).then(function () {
-            setNow('就绪', failed ? failed + ' 项跳过' : '全部资源已就绪');
+            setNow('就绪', failed ? '跳过 ' + failed : '完成');
             return waitQuiet(500, 4000);
         }).then(function () {
             if (opened) return;
@@ -507,6 +530,9 @@ function sssSupportsCrossDocVT() {
             if (observer) {
                 try { observer.disconnect(); } catch (e) { /* 忽略 */ }
             }
+            if (els.clock) els.clock.textContent = fmtClock(Date.now() - t0);
+            if (els.pct) els.pct.textContent = pad2(pctTarget);
+            boot.style.setProperty('--boot-p', pctTarget.toFixed(1));
 
             /* 记下「这台浏览器已经走过加载流程」：以后各页都不再显示加载屏，
                除非清掉站点数据（localStorage 一并被清）或用 ?boot=1 强制重播。 */

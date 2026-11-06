@@ -83,6 +83,8 @@
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
+│   │                           logo_SSS_boot.svg（加载屏徽记用；同上图，四周多留 6px 画布，
+│   │                           否则外圈描边被 viewBox 裁掉，放大后圆边会平切）
 │   │                           QSL.png（彩蛋页用，2854×2008）
 │   │                           cursor/ 24 个 32×32 SVG 指针（星芒家族：默认星芒、金星 +
 │   │                           轨道环、文本菱、准星、拖拽、缩放、禁止、复制…由 global.css 的 --cur-* 引用）
@@ -688,7 +690,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     `mainpage.css` 的 `.markdown-body code`
   · CQ 彩蛋页的控制台与准备日志：`main/cq.css` 的 `.cq-console, .cq-console *`、`.cq-log, .cq-log *`
   · 组织档案页右上角的部门代号：`archive/organization.css` 的 `.org-card__no`
-  · 加载屏的读数：`boot.css` 的 `.boot__inner, .boot__inner *`
+  · 加载屏的读数：`boot.css` 的 `.boot, .boot *`（四角读数在 `.boot__inner` 之外，所以连根元素一起给）
   ⚠️ **写法上要连后代一起写**：`global.css` 顶部那条 `* { font-family: "Sarasa" }` 给
   **每个元素**都直接指定了 Gothic，只写在容器上等于只改了容器自己的文字节点，里面的元素
   还是 Gothic —— 而且这样等宽字面根本不会被下载（`document.fonts` 里一直 `unloaded`）。
@@ -852,8 +854,15 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     ③ 数据：`assets/post/index.json` + 最新一篇 `.md`，ENTER 进主页面时不再现拉
     ④ 就绪：`window load`；最后再等资源活动安静 500ms（最多 4s），确认没有漏网之鱼
     进度条按任务数走（11 项），百分比 / 总数 / 字节数 / 当前文件都来自真实事件；
-    明细用 `PerformanceObserver` 收 Resource Timing（文件名、大小、耗时、缓存还是网络），
-    默认折叠在「载入明细」里 —— **别把它改成默认展开**，那会把读数区挤成一面墙
+    `PerformanceObserver` 收 Resource Timing 只用来判断"资源还在不在动"（开门前等安静），
+    **不再在屏上列明细** —— 加载屏只放数据，不放任何说明性文案
+  · **视觉是战前简报式的 HUD**：四角读数 / 刻度尺 / 角部斜纹 / 细网格 / 扫描线，
+    中央一枚徽记（完整正圆 + 刻度环 + 反向扫掠弧 + 雷达扫光 + 沿正圆爬升的进度弧）。
+    进度弧的长度由 `boot.js` 每帧写进 `--boot-p`，所以是连续爬升而不是一格一格跳
+  · ⚠️ **徽记用的是 `assets/img/logo_SSS_boot.svg`，不是 `logo_SSS.svg`**：
+    原图外圈描边正好压在 0/1024 画布边上，5px 描边有一半被 viewBox 裁掉，
+    放大约 78vh 后圆的最外缘会变成一段平直的切口。加边版只把画布四周各扩 6px、
+    图形坐标不动，外圈才是完整的正圆。改 logo 时要同步复制一份加边版
   · **字体跨版本缓存**：字体太占更新流量，不进 SW 预缓存；改放 `starlight-fonts-v1`
     （`sw.js` 的 `FONT_CACHE` 与 `boot.js` 里的同名常量，**改一边必须改另一边**）。
     页面自己也会往里写：首次访问时 SW 还没接管，那时 `document.fonts.load` 拿到的字体
