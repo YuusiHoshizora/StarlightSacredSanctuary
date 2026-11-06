@@ -648,6 +648,12 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 - **外观全在 CSS**（`global.css` 的 ≤768px 块）：按钮桌面 `display:none`（所以不进 Tab 顺序）、
   窄屏 `display:flex`；`#site-nav` 变成竖排面板，靠 `.navbar` 上的 `.is-menu-open`
   用 `clip-path` 开合。**别再给 `#site-nav` 写 `position:fixed + bottom:0`**（见上一个坑）。
+- ⚠️ **三条杠变 × 的动画要分两段，且别把 `--ctl-ease` 当缓动**：它是**时长**，
+  写进 `transition` 简写会变成延迟（`transform .28s var(--ctl-ease)` = 干等 250ms）。
+  早先收起时两条斜线先原地停 250ms，页面上就留着个「〉」（窄屏收菜单时能截到）。
+  现在收起是「先原地转平（`transform` 立即）→ 再上下滑开（`top` 延后 0.12s）→ 中间那条最后淡入」，
+  展开反过来「先并到中线 → 再转成 ×」。两个方向的 `transition` 各写一份，
+  顺序或延迟一改，中间帧就会又出现「〉」。
 - **所有选择器都写 `#site-nav`，别写裸的 `nav`**：主页面左栏还有 `<nav class="vertical-nav">`，
   裸 `nav` 会把那块也一起变成全屏面板。
 - **按钮必须是 `.navbar` 自己的子元素**：放进 `<nav>` 里就会被那块竖排面板当成一个条目。

@@ -619,11 +619,31 @@ html.sss-switch-in .site-footer{
     height:2px;
     border-radius:1px;
     background:currentColor;
-    transition:var(--ctl-transition), transform 0.28s var(--ctl-ease);
+
+    /* ⚠️ 别写成 `transform 0.28s var(--ctl-ease)`：--ctl-ease 是**时长**（0.25s），
+       放进简写里会变成「延迟 250ms」—— 收起时上下两条线先瞬间跳回 0、再干等
+       250ms 才开始转，那 250ms 里它们停在原地就是一个「〉」（窄屏收菜单时能截到）。
+
+       两个方向都要分段，否则中途还是会出现「〉」（两条线在右端点交汇）：
+         收起：先原地转平（transform 立即），再上下滑开（top 延后），中间那条最后才露；
+         展开：先并到中线（top 立即），再转成 ×（transform 延后）。 */
+    transition:color 0.22s ease,
+               background-color 0.12s ease 0.16s,
+               transform 0.22s cubic-bezier(0.3, 0.7, 0.3, 1),
+               top 0.18s cubic-bezier(0.3, 0.7, 0.3, 1) 0.12s;
 }
 
 .navbar__toggle__bars{
     position:relative;
+}
+
+.navbar.is-menu-open .navbar__toggle__bars,
+.navbar.is-menu-open .navbar__toggle__bars::before,
+.navbar.is-menu-open .navbar__toggle__bars::after{
+    transition:color 0.22s ease,
+               background-color 0.10s ease,
+               transform 0.22s cubic-bezier(0.3, 0.7, 0.3, 1) 0.10s,
+               top 0.18s cubic-bezier(0.3, 0.7, 0.3, 1);
 }
 
 .navbar__toggle__bars::before,
@@ -739,11 +759,11 @@ html.sss-switch-in .site-footer{
     @supports not (clip-path: inset(0)){
         #site-nav{
             opacity:0;
-            transition:opacity 0.28s var(--ctl-ease), visibility 0s linear 0.28s;
+            transition:opacity 0.28s ease, visibility 0s linear 0.28s;
         }
         .navbar.is-menu-open #site-nav{
             opacity:1;
-            transition:opacity 0.28s var(--ctl-ease), visibility 0s;
+            transition:opacity 0.28s ease, visibility 0s;
         }
     }
 
@@ -871,6 +891,7 @@ html.sss-switch-in .site-footer{
     .navbar__toggle__bars::before,
     .navbar__toggle__bars::after{
         transition-duration:0.001s !important;
+        transition-delay:0s !important;      /* 收起方向的 0.13s 延迟也要一起抹掉 */
     }
 
     .navbar.is-menu-open #site-nav a{
