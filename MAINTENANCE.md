@@ -812,7 +812,10 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     · 全面浏览：左下角最左的按钮（再按一次退回进入前视角）；`overviewFit` 取全部星系的包围盒算出适配比例尺，
       用 `SSS_COORD.setViewRaw` 绕过 ZOOM_MIN；进入 / 退出用 `flyView`（与「回到默认」同一条 RESET_MS 指数缓动）。
       期间缩放（含比例尺条）/ 拖动 / 星系点击禁用，信息栏淡出；点地图任意位置 → 该点为新中心、
-      比例尺回到 ZOOM_MIN，恢复控制；通过搜索选中星系会自动退出并把星系居中
+      比例尺回到 ZOOM_MIN，恢复控制；通过搜索选中星系会自动退出并把星系居中。
+      **这一屏里鼠标划过星系不高亮**（`handleMouseMove` 开头就 `overviewMode` 直接返回；
+      进入时也把 `hoveredId` 清掉，光标准停在星系上按按钮也不会留下一个亮的）。
+      只有"选中的那一颗"仍然保持金色 —— 那是状态，不是悬停反馈
     · 缩放锚点：`+` / `-` 按钮与比例尺条都以**当前视角中心**为锚点（`zoomTweenStep` / `setCoordView`）；
       滚轮 / 双指捏合仍以鼠标 / 双指中点为锚点，回到默认仍把原点飞回中心
       进场时信息栏从右侧滑入（`html.starmap-ui .starmap-right` 的 translateX）；

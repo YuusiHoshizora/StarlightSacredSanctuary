@@ -450,6 +450,15 @@ function selectSystem(system) {
 
 // ── 鼠标悬停 ──
 function handleMouseMove(e) {
+  /* 全面浏览：星系一律不高亮 —— 这一屏是"看全局"，鼠标划过任何一颗都不该有反馈
+     （进入全面浏览时 hoveredId 已经被清掉，这里再兜一次手势进来时的残留高亮）。 */
+  if (overviewMode) {
+    if (hoveredId !== null) {
+      hoveredId = null;
+      startAnimation();
+    }
+    return;
+  }
   const sys = getSystemAt(e.clientX, e.clientY);
   const newId = sys ? sys.id : null;
   if (newId !== hoveredId) {
@@ -682,6 +691,9 @@ function enterOverview() {
 
   preOverviewView = { z: C.zoom(), x: C.pan()[0], y: C.pan()[1] };
   overviewMode = true;
+  /* 全面浏览里不做悬停高亮：进来时把正被指着的那个清掉，
+     否则它会一直亮着（光标停在星系上按的按钮） */
+  hoveredId = null;
   stopWheelZoom();
   dragFrom = null;
   setPanning(false);
