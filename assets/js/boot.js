@@ -152,7 +152,7 @@ function sssSupportsCrossDocVT() {
                     '<div class="boot__step" data-step="cache"><em>01</em><span>缓存</span></div>' +
                     '<div class="boot__step" data-step="fonts"><em>02</em><span>字体</span></div>' +
                     '<div class="boot__step" data-step="data"><em>03</em><span>数据</span></div>' +
-                    '<div class="boot__step" data-step="ready"><em>04</em><span>就绪</span></div>' +
+                    '<div class="boot__step" data-step="page"><em>04</em><span>页面</span></div>' +
                 '</div>' +
                 '<div class="boot__now">' +
                     '<i class="boot__now-dot"></i>' +
@@ -230,7 +230,7 @@ function sssSupportsCrossDocVT() {
         }
 
         /* 当前阶段：正在跑的接线段走白，完成的走金（见 boot.css 的 .is-active / .is-done） */
-        var STEP_OF = { '缓存': 'cache', '字体': 'fonts', '数据': 'data', '就绪': 'ready' };
+        var STEP_OF = { '缓存': 'cache', '字体': 'fonts', '数据': 'data', '页面': 'page' };
 
         function setNow(label, file) {
             els.nowLabel.textContent = label;
@@ -486,8 +486,8 @@ function sssSupportsCrossDocVT() {
         }
 
         function runLoad() {
-            setNow('就绪', '—');
-            return runOne(waitLoad, CAP_TASK).then(function () { markStep('ready'); });
+            setNow('页面', '—');
+            return runOne(waitLoad, CAP_TASK).then(function () { markStep('page'); });
         }
 
         /* ------------------------- ⑤ 等资源活动安静下来 ------------------------- */

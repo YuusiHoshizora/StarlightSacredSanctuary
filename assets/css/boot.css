@@ -8,8 +8,9 @@
 
    视觉：战前简报式的 HUD。
      · 冷灰细网格 + 角部斜纹 + 四角读数 + 刻度尺（全是装饰，不承载信息）
-     · 中央一枚圆形徽记：完整正圆描边 + 慢速刻度环 + 两段反向扫掠弧 + 雷达扫光；
-       徽记本体仍是放大的半透明 logo（CSS mask，图见 logo_SSS_boot.svg）
+     · 中央一枚圆形徽记：金环 / 进度弧 / 刻度环 / 扫掠弧全部对齐 logo 自带的两圈描边
+       （半径见 --boot-r-out / --boot-r-in），徽记本体是放大的半透明 logo（CSS mask，
+       图见 logo_SSS_boot.svg）
      · 读数区只有百分比 / 进度 / 阶段 / 当前文件，不放任何说明性文案
 
    结构（由 boot.js 生成）：
@@ -50,6 +51,12 @@ html.sss-boot .boot {
     --boot-gold: #FFD700;
     --boot-line: rgba(255, 255, 255, 0.07);
     --boot-emblem: min(78vh, 72vw);
+    /* 徽记里 logo 自带的两圈描边（viewBox 1036，圆心 512）：
+       外圆 r = 511.765 → 离画布边 (518-511.765)/1036 = 0.602%
+       内圆 r = 478.748 → (518-478.748)/1036 = 3.789%
+       金环 / 进度弧 / 刻度环 / 扫掠弧全部按这两个数对齐，不各画各的。 */
+    --boot-r-out: 0.602%;
+    --boot-r-in: 3.789%;
 }
 
 /* 字体要连后代一起给 —— 读数区的文字全在子元素里，而 global.css 顶部那条
@@ -294,42 +301,43 @@ html.sss-boot .boot {
     50%      { opacity: 1; }
 }
 
-/* 完整正圆：一道金色细环 + 一道更淡的内环。
+/* 完整正圆：一道金色细环，落在 logo 的外圆上（不是画布边上）。
    这层是几何意义上的正圆（border-radius: 50%），同时把 logo 外圈的视觉边界收干净。 */
 .boot__ring {
     position: absolute;
-    inset: 0;
+    inset: var(--boot-r-out);
     border-radius: 50%;
     border: 1px solid rgba(255, 215, 0, 0.22);
     box-shadow: 0 0 24px rgba(255, 215, 0, 0.06), inset 0 0 24px rgba(255, 215, 0, 0.04);
 }
 .boot__ring--in {
-    inset: 12px;
+    inset: var(--boot-r-in);
     border-color: rgba(255, 255, 255, 0.06);
     box-shadow: none;
 }
 
-/* 进度弧：沿正圆这一圈从 12 点方向顺时针长出来，长度 = 已载入百分比。
-   --boot-p 由 boot.js 每帧写（0–100），所以弧是连续爬的，不是一格一格跳。 */
+/* 进度弧：沿 logo 的外圆从 12 点方向顺时针长出来，长度 = 已载入百分比。
+   --boot-p 由 boot.js 每帧写（0–100），所以弧是连续爬的，不是一格一格跳。
+   环带 3px、以 --boot-r-out 为中线：box 半径 = r + 1.5px，再向内留 3px。 */
 .boot__progress {
     position: absolute;
-    inset: -1px;
+    inset: calc(var(--boot-r-out) - 1.5px);
     border-radius: 50%;
     background: conic-gradient(
         from -90deg,
         rgba(255, 215, 0, 0.9) 0deg calc(var(--boot-p, 0) * 3.6deg),
         transparent calc(var(--boot-p, 0) * 3.6deg) 360deg
     );
-    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
-            mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
+    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+            mask: radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
     filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.45));
     pointer-events: none;
 }
 
-/* 刻度环：120 根短刻线，80 秒转一圈 */
+/* 刻度环：120 根短刻线，80 秒转一圈；贴在外圆外侧 3px 起，不压住金环 */
 .boot__ticks {
     position: absolute;
-    inset: -9px;
+    inset: calc(var(--boot-r-out) - 16px);
     border-radius: 50%;
     background: repeating-conic-gradient(
         from 0deg,
@@ -341,41 +349,43 @@ html.sss-boot .boot {
     animation: boot-spin 80s linear infinite;
 }
 
-/* 两段反向扫掠的短弧：一转 9 秒、一转 14 秒，节奏错开 */
+/* 两段反向扫掠的短弧：骑在 logo 的内圆上，一转 9 秒、一转 14 秒 */
 .boot__arc {
     position: absolute;
-    inset: 18px;
+    inset: calc(var(--boot-r-in) - 1.25px);
     border-radius: 50%;
     background: conic-gradient(
         from 0deg,
         transparent 0deg 296deg,
-        rgba(255, 215, 0, 0.5) 336deg,
-        rgba(255, 215, 0, 0.85) 360deg
+        rgba(255, 215, 0, 0.28) 336deg,
+        rgba(255, 215, 0, 0.5) 360deg
     );
-    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
-            mask: radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
+            mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
     animation: boot-spin 9s linear infinite;
 }
 .boot__arc--rev {
-    inset: 34px;
+    inset: calc(var(--boot-r-in) - 3.25px);
     background: conic-gradient(
         from 180deg,
         transparent 0deg 310deg,
-        rgba(255, 255, 255, 0.35) 350deg,
-        rgba(255, 255, 255, 0.7) 360deg
+        rgba(255, 255, 255, 0.2) 350deg,
+        rgba(255, 255, 255, 0.42) 360deg
     );
+    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 1px), #000 calc(100% - 1px));
+            mask: radial-gradient(closest-side, transparent calc(100% - 1px), #000 calc(100% - 1px));
     animation: boot-spin-rev 14s linear infinite;
 }
 
-/* 雷达扫光：从 12 点方向推开的一片扇形，3.4 秒一圈 */
+/* 雷达扫光：从 12 点方向推开的一片扇形，3.4 秒一圈；铺满外圆为止，不越过金环 */
 .boot__radar {
     position: absolute;
-    inset: 0;
+    inset: var(--boot-r-out);
     border-radius: 50%;
     background: conic-gradient(
         from 0deg,
-        rgba(255, 215, 0, 0.085),
-        rgba(255, 215, 0, 0.03) 34deg,
+        rgba(255, 215, 0, 0.06),
+        rgba(255, 215, 0, 0.02) 34deg,
         transparent 52deg
     );
     -webkit-mask: radial-gradient(closest-side, #000 99%, transparent 100%);
@@ -506,7 +516,7 @@ html.sss-boot .boot {
     font-style: normal;
     font-size: 11px;
     color: var(--boot-gold);
-    margin: 6px 0 0 6px;
+    margin: 6px 0 0 9px;
     letter-spacing: 1px;
 }
 .boot__meter-meta {
