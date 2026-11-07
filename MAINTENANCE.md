@@ -69,6 +69,7 @@
 │   │
 │   ├── js/
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
+│   │   ├── cursor-aura.js      指针动效：绕指针公转的「伴星」（精细指针 + 非 reduced-motion）
 │   │   ├── fleet.js            舰队页：悬停卡片时把整页主题色（紫）切到该舰队的颜色（含背景 / 顶栏）
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
@@ -284,7 +285,7 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   在桌面两栏页里滚右栏（`.facility-detail` / `.vessel-detail`），窄屏滚
   `.archive-body`（顶部留出过渡区，标题不会落进淡出带里）；`.facility-profile` /
   `.vessel-profile` 的 `scroll-margin-top` 也改成了 `var(--archive-fade)`。
-- **加新的档案页**：除了「加新页面时要一起做的七件事」，再补三步 ——
+- **加新的档案页**：除了「加新页面时要一起做的八件事」，再补三步 ——
   ① `<body data-archive>`（两栏版式再加 `="split"`）；② 用 `.archive-body` 包住标题以下的内容
   （放在页头之后、`</section>` 之前）；③ 引入 `assets/js/archive-scroll.js`
   （放在页面自己的脚本之后）。两栏页如果也有左栏名录，再引入
@@ -596,7 +597,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   `<span class="copyright-years" data-since="2025">` 里，**结束年由 `assets/js/seamless.js` 末尾那段自动改成当年**。
   另外 `LICENSE` 的 `Copyright (c)` 行和 `README.md` 里的年份是纯文本、**不会自动更新**，跨年时要手动改这两处
 
-### 加新页面时要一起做的七件事
+### 加新页面时要一起做的八件事
 
 1. `<head>` 里加加载屏三件套：那段内联判断脚本 + `<link ... boot.css>` + `<script defer ... boot.js>`
    （路径按页面深度调整），`<body>` 开头放一个空的 `<div class="boot" id="boot"></div>`
@@ -612,6 +613,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 6. 页脚：拷一份 `.site-footer`，把「关于本站」链接改成正确的相对路径
 7. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS/JS（否则离线访问那一页会漏，
    内容指纹也不会覆盖它 —— 改这一页就不会触发版本号与加载屏）
+8. `<head>` 里加指针动效脚本：`<script defer src="…/assets/js/cursor-aura.js"></script>`
+   （轨道伴星；只在精细指针且未开 reduced-motion 时启动。漏了不会坏，只是那一页指针不动）
 
 ### 工具页的目录与测试入口
 

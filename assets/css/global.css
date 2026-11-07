@@ -121,6 +121,73 @@ button:disabled, input:disabled, select:disabled, textarea:disabled,
 [aria-disabled="true"] { cursor: var(--cur-not-allowed); }
 
 /* ==========================================================================
+   指针动效：轨道伴星（脚本见 assets/js/cursor-aura.js）
+   --------------------------------------------------------------------------
+   原生 cursor 图片是静态的，浏览器不会播放 GIF / APNG / SVG 动画；所以动效由
+   这一层 pointer-events:none 的跟随元素承担。真正的指针仍是上面的 --cur-* 图片，
+   不隐藏系统光标 —— JS 没跑、或系统需要大号光标时，指针照样可用。
+   伴星绕指针缓慢公转：白 = 普通，金 = 可点 / 拖动中；文字、准星、禁用等
+   需要精确落点的状态会自动隐去（逻辑在 classify()）。
+   只在「精细指针 + 未开启 reduced-motion」时创建；加载屏 / 公告层级都比它高。
+   ========================================================================== */
+.cursor-aura{
+    position:fixed;
+    left:0;
+    top:0;
+    width:56px;
+    height:56px;
+    z-index:9990;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity 0.28s ease;
+    will-change:transform;
+    contain:layout style;
+}
+.cursor-aura.is-on{ opacity:1; }
+.cursor-aura svg{
+    display:block;
+    width:56px;
+    height:56px;
+    overflow:visible;
+    transform-origin:50% 50%;
+    transition:transform 0.3s ease;
+}
+.cursor-aura__orbit{ transform-origin:28px 28px; }
+.cursor-aura__ring{
+    fill:none;
+    stroke:rgba(255,255,255,0.08);
+    stroke-width:1;
+    stroke-linecap:round;
+    transition:stroke 0.25s ease;
+}
+.cursor-aura.is-active .cursor-aura__ring,
+.cursor-aura.is-drag .cursor-aura__ring{ stroke:rgba(255,215,0,0.15); }
+.cursor-aura__dot{
+    fill:rgba(255,255,255,0.55);
+    transform-box:fill-box;
+    transform-origin:center;
+    transition:fill 0.25s ease, transform 0.16s ease;
+}
+.cursor-aura__trail{
+    fill:none;
+    stroke:rgba(255,255,255,0.2);
+    stroke-width:1;
+    stroke-linecap:round;
+    transition:stroke 0.25s ease;
+}
+.cursor-aura.is-active svg,
+.cursor-aura.is-drag svg{ transform:scale(1.1); }
+.cursor-aura.is-active .cursor-aura__dot,
+.cursor-aura.is-drag .cursor-aura__dot{ fill:#FFD700; }
+.cursor-aura.is-active .cursor-aura__trail{ stroke:rgba(255,215,0,0.5); }
+.cursor-aura.is-drag .cursor-aura__trail{ stroke:rgba(255,215,0,0.7); }
+.cursor-aura.is-grab .cursor-aura__dot{ fill:rgba(255,255,255,0.85); }
+.cursor-aura.is-press .cursor-aura__dot{ transform:scale(2.1); }
+@media (prefers-reduced-motion: reduce){
+    .cursor-aura{ display:none; }
+}
+
+/* ==========================================================================
    字体载入策略：一律 font-display: block（别改回 swap）
    --------------------------------------------------------------------------
    swap ＝ 先用回退字体把字画出来、字体到位后再换掉 —— 那就是用户看得见的
