@@ -187,6 +187,12 @@
                 <span class="tool-entry__desc">点击此处以重新进行加载</span>
                 <span class="tool-entry__arrow" aria-hidden="true">›</span>
             </a>
+
+            <button type="button" class="tool-entry" id="entry-cursor">
+                <span class="tool-entry__name">指针测试</span>
+                <span class="tool-entry__desc">悬停查看全部指针状态</span>
+                <span class="tool-entry__arrow" aria-hidden="true">›</span>
+            </button>
         </aside>
 
         <!-- 右栏（宽）：可以直接用的小工具。
@@ -359,6 +365,26 @@
 
         </section>
 
+        <!-- 指针测试：悬停任意格子，当前光标会切换成该状态（自绘层认格子上的 --cursor-kind）。
+             只在测试/调试时用，不属于正式工具。结构固定，格子由页尾脚本按清单生成。
+             必须在 <main> 里：SPA 只换内容根 + 页脚，放在外面的浮层切页时不会被换掉。 -->
+        <div class="cursor-test" id="cursor-test" hidden>
+            <section class="cursor-test__panel" role="dialog" aria-modal="true"
+                     aria-labelledby="cursor-test-title">
+                <header class="cursor-test__head">
+                    <div>
+                        <p class="cursor-test__kicker">TEST / CURSOR</p>
+                        <h2 class="cursor-test__title" id="cursor-test-title">指针测试</h2>
+                    </div>
+                    <button type="button" class="cursor-test__close" id="cursor-test-close"
+                            aria-label="关闭指针测试">×</button>
+                </header>
+                <p class="cursor-test__hint">把指针移到任意格子上，当前光标会切换成该状态；带外环的状态会自转，本体保持静止。</p>
+                <div class="cursor-test__grid" id="cursor-test-grid"></div>
+                <p class="cursor-test__note">Esc 关闭 · 悬停有效</p>
+            </section>
+        </div>
+
     </main>
 
     <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
@@ -367,8 +393,11 @@
     </footer>
 
     <script>
-    /* 工具页左栏两个测试入口的行为（另一个是普通链接，不需要脚本）：
-       「公告测试」是个按钮，点一下往 document 上发 sss:notice 事件，notice.js 收到就弹公告。 */
+    /* 工具页左栏的测试入口：
+       · 公告测试 —— 按钮：往 document 上发 sss:notice，notice.js 收到就弹公告；
+       · 加载测试 —— 普通链接（../?boot=1），不需要脚本；
+       · 指针测试 —— 打开下面的弹层，格子按清单生成，悬停即切换当前光标状态。
+         格子同时写 cursor 和 --cursor-kind：自绘层和静态 SVG 光标两条路都能验。 */
     (function () {
         var entry = document.getElementById('entry-notice');
         if (!entry) return;
@@ -376,6 +405,106 @@
         entry.addEventListener('click', function () {
             document.dispatchEvent(new Event('sss:notice'));
         });
+    })();
+
+    (function () {
+        var CURSORS = [
+            ['default', '默认 · 星芒'],
+            ['pointer', '可点 · 链接'],
+            ['text', '文本'],
+            ['vertical-text', '竖排文本'],
+            ['crosshair', '准星 · 取点'],
+            ['grab', '可拖拽'],
+            ['grabbing', '拖拽中'],
+            ['move', '移动'],
+            ['all-scroll', '全域滚动'],
+            ['cell', '单元格'],
+            ['context-menu', '菜单'],
+            ['help', '帮助'],
+            ['wait', '等待'],
+            ['progress', '进行中'],
+            ['copy', '复制'],
+            ['alias', '捷径'],
+            ['zoom-in', '放大'],
+            ['zoom-out', '缩小'],
+            ['not-allowed', '禁止'],
+            ['no-drop', '不可放置'],
+            ['ew-resize', '横向缩放'],
+            ['ns-resize', '纵向缩放'],
+            ['nesw-resize', '对角缩放 ↗'],
+            ['nwse-resize', '对角缩放 ↘']
+        ];
+
+        var modal = document.getElementById('cursor-test');
+        var grid = document.getElementById('cursor-test-grid');
+        var entry = document.getElementById('entry-cursor');
+        var closeBtn = document.getElementById('cursor-test-close');
+        if (!modal || !grid || !entry || !closeBtn) return;
+
+        CURSORS.forEach(function (item) {
+            var kind = item[0];
+            var cell = document.createElement('div');
+            cell.className = 'cursor-test__cell';
+            cell.style.cursor = 'var(--cur-' + kind + ')';
+            cell.style.setProperty('--cursor-kind', kind);
+
+            var img = document.createElement('img');
+            img.className = 'cursor-test__glyph';
+            img.src = '/assets/img/cursor/' + kind + '.svg';
+            img.alt = '';
+            img.width = 40;
+            img.height = 40;
+
+            var name = document.createElement('span');
+            name.className = 'cursor-test__name';
+            name.textContent = item[1];
+
+            var token = document.createElement('span');
+            token.className = 'cursor-test__token';
+            token.textContent = '--cur-' + kind;
+
+            cell.appendChild(img);
+            cell.appendChild(name);
+            cell.appendChild(token);
+            grid.appendChild(cell);
+        });
+
+        var lastFocus = null;
+
+        function open() {
+            lastFocus = document.activeElement;
+            modal.hidden = false;
+            closeBtn.focus();
+        }
+
+        function shut() {
+            modal.hidden = true;
+            if (lastFocus && lastFocus.focus) lastFocus.focus();
+        }
+
+        entry.addEventListener('click', open);
+        closeBtn.addEventListener('click', shut);
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) shut();          /* 点遮罩关闭，点面板不关 */
+        });
+        function onKeydown(e) {
+            if (modal.hidden) return;
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                shut();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();                   /* 弹层里只有关闭按钮可聚焦 */
+                closeBtn.focus();
+            }
+        }
+        document.addEventListener('keydown', onKeydown);
+
+        /* SPA 换页时拆掉 document 级监听；浮层本身在 <main> 里，会随内容根一起换掉 */
+        if (window.__sssPageCleanup) {
+            window.__sssPageCleanup.add('cursor-test', function () {
+                document.removeEventListener('keydown', onKeydown);
+            });
+        }
     })();
     </script>
 

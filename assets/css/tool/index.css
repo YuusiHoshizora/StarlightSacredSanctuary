@@ -572,3 +572,150 @@ button.tool-entry {
         max-width: min(240px, 70vw);
     }
 }
+
+/* ==========================================================================
+   指针测试（工具页「测试工具」→ 指针测试）
+   --------------------------------------------------------------------------
+   只有这一处需要一次性展示全部 24 种光标：格子自己写 cursor 与 --cursor-kind，
+   自绘指针层（cursor.js）和静态 SVG 光标各走各的，正好一起验。
+   面板跟着站内那套玻璃 / 金色强调走；格子 hover 不位移（全站卡片规矩）。
+   ========================================================================== */
+.cursor-test {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(4, 4, 12, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+.cursor-test[hidden] { display: none; }
+
+.cursor-test__panel {
+    position: relative;
+    width: min(980px, 100%);
+    max-height: min(86svh, 900px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 26px 28px 22px;
+    background: rgba(18, 18, 38, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--ctl-panel-radius);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.cursor-test__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.cursor-test__kicker {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+.cursor-test__title {
+    margin-top: 7px;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #fff;
+}
+.cursor-test__close {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--ctl-fg-dim);
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    border-radius: var(--ctl-radius);
+    font-size: 20px;
+    line-height: 1;
+    transition: var(--ctl-transition);
+}
+.cursor-test__close:hover,
+.cursor-test__close:focus-visible {
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+}
+.cursor-test__close:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+.cursor-test__hint {
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.cursor-test__grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+
+.cursor-test__cell {
+    padding: 12px 10px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    text-align: center;
+    transition: border-color var(--ctl-ease), background-color var(--ctl-ease);
+}
+.cursor-test__cell:hover {
+    border-color: rgba(255, 215, 0, 0.45);
+    background: rgba(255, 215, 0, 0.08);
+}
+.cursor-test__glyph {
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 8px;
+}
+.cursor-test__name {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.82);
+}
+.cursor-test__token {
+    display: block;
+    margin-top: 3px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 10px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.32);
+}
+.cursor-test__note {
+    margin-top: 16px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 900px) {
+    .cursor-test__grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+    .cursor-test { padding: 12px; }
+    .cursor-test__panel { padding: 18px 16px 16px; max-height: 92svh; }
+    .cursor-test__grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .cursor-test__cell { padding: 10px 6px 9px; }
+    .cursor-test__glyph { width: 34px; height: 34px; margin-bottom: 6px; }
+}
+@media (max-width: 420px) {
+    .cursor-test__grid { grid-template-columns: repeat(2, 1fr); }
+}
