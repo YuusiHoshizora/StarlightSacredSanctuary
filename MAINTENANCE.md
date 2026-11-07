@@ -28,6 +28,19 @@
 ├── archive/organization/dgam.html   管理成员讨论组（机密彩蛋页，无入口、无站内跳转）
 ├── archive/organization/res.html    科研部（部门页模板：题图 / 概要 / 详情 / 四个下属局）
 ├── archive/organization/ind.html    工业部（题图 / 概要 / 详情 / 下属「数据损坏」占位）
+├── archive/organization/adm.html    管理部（题图 / 概要 / 详情 / 下属「数据损坏」）
+├── archive/organization/int.html    情报部（题图 / 概要 / 详情 / 下属「数据损坏」）
+├── archive/organization/dip.html    外交部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/col.html    收集部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/log.html    后勤部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/flo.html    舰队后勤部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/arc.html    资料部（题图 / 概要 / 详情 / 下属「数据损坏」）
+├── archive/organization/eco.html    经济部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/lif.html    生命部（题图 / 概要 / 详情 / 下属「数据损坏」）
+├── archive/organization/edu.html    教育部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/inv.html    调查部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/pla.html    规划部（题图 / 概要 / 下属「数据损坏」）
+├── archive/organization/tas.html    战术战略部（题图 / 概要 / 下属「数据损坏」）
 ├── archive/personnel/index.html 人员档案（四个等级入口；卡片人数由数据渲染）
 ├── archive/personnel/sxm.html   管理成员（SXM）：HTML 壳，名单/档案由数据渲染
 ├── archive/personnel/sam.html   高级成员（SAM）：HTML 壳，名单/档案由数据渲染

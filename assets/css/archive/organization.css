@@ -506,6 +506,58 @@ body[data-archive] .archive-body.org-index-body {
     --org-title-image: url("../../img/Deptlogo/title_Dept.IND.png");
 }
 
+.org-title--adm {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.ADM.png");
+}
+
+.org-title--int {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.INT.png");
+}
+
+.org-title--dip {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.DIP.png");
+}
+
+.org-title--col {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.COL.png");
+}
+
+.org-title--log {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.LOG.png");
+}
+
+.org-title--flo {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.FLO.png");
+}
+
+.org-title--arc {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.ARC.png");
+}
+
+.org-title--eco {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.ECO.png");
+}
+
+.org-title--lif {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.LIF.png");
+}
+
+.org-title--edu {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.EDU.png");
+}
+
+.org-title--inv {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.INV.png");
+}
+
+.org-title--pla {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.PLA.png");
+}
+
+.org-title--tas {
+    --org-title-image: url("../../img/Deptlogo/title_Dept.TAS.png");
+}
+
 /* 部门页页头：题图 / 一句简介放进同一个居中列里（题图仍按 620px 收窄）；
    列宽留到 720px，简介才能整行放下不折行。
    小标签不在这个列里，按 CAM 的位置独立贴左（和面包屑同一条竖线）。 */
@@ -562,6 +614,12 @@ body[data-archive] .archive-body.org-index-body {
     line-height: 1.8;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.82);
+}
+
+/* 设定缺失的总部位置等字段：沿用站内「数据损坏」的红色语义 */
+.org-meta dd .org-damaged {
+    color: var(--ctl-err);
+    letter-spacing: 2px;
 }
 
 /* 人名：本该链到人员档案，但人员数据库损坏 —— 做成链接样式的按钮，

@@ -63,6 +63,19 @@ const PRECACHE_URLS = [
     '/archive/organization/dgam.html',
     '/archive/organization/res.html',
     '/archive/organization/ind.html',
+    '/archive/organization/adm.html',
+    '/archive/organization/int.html',
+    '/archive/organization/dip.html',
+    '/archive/organization/col.html',
+    '/archive/organization/log.html',
+    '/archive/organization/flo.html',
+    '/archive/organization/arc.html',
+    '/archive/organization/eco.html',
+    '/archive/organization/lif.html',
+    '/archive/organization/edu.html',
+    '/archive/organization/inv.html',
+    '/archive/organization/pla.html',
+    '/archive/organization/tas.html',
     '/archive/personnel/',
     '/archive/personnel/index.html',
     '/archive/personnel/sxm.html',
@@ -156,9 +169,22 @@ const PRECACHE_URLS = [
     '/assets/img/cursor/nesw-resize.svg',
     '/assets/img/cursor/nwse-resize.svg',
 
-    // 部门题图（只放已建页的那几张，别一次预缓存 15 张）
+    // 部门题图（15 个第一层分支权力机构都已建页）
     '/assets/img/Deptlogo/title_Dept.RES.png',
-    '/assets/img/Deptlogo/title_Dept.IND.png'
+    '/assets/img/Deptlogo/title_Dept.ADM.png',
+    '/assets/img/Deptlogo/title_Dept.INT.png',
+    '/assets/img/Deptlogo/title_Dept.DIP.png',
+    '/assets/img/Deptlogo/title_Dept.IND.png',
+    '/assets/img/Deptlogo/title_Dept.COL.png',
+    '/assets/img/Deptlogo/title_Dept.LOG.png',
+    '/assets/img/Deptlogo/title_Dept.FLO.png',
+    '/assets/img/Deptlogo/title_Dept.ARC.png',
+    '/assets/img/Deptlogo/title_Dept.ECO.png',
+    '/assets/img/Deptlogo/title_Dept.LIF.png',
+    '/assets/img/Deptlogo/title_Dept.EDU.png',
+    '/assets/img/Deptlogo/title_Dept.INV.png',
+    '/assets/img/Deptlogo/title_Dept.PLA.png',
+    '/assets/img/Deptlogo/title_Dept.TAS.png'
 ];
 
 /* 本地预览（localhost / 127.0.0.1 / ::1）：SW 完全不插手 ——
