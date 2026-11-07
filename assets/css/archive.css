@@ -140,7 +140,7 @@ a.archive-card:focus-visible {
 .archive-card.is-locked {
     background: rgba(20, 20, 50, 0.3);
     border-color: rgba(255, 255, 255, 0.06);
-    cursor: var(--cur-default);
+    --cursor-kind: default; cursor: var(--cur-default);
 }
 
 .archive-card.is-locked h2 {
@@ -541,7 +541,7 @@ body[data-archive="split"] .archive-empty:not([hidden]) {
     -webkit-appearance: none;
     width: 12px;
     height: 12px;
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     background-color: rgba(255, 255, 255, 0.45);
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
 }

@@ -80,13 +80,13 @@
   .sss-notice__actions{display:flex;justify-content:flex-end;margin-top:20px}
   .sss-notice__ok{min-height:42px;padding:11px 30px;font:inherit;font-size:15px;letter-spacing:2px;
     color:var(--ctl-fg);background:var(--ctl-bg);border:1px solid var(--ctl-border);
-    border-radius:var(--ctl-radius);cursor: var(--cur-pointer);transition:var(--ctl-transition)}
+    border-radius:var(--ctl-radius);--cursor-kind: pointer; cursor: var(--cur-pointer);transition:var(--ctl-transition)}
   .sss-notice__ok:hover,.sss-notice__ok:focus-visible{
     color:var(--ctl-fg-hover);background:var(--ctl-bg-strong);border-color:var(--ctl-border-hover)}
   .sss-notice__close{position:absolute;top:10px;right:10px;width:32px;height:32px;display:flex;
     align-items:center;justify-content:center;font:inherit;font-size:20px;line-height:1;
     color:var(--ctl-fg-dim);background:var(--ctl-bg);border:1px solid var(--ctl-border);
-    border-radius:var(--ctl-radius);cursor: var(--cur-pointer);transition:var(--ctl-transition)}
+    border-radius:var(--ctl-radius);--cursor-kind: pointer; cursor: var(--cur-pointer);transition:var(--ctl-transition)}
   .sss-notice__close:hover,.sss-notice__close:focus-visible{
     color:var(--ctl-fg-hover);background:var(--ctl-bg-strong);border-color:var(--ctl-border-hover)}
   @keyframes sss-notice-fade{from{opacity:0}to{opacity:1}}

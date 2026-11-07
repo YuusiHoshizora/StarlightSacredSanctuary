@@ -122,7 +122,7 @@
     text-decoration-color: rgba(255, 215, 0, 0.35);
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     transition: color 0.25s ease, text-decoration-color 0.25s ease;
 }
 
@@ -147,7 +147,7 @@
 .cq-start[aria-disabled="true"] {
     color: rgba(255, 255, 255, 0.45);
     text-decoration-color: rgba(255, 255, 255, 0.2);
-    cursor: var(--cur-not-allowed);
+    --cursor-kind: not-allowed; cursor: var(--cur-not-allowed);
     pointer-events: none;         /* 连 hover 变色也一并收掉 */
 }
 
@@ -313,7 +313,7 @@
 }
 
 .cq-result img {
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
 }
 
 .cq-result img:focus-visible {
@@ -402,7 +402,7 @@
     background: var(--ctl-bg);
     border: 1px solid var(--ctl-border);
     border-radius: var(--ctl-radius);
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     transition: var(--ctl-transition);
 }
 

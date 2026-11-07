@@ -105,87 +105,64 @@
    所以文字相关的几类元素要逐个补回来 —— 见下面三条规则与 mainpage.css 的阅读区。
    任何一处想用站内指针都写 var(--cur-*)，不要写关键字（那样会退回系统光标）。
    ========================================================================== */
-html { cursor: var(--cur-default); }
+html { --cursor-kind: default; cursor: var(--cur-default); }
 
 a[href], area[href],
 button, select, summary, label[for], [role="button"], [role="link"],
 input[type="button"], input[type="submit"], input[type="reset"],
 input[type="checkbox"], input[type="radio"], input[type="range"],
-input[type="file"], input[type="color"] { cursor: var(--cur-pointer); }
+input[type="file"], input[type="color"] { --cursor-kind: pointer; cursor: var(--cur-pointer); }
 
 /* 输入框与可编辑区：I 形。放在可点规则后面，靠属性选择器的权重压过上面的 input 列表 */
-input, textarea, [contenteditable]:not([contenteditable="false"]) { cursor: var(--cur-text); }
+input, textarea, [contenteditable]:not([contenteditable="false"]) { --cursor-kind: text; cursor: var(--cur-text); }
 
 /* 禁用控件：禁止环（比退回系统默认箭头更直白；已在各页的 :disabled 规则里覆盖） */
 button:disabled, input:disabled, select:disabled, textarea:disabled,
-[aria-disabled="true"] { cursor: var(--cur-not-allowed); }
+[aria-disabled="true"] { --cursor-kind: not-allowed; cursor: var(--cur-not-allowed); }
 
 /* ==========================================================================
-   指针动效：轨道伴星（脚本见 assets/js/cursor-aura.js）
+   自绘指针（脚本见 assets/js/cursor.js）
    --------------------------------------------------------------------------
-   原生 cursor 图片是静态的，浏览器不会播放 GIF / APNG / SVG 动画；所以动效由
-   这一层 pointer-events:none 的跟随元素承担。真正的指针仍是上面的 --cur-* 图片，
-   不隐藏系统光标 —— JS 没跑、或系统需要大号光标时，指针照样可用。
-   伴星绕指针缓慢公转：白 = 普通，金 = 可点 / 拖动中；文字、准星、禁用等
-   需要精确落点的状态会自动隐去（逻辑在 classify()）。
-   只在「精细指针 + 未开启 reduced-motion」时创建；加载屏 / 公告层级都比它高。
+   原生 cursor 图片不能动，支持动效的做法是把图形画到 DOM 上再隐藏系统光标。
+   每条 cursor 规则旁边都有一条同值的 --cursor-kind（和 cursor 一起继承），
+   脚本只读这个自定义属性来决定画哪张图 —— 别再单独维护一份选择器表。
+   :root 前缀是为了压过星图拖动那条 !important 的 grabbing 规则；否则拖动时
+   系统光标会从自绘层下面冒出来。只在未开 reduced-motion 时隐藏系统光标。
    ========================================================================== */
-.cursor-aura{
+@media (prefers-reduced-motion: no-preference){
+    :root.sss-dom-cursor,
+    :root.sss-dom-cursor * { cursor:none !important; }
+}
+
+.sss-cursor{
     position:fixed;
     left:0;
     top:0;
-    width:56px;
-    height:56px;
-    z-index:9990;
+    width:32px;
+    height:32px;
+    z-index:2147483647;
     pointer-events:none;
     opacity:0;
-    transition:opacity 0.28s ease;
     will-change:transform;
     contain:layout style;
 }
-.cursor-aura.is-on{ opacity:1; }
-.cursor-aura svg{
-    display:block;
-    width:56px;
-    height:56px;
-    overflow:visible;
-    transform-origin:50% 50%;
-    transition:transform 0.3s ease;
+.sss-cursor.is-on{ opacity:1; }
+.sss-cursor__img{
+    position:absolute;
+    left:0;
+    top:0;
+    width:32px;
+    height:32px;
+    opacity:0;
+    pointer-events:none;
+    -webkit-user-drag:none;
+    user-select:none;
 }
-.cursor-aura__orbit{ transform-origin:28px 28px; }
-.cursor-aura__ring{
-    fill:none;
-    stroke:rgba(255,255,255,0.08);
-    stroke-width:1;
-    stroke-linecap:round;
-    transition:stroke 0.25s ease;
+.sss-cursor__img.is-on{ opacity:1; }
+.sss-cursor__img.is-spin{
+    animation:sss-cursor-spin var(--sss-spin, 16s) linear infinite;
 }
-.cursor-aura.is-active .cursor-aura__ring,
-.cursor-aura.is-drag .cursor-aura__ring{ stroke:rgba(255,215,0,0.15); }
-.cursor-aura__dot{
-    fill:rgba(255,255,255,0.55);
-    transform-box:fill-box;
-    transform-origin:center;
-    transition:fill 0.25s ease, transform 0.16s ease;
-}
-.cursor-aura__trail{
-    fill:none;
-    stroke:rgba(255,255,255,0.2);
-    stroke-width:1;
-    stroke-linecap:round;
-    transition:stroke 0.25s ease;
-}
-.cursor-aura.is-active svg,
-.cursor-aura.is-drag svg{ transform:scale(1.1); }
-.cursor-aura.is-active .cursor-aura__dot,
-.cursor-aura.is-drag .cursor-aura__dot{ fill:#FFD700; }
-.cursor-aura.is-active .cursor-aura__trail{ stroke:rgba(255,215,0,0.5); }
-.cursor-aura.is-drag .cursor-aura__trail{ stroke:rgba(255,215,0,0.7); }
-.cursor-aura.is-grab .cursor-aura__dot{ fill:rgba(255,255,255,0.85); }
-.cursor-aura.is-press .cursor-aura__dot{ transform:scale(2.1); }
-@media (prefers-reduced-motion: reduce){
-    .cursor-aura{ display:none; }
-}
+@keyframes sss-cursor-spin{ to{ transform:rotate(360deg); } }
 
 /* ==========================================================================
    字体载入策略：一律 font-display: block（别改回 swap）
@@ -674,7 +651,7 @@ html.sss-switch-in .site-footer{
     background:none;
     border:none;
     color:#fff;                            /* 三条杠用 currentColor，hover 时整体转金 */
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
 }
 
 /* 三条杠：按钮中心那一条用自身背景画，上下两条用伪元素 */

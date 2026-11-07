@@ -17,7 +17,7 @@
 .article-view {
     display: none;
     /* 阅读区：整块用站内 I 形光标（正文长，选段/复制是常见动作，箭头会丢提示） */
-    cursor: var(--cur-text);
+    --cursor-kind: text; cursor: var(--cur-text);
 }
 
 .article-view.active {
@@ -62,7 +62,7 @@
     letter-spacing: 1px;
     padding: 7px 16px;
     border-radius: var(--ctl-radius);
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     margin-bottom: 28px;
     transition: var(--ctl-transition);
 }
@@ -366,7 +366,7 @@
     border-radius: 8px;
     padding: 24px;
     transition: 0.3s;
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
 }
 
 .blog-card:hover {
@@ -509,7 +509,7 @@
     width: 28px;
     height: 28px;
     border-radius: 4px;
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -543,7 +543,7 @@
     color: rgba(255, 255, 255, 0.6);
     border-radius: 4px;
     transition: 0.2s;
-    cursor: var(--cur-default);
+    --cursor-kind: default; cursor: var(--cur-default);
 }
 
 .calendar-grid .day-cell:hover {

@@ -44,7 +44,7 @@
     border:1px solid var(--ctl-border);
     border-radius:var(--ctl-radius);
 
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
 
     transition:var(--ctl-transition);
 }

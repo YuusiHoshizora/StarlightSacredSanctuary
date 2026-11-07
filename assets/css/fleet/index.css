@@ -57,7 +57,7 @@
     text-align: center;
     /* 与背景换色同速：320ms easeOutCubic（见 fleet.js 的 DURATION） */
     transition: 320ms cubic-bezier(0.215, 0.61, 0.355, 1);
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     text-decoration: none;
     color: white;
     display: block;

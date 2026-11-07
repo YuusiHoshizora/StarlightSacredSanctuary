@@ -224,7 +224,7 @@
     letter-spacing: 2px;
     text-decoration: none;
 
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     transition: var(--ctl-transition);
 }
 
@@ -256,7 +256,7 @@
     text-decoration-color: rgba(255, 215, 0, 0.3);
     text-underline-offset: 4px;
 
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     transition: var(--ctl-transition), text-decoration-color var(--ctl-ease);
 }
 

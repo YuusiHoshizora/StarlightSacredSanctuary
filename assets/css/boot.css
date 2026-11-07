@@ -28,7 +28,7 @@
    ========================================================================== */
 
 /* 加载屏：进门前光标用「处理中」环（三段白环 + 金方点 = 有进度、仍在跑） */
-.boot { display: none; cursor: var(--cur-progress); }
+.boot { display: none; --cursor-kind: progress; cursor: var(--cur-progress); }
 
 /* 加载屏专用字面：和全站的 Sarasa Mono 是同一个文件，但 font-display 用 swap。
    首次访问时这一个文件要下 5 MB，而 global.css 里 `block` 的语义是"字体没到就不显示

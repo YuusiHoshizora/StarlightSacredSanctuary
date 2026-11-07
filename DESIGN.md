@@ -232,11 +232,16 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
   禁用态都是自动的
 - 加一种新状态要做三件事：图形放进 `assets/img/cursor/`、`:root` 里加一条 `--cur-*`、
   `sw.js` 的 `PRECACHE_URLS` 里补一行（否则离线时那一种会退回系统光标）
-- **动效在「伴星层」**：原生 `cursor` 图片是静态的（浏览器不会播放 GIF / APNG / SVG 动画），
-  所以动效由 [cursor-aura.js](assets/js/cursor-aura.js) 单独承担 —— 一颗小星绕着指针缓慢公转，
-  白 = 普通、金 = 可点 / 拖动中；文字、准星、禁用等需要精确落点的状态自动隐去。
-  **不隐藏系统光标、也不逐帧换图**：JS 没跑、或系统需要大号光标时，指针照样可用。
-  只在「精细指针 + 未开 `prefers-reduced-motion`」时创建；层级在加载屏与公告之下
+- **动效 = 自绘指针**：原生 `cursor` 图片是静态的（浏览器不会播放 GIF / APNG / SVG 动画），
+  所以 [cursor.js](assets/js/cursor.js) 在精细指针下隐藏系统光标，把同一张 32×32 图形按
+  指针坐标 **1:1** 画到 DOM 上，并让图形自己旋转（默认星芒 / 金色指针 / 等待 / 处理中；
+  文本、准星、拖拽、复制、禁止保持静止，避免转动的方向歧义）。**不做缓动、不做 lerp**，
+  位置就是指针位置；拖动里的星图也走 `pointerrawupdate`，不额外延迟。
+  **状态来源仍是 CSS**：每条 `cursor: var(--cur-*)` 旁都有一条同值的 `--cursor-kind`，
+  脚本只读这个自定义属性，不另外维护选择器表。系统光标在 `prefers-reduced-motion`、
+  `forced-colors`、或图片没加载全时保持原样；JS 没跑就是静态 SVG 指针，站点不受影响
+- 写新的 cursor 规则时，**`cursor` 和 `--cursor-kind` 要一起写**（kind 用令牌后缀，
+  例如 `--cur-grabbing` → `--cursor-kind: grabbing`）。漏了的话自绘层会把它当成默认星芒
 
 ### 状态文字
 `font-size: 12px; letter-spacing: 1~2px; color: rgba(255,255,255,0.35~0.5)`。
@@ -402,8 +407,8 @@ at-rule 被丢弃），属性判断会把兜底动画变成死代码。现在用
 - [ ] 新控件的圆角/颜色/过渡**全部来自 `--ctl-*`**，没有自创值
 - [ ] 指针只从 `--cur-*` 取（别写关键字）；改/加图形时 `sw.js` 的 `PRECACHE_URLS` 跟着补，
       输入框与主页面阅读区仍然有文本光标
-- [ ] 新页面 `<head>` 里有 `assets/js/cursor-aura.js`（伴星动效）；新状态若该显示伴星，
-      给 [cursor-aura.js](assets/js/cursor-aura.js) 的 `classify()` 认一下它
+- [ ] 新页面 `<head>` 里有 `assets/js/cursor.js`（自绘指针动效）；新增 cursor 规则时
+      同时写 `--cursor-kind`（自绘层靠它认状态）
 - [ ] 金色只出现在 hover / 聚焦 / 选中 / 关键读数上
 - [ ] 操作界面只给结果和必要反馈，没有「拆解 / 对应关系 / 点击后会…」这类过程说明（加载屏也一样，只有调试信息除外）
 - [ ] 键盘可达：可点的东西都能 Tab 到、有可见的 `:focus-visible`

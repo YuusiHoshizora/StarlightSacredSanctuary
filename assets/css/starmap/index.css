@@ -26,17 +26,17 @@
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
-  cursor: var(--cur-grab);
+  --cursor-kind: grab; cursor: var(--cur-grab);
 }
 #starmap-canvas:active {
-  cursor: var(--cur-grabbing);
+  --cursor-kind: grabbing; cursor: var(--cur-grabbing);
 }
 /* 拖动中：整页强制 grabbing（starmap.js 在按住期间给 <html> 挂 is-starmap-panning）。
    不能只靠上面的 :active —— 指针拖出画布（哪怕已经 pointer capture）时 :active 会失效，
    光标会在拖动中途掉回默认箭头。!important 用来盖住面板 / 按钮自己的光标。 */
 html.is-starmap-panning,
 html.is-starmap-panning * {
-  cursor: var(--cur-grabbing) !important;
+  --cursor-kind: grabbing !important; cursor: var(--cur-grabbing) !important;
 }
 
 /* 右侧星系介绍区 */
@@ -119,7 +119,7 @@ html.is-starmap-panning * {
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  cursor: var(--cur-pointer);
+  --cursor-kind: pointer; cursor: var(--cur-pointer);
   background-color: rgba(255, 255, 255, 0.45);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
 }
@@ -153,7 +153,7 @@ html.is-starmap-panning * {
   gap: 2px;
   padding: 7px 9px;
   border-radius: 4px;
-  cursor: var(--cur-pointer);
+  --cursor-kind: pointer; cursor: var(--cur-pointer);
   transition: background 0.15s;
 }
 
@@ -201,7 +201,7 @@ html.is-starmap-panning * {
   background: var(--ctl-bg);
   border: 1px solid var(--ctl-border);
   border-radius: var(--ctl-radius);
-  cursor: var(--cur-pointer);
+  --cursor-kind: pointer; cursor: var(--cur-pointer);
 
   transition: var(--ctl-transition);
 }
@@ -232,7 +232,7 @@ html.is-starmap-panning * {
 
 .map-zoom__btn:disabled {
   opacity: 0.28;
-  cursor: var(--cur-not-allowed);
+  --cursor-kind: not-allowed; cursor: var(--cur-not-allowed);
 }
 
 /* ── 比例尺滑块 ──
@@ -259,7 +259,7 @@ html.is-starmap-panning * {
     rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  cursor: var(--cur-pointer);
+  --cursor-kind: pointer; cursor: var(--cur-pointer);
 
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
@@ -456,7 +456,7 @@ html.is-starmap-panning * {
   border: 1px solid var(--ctl-border);
   border-radius: var(--ctl-radius);
   color: var(--ctl-fg);
-  cursor: var(--cur-pointer);
+  --cursor-kind: pointer; cursor: var(--cur-pointer);
   /* 字体族由 global.css 的「*」规则统一给 Sarasa */
   font-size: 15px;
   text-align: left;
@@ -726,7 +726,7 @@ html.starmap-ui .starmap-panel-wrap{
     font-family:var(--os-mono);
     font-size:30px;
     line-height:1;
-    cursor: var(--cur-pointer);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
     transition:color 0.2s ease;
 }
 .starmap-os-page .starmap-panel-toggle:hover,
@@ -829,7 +829,7 @@ html.starmap-ui .starmap-panel-wrap{
 /* 全面浏览中比例尺条与放大 / 缩小按钮同款禁用态 */
 .starmap-os-page .map-zoom__slider:disabled{
     opacity: 0.28;
-    cursor: var(--cur-not-allowed);
+    --cursor-kind: not-allowed; cursor: var(--cur-not-allowed);
     pointer-events: none;
 }
 /* 全面浏览按钮的激活态 */
