@@ -1,6 +1,8 @@
 <!-- 星光圣域指针：等待（32×32；热点与用法定在 global.css 的 cur 令牌里） -->
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <g transform="translate(16 16) scale(1.15) translate(-16 -16)">
+    <g class="cursor-ring">
     <path d="M17.79 7.59 A8.6 8.6 0 0 1 24.18 18.66" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M17.79 7.59 A8.6 8.6 0 0 1 24.18 18.66" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/><path d="M22.39 21.75 A8.6 8.6 0 0 1 9.61 21.75" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M22.39 21.75 A8.6 8.6 0 0 1 9.61 21.75" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/><path d="M7.82 18.66 A8.6 8.6 0 0 1 14.21 7.59" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M7.82 18.66 A8.6 8.6 0 0 1 14.21 7.59" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/>
+    </g>
     </g>
 </svg>

@@ -69,7 +69,7 @@
 │   │
 │   ├── js/
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
-│   │   ├── cursor.js           指针动效：自绘指针 + 图形自转（精细指针 + 非 reduced-motion）
+│   │   ├── cursor.js           指针动效：自绘指针，只转外环（精细指针 + 非 reduced-motion）
 │   │   ├── fleet.js            舰队页：悬停卡片时把整页主题色（紫）切到该舰队的颜色（含背景 / 顶栏）
 │   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
@@ -614,7 +614,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 7. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS/JS（否则离线访问那一页会漏，
    内容指纹也不会覆盖它 —— 改这一页就不会触发版本号与加载屏）
 8. `<head>` 里加指针动效脚本：`<script defer src="…/assets/js/cursor.js"></script>`
-   （自绘指针 + 图形自转；只在精细指针、未开 reduced-motion / forced-colors 时启动。
+   （自绘指针，只转外环；只在精细指针、未开 reduced-motion / forced-colors 时启动。
    漏了不会坏，只是那一页退回静态 SVG 指针）
 
 ### 工具页的目录与测试入口
@@ -704,9 +704,10 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 - **指针**：全站鼠标光标是 `assets/img/cursor/` 里的 24 个 SVG（34 个 `--cur-*` 令牌，
   含全部 CSS 光标关键字），由 `global.css` 统一引用。默认不是系统箭头，是一枚星芒；
   白 = 普通，金 = 可点 / 进行中 / 取点。
-  **精细指针下由 `cursor.js` 隐藏系统光标、按 1:1 坐标自绘同一张图并让图形自转**
-  （文本 / 准星 / 拖拽 / 复制 / 禁止保持静止）；状态靠每条 cursor 规则旁的
-  `--cursor-kind` 传给脚本。reduced-motion / forced-colors / 图片没就绪时保持系统光标。
+  **精细指针下由 `cursor.js` 隐藏系统光标、按 1:1 坐标自绘同一张图，只让外环
+  （SVG 里的 `.cursor-ring` 组）旋转，本体静止**；文本 / 准星 / 默认星芒等没有环的
+  状态不转。状态靠每条 cursor 规则旁的 `--cursor-kind` 传给脚本。
+  reduced-motion / forced-colors / 图片没就绪时保持系统光标。
   写法、热点、尺寸与「为什么阅读区单独给文本光标」见 [DESIGN.md](DESIGN.md) 的「指针」；
   新增图形记得补 `sw.js` 的 `PRECACHE_URLS`，新增 cursor 规则时一并写 `--cursor-kind`
 - **字体**：正文、标题与界面都用 Sarasa Gothic SC 的三个真实字面（Regular / Bold / Italic），

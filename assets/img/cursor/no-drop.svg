@@ -1,7 +1,9 @@
 <!-- 星光圣域指针：不可放置（32×32；热点与用法定在 global.css 的 cur 令牌里） -->
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <g transform="translate(16 16) scale(1.15) translate(-16 -16)">
+    <g class="cursor-ring">
     <path d="M17.20 7.48 A8.6 8.6 0 0 1 24.52 14.80" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M17.20 7.48 A8.6 8.6 0 0 1 24.52 14.80" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/><path d="M24.52 17.20 A8.6 8.6 0 0 1 17.20 24.52" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M24.52 17.20 A8.6 8.6 0 0 1 17.20 24.52" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/><path d="M14.80 24.52 A8.6 8.6 0 0 1 7.48 17.20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M14.80 24.52 A8.6 8.6 0 0 1 7.48 17.20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/><path d="M7.48 14.80 A8.6 8.6 0 0 1 14.80 7.48" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M7.48 14.80 A8.6 8.6 0 0 1 14.80 7.48" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/>
+    </g>
     <path d="M9.9 22.1 L22.1 9.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-opacity="0.55" stroke-width="3.05"/><path d="M9.9 22.1 L22.1 9.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff" stroke-width="1.25"/>
     </g>
 </svg>

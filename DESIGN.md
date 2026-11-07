@@ -232,14 +232,18 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
   禁用态都是自动的
 - 加一种新状态要做三件事：图形放进 `assets/img/cursor/`、`:root` 里加一条 `--cur-*`、
   `sw.js` 的 `PRECACHE_URLS` 里补一行（否则离线时那一种会退回系统光标）
-- **动效 = 自绘指针**：原生 `cursor` 图片是静态的（浏览器不会播放 GIF / APNG / SVG 动画），
-  所以 [cursor.js](assets/js/cursor.js) 在精细指针下隐藏系统光标，把同一张 32×32 图形按
-  指针坐标 **1:1** 画到 DOM 上，并让图形自己旋转（默认星芒 / 金色指针 / 等待 / 处理中；
-  文本、准星、拖拽、复制、禁止保持静止，避免转动的方向歧义）。**不做缓动、不做 lerp**，
-  位置就是指针位置；拖动里的星图也走 `pointerrawupdate`，不额外延迟。
-  **状态来源仍是 CSS**：每条 `cursor: var(--cur-*)` 旁都有一条同值的 `--cursor-kind`，
-  脚本只读这个自定义属性，不另外维护选择器表。系统光标在 `prefers-reduced-motion`、
-  `forced-colors`、或图片没加载全时保持原样；JS 没跑就是静态 SVG 指针，站点不受影响
+- **动效 = 自绘指针，只转外环**：原生 `cursor` 图片是静态的（浏览器不会播放 GIF / APNG /
+  SVG 动画），所以 [cursor.js](assets/js/cursor.js) 在精细指针下隐藏系统光标，把同一张
+  32×32 图形按指针坐标 **1:1** 画到 DOM 上。图形在 SVG 文件里拆成两组：
+  `<g class="cursor-ring">` 是外圈，其余是本体；**只让 ring 组转，本体永远静止**
+  （pointer / grab / grabbing / wait / progress / help / no-drop 有环才转；默认星芒没有环，
+  不转）。**不做缓动、不做 lerp**，位置就是指针位置；拖动里的星图也走 `pointerrawupdate`，
+  不额外延迟。**状态来源仍是 CSS**：每条 `cursor: var(--cur-*)` 旁都有一条同值的
+  `--cursor-kind`，脚本只读这个自定义属性，不另外维护选择器表。系统光标在
+  `prefers-reduced-motion` / `forced-colors` / 图片没加载全时保持原样；JS 没跑就是静态
+  SVG 指针，站点不受影响
+- 要改「哪些转」：`cursor.js` 的 `SPIN` 表列出会转的状态与转速；SVG 里要转的那一组
+  必须带 `class="cursor-ring"`（否则加了 `is-spin` 也转不到东西）
 - 写新的 cursor 规则时，**`cursor` 和 `--cursor-kind` 要一起写**（kind 用令牌后缀，
   例如 `--cur-grabbing` → `--cursor-kind: grabbing`）。漏了的话自绘层会把它当成默认星芒
 
@@ -408,7 +412,7 @@ at-rule 被丢弃），属性判断会把兜底动画变成死代码。现在用
 - [ ] 指针只从 `--cur-*` 取（别写关键字）；改/加图形时 `sw.js` 的 `PRECACHE_URLS` 跟着补，
       输入框与主页面阅读区仍然有文本光标
 - [ ] 新页面 `<head>` 里有 `assets/js/cursor.js`（自绘指针动效）；新增 cursor 规则时
-      同时写 `--cursor-kind`（自绘层靠它认状态）
+      同时写 `--cursor-kind`（自绘层靠它认状态）；要转的外环在 SVG 里带 `cursor-ring`
 - [ ] 金色只出现在 hover / 聚焦 / 选中 / 关键读数上
 - [ ] 操作界面只给结果和必要反馈，没有「拆解 / 对应关系 / 点击后会…」这类过程说明（加载屏也一样，只有调试信息除外）
 - [ ] 键盘可达：可点的东西都能 Tab 到、有可见的 `:focus-visible`

@@ -147,22 +147,28 @@ button:disabled, input:disabled, select:disabled, textarea:disabled,
     contain:layout style;
 }
 .sss-cursor.is-on{ opacity:1; }
-.sss-cursor__img{
+.sss-cursor__art{
     position:absolute;
     left:0;
     top:0;
     width:32px;
     height:32px;
+    overflow:visible;
     opacity:0;
     pointer-events:none;
-    -webkit-user-drag:none;
     user-select:none;
 }
-.sss-cursor__img.is-on{ opacity:1; }
-.sss-cursor__img.is-spin{
-    animation:sss-cursor-spin var(--sss-spin, 16s) linear infinite;
+.sss-cursor__art.is-on{ opacity:1; }
+/* 只转外环：SVG 里环那一组带 .cursor-ring，本体没有这个类、永远静止。
+   绕 viewBox 中心转（16,16）；外环在 1.15× 的组里，中心映射后仍是自己。 */
+.sss-cursor__art .cursor-ring{
+    transform-box:view-box;
+    transform-origin:16px 16px;
 }
-@keyframes sss-cursor-spin{ to{ transform:rotate(360deg); } }
+.sss-cursor__art.is-spin .cursor-ring{
+    animation:sss-cursor-ring-spin var(--sss-spin, 6s) linear infinite;
+}
+@keyframes sss-cursor-ring-spin{ to{ transform:rotate(360deg); } }
 
 /* ==========================================================================
    字体载入策略：一律 font-display: block（别改回 swap）
