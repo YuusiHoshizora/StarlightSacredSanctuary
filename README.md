@@ -59,9 +59,9 @@
 
 | 资源 | 用途 | 许可 |
 | --- | --- | --- |
+| [Arcticons](https://github.com/Arcticons-Team/Arcticons) | 关于页联系方式图标 | CC BY-SA 4.0 |
 | [marked](https://github.com/markedjs/marked) | 渲染 Markdown | MIT |
 | [Sarasa Gothic 更纱黑体](https://github.com/be5invis/Sarasa-Gothic) | 全站字体（含等宽的 Sarasa Mono） | SIL Open Font License 1.1 |
-| [Arcticons](https://github.com/Arcticons-Team/Arcticons) | 关于页联系方式图标 | CC BY-SA 4.0 |
 
 ---
 
