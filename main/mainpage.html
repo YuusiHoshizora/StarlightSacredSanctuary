@@ -253,30 +253,117 @@
     const articleView = document.getElementById('article-view');
     const articleContent = document.getElementById('article-content');
     const backBtn     = document.getElementById('back-btn');
+    const centerView  = document.querySelector('.center-panel');
 
-    /* 列表 / 文章视图的切换时长：与 CSS 里的 article-in / view-in 对齐 */
+    /* 两段时长：文字先淡出，再让卡片背景展开 / 收回，最后文字淡入 */
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var SWAP_MS = reduceMotion ? 0 : 320;
+    var FADE_MS  = reduceMotion ? 0 : 180;
+    var MORPH_MS = reduceMotion ? 0 : 380;
+
     var articleGen = 0;          // 快速打开 / 返回时作废旧 fetch / 旧定时器
+    var morphTimer = 0;
+    var morphCard = null;
 
-    /* 打开文章视图：列表向左淡出，文章面板同时从右侧淡入（交叉淡化） */
-    function openArticleView() {
-        if (articleView.classList.contains('active') && !articleView.classList.contains('leaving')) return;
+    function centerContentRect() {
+        var cs = window.getComputedStyle(centerView);
+        var padL = parseFloat(cs.paddingLeft) || 0;
+        var padR = parseFloat(cs.paddingRight) || 0;
+        var padT = parseFloat(cs.paddingTop) || 0;
+        var padB = parseFloat(cs.paddingBottom) || 0;
+        return {
+            left: padL,
+            top: padT,
+            width: centerView.clientWidth - padL - padR,
+            height: centerView.clientHeight - padT - padB
+        };
+    }
 
-        articleView.classList.remove('leaving');
-        articleView.classList.add('active');
+    function rectOfCard(card) {
+        var c = centerView.getBoundingClientRect();
+        var r = card.getBoundingClientRect();
+        return {
+            left: r.left - c.left,
+            top: r.top - c.top,
+            width: r.width,
+            height: r.height
+        };
+    }
 
-        listView.classList.remove('view-entering');
-        listView.classList.add('view-leaving');
+    function setPanelRect(rect) {
+        articleView.style.left = rect.left + 'px';
+        articleView.style.top = rect.top + 'px';
+        articleView.style.width = rect.width + 'px';
+        articleView.style.height = rect.height + 'px';
+    }
 
+    /* 打开：中栏文字先淡出 → 点击卡的背景向上/向下展开成文章面板 → 文章文字淡入 */
+    function startMorph(card, gen) {
+        var initial = rectOfCard(card);
+        var finalRect = centerContentRect();
+
+        window.clearTimeout(morphTimer);
+        morphCard = card;
+
+        articleView.classList.remove('active', 'leaving', 'is-closing');
+        articleView.classList.add('is-visible');
+        articleView.classList.remove('is-content-visible');
+
+        listView.classList.remove('hidden');
+        listView.classList.add('is-morphing');
+        document.querySelectorAll('.blog-card.is-morph-source').forEach(function (c) {
+            c.classList.remove('is-morph-source');
+        });
+        card.classList.add('is-morph-source');
+
+        articleView.style.transition = 'none';
+        setPanelRect(initial);
         articleContent.scrollTop = 0;
+        void articleView.offsetWidth;
+        articleView.style.transition = '';
 
-        var gen = articleGen;
-        window.setTimeout(function () {
-            if (gen !== articleGen || !articleView.classList.contains('active')) return;
-            listView.classList.add('hidden');
-            listView.classList.remove('view-leaving');
-        }, SWAP_MS);
+        morphTimer = window.setTimeout(function () {
+            if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
+            setPanelRect(finalRect);
+
+            morphTimer = window.setTimeout(function () {
+                if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
+                articleView.classList.add('is-content-visible');
+                listView.classList.add('hidden');
+            }, MORPH_MS);
+        }, FADE_MS);
+    }
+
+    /* 关闭：文章文字先淡出 → 面板缩回点击卡片的尺寸 → 列表文字 / 其它卡片淡入 */
+    function closeArticle() {
+        if (!articleView.classList.contains('is-visible')) return;
+        if (articleView.classList.contains('is-closing')) return;
+
+        var gen = ++articleGen;
+        window.clearTimeout(morphTimer);
+        articleView.classList.remove('is-content-visible');
+        articleView.classList.add('is-closing');
+
+        morphTimer = window.setTimeout(function () {
+            if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
+
+            listView.classList.remove('hidden');
+            listView.classList.add('is-morphing');
+            if (morphCard) morphCard.classList.add('is-morph-source');
+
+            var target = morphCard ? rectOfCard(morphCard) : null;
+            if (target) setPanelRect(target);
+
+            morphTimer = window.setTimeout(function () {
+                if (gen !== articleGen) return;
+                articleView.classList.remove('is-visible', 'is-closing');
+                articleView.style.transition = 'none';
+                listView.classList.remove('is-morphing');
+                if (morphCard) morphCard.classList.remove('is-morph-source');
+                morphCard = null;
+                articleContent.innerHTML = '';
+                articleView.style.transition = '';
+            }, MORPH_MS);
+        }, FADE_MS);
     }
 
     /**
@@ -332,24 +419,7 @@
         articleContent.scrollTop = 0;
     }
 
-function showList() {
-    if (!articleView.classList.contains('active')) return;
-    if (articleView.classList.contains('leaving')) return;
-
-    var gen = ++articleGen;
-    articleView.classList.add('leaving');
-    listView.classList.remove('hidden', 'view-leaving');
-    listView.classList.add('view-entering');
-
-    window.setTimeout(function () {
-        if (gen !== articleGen) return;
-        articleView.classList.remove('active', 'leaving');
-        listView.classList.remove('view-entering');
-        articleContent.innerHTML = '';
-    }, SWAP_MS);
-}
-
-    backBtn.addEventListener('click', showList);
+    backBtn.addEventListener('click', closeArticle);
 
 // ===== 左侧分类过滤 =====
 document.querySelector('.vertical-nav').addEventListener('click', function(e) {
@@ -365,11 +435,10 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
 
     const filter = link.dataset.filter;
 
-    // 还在文章视图里点分类：先退回列表（背景缩回卡片的动画由 showList 负责），
-    // 等退场动画走完再套用筛选，免得两个动画撞在一起
-    if (articleView.classList.contains('active')) {
-        showList();
-        window.setTimeout(function () { applyFilter(filter); }, SWAP_MS + 80);
+    // 还在文章视图里点分类：先让它缩回卡片，等收回后再套用筛选
+    if (articleView.classList.contains('is-visible')) {
+        closeArticle();
+        window.setTimeout(function () { applyFilter(filter); }, FADE_MS + MORPH_MS + 80);
     } else {
         applyFilter(filter);
     }
@@ -704,20 +773,19 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
         var mdInline = card.dataset.mdInline || '';
 
         if (mdSrc) {
-            var isOpen = articleView.classList.contains('active') && !articleView.classList.contains('leaving');
-            var gen = isOpen ? articleGen : ++articleGen;
+            var gen = ++articleGen;
             articleContent.innerHTML = '<div class="md-loading">正在加载……</div>';
-            openArticleView();
+            startMorph(card, gen);
 
             fetchMdCached(mdSrc)
                 .then(function(text) {
-                    if (gen !== articleGen || !articleView.classList.contains('active')) return;
+                    if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
                     // 从缓存的文本中再次提取标签，确保与卡片一致
                     var fetchedTag = extractTag(text) || tag;
                     renderArticle(text, title, date, fetchedTag);
                 })
                 .catch(function(err) {
-                    if (gen !== articleGen || !articleView.classList.contains('active')) return;
+                    if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
                     if (mdInline) {
                         renderArticle(mdInline, title, date, tag);
                     } else {
@@ -726,8 +794,8 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                     }
                 });
         } else if (mdInline) {
-            if (articleView.classList.contains('leaving')) articleGen++;
-            openArticleView();
+            articleContent.innerHTML = '';
+            startMorph(card, ++articleGen);
             renderArticle(mdInline, title, date, tag);
         }
     });

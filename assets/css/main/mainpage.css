@@ -20,26 +20,6 @@
     --cursor-kind: text; cursor: var(--cur-text);
 }
 
-.article-view.active {
-    animation: article-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
-    display: block;
-}
-
-.article-view.leaving {
-    animation: article-out 0.3s cubic-bezier(0.55, 0.06, 0.68, 0.19);
-    display: block;
-}
-
-@keyframes article-in {
-    from { opacity: 0; transform: translateX(8px); }
-    to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes article-out {
-    from { opacity: 1; transform: translateX(0); }
-    to   { opacity: 0; transform: translateX(-8px); }
-}
-
 .blog-list-view {
     display: block;
 }
@@ -776,22 +756,6 @@
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
 }
 
-.blog-card::after {
-    content: "阅读 ›";
-    position: absolute;
-    right: 26px;
-    bottom: 20px;
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.25);
-    pointer-events: none;
-    transition: var(--ctl-transition);
-}
-
-.blog-card:hover::after {
-    color: #FFD700;
-}
-
 .blog-card .blog-title {
     margin: 0 0 10px;
     font-size: 18px;
@@ -1049,10 +1013,11 @@
 }
 
 /* ==========================================================================
-   主页面：固定视口仪表盘 + 淡白卡片 + 视图交叉淡化（2026-11）
+   主页面：固定视口仪表盘 + 淡白卡片 + 卡片展开切换（2026-11）
    --------------------------------------------------------------------------
    页面本身不滚：页头 / 左右栏 / 页脚常驻，只有中间事件列表（或文章正文）在内部滚动。
-   卡片保持原来的淡白透明；左栏选中动画照工具页的二级入口；列表 ⇄ 文章交叉淡化，不再有背景形变。
+   卡片保持原来的淡白透明；左栏选中动画照工具页的二级入口；
+   点卡片时文字先淡出，文章面板从卡片矩形展开，展开完成后再淡入文章文字；返回反向。
    ========================================================================== */
 
 body[data-mainpage] {
@@ -1087,8 +1052,9 @@ body[data-mainpage] .right-panel {
     overscroll-behavior: contain;
 }
 
-/* 中栏：页头固定，列表 / 文章共用一个网格单元，切换时叠在一起交叉淡化 */
+/* 中栏：页头固定，列表内部滚；文章面板绝对定位叠在上面，从卡片矩形展开 */
 body[data-mainpage] .center-panel {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
@@ -1098,16 +1064,17 @@ body[data-mainpage] .center-panel {
     overflow: hidden;
 }
 
-body[data-mainpage] .blog-list-view,
-body[data-mainpage] .article-view {
+body[data-mainpage] .blog-list-view {
     grid-area: 1 / 1;
     min-height: 0;
-}
-
-body[data-mainpage] .blog-list-view {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+body[data-mainpage] .article-view {
+    grid-area: auto;
+    min-height: 0;
 }
 
 body[data-mainpage] .blog-list-view.hidden {
@@ -1127,20 +1094,37 @@ body[data-mainpage] .blog-list {
 }
 
 /* 文章视图：一块淡白面板，返回按钮固定，正文在面板里滚 */
+/* 文章面板：从点击卡的矩形展开；内容在展开完成后再淡入 */
 body[data-mainpage] .article-view {
+    position: absolute;
     display: none;
     flex-direction: column;
     overflow: hidden;
-    z-index: 1;
+    z-index: 2;
     padding: 20px 24px 0;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--ctl-panel-radius);
+
+    transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                top 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-body[data-mainpage] .article-view.active,
-body[data-mainpage] .article-view.leaving {
+body[data-mainpage] .article-view.is-visible {
     display: flex;
+}
+
+body[data-mainpage] .article-view .back-btn,
+body[data-mainpage] .article-view #article-content {
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+body[data-mainpage] .article-view.is-content-visible .back-btn,
+body[data-mainpage] .article-view.is-content-visible #article-content {
+    opacity: 1;
 }
 
 body[data-mainpage] .article-view .back-btn {
@@ -1156,23 +1140,26 @@ body[data-mainpage] #article-content {
     padding-bottom: 24px;
 }
 
-/* 列表 ⇄ 文章：旧视图向左淡出，新视图从右侧淡入 */
-@keyframes mp-view-out {
-    from { opacity: 1; transform: translateX(0); }
-    to   { opacity: 0; transform: translateX(-8px); }
+/* 打开 / 关闭时：中栏文字与其它卡片先淡出，只留下被点卡片的背景 */
+body[data-mainpage] .blog-header,
+body[data-mainpage] .blog-card > * {
+    transition: opacity 0.16s ease;
 }
 
-@keyframes mp-view-in {
-    from { opacity: 0; transform: translateX(8px); }
-    to   { opacity: 1; transform: translateX(0); }
+body[data-mainpage] .blog-list-view.is-morphing {
+    pointer-events: none;
 }
 
-body[data-mainpage] .blog-list-view.view-leaving {
-    animation: mp-view-out 0.18s ease both;
+body[data-mainpage] .blog-list-view.is-morphing .blog-header {
+    opacity: 0;
 }
 
-body[data-mainpage] .blog-list-view.view-entering {
-    animation: mp-view-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+body[data-mainpage] .blog-list-view.is-morphing .blog-card:not(.is-morph-source) {
+    opacity: 0;
+}
+
+body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source > * {
+    opacity: 0;
 }
 
 /* 卡片回到淡白透明；去掉“阅读”提示与右侧专用留白 */
@@ -1182,6 +1169,7 @@ body[data-mainpage] .blog-card {
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: none;
+    transition: var(--ctl-transition), box-shadow 0.3s ease, opacity 0.16s ease;
 }
 
 body[data-mainpage] .blog-card:hover {
@@ -1284,9 +1272,16 @@ body[data-mainpage] .right-panel {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body[data-mainpage] .blog-list-view.view-leaving,
-    body[data-mainpage] .blog-list-view.view-entering {
-        animation-duration: 0.001s !important;
+    body[data-mainpage] .article-view {
+        transition-duration: 0.001s !important;
+    }
+
+    body[data-mainpage] .blog-header,
+    body[data-mainpage] .blog-card,
+    body[data-mainpage] .blog-card > *,
+    body[data-mainpage] .article-view .back-btn,
+    body[data-mainpage] .article-view #article-content {
+        transition-duration: 0.001s !important;
     }
 
     body[data-mainpage] .left-panel nav.vertical-nav a,

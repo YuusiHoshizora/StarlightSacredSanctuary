@@ -1012,11 +1012,13 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   负 z-index 的背景层（`.hex-bg` 是 -9、`.background` 是 -2）会被 body 自己那层黑盖住，
   表现就是"整站背景全没了"。（这个坑已经踩过一次。）
 - **主页面是固定视口仪表盘**（`body[data-mainpage]`）：body 锁 `100dvh`，左右栏与页脚常驻；
-  中栏用 grid 叠 `.blog-list-view` 与 `.article-view`，只有事件列表 / 文章正文在内部滚。
+  中栏 grid 只排列表，文章面板绝对定位叠在上面；只有事件列表 / 文章正文在内部滚。
   · 页头（金色标题 / 英文副题 / 随机简介）在列表滚动区之外，滚动时不动
-  · 列表 ⇄ 文章：两个视图同一网格单元，旧视图 `mp-view-out` / `article-out` 向左淡出，
-    新视图 `mp-view-in` / `article-in` 从右淡入，**不再做卡片背景形变**；
-    JS 的 `SWAP_MS` 与 CSS 动画时长对齐
+  · 点卡片：中栏文字（页头 / 卡片文字）先淡出，非点击卡片整体淡出；文章面板从被点卡片的
+    `rectOfCard()` 矩形展开到 `centerContentRect()`（向上向下），展开完成后再用
+    `.is-content-visible` 淡入文章文字。返回反向：文章文字淡出 → 面板缩回卡片 →
+    列表文字 / 卡片淡入。`FADE_MS = 180`、`MORPH_MS = 380`；reduced-motion 直接到终态。
+    **没有 `.article-morph`**：展开的面板本身就是那张卡的背景
   · 左栏选中 / 悬停：整块右移 5px + 左侧 3px 金线淡入（照工具页二级入口），
     每类带条数读数；分类切换仍用 `.blog-list.switching` / `.entering`
   · 卡片保持淡白透明（`rgba(255,255,255,.03)`），不套暗蓝玻璃；右栏日历 / 当前位置仍是玻璃面板
