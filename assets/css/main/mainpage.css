@@ -21,23 +21,23 @@
 }
 
 .article-view.active {
-    animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: article-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
     display: block;
 }
 
 .article-view.leaving {
-    animation: fadeOutDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: article-out 0.3s cubic-bezier(0.55, 0.06, 0.68, 0.19);
     display: block;
 }
 
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+@keyframes article-in {
+    from { opacity: 0; transform: translateX(8px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes fadeOutDown {
-    from { opacity: 1; transform: translateY(0); }
-    to   { opacity: 0; transform: translateY(12px); }
+@keyframes article-out {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-8px); }
 }
 
 .blog-list-view {
@@ -639,5 +639,446 @@
 
     .calendar-widget {
         padding: 14px;
+    }
+}
+
+/* ==========================================================================
+   与站内其它页面统一的视觉（2026-11）
+   --------------------------------------------------------------------------
+   参照 archive / tool / fleet：暗蓝玻璃面板、金色标题、等宽小读数；
+   只改外观，不动三栏布局与文章背景形变逻辑。
+   ========================================================================== */
+
+.main-layout {
+    /* 从满屏改成和站内导航 / 内容一样的居中宽度；左右各留 24px 呼吸 */
+    max-width: 1440px;
+    padding: 72px 24px 0;
+}
+
+/* ── 中栏页头：面包屑 → 金色标题 → 英文副题 → 简介 ── */
+.blog-header {
+    margin: 0 0 32px;
+    padding: 0 0 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.blog-header__crumb {
+    margin: 0 0 20px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.blog-header__crumb span {
+    margin: 0 8px;
+    color: rgba(255, 255, 255, 0.16);
+}
+
+.blog-header__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.blog-header__kicker::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.75);
+}
+
+.blog-header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: #FFD700;
+}
+
+.blog-header__en {
+    margin: 8px 0 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.blog-header .subtitle {
+    margin: 16px 0 0;
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── 左栏：分类列表变成站内名录式的读数列表 ── */
+.left-panel {
+    padding: 48px 24px 40px 40px;
+    border-right-color: rgba(255, 255, 255, 0.07);
+}
+
+.left-panel .nav-section-title {
+    display: flex;
+    align-items: center;
+    margin: 0 0 18px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.left-panel .nav-section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    margin-left: 12px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.12), transparent);
+}
+
+.left-panel nav.vertical-nav {
+    gap: 2px;
+}
+
+.left-panel nav.vertical-nav a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 8px 8px 8px 12px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+
+    border-left: 3px solid transparent;
+    border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
+    transition: var(--ctl-transition);
+}
+
+.left-panel nav.vertical-nav a:hover,
+.left-panel nav.vertical-nav a.active {
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.06);
+    border-left-color: #FFD700;
+    padding-left: 17px;          /* 与 DESIGN.md 的基准一致：选中时整块右挪 5px */
+    opacity: 1;
+}
+
+.vertical-nav__count {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.26);
+}
+
+.left-panel nav.vertical-nav a:hover .vertical-nav__count,
+.left-panel nav.vertical-nav a.active .vertical-nav__count {
+    color: rgba(255, 215, 0, 0.7);
+}
+
+/* ── 中栏卡片：暗蓝玻璃 + 金色描边 hover，和档案 / 工具页卡片同一套 ── */
+.blog-list {
+    gap: 16px;
+}
+
+.blog-card {
+    position: relative;
+    padding: 24px 28px 40px;
+    padding-right: 82px;
+
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+    transition: var(--ctl-transition), box-shadow 0.3s ease;
+}
+
+.blog-card:hover {
+    background: rgba(24, 24, 60, 0.55);
+    border-color: rgba(255, 215, 0, 0.42);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+.blog-card::after {
+    content: "阅读 ›";
+    position: absolute;
+    right: 26px;
+    bottom: 20px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.25);
+    pointer-events: none;
+    transition: var(--ctl-transition);
+}
+
+.blog-card:hover::after {
+    color: #FFD700;
+}
+
+.blog-card .blog-title {
+    margin: 0 0 10px;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: var(--ctl-transition);
+}
+
+.blog-card:hover .blog-title {
+    color: #FFD700;
+}
+
+.blog-card .blog-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.32);
+}
+
+.blog-card .blog-meta .sep {
+    color: rgba(255, 255, 255, 0.14);
+}
+
+.blog-card .blog-tag {
+    color: rgba(255, 215, 0, 0.65);
+}
+
+.blog-card .blog-excerpt {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── 右栏：日历 / 当前位置都套进同一支玻璃面板 ── */
+.right-panel {
+    padding: 48px 30px 40px 24px;
+}
+
+.calendar-widget {
+    padding: 20px;
+    margin-bottom: 20px;
+    background: rgba(20, 20, 50, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+.calendar-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.calendar-header .year-month {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 15px;
+    letter-spacing: 2px;
+    color: #FFD700;
+}
+
+.calendar-header .nav-arrow {
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    color: var(--ctl-fg-dim);
+    border-radius: var(--ctl-radius);
+    transition: var(--ctl-transition);
+}
+
+.calendar-header .nav-arrow:hover,
+.calendar-header .nav-arrow:focus-visible {
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+    color: var(--ctl-fg-hover);
+}
+
+.calendar-grid {
+    gap: 3px;
+}
+
+.calendar-grid .day-name {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.calendar-grid .day-cell {
+    border-radius: var(--ctl-radius);
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.calendar-grid .day-cell:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.calendar-grid .day-cell.today {
+    background: rgba(255, 215, 0, 0.12);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    color: #FFD700;
+}
+
+.calendar-grid .day-cell.other-month {
+    color: rgba(255, 255, 255, 0.18);
+}
+
+.right-info {
+    display: block;
+    gap: 0;
+    margin-top: 20px;
+    padding: 20px;
+
+    background: rgba(20, 20, 50, 0.32);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+.right-info__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.right-info__title span {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.info-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.info-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.info-item .label {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.28);
+    margin-bottom: 4px;
+}
+
+/* ── 文章视图：标题 / 背景形变层与卡片同一支玻璃 ── */
+.article-header {
+    margin-bottom: 28px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.article-header__kicker {
+    margin: 0 0 12px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.article-header h1 {
+    margin: 0 0 10px;
+    font-size: 27px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: #FFD700;
+}
+
+.article-header .article-meta {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.32);
+}
+
+.article-header .article-meta span:last-child {
+    color: rgba(255, 215, 0, 0.65);
+}
+
+.article-morph {
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+/* ── 窄屏：页头 / 卡片 / 面板收紧，但不改变信息层级 ── */
+@media (max-width: 768px) {
+    .main-layout {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .blog-header {
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+    }
+
+    .blog-header__crumb {
+        margin-bottom: 14px;
+        font-size: 11px;
+    }
+
+    .blog-header h1 {
+        font-size: 23px;
+        letter-spacing: 2px;
+    }
+
+    .blog-card {
+        padding: 20px 20px 38px;
+    }
+
+    .blog-card::after {
+        right: 20px;
+        bottom: 16px;
+    }
+
+    .left-panel,
+    .right-panel {
+        padding-top: 32px;
+    }
+
+    .calendar-widget,
+    .right-info {
+        padding: 16px;
+    }
+
+    .article-header h1 {
+        font-size: 23px;
+        letter-spacing: 2px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .blog-card,
+    .blog-card::after,
+    .blog-card .blog-title,
+    .left-panel nav.vertical-nav a,
+    .calendar-header .nav-arrow {
+        transition: none;
+    }
+
+    .article-view.active,
+    .article-view.leaving {
+        animation-duration: 0.001s !important;
     }
 }

@@ -1017,8 +1017,12 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     展开的目标矩形由 `morphTargetRect()` 算：上边贴在文章头部的分割线上（标题 / 日期 / 分类留在背景之外），
     左右各宽出 `MORPH_SIDE`、底部留 `MORPH_BOTTOM`（两个常量在 `main/mainpage.html`）。
     **改 `.blog-card` 的外观时，`.article-morph` 要跟着一起改** —— 它就是那张卡片的背景。
-    坐标用 `offset*` 量、不用 `getBoundingClientRect()`（后者会被文章入场动画的 `translateY(12px)` 带偏）；
+    坐标用 `offset*` 量、不用 `getBoundingClientRect()`（后者会被文章入场动画的 `translateX(8px)` 带偏）；
     两者都写了 `prefers-reduced-motion` 的降级
+- **主页面视觉基准**：中栏页头（面包屑 / 金色大标题 / 英文副题 / 简介）、博客卡片、
+  日历与「当前位置」都套暗蓝玻璃（`rgba(20,20,50,.45)`）+ `--ctl-panel-radius`；
+  左栏分类带每类条数读数，选中项右移 5px + 3px 金线（工具页二级入口沿用同一套）。
+  `.blog-card` 与 `.article-morph` 必须保持同一支外观；改其一就一起改。
 - **图标**：`assets/img/logo_SSS.svg` 是照 1024px 画的细线图（描边只有 5/1024），
   缩到 30px 上下会明显偏淡、16px 几乎只剩一个点 —— 想在小尺寸更清楚，得另外出一版加粗描边的，
   或把小尺寸处用大一点的尺寸。用途有两处：

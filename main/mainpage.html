@@ -163,12 +163,12 @@
         <aside class="left-panel">
             <div class="nav-section-title">分类</div>
             <nav class="vertical-nav">
-                <a href="#" data-filter="all">全部</a>
-                <a href="#" data-filter="重要通知">重要通知</a>
-                <a href="#" data-filter="本地日志">本地日志</a>
-                <a href="#" data-filter="观测报告">观测报告</a>
-                <a href="#" data-filter="技术文档">技术文档</a>
-                <a href="#" data-filter="航行手记">航行手记</a>
+                <a href="#" data-filter="all" class="active">全部<span class="vertical-nav__count" aria-hidden="true"></span></a>
+                <a href="#" data-filter="重要通知">重要通知<span class="vertical-nav__count" aria-hidden="true"></span></a>
+                <a href="#" data-filter="本地日志">本地日志<span class="vertical-nav__count" aria-hidden="true"></span></a>
+                <a href="#" data-filter="观测报告">观测报告<span class="vertical-nav__count" aria-hidden="true"></span></a>
+                <a href="#" data-filter="技术文档">技术文档<span class="vertical-nav__count" aria-hidden="true"></span></a>
+                <a href="#" data-filter="航行手记">航行手记<span class="vertical-nav__count" aria-hidden="true"></span></a>
             </nav>
         </aside>
 
@@ -181,10 +181,13 @@
 
             <!-- 列表视图 -->
             <div class="blog-list-view" id="blog-list-view">
-                <div class="blog-header">
+                <header class="blog-header">
+                    <p class="blog-header__crumb">主页面 <span>/</span> 事件列表</p>
+                    <p class="blog-header__kicker">STAR LOG / 星域日志</p>
                     <h1>事件列表</h1>
-                    <div class="subtitle" id="subtitle-text">愿星光照亮我们的前程</div>
-                </div>
+                    <p class="blog-header__en">Event Log</p>
+                    <p class="subtitle" id="subtitle-text">愿星光照亮我们的前程</p>
+                </header>
 
                 <div class="blog-list" id="blog-list">
 
@@ -223,6 +226,7 @@
             </div>
 
             <div class="right-info">
+                <div class="right-info__title">当前位置 <span>POSITION</span></div>
                 <div class="info-item">
                     <div class="label">当前所处势力范围</div>
                     地球联合国 U.N.E.
@@ -294,6 +298,7 @@
         // 渲染文章头部 + Markdown 内容
         articleContent.innerHTML =
             '<div class="article-header">' +
+                '<p class="article-header__kicker">STAR LOG / 记录</p>' +
                 '<h1>' + escapeHtml(title) + '</h1>' +
                 '<div class="article-meta">' +
                     '<span>' + escapeHtml(date) + '</span>' +
@@ -348,15 +353,11 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
     if (!link) return;
     e.preventDefault();
 
-    // 移除所有分类链接的选中状态
+    // 移除所有分类链接的选中状态，再点亮当前这一条（含「全部」）
     this.querySelectorAll('a[data-filter]').forEach(function(a) {
         a.classList.remove('active');
     });
-
-    // 如果点击的不是"全部"，才添加选中状态
-    if (link.dataset.filter !== 'all') {
-        link.classList.add('active');
-    }
+    link.classList.add('active');
 
     const filter = link.dataset.filter;
 
@@ -371,8 +372,7 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
 });
 
     // ===== 分类筛选：整列卡片向左离开，新的一列从左边进来 =====
-    function applyFilter(filter) {
-        var list = document.getElementById('blog-list');
+    function applyFilter(filter) {        var list = document.getElementById('blog-list');
         if (!list) return;
 
         function apply() {
@@ -395,6 +395,21 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
             list.classList.add('entering');              // 从左边进来
             window.setTimeout(function () { list.classList.remove('entering'); }, 420);
         }, 240);
+    }
+
+    // ===== 分类条目计数（左侧读数的字号 / 颜色与档案页名录一致） =====
+    function updateCategoryCounts() {
+        var cards = document.querySelectorAll('.blog-card');
+        var counts = { all: cards.length };
+        cards.forEach(function (card) {
+            var tag = card.dataset.tag;
+            if (tag) counts[tag] = (counts[tag] || 0) + 1;
+        });
+        document.querySelectorAll('.vertical-nav a[data-filter]').forEach(function (a) {
+            var n = counts[a.dataset.filter] || 0;
+            var s = a.querySelector('.vertical-nav__count');
+            if (s) s.textContent = n ? String(n) : '';
+        });
     }
 
     // ===== 卡片背景 ⇄ 文章背景的形变 =====
@@ -637,6 +652,7 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                 if (titleEl) titleEl.textContent = filenameToTitle(postDir + filename);
 
                 listEl.appendChild(card);
+                updateCategoryCounts();
 
                 // 异步填充摘要、标签、日期
                 var excerptEl = card.querySelector('.blog-excerpt');
@@ -653,6 +669,7 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                         }
                         var date = extractDate(text);
                         if (date && dateEl) dateEl.textContent = date;
+                        updateCategoryCounts();
                     })
                     .catch(function (err) {
                         console.warn('无法获取摘要:', filename, err);
