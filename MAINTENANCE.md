@@ -71,7 +71,7 @@
 │   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
 │   │   ├── cursor.js           指针动效：自绘指针，只转外环（精细指针 + 非 reduced-motion）
 │   │   ├── fleet.js            舰队页：悬停卡片时把整页主题色（紫）切到该舰队的颜色（含背景 / 顶栏）
-│   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
+│   │   ├── notice.js           公告弹窗（只在关于页 / 工具页主动打开时显示，进入页面不自动弹）
 │   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
 │   │   ├── spa.js              站内同文档导航（除星图 / 彩蛋外全站）
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
@@ -590,7 +590,10 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 - **每页底部的 `.site-footer`** —— index / main / fleet / tool / archive（含 archive/organization）/ about / error
   共 8 个页面。
   **星图页刻意不放页脚**（整屏地图要沉浸感，页脚 HTML 里留了注释说明）；
-  样式在 `assets/css/global.css` 的 `.site-footer`
+  样式在 `assets/css/global.css` 的 `.site-footer`。
+  **所有页脚（除星图）必须保持完全相同的文案**：包括「关于本站」这一节；
+  「关于」页也保留指向本页的同款链接（`aria-current="page"`），
+  否则窄屏换行时那一页会少一行、页脚高度和其它页对不上。不要单独删某页的页脚链接。
 - 仓库根目录 **`LICENSE`** —— 协议全文 + 不在授权范围内的内容说明
 - **`README.md`** 的「授权与致谢」
 - **版权年份**：起始年 **2025**（域名注册那年）写死在 7 个页脚与「关于」页授权列表的
@@ -610,7 +613,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 5. 导航栏的折叠按钮：在 `</nav>` **之后**、`</header>` 之前插一份 `<button class="navbar__toggle">`
    （见任何一页的现成写法），并在 `<head>` 里加 `<script defer src="…/assets/js/navtoggle.js"></script>`。
    ⚠️ 按钮必须是 `.navbar` 自己的子元素 —— **放进 `<nav>` 里就会被那块竖排面板当成一个条目**
-6. 页脚：拷一份 `.site-footer`，把「关于本站」链接改成正确的相对路径
+6. 页脚：拷一份 `.site-footer` 的**完整文案**，把「关于本站」链接改成正确的相对路径；
+   **不要删掉「关于本站」**（关于页也不例外），否则窄屏换行时页脚高度会和其它页不同
 7. `sw.js` 的 `PRECACHE_URLS` 里补上新页面和新 CSS/JS（否则离线访问那一页会漏，
    内容指纹也不会覆盖它 —— 改这一页就不会触发版本号与加载屏）
 8. `<head>` 里加指针动效脚本：`<script defer src="…/assets/js/cursor.js"></script>`
@@ -798,7 +802,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     · **彩蛋页也在试点里**：DGAM（`/archive/organization/dgam`）与 CQ（`/main/cq`）的前提是
       ① 登记靠 `<body data-egg>`，换页后由 `syncBody()` 搬到 body、`eggs.js` 在 `sss:swap` 补登记
          （CQ 是"点开解出来的图"才算发现，登记由它自己的脚本调 `SSS_EGGS.findWhenActive`）
-      ② 弹窗 / 提示条写在该页 `<main>` **里面**（`#dgam-toast`、`#cq-modal`、`#cq-toast`），
+      ② 弹窗 / 提示条写在该页 `<main>` **里面**（CQ 的 `#cq-modal`、`#cq-toast`），
          跟着内容一起换进换出 —— 写在 `<main>` 外面的话，经由站内导航进来时它不会被带进来，
          离开时还会残留到别的页面上
       ③ 有画布 / 音频 / 循环的页面（CQ）必须自己登记清理，见下面「CQ 页的生命周期」
@@ -919,12 +923,12 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   · `main.js` 的打字机等 `sss:booted` 事件 —— 否则动画会在加载屏后面白白播完
   · 收尾必须 `classList.remove('sss-boot','boot-open')`：**用字符串 `replace` 会漏掉开头那个类**，
     而 `html.sss-boot main{ opacity:.5 }` 会一直生效（页面永久半透明）
-- **公告**：第一次访问自动弹一次（关掉后同一浏览器不再弹），「关于」页的「站点公告」卡片可随时重看。
-  实现：`notice.js` 的 `start()` 负责首次自动弹，并监听 `document` 上的 `sss:notice` 事件
-  （关于页卡片、工具页「公告测试」都发这个事件）调 `show(true)`。
-  · **想对所有人再弹一次：把 `NOTICE.id` 改成新值** —— 「已读」是按 id 记的，换 id 就是一条新公告
-  · 首次访问若加载屏还盖着，它会等 `sss:booted` 再弹（否则公告藏在加载屏后面）
-  · 自动化环境不弹：`navigator.webdriver` 为真、或页面里设了 `window.__SSS_NO_NOTICE = true`
+- **公告**：**只在用户主动打开时显示**（关于页「站点公告」卡片、工具页「公告测试」），
+  进入页面不再自动弹。
+  实现：`notice.js` 监听 `document` 上的 `sss:notice` 事件，收到后调 `show()` 建弹窗。
+  样式仍由脚本注入，所以任何页面只引这一行脚本即可（目前引在首页 / 关于 / 档案 / 舰队 / 工具 / main）。
+  · 不再有「已读」标记与 `NOTICE.id`：公告可以随时重看，不会自动打扰
+  · 换公告文案只改 `NOTICE` 对象（label / title / body / confirm）
 - **彩蛋**：站点里藏着**不与导航相连**的页面，靠知道地址才会来。目前两个：
   · `main/cq.html` —— 业余无线电：呼号音频 + SSTV 解码出 QSL 卡片（id `cq`）
   · `archive/organization/dgam.html` —— 机密组织 DGAM，入口是组织档案页的隐藏手势（id `dgam`，见下）
@@ -944,8 +948,6 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     从没引它的页面（档案 / 舰队 / 工具 / 人员 / 主页面…）站内换页到「关于」页，
     卡片会一直保持 `hidden`（表现为「彩蛋菜单失效」）；经由同文档换页进彩蛋页也不会被登记。
     加新页面时别忘了这一行 —— 和 `navtoggle.js` 同级要求。
-  · 彩蛋提示条（DGAM 的 `#dgam-toast`）必须写在**该页 `<main>` 里面**，
-    理由见上面「站内同文档导航」那条（`<main>` 外面的东西换页搬不过去）
   · 彩蛋页的音频与图片体积都不小（约 5 MB + 10 MB），**故意不进 SW 预缓存**，
     点了才下（`preload="none"` + `loading="lazy"`）；页面的 HTML/CSS/JS 照常进预缓存
   · **入口（DGAM 那个）**：组织档案页（`archive/organization/index.html`）里，把**科研部（RES）、
@@ -960,8 +962,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
       经 `--drag-color` 交给 CSS）
     · 逻辑在 `assets/js/org-secret.js`；解锁状态记在 `sss-dgam`（`resetKeys` 里挂着，
       「关于」页重置这条彩蛋会一并清掉，重置后要重新拖一次）
-    · 进来（DGAM 页）就算发现：页面底部弹「彩蛋已发现：星光圣域机密组织DGAM」，
-      金色那支 `.org-toast--egg`（报错才用红）；登记照旧靠 `<body data-egg="dgam">`
+    · 进来（DGAM 页）就算发现；**不再自动弹底部提示条**（避免进入页面时出现意外弹窗），
+      登记照旧靠 `<body data-egg="dgam">` 的 `eggs.js`
     · 入口被「关于」页那个开关关掉后（`sss.eggs.off` 含 `dgam`），切换按钮永远不出现 ——
       `org-secret.js` 直接读这个键，与 `cq-entry.js` 读的是同一套
   · **入口**（CQ 那个）：首页左下角藏一个点（`index.html` 的 `#cq-dot`），默认不可见、也点不到，
