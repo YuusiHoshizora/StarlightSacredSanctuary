@@ -244,6 +244,14 @@
             </div>
         </section>
 
+        <!-- 彩蛋提示条：进本页就算发现（与「神秘信号」同一套口径）。
+             金色的那支 —— 报错才用红（见 organization.css 的 .org-toast--egg）。
+             ⚠️ 必须留在 <main> 里面：站内换页（spa.js）只换 <main> 与页脚，
+             放在 <main> 外面的话经由站内导航进来时它不会被带进来，提示条就永远不弹；
+             离开本页时也不会被一起换掉，会残留到别的页面上。 -->
+        <div class="org-toast org-toast--egg" id="dgam-toast" role="status">
+            <span class="org-toast__dot" aria-hidden="true"></span>彩蛋已发现：星光圣域机密组织DGAM
+        </div>
     </main>
 
     <!-- 版权与授权：完整说明与第三方致谢见「关于」页 -->
@@ -251,6 +259,68 @@
         © <span class="copyright-years" data-since="2025">2025–2026</span> <span class="site-footer__author">余事星空（YuusiHoshizora）</span> · 除特别注明外，本站文字采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener noreferrer" target="_blank">CC BY 4.0</a> 授权 · <a href="../../about/">关于本站</a>
     </footer>
 
+    <script>
+    /* 进本页 = 发现这个彩蛋
+       ----------------------------------------------------------------------------
+       与「神秘信号」同一个口径：**提示条一弹出来**才算发现。
+       「已发现」的登记交给 eggs.js（<body data-egg="dgam"> 走 findWhenActive()），
+       这里只负责：第一次进来弹一次提示条；已经发现过（刷新 / 从「关于」页点进来）
+       就什么都不做。加载屏还盖着的时候先别弹，等外壳就绪。
+
+       站内换页（spa.js）进来时这段脚本也会重跑一次：那时 <html> 上没有 sss-boot，
+       whenReady() 会立刻弹；提示条已经在 <main> 里，所以它是跟着内容一起换进来的。
+       定时器登记到 __sssPageCleanup，换页前会清掉，不会在别的页面上残留一次"补弹"。 */
+    (function () {
+        'use strict';
+
+        var toast = document.getElementById('dgam-toast');
+        if (!toast) return;
+
+        var announced = false;
+        try { announced = (localStorage.getItem('sss.eggs') || '').indexOf('dgam') >= 0; } catch (e) {}
+        if (announced) return;
+
+        var done = false;
+        var hideTimer = 0;
+
+        function play() {
+            if (done) return;
+            done = true;
+            void toast.offsetWidth;          /* 先按初态上屏，下一帧再加 is-in，动画才会真的跑 */
+            window.requestAnimationFrame(function () { toast.classList.add('is-in'); });
+            hideTimer = window.setTimeout(function () { toast.classList.remove('is-in'); }, 5200);
+        }
+
+        /* 加载屏还在的话，等它收起来再弹（否则提示条会盖在加载屏上面） */
+        function whenReady(fn) {
+            if (!document.documentElement.classList.contains('sss-boot')) { fn(); return; }
+            var timer = window.setInterval(function () {
+                if (document.documentElement.classList.contains('sss-boot')) return;
+                window.clearInterval(timer);
+                fn();
+            }, 200);
+            var giveUp = window.setTimeout(function () { window.clearInterval(timer); fn(); }, 8000);
+            if (window.__sssPageCleanup) {
+                window.__sssPageCleanup.add('dgam-toast-wait', function () {
+                    window.clearInterval(timer);
+                    window.clearTimeout(giveUp);
+                });
+            }
+        }
+
+        if (document.prerendering) {
+            document.addEventListener('prerenderingchange', function () { whenReady(play); }, { once: true });
+        } else {
+            whenReady(play);
+        }
+
+        if (window.__sssPageCleanup) {
+            window.__sssPageCleanup.add('dgam-toast', function () {
+                window.clearTimeout(hideTimer);
+            });
+        }
+    })();
+    </script>
 
 </body>
 </html>
