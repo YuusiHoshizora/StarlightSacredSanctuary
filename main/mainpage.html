@@ -127,7 +127,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<body>
+<body data-mainpage>
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -175,15 +175,9 @@
         <!-- 中间栏：博客文章列表 / Markdown 文章视图 -->
         <main class="center-panel">
 
-            <!-- 文章背景的形变层：点卡片时从卡片矩形展开成正文背景，返回时缩回卡片形状。
-                 位置与尺寸由 JS 写（见 morphToArticle / morphToCard），平时 opacity 0 且不挡点击。 -->
-            <div class="article-morph" id="article-morph" aria-hidden="true"></div>
-
             <!-- 列表视图 -->
             <div class="blog-list-view" id="blog-list-view">
                 <header class="blog-header">
-                    <p class="blog-header__crumb">主页面 <span>/</span> 事件列表</p>
-                    <p class="blog-header__kicker">STAR LOG / 星域日志</p>
                     <h1>事件列表</h1>
                     <p class="blog-header__en">Event Log</p>
                     <p class="subtitle" id="subtitle-text">愿星光照亮我们的前程</p>
@@ -260,6 +254,31 @@
     const articleContent = document.getElementById('article-content');
     const backBtn     = document.getElementById('back-btn');
 
+    /* 列表 / 文章视图的切换时长：与 CSS 里的 article-in / view-in 对齐 */
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var SWAP_MS = reduceMotion ? 0 : 320;
+    var articleGen = 0;          // 快速打开 / 返回时作废旧 fetch / 旧定时器
+
+    /* 打开文章视图：列表向左淡出，文章面板同时从右侧淡入（交叉淡化） */
+    function openArticleView() {
+        if (articleView.classList.contains('active') && !articleView.classList.contains('leaving')) return;
+
+        articleView.classList.remove('leaving');
+        articleView.classList.add('active');
+
+        listView.classList.remove('view-entering');
+        listView.classList.add('view-leaving');
+
+        articleContent.scrollTop = 0;
+
+        var gen = articleGen;
+        window.setTimeout(function () {
+            if (gen !== articleGen || !articleView.classList.contains('active')) return;
+            listView.classList.add('hidden');
+            listView.classList.remove('view-leaving');
+        }, SWAP_MS);
+    }
+
     /**
      * 展示文章视图
      * @param {string} mdContent - Markdown 字符串
@@ -267,10 +286,7 @@
      * @param {string} date      - 发布日期
      * @param {string} tag       - 分类标签
      */
-    function showArticle(mdContent, title, date, tag) {
-        listView.classList.add('hidden');
-        articleView.classList.add('active');
-
+    function renderArticle(mdContent, title, date, tag) {
         // 移除第一行的标签和第二行的日期（避免渲染到正文）
         var lines = mdContent.split(/\r?\n/);
         var tagIdx = -1, dateIdx = -1;
@@ -298,7 +314,6 @@
         // 渲染文章头部 + Markdown 内容
         articleContent.innerHTML =
             '<div class="article-header">' +
-                '<p class="article-header__kicker">STAR LOG / 记录</p>' +
                 '<h1>' + escapeHtml(title) + '</h1>' +
                 '<div class="article-meta">' +
                     '<span>' + escapeHtml(date) + '</span>' +
@@ -314,35 +329,24 @@
             link.setAttribute('rel', 'noopener noreferrer');
         });
 
-        // 卡片背景展开成正文的背景
-        morphToArticle();
-
-        // 滚动到顶部
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        articleContent.scrollTop = 0;
     }
 
 function showList() {
-    if (articleView.classList.contains('active')) {
-        // 背景缩回卡片形状（正文同时淡出）
-        morphToCard();
+    if (!articleView.classList.contains('active')) return;
+    if (articleView.classList.contains('leaving')) return;
 
-        // 先播放退出动画
-        articleView.classList.add('leaving');
-        // 动画结束后再切换显示
-        function onAnimationEnd() {
-            articleView.removeEventListener('animationend', onAnimationEnd);
-            articleView.classList.remove('active', 'leaving');
-            listView.classList.remove('hidden');
-            articleContent.innerHTML = '';
-            // 回到列表时回到顶部，缩回卡片的那段动画才看得见
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        articleView.addEventListener('animationend', onAnimationEnd);
-    } else {
-        articleView.classList.remove('active');
-        listView.classList.remove('hidden');
+    var gen = ++articleGen;
+    articleView.classList.add('leaving');
+    listView.classList.remove('hidden', 'view-leaving');
+    listView.classList.add('view-entering');
+
+    window.setTimeout(function () {
+        if (gen !== articleGen) return;
+        articleView.classList.remove('active', 'leaving');
+        listView.classList.remove('view-entering');
         articleContent.innerHTML = '';
-    }
+    }, SWAP_MS);
 }
 
     backBtn.addEventListener('click', showList);
@@ -365,7 +369,7 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
     // 等退场动画走完再套用筛选，免得两个动画撞在一起
     if (articleView.classList.contains('active')) {
         showList();
-        window.setTimeout(function () { applyFilter(filter); }, 380);
+        window.setTimeout(function () { applyFilter(filter); }, SWAP_MS + 80);
     } else {
         applyFilter(filter);
     }
@@ -410,76 +414,6 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
             var s = a.querySelector('.vertical-nav__count');
             if (s) s.textContent = n ? String(n) : '';
         });
-    }
-
-    // ===== 卡片背景 ⇄ 文章背景的形变 =====
-    // 坐标一律按「相对中栏」算：getBoundingClientRect 给的是视口坐标，两边都减去中栏的位置
-    // 就与页面滚动无关了 —— 返回时即使页面滚动过，也能缩回卡片原来的位置。
-    var morphEl = document.getElementById('article-morph');
-    var lastCardRect = null;
-
-    // 用 offset* 而不是 getBoundingClientRect()，两个原因：
-    //   · offset* 相对「最近的定位祖先」= .center-panel 的 padding 边，
-    //     正好就是形变层绝对定位的基准，两边坐标同一套
-    //   · offset* 不受 transform 影响 —— 文章入场动画（translateY 12px）正播到一半时，
-    //     getBoundingClientRect() 会多算那 12px，展开的终点就会偏
-    function panelRect(el) {
-        return { left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight };
-    }
-
-    function placeMorph(rect, visible) {
-        if (!morphEl) return;
-        morphEl.style.left    = rect.left + 'px';
-        morphEl.style.top     = rect.top + 'px';
-        morphEl.style.width   = rect.width + 'px';
-        morphEl.style.height  = rect.height + 'px';
-        morphEl.style.opacity = visible ? '1' : '0';
-    }
-
-    // 展开的目标矩形：
-    //   · 上边从文章头部那根分割线开始 —— 标题 / 日期 / 分类留在背景之外
-    //   · 左右比正文各宽出 MORPH_SIDE、底部留 MORPH_BOTTOM，免得文字紧贴背景边缘
-    // 头部相对文章顶部的位置用 rect 相减算：入场动画的 transform 会同时位移两者，差值不受影响
-    var MORPH_SIDE = 24;
-    var MORPH_BOTTOM = 24;
-
-    function morphTargetRect() {
-        var header = articleView.querySelector('.article-header');
-        var artTop = articleView.getBoundingClientRect().top;
-        var headBottom = header ? (header.getBoundingClientRect().bottom - artTop) : 0;
-        return {
-            left:   articleView.offsetLeft - MORPH_SIDE,
-            top:    articleView.offsetTop + headBottom,
-            width:  articleView.offsetWidth + MORPH_SIDE * 2,
-            height: articleView.offsetHeight - headBottom + MORPH_BOTTOM
-        };
-    }
-
-    // 先瞬间落到卡片位置（不带过渡），再过渡到上面的目标矩形
-    function morphToArticle() {
-        if (!morphEl || !lastCardRect) return;
-        morphEl.style.transition = 'none';
-        placeMorph(lastCardRect, true);
-        void morphEl.offsetWidth;                        // 强制回流，下面的过渡才会生效
-        morphEl.style.transition = '';
-        placeMorph(morphTargetRect(), true);
-
-        // 网页字体是 swap 加载的，正文落地后行高可能还会微调一点（长文更明显）：
-        // 动画结束后再对齐一次，免得背景比正文短一截
-        window.setTimeout(function () {
-            if (articleView.classList.contains('active') && !articleView.classList.contains('leaving')) {
-                placeMorph(morphTargetRect(), true);
-            }
-        }, 520);
-    }
-
-    // 缩回卡片形状；落地后淡出（真卡片已经在那儿了）
-    function morphToCard() {
-        if (!morphEl || !lastCardRect) return;
-        placeMorph(lastCardRect, true);
-        window.setTimeout(function () {
-            if (morphEl) morphEl.style.opacity = '0';
-        }, 400);
     }
 
     // ===== 安全转义辅助 =====
@@ -770,36 +704,31 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
         var mdInline = card.dataset.mdInline || '';
 
         if (mdSrc) {
-            // 记下卡片矩形，并让形变层先贴上去：正文渲染完再展开成文章背景
-            lastCardRect = panelRect(card);
-            if (morphEl) {
-                morphEl.style.transition = 'none';
-                placeMorph(lastCardRect, true);
-                void morphEl.offsetWidth;
-                morphEl.style.transition = '';
-            }
-
+            var isOpen = articleView.classList.contains('active') && !articleView.classList.contains('leaving');
+            var gen = isOpen ? articleGen : ++articleGen;
             articleContent.innerHTML = '<div class="md-loading">正在加载……</div>';
-            listView.classList.add('hidden');
-            articleView.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            openArticleView();
 
             fetchMdCached(mdSrc)
                 .then(function(text) {
+                    if (gen !== articleGen || !articleView.classList.contains('active')) return;
                     // 从缓存的文本中再次提取标签，确保与卡片一致
                     var fetchedTag = extractTag(text) || tag;
-                    showArticle(text, title, date, fetchedTag);
+                    renderArticle(text, title, date, fetchedTag);
                 })
                 .catch(function(err) {
+                    if (gen !== articleGen || !articleView.classList.contains('active')) return;
                     if (mdInline) {
-                        showArticle(mdInline, title, date, tag);
+                        renderArticle(mdInline, title, date, tag);
                     } else {
                         articleContent.innerHTML =
                             '<div class="md-loading">无法加载文章内容（' + err.message + '）</div>';
                     }
                 });
         } else if (mdInline) {
-            showArticle(mdInline, title, date, tag);
+            if (articleView.classList.contains('leaving')) articleGen++;
+            openArticleView();
+            renderArticle(mdInline, title, date, tag);
         }
     });
 

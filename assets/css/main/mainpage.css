@@ -396,16 +396,10 @@
 }
 
 /* ==========================================================================
-   列表切换动画 与 卡片背景形变
+   切分类的列表滑动动画
    --------------------------------------------------------------------------
-   1) 切分类：整列卡片从右向左离开，新的一列从左向右进来
-   2) 点卡片：卡片背景展开成文章正文的背景；返回时缩回卡片形状
+   整列卡片从右向左离开，新的一列从左向右进来。
    ========================================================================== */
-
-/* 形变层用绝对定位，坐标相对中栏算（见 mainpage.html 的 panelRect） */
-.center-panel {
-    position: relative;
-}
 
 /* 列表横向滑动时要裁剪，否则卡片会滑到左边那一栏上面去 */
 .blog-list-view {
@@ -430,37 +424,15 @@
     to   { opacity: 1; transform: translateX(0); }
 }
 
-/* 文章内容要压在形变背景之上 */
+/* 文章视图与列表叠在同一格，文章在上层 */
 .article-view {
     position: relative;
     z-index: 1;
 }
 
-/* 卡片背景的形变层：位置与尺寸由 JS 写，靠过渡做动画。
-   外观与 .blog-card 完全一致 —— 它就是「那张卡片的背景」被拉展开。 */
-.article-morph {
-    position: absolute;
-    z-index: 0;
-    opacity: 0;
-    pointer-events: none;
-
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-
-    transition: left 0.42s cubic-bezier(0.4, 0, 0.2, 1),
-                top 0.42s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.42s cubic-bezier(0.4, 0, 0.2, 1),
-                height 0.42s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.26s ease;
-}
-
-/* 尊重「减少动态效果」：形变与滑动都几乎瞬时完成 */
 @media (prefers-reduced-motion: reduce) {
-    .article-morph,
     .blog-list.switching,
     .blog-list.entering {
-        transition-duration: 0.001s !important;
         animation-duration: 0.001s !important;
     }
 }
@@ -646,7 +618,7 @@
    与站内其它页面统一的视觉（2026-11）
    --------------------------------------------------------------------------
    参照 archive / tool / fleet：暗蓝玻璃面板、金色标题、等宽小读数；
-   只改外观，不动三栏布局与文章背景形变逻辑。
+   只改外观，不动三栏布局与文章切换逻辑。
    ========================================================================== */
 
 .main-layout {
@@ -655,7 +627,7 @@
     padding: 72px 24px 0;
 }
 
-/* ── 中栏页头：面包屑 → 金色标题 → 英文副题 → 简介 ── */
+/* ── 中栏页头：金色标题 → 英文副题 → 简介 ── */
 .blog-header {
     margin: 0 0 32px;
     padding: 0 0 24px;
@@ -980,7 +952,7 @@
     margin-bottom: 4px;
 }
 
-/* ── 文章视图：标题 / 背景形变层与卡片同一支玻璃 ── */
+/* ── 文章视图：标题与卡片同一支淡白面板 ── */
 .article-header {
     margin-bottom: 28px;
     padding-bottom: 22px;
@@ -1012,13 +984,6 @@
 
 .article-header .article-meta span:last-child {
     color: rgba(255, 215, 0, 0.65);
-}
-
-.article-morph {
-    background: rgba(20, 20, 50, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
 }
 
 /* ── 窄屏：页头 / 卡片 / 面板收紧，但不改变信息层级 ── */
@@ -1080,5 +1045,257 @@
     .article-view.active,
     .article-view.leaving {
         animation-duration: 0.001s !important;
+    }
+}
+
+/* ==========================================================================
+   主页面：固定视口仪表盘 + 淡白卡片 + 视图交叉淡化（2026-11）
+   --------------------------------------------------------------------------
+   页面本身不滚：页头 / 左右栏 / 页脚常驻，只有中间事件列表（或文章正文）在内部滚动。
+   卡片保持原来的淡白透明；左栏选中动画照工具页的二级入口；列表 ⇄ 文章交叉淡化，不再有背景形变。
+   ========================================================================== */
+
+body[data-mainpage] {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    padding-top: 72px;
+}
+
+body[data-mainpage] > .main-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+    overflow: hidden;
+}
+
+body[data-mainpage] > .site-footer {
+    flex: 0 0 auto;
+}
+
+/* 左右栏不再 sticky / 不跟页面滚：填满主区域，内容超出则各自内部滚 */
+body[data-mainpage] .left-panel,
+body[data-mainpage] .right-panel {
+    position: static;
+    top: auto;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* 中栏：页头固定，列表 / 文章共用一个网格单元，切换时叠在一起交叉淡化 */
+body[data-mainpage] .center-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    padding: 40px 36px 0;
+    overflow: hidden;
+}
+
+body[data-mainpage] .blog-list-view,
+body[data-mainpage] .article-view {
+    grid-area: 1 / 1;
+    min-height: 0;
+}
+
+body[data-mainpage] .blog-list-view {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+body[data-mainpage] .blog-list-view.hidden {
+    display: none;
+}
+
+body[data-mainpage] .blog-header {
+    flex: 0 0 auto;
+}
+
+body[data-mainpage] .blog-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 24px;
+}
+
+/* 文章视图：一块淡白面板，返回按钮固定，正文在面板里滚 */
+body[data-mainpage] .article-view {
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1;
+    padding: 20px 24px 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--ctl-panel-radius);
+}
+
+body[data-mainpage] .article-view.active,
+body[data-mainpage] .article-view.leaving {
+    display: flex;
+}
+
+body[data-mainpage] .article-view .back-btn {
+    flex: 0 0 auto;
+    align-self: flex-start;
+}
+
+body[data-mainpage] #article-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 24px;
+}
+
+/* 列表 ⇄ 文章：旧视图向左淡出，新视图从右侧淡入 */
+@keyframes mp-view-out {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-8px); }
+}
+
+@keyframes mp-view-in {
+    from { opacity: 0; transform: translateX(8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+body[data-mainpage] .blog-list-view.view-leaving {
+    animation: mp-view-out 0.18s ease both;
+}
+
+body[data-mainpage] .blog-list-view.view-entering {
+    animation: mp-view-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* 卡片回到淡白透明；去掉“阅读”提示与右侧专用留白 */
+body[data-mainpage] .blog-card {
+    padding: 24px 26px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: none;
+}
+
+body[data-mainpage] .blog-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+body[data-mainpage] .blog-card::after {
+    content: none;
+}
+
+body[data-mainpage] .blog-card .blog-title,
+body[data-mainpage] .blog-card:hover .blog-title {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* 左栏：照工具页的二级入口，整块右移 5px + 左侧 3px 金线淡入 */
+body[data-mainpage] .left-panel nav.vertical-nav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 8px 8px 12px;
+    border-left: 0;
+    border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
+    transition: background 0.25s, color 0.25s, transform 0.25s ease;
+}
+
+body[data-mainpage] .left-panel nav.vertical-nav a::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--ctl-border-hover);
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+body[data-mainpage] .left-panel nav.vertical-nav a:hover,
+body[data-mainpage] .left-panel nav.vertical-nav a.active {
+    padding-left: 12px;
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+    transform: translateX(5px);
+}
+
+body[data-mainpage] .left-panel nav.vertical-nav a:hover::before,
+body[data-mainpage] .left-panel nav.vertical-nav a.active::before {
+    opacity: 1;
+}
+
+body[data-mainpage] .left-panel {
+    padding-top: 48px;
+    padding-bottom: 32px;
+}
+
+body[data-mainpage] .right-panel {
+    padding-top: 48px;
+    padding-bottom: 32px;
+}
+
+/* 窄屏：navbar 60，footer 64；左右栏隐藏，只有中间列表滚 */
+@media (max-width: 1024px) {
+    body[data-mainpage] .right-panel {
+        flex: 0 0 240px;
+    }
+}
+
+@media (max-width: 900px) {
+    body[data-mainpage] .right-panel {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    body[data-mainpage] {
+        padding-top: 60px;
+    }
+
+    body[data-mainpage] > .main-layout {
+        padding: 0;
+    }
+
+    body[data-mainpage] .center-panel {
+        padding: 24px 16px 0;
+    }
+
+    body[data-mainpage] .article-view {
+        padding: 16px 16px 0;
+    }
+
+    body[data-mainpage] .blog-card {
+        padding: 20px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body[data-mainpage] .blog-list-view.view-leaving,
+    body[data-mainpage] .blog-list-view.view-entering {
+        animation-duration: 0.001s !important;
+    }
+
+    body[data-mainpage] .left-panel nav.vertical-nav a,
+    body[data-mainpage] .left-panel nav.vertical-nav a::before {
+        transition: none;
+    }
+
+    body[data-mainpage] .left-panel nav.vertical-nav a:hover,
+    body[data-mainpage] .left-panel nav.vertical-nav a.active {
+        transform: none;
     }
 }
