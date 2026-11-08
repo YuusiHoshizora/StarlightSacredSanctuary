@@ -1109,7 +1109,8 @@ body[data-mainpage] .article-view {
     transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
                 top 0.38s cubic-bezier(0.4, 0, 0.2, 1),
                 width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-                height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+                height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                border-radius 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body[data-mainpage] .article-view.is-visible {
@@ -1160,6 +1161,14 @@ body[data-mainpage] .blog-list-view.is-morphing .blog-card:not(.is-morph-source)
 
 body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source > * {
     opacity: 0;
+}
+
+/* 展开的面板本身就是被点卡片的背景；把原卡片背景让出来，避免两层半透明叠在一起 */
+body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    transition: none;
 }
 
 /* 卡片回到淡白透明；去掉“阅读”提示与右侧专用留白 */

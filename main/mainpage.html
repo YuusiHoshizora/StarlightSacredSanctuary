@@ -317,12 +317,14 @@
 
         articleView.style.transition = 'none';
         setPanelRect(initial);
+        articleView.style.borderRadius = 'var(--ctl-panel-radius)';
         articleContent.scrollTop = 0;
         void articleView.offsetWidth;
         articleView.style.transition = '';
 
         morphTimer = window.setTimeout(function () {
             if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
+            articleView.style.borderRadius = '0';
             setPanelRect(finalRect);
 
             morphTimer = window.setTimeout(function () {
@@ -350,6 +352,7 @@
             listView.classList.add('is-morphing');
             if (morphCard) morphCard.classList.add('is-morph-source');
 
+            articleView.style.borderRadius = 'var(--ctl-panel-radius)';
             var target = morphCard ? rectOfCard(morphCard) : null;
             if (target) setPanelRect(target);
 
