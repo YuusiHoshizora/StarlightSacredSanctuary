@@ -407,7 +407,21 @@
             document.dispatchEvent(new CustomEvent('sss:swap', { detail: { url: url.href } }));
         };
 
-        return document.startViewTransition(run).finished.catch(function () { });
+        /* View Transition 的快照盖在整页最上层，自绘指针层也会被盖住；过渡期间
+           让 cursor.js 暂时交回系统光标（同一张静态 SVG），结束再接管回来。
+           不然切页那 ~220ms 会完全看不到指针。 */
+        document.dispatchEvent(new Event('sss:vt-start'));
+        var transition;
+        try {
+            transition = document.startViewTransition(run);
+        } catch (err) {
+            document.dispatchEvent(new Event('sss:vt-end'));
+            throw err;
+        }
+        var vtDone = function () { document.dispatchEvent(new Event('sss:vt-end')); };
+        transition.finished.then(vtDone, vtDone);
+
+        return transition.finished.catch(function () { });
     }
 
     function cleanupsRunAll() {

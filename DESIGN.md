@@ -245,6 +245,10 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
   SVG 指针，站点不受影响
 - 要改「哪些转」：`cursor.js` 的 `SPIN` 表列出会转的状态与转速；SVG 里要转的那一组
   必须带 `class="cursor-ring"`（否则加了 `is-spin` 也转不到东西）
+- **切页过渡时自绘层让位给系统光标**：SPA 的 View Transition 快照盖在整页最上层，自绘层
+  会被一起盖住（切页那 200ms 看不到指针）。所以 `spa.js` 在 `startViewTransition` 前后发
+  `sss:vt-start` / `sss:vt-end`，`cursor.js` 收到就把系统光标放回来、过渡完再接管。
+  这段时间用的是同一张静态 SVG，位置不变，只是外环暂停转
 - 写新的 cursor 规则时，**`cursor` 和 `--cursor-kind` 要一起写**（kind 用令牌后缀，
   例如 `--cur-grabbing` → `--cursor-kind: grabbing`）。漏了的话自绘层会把它当成默认星芒
 

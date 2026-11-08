@@ -713,6 +713,8 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   **精细指针下由 `cursor.js` 隐藏系统光标、按 1:1 坐标自绘同一张图，只让外环
   （SVG 里的 `.cursor-ring` 组）旋转，本体静止**；文本 / 准星 / 默认星芒等没有环的
   状态不转。状态靠每条 cursor 规则旁的 `--cursor-kind` 传给脚本。
+  SPA 的 View Transition 期间（`sss:vt-start` / `sss:vt-end`）自绘层会让位给系统光标，
+  否则过渡快照会把指针盖掉、切页时短暂看不到指针。
   reduced-motion / forced-colors / 图片没就绪时保持系统光标。
   写法、热点、尺寸与「为什么阅读区单独给文本光标」见 [DESIGN.md](DESIGN.md) 的「指针」；
   新增图形记得补 `sw.js` 的 `PRECACHE_URLS`，新增 cursor 规则时一并写 `--cursor-kind`

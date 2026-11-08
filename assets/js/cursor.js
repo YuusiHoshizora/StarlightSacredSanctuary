@@ -60,6 +60,8 @@
   var arts = Object.create(null);
   var ready = false;
   var on = false;
+  var inside = false;
+  var suspendDepth = 0;
   var dead = false;
   var current = "default";
   var x = -100, y = -100;
@@ -120,6 +122,8 @@
     if (e.pointerType === "touch") return;
     x = e.clientX;
     y = e.clientY;
+    inside = true;
+    if (suspendDepth) return;           // 页面过渡中：先交给系统光标，别在这时候接管
     if (!ready) return;                 // 图还没就绪：系统光标继续用着
     if (!on) activate();
     else { place(); check(false); }
@@ -127,9 +131,27 @@
 
   function hide() {
     on = false;
+    inside = false;
     if (layer) layer.classList.remove("is-on");
     /* 指针离开文档时把系统光标还回去，下次进入的 pointermove 会重新接管 */
     document.documentElement.classList.remove("sss-dom-cursor");
+  }
+
+  /* SPA 的 View Transition 会把整页的快照盖到最上层，自绘层也跟着被盖住；
+     这段时间让位给系统光标（静态 SVG，同一张图），过渡结束再接管回来。
+     不然切换页面时会有一小下完全看不到指针。 */
+  function suspend() {
+    if (!ready || dead) return;
+    suspendDepth++;
+    on = false;
+    if (layer) layer.classList.remove("is-on");
+    document.documentElement.classList.remove("sss-dom-cursor");
+  }
+
+  function resume() {
+    suspendDepth = Math.max(0, suspendDepth - 1);
+    if (suspendDepth || !ready || dead) return;
+    if (inside) activate();             // 用过渡期间最后记录的坐标重新接管
   }
 
   function onStateChange() {
@@ -140,6 +162,8 @@
     if (e.pointerType === "touch") return;
     x = e.clientX;
     y = e.clientY;
+    inside = true;
+    if (suspendDepth) return;
     if (!on && ready) activate();
     else { place(); }
     check(true);
@@ -162,6 +186,8 @@
     window.removeEventListener("resize", onStateChange);
     document.removeEventListener("mouseleave", hide);
     window.removeEventListener("blur", hide);
+    document.removeEventListener("sss:vt-start", suspend);
+    document.removeEventListener("sss:vt-end", resume);
   }
 
   function build() {
@@ -215,6 +241,8 @@
   window.addEventListener("resize", onStateChange);
   document.addEventListener("mouseleave", hide);
   window.addEventListener("blur", hide);
+  document.addEventListener("sss:vt-start", suspend);
+  document.addEventListener("sss:vt-end", resume);
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) hide();
   });
