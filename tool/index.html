@@ -470,10 +470,12 @@
         });
 
         var lastFocus = null;
+        var panel = modal.querySelector('.cursor-test__panel');
 
         function open() {
             lastFocus = document.activeElement;
             modal.hidden = false;
+            if (panel) panel.scrollTop = 0;
             closeBtn.focus();
         }
 

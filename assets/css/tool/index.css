@@ -591,6 +591,7 @@ button.tool-entry {
     background: rgba(4, 4, 12, 0.72);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
+    animation: cursor-test-fade 0.22s ease-out both;
 }
 .cursor-test[hidden] { display: none; }
 
@@ -605,6 +606,18 @@ button.tool-entry {
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--ctl-panel-radius);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    animation: cursor-test-pop 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* 进场动画与公告（notice.js）同一套：遮罩淡入 + 面板轻微上浮放大；
+   display:none → flex 时动画会重新播。减少动态时直接给终态。 */
+@keyframes cursor-test-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes cursor-test-pop {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: none; }
 }
 
 .cursor-test__head {
@@ -718,4 +731,8 @@ button.tool-entry {
 }
 @media (max-width: 420px) {
     .cursor-test__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cursor-test,
+    .cursor-test__panel { animation: none; }
 }
