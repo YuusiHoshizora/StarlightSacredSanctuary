@@ -162,6 +162,99 @@
 }
 
 /* ==========================================================================
+   联系作者：只放各平台的图标
+   --------------------------------------------------------------------------
+   图标源文件在 assets/img/contact/*.svg，这里用 CSS mask 取形状、颜色交给
+   currentColor：默认灰白，hover / 键盘聚焦转金 —— 与站内其它可点元素一致。
+   每个图标 44×44 的可点区域（手指点得着），里面 26×26 的图形。
+   ========================================================================== */
+.contact-icons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-left: -9px;             /* 可点区域自带 9px 内边距：让首枚图标与正文左缘对齐 */
+}
+
+.contact-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+    padding: 0;
+
+    background: none;
+    border: 0;
+    border-radius: var(--ctl-radius);
+    color: rgba(255, 255, 255, 0.55);
+
+    text-decoration: none;
+    cursor: var(--cur-pointer);
+    transition: var(--ctl-transition);
+}
+
+.contact-icon:hover,
+.contact-icon:focus-visible {
+    color: var(--ctl-fg-hover);
+}
+
+/* 覆盖 .about-card a 的正文色（默认 0.92 对图标来说太亮） */
+a.contact-icon {
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+}
+
+.contact-icon:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 2px;
+}
+
+/* 复制成功时短暂保持金色 */
+.contact-icon.is-copied {
+    color: var(--ctl-fg-hover);
+}
+
+.contact-icon__glyph {
+    width: 26px;
+    height: 26px;
+
+    background-color: currentColor;
+    -webkit-mask-image: var(--icon);
+    mask-image: var(--icon);
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+.contact-icon__glyph--email    { --icon: url("../../img/contact/email.svg"); }
+.contact-icon__glyph--github   { --icon: url("../../img/contact/github.svg"); }
+.contact-icon__glyph--bilibili { --icon: url("../../img/contact/bilibili.svg"); }
+.contact-icon__glyph--steam    { --icon: url("../../img/contact/steam.svg"); }
+.contact-icon__glyph--x        { --icon: url("../../img/contact/x.svg"); }
+.contact-icon__glyph--zhihu    { --icon: url("../../img/contact/zhihu.svg"); }
+.contact-icon__glyph--weibo    { --icon: url("../../img/contact/weibo.svg"); }
+.contact-icon__glyph--discord  { --icon: url("../../img/contact/discord.svg"); }
+
+/* 复制结果的读屏文本：视觉上不占位 */
+.contact-copy-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+}
+
+/* ==========================================================================
    移动端：收窄内边距，避免一行字太少
    ========================================================================== */
 @media (max-width: 768px) {

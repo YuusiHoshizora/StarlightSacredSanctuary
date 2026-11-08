@@ -240,16 +240,57 @@
                         <a href="https://github.com/jasonherald/slowrx.rs" rel="noopener noreferrer" target="_blank">slowrx</a>（Oona Räisänen 原作，Jason Herald 移植）
                         <span class="about-credit__meta">参考实现 · ISC</span>
                     </li>
+                    <li>
+                        <a href="https://simpleicons.org/" rel="noopener noreferrer" target="_blank">Simple Icons</a>（Simple Icons Contributors）
+                        <span class="about-credit__meta">联系作者图标 · CC0 1.0</span>
+                    </li>
+                    <li>
+                        <a href="https://github.com/google/material-design-icons" rel="noopener noreferrer" target="_blank">Material Design Icons</a>（Google）
+                        <span class="about-credit__meta">邮件图标 · Apache License 2.0</span>
+                    </li>
                 </ul>
             </div>
 
             <div class="about-card">
                 <h2>联系作者</h2>
-                <p>
-                    <a href="mailto:yuusihoshizora@stsas.top">Email</a>
-                    <a href="https://github.com/YuusiHoshizora" rel="noopener noreferrer" target="_blank">GitHub</a>
-                    <a href="https://space.bilibili.com/449672301" rel="noopener noreferrer" target="_blank">Bilibili</a>
-                </p>
+                <!-- 每条联系方式只显示对应平台的图标；账号放在 title / aria-label 里。
+                     图标是 assets/img/contact/*.svg，用 CSS mask 上色：默认灰白，hover / 键盘聚焦转金。
+                     Discord 没有个人主页链接，点图标复制账号。 -->
+                <div class="contact-icons">
+                    <a class="contact-icon" href="mailto:yuusihoshizora@stsas.top"
+                       aria-label="Email：yuusihoshizora@stsas.top" title="Email：yuusihoshizora@stsas.top">
+                        <span class="contact-icon__glyph contact-icon__glyph--email" aria-hidden="true"></span>
+                    </a>
+                    <a class="contact-icon" href="https://github.com/YuusiHoshizora" rel="noopener noreferrer" target="_blank"
+                       aria-label="GitHub：YuusiHoshizora" title="GitHub：YuusiHoshizora">
+                        <span class="contact-icon__glyph contact-icon__glyph--github" aria-hidden="true"></span>
+                    </a>
+                    <a class="contact-icon" href="https://space.bilibili.com/449672301" rel="noopener noreferrer" target="_blank"
+                       aria-label="Bilibili：余事星空" title="Bilibili：余事星空">
+                        <span class="contact-icon__glyph contact-icon__glyph--bilibili" aria-hidden="true"></span>
+                    </a>
+                    <a class="contact-icon" href="https://steamcommunity.com/id/StarlightSacredSanctuary/" rel="noopener noreferrer" target="_blank"
+                       aria-label="Steam：Yuusi Hoshizora" title="Steam：Yuusi Hoshizora">
+                        <span class="contact-icon__glyph contact-icon__glyph--steam" aria-hidden="true"></span>
+                    </a>
+                    <a class="contact-icon" href="https://x.com/Yuusi_Hoshizora" rel="noopener noreferrer" target="_blank"
+                       aria-label="X：@Yuusi_Hoshizora" title="X：@Yuusi_Hoshizora">
+                        <span class="contact-icon__glyph contact-icon__glyph--x" aria-hidden="true"></span>
+                    </a>
+                    <a class="contact-icon" href="https://www.zhihu.com/people/YuShiXingKong" rel="noopener noreferrer" target="_blank"
+                       aria-label="知乎：余事星空" title="知乎：余事星空">
+                        <span class="contact-icon__glyph contact-icon__glyph--zhihu" aria-hidden="true"></span>
+                    </a>
+                    <a class="contact-icon" href="https://weibo.com/u/7172687366" rel="noopener noreferrer" target="_blank"
+                       aria-label="微博：余事星空Astra" title="微博：余事星空Astra">
+                        <span class="contact-icon__glyph contact-icon__glyph--weibo" aria-hidden="true"></span>
+                    </a>
+                    <button class="contact-icon" type="button" data-copy="yuusi_hoshozora"
+                            aria-label="Discord：yuusi_hoshozora（点击复制）" title="Discord：yuusi_hoshozora（点击复制）">
+                        <span class="contact-icon__glyph contact-icon__glyph--discord" aria-hidden="true"></span>
+                    </button>
+                </div>
+                <span class="contact-copy-status" role="status" aria-live="polite"></span>
             </div>
 
             <!-- 已发现的彩蛋：内容与计数由 assets/js/eggs.js 填。
@@ -286,6 +327,59 @@
                 e.preventDefault();
                 openNotice();
             }
+        });
+    })();
+    </script>
+
+    <script>
+    /* Discord 没有个人主页：点图标复制账号；复制成功时图标短暂转金并给读屏播报。 */
+    (function () {
+        var buttons = document.querySelectorAll('.contact-icon[data-copy]');
+        if (!buttons.length) return;
+
+        function fallbackCopy(text) {
+            return new Promise(function (resolve, reject) {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.top = '-1000px';
+                document.body.appendChild(ta);
+                ta.select();
+                var ok = false;
+                try { ok = document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(ta);
+                ok ? resolve() : reject(new Error('copy failed'));
+            });
+        }
+
+        function copyText(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text).catch(function () {
+                    return fallbackCopy(text);
+                });
+            }
+            return fallbackCopy(text);
+        }
+
+        buttons.forEach(function (btn) {
+            var originalLabel = btn.getAttribute('aria-label');
+
+            btn.addEventListener('click', function () {
+                var text = btn.getAttribute('data-copy');
+                copyText(text).then(function () {
+                    btn.classList.add('is-copied');
+                    btn.setAttribute('aria-label', '已复制 Discord 账号：' + text);
+
+                    var status = document.querySelector('.contact-copy-status');
+                    if (status) status.textContent = '已复制 Discord 账号：' + text;
+
+                    window.setTimeout(function () {
+                        btn.classList.remove('is-copied');
+                        btn.setAttribute('aria-label', originalLabel);
+                    }, 1600);
+                }).catch(function () {});
+            });
         });
     })();
     </script>

@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.75+7c013d5887';
+const CACHE_VERSION = 'v5.75+737d043420';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -144,6 +144,15 @@ const PRECACHE_URLS = [
     '/assets/img/logo_SSS.svg',
     // 加载屏徽记：logo 的加边版（外圈描边不被 viewBox 裁掉），见 assets/css/boot.css
     '/assets/img/logo_SSS_boot.svg',
+    // 关于页「联系作者」的各平台图标（CSS mask 上色，见 assets/css/about/index.css）
+    '/assets/img/contact/email.svg',
+    '/assets/img/contact/github.svg',
+    '/assets/img/contact/bilibili.svg',
+    '/assets/img/contact/steam.svg',
+    '/assets/img/contact/x.svg',
+    '/assets/img/contact/zhihu.svg',
+    '/assets/img/contact/weibo.svg',
+    '/assets/img/contact/discord.svg',
     // 指针（24 个光标素材；global.css 的 --cur-* 令牌指向它们）
     '/assets/img/cursor/default.svg',
     '/assets/img/cursor/pointer.svg',
