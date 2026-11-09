@@ -20,8 +20,8 @@
  * 换回首页时元素根本不在文档里，入口就"失效"了）。
  *
  * 因此本脚本每次运行都要把 DOM 同步成 storage 的样子（首次加载 / SPA 换回首页 /
- * bfcache 恢复都算），离开首页时把挂在 document 上的监听撤掉（元素本身随 <main>
- * 一起销毁，不用额外去藏）。
+ * bfcache 恢复都算），离开首页时把挂在 document 上的监听撤掉、并**停掉正在播的
+ * 那声 cq.wav**（音频对象不在 <main> 里，换页不会替它停；元素本身随 <main> 销毁）。
  *
  * 找不到 #cq-dot 就直接退出，所以别的页面误引了也没有副作用。
  * ========================================================================== */
@@ -91,6 +91,15 @@
         if (p && p.catch) p.catch(function () {});
     }
 
+    /* 扫出来时放的那声有 20 多秒。音频对象是 new Audio() 建的，不在 <main> 里，
+       站内换页换不掉它 —— 不主动 pause 的话，切到别的页面之后它还在后台响。
+       按站里的规矩（见 MAINTENANCE「CQ 页的生命周期」），离开页面必须停音频。 */
+    function stopQuiet() {
+        if (!audio) return;
+        try { audio.pause(); } catch (e) { /* 忽略 */ }
+        try { audio.currentTime = 0; } catch (e) { /* 忽略 */ }
+    }
+
     function show(withSound) {
         if (nameEl) nameEl.textContent = name();
         dot.classList.add('is-found');
@@ -101,6 +110,7 @@
     }
 
     function hide() {
+        stopQuiet();                                 // 入口收起来了，那声也别再响
         dot.classList.remove('is-found');
         dot.setAttribute('aria-hidden', 'true');
         dot.setAttribute('tabindex', '-1');
@@ -149,16 +159,21 @@
     }
     window.addEventListener('storage', onStorage);
 
+    /* 整页离开（含进 bfcache）：那声也停掉，别在下一个页面后台继续响 */
+    window.addEventListener('pagehide', stopQuiet);
+
     sync();
 
-    /* 离开首页（站内换页）：把挂在 document / window 上的监听撤掉。
+    /* 离开首页时：把挂在 document / window 上的监听撤掉，并停掉正在播的那声。
        元素本身在 <main> 里，会随内容一起被换掉，不用额外处理。 */
     if (window.__sssPageCleanup) {
         window.__sssPageCleanup.add('cq-entry', function () {
             document.removeEventListener('pointerdown', onPointerDown);
             window.removeEventListener('pageshow', sync);
+            window.removeEventListener('pagehide', stopQuiet);
             document.removeEventListener('sss:swap', sync);
             window.removeEventListener('storage', onStorage);
+            stopQuiet();                                 // 站内换页不会触发 pagehide
         });
     }
 })();

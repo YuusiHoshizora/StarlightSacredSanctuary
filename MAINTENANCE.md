@@ -990,6 +990,9 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
     · `cq-entry.js` 每次运行都**按 storage 同步一次 DOM**（首次加载 / SPA 换回首页 /
       bfcache 恢复都算），离开首页时登记清理函数把挂在 `document` / `window` 上的监听撤掉
       （元素本身随 `<main>` 销毁）。别把状态只算一次
+    · 扫出来时放的那声 `cq.wav` 有 20 多秒：音频对象是 `new Audio()` 建的、不在 `<main>` 里，
+      **换页不会替你停**。离开首页（`__sssPageCleanup`）和 `pagehide` 都会 `pause()` + 归零，
+      入口被收起时也停 —— 与「CQ 页的生命周期」第 3 条同一条规矩
     · 想调难易：改 `background.js` 的 `RADIUS`（或只改首页那份 CFG 覆盖），判定跟着变
   · **卡片上每条彩蛋一条设置行**（结构与样式都由 `eggs.js` 注入，关于页只需引那一行脚本）：
     · 顶上只报数：**全发现**（`found.length >= LIST.length`）→「所有彩蛋已发现」，
