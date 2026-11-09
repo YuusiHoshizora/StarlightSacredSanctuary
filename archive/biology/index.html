@@ -202,7 +202,7 @@
                     </div>
                     <div class="biology-list__scroll">
                         <p class="biology-list__group">植物<span class="biology-list__group-en">Flora</span></p>
-                        <a class="biology-list__item is-active" href="#veridica" data-id="veridica">
+                        <a class="biology-list__item" href="#veridica" data-id="veridica">
                             <span class="biology-list__name">真理花</span>
                             <span class="biology-list__en">Veridica</span>
                         </a>
@@ -211,7 +211,14 @@
 
                 <!-- ── 右栏：选中条目的档案 ── -->
                 <div class="biology-detail">
-                    <article class="biology-profile is-active" id="veridica">
+
+                    <!-- 未选中任何条目时的空白态；选中后由 biology.js 隐藏 -->
+                    <div class="archive-empty" role="status" aria-label="未选择生物">
+                        <span class="archive-empty__dot" aria-hidden="true"></span>
+                        <p class="archive-empty__text">NO / INFO</p>
+                    </div>
+
+                    <article class="biology-profile" id="veridica">
                         <header class="biology-profile__head">
                             <p class="biology-profile__kicker">植物 / Flora</p>
                             <h2 class="biology-profile__name">真理花</h2>
