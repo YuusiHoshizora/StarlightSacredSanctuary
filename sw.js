@@ -124,6 +124,7 @@ const PRECACHE_URLS = [
     '/assets/data/vessel.js',
     '/assets/js/archive-scroll.js',
     '/assets/js/archive-list-search.js',
+    '/assets/js/biology.js',
     '/assets/js/org-member.js',
     '/assets/js/org-secret.js',
     '/assets/js/eggs.js',

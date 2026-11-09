@@ -106,6 +106,10 @@
     <script defer src="../../assets/js/eggs.js"></script>
     <!-- 滚动淡出：按滚动位置连续控制上下淡出，短内容不压暗 -->
     <script defer src="../../assets/js/archive-scroll.js"></script>
+    <!-- 左栏名录搜索：按名称过滤（外观与交互照星图搜索） -->
+    <script defer src="../../assets/js/archive-list-search.js"></script>
+    <!-- 生物档案页：把搜索接到左栏名录上 -->
+    <script defer src="../../assets/js/biology.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
         {
@@ -129,7 +133,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<body data-archive>
+<body data-archive="split">
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -191,6 +195,10 @@
                 <aside class="biology-list" aria-label="生物名录">
                     <div class="biology-list__head">
                         <p class="biology-list__title">名录 <span>1</span></p>
+                        <div class="archive-search">
+                            <input type="search" class="archive-search__input" placeholder="搜索生物" aria-label="按名称搜索生物" autocomplete="off" spellcheck="false">
+                            <p class="archive-search__empty" hidden>没有找到匹配的条目</p>
+                        </div>
                     </div>
                     <div class="biology-list__scroll">
                         <p class="biology-list__group">植物<span class="biology-list__group-en">Flora</span></p>

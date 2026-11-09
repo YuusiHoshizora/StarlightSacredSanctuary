@@ -144,6 +144,14 @@
     min-width: 0;
 }
 
+.biology-profile {
+    display: none;
+}
+
+.biology-profile.is-active {
+    display: block;
+}
+
 /* 档案头：分类 → 名称 → 英文名 */
 .biology-profile__head {
     margin-bottom: 16px;
@@ -255,12 +263,93 @@
     margin-bottom: 0;
 }
 
+/* ── 两栏档案：与舰船 / 人员 / 设施一致，左栏与右栏各自滚动 ──
+   body 用 data-archive="split"；左栏固定、右栏档案头固定，
+   只有 .biology-list__scroll 与 .biology-profile__body 各自滚。 */
+body[data-archive="split"] .biology-layout {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+}
+
+body[data-archive="split"] .biology-list {
+    position: static;
+    top: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+    padding: 0;
+
+    /* 名录只是索引，淡出长度比右栏内容短一截 */
+    --archive-fade: 56px;
+    --archive-fade-min: 0px;
+}
+
+body[data-archive="split"] .biology-list__head {
+    flex: 0 0 auto;
+    padding: var(--archive-pad) 6px 10px 0;
+}
+
+body[data-archive="split"] .biology-list__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px var(--archive-pad) 0;
+}
+
+body[data-archive="split"] .biology-detail {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body[data-archive="split"] .biology-profile.is-active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+body[data-archive="split"] .biology-profile__head {
+    flex: 0 0 auto;
+    padding-top: var(--archive-pad);
+}
+
+body[data-archive="split"] .biology-profile__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px 0 var(--archive-pad);
+}
+
 /* ── 窄屏：名录摊到档案上方，概要 / 头像上下排 ── */
 @media (max-width: 900px) {
+
+    /* 两栏档案在窄屏退回整页滚动（照 archive.css 的处理） */
+    body[data-archive="split"] .archive-body {
+        overflow-y: auto;
+        padding-top: var(--archive-pad);
+        padding-bottom: var(--archive-pad);
+    }
 
     .biology-layout {
         grid-template-columns: 1fr;
         gap: 24px;
+    }
+
+    body[data-archive="split"] .biology-layout {
+        height: auto;
+        grid-template-rows: none;
+        align-items: start;
     }
 
     .biology-list {
@@ -270,8 +359,59 @@
         overflow: visible;
     }
 
+    body[data-archive="split"] .biology-list {
+        display: block;
+        height: auto;
+        overflow: visible;
+        padding: 0;
+    }
+
+    body[data-archive="split"] .biology-list__head {
+        padding: 0 0 12px;
+    }
+
     .biology-list__scroll {
         overflow: visible;
+    }
+
+    body[data-archive="split"] .biology-list__scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        column-gap: 8px;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        -webkit-mask-image: none;
+                mask-image: none;
+    }
+
+    body[data-archive="split"] .biology-list__scroll > .biology-list__group {
+        grid-column: 1 / -1;
+    }
+
+    body[data-archive="split"] .biology-detail {
+        display: block;
+        height: auto;
+        overflow: visible;
+    }
+
+    body[data-archive="split"] .biology-profile.is-active {
+        display: block;
+        height: auto;
+    }
+
+    body[data-archive="split"] .biology-profile__head {
+        padding-top: 0;
+    }
+
+    body[data-archive="split"] .biology-profile__body {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        -webkit-mask-image: none;
+                mask-image: none;
     }
 }
 

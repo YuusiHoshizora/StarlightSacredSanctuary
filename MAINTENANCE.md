@@ -80,6 +80,7 @@
 │   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
 │   │   ├── archive-scroll.js   档案页：给能滚的容器挂 .is-scrollable 并连续写上下淡出长度
 │   │   ├── archive-list-search.js 档案页左栏名录搜索：按名称过滤（外观与交互照星图搜索）
+│   │   ├── biology.js          生物档案页：把搜索接到左栏生物名录
 │   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
 │   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案（# 不滚页）
 │   │   ├── vessel.js           舰船档案：左栏名录 / 右栏档案（# 不滚页）

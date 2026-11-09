@@ -21,7 +21,8 @@
     'use strict';
 
     var SCROLLERS = '.archive-body, .personnel-list__scroll, .facility-list__scroll, .vessel-list__scroll,' +
-        ' .personnel-profile__body, .facility-profile__body, .vessel-profile__body';
+        ' .biology-list__scroll, .personnel-profile__body, .facility-profile__body, .vessel-profile__body,' +
+        ' .biology-profile__body';
 
     var nodes = [];
     var frame = 0;

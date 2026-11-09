@@ -565,7 +565,8 @@ body[data-archive="split"] .archive-empty:not([hidden]) {
    author 的 display 会盖掉 UA 的 [hidden] —— 这里显式压回去。 */
 body[data-archive="split"] .personnel-list__scroll [hidden],
 body[data-archive="split"] .facility-list__scroll [hidden],
-body[data-archive="split"] .vessel-list__scroll [hidden] {
+body[data-archive="split"] .vessel-list__scroll [hidden],
+body[data-archive="split"] .biology-list__scroll [hidden] {
     display: none !important;
 }
 
