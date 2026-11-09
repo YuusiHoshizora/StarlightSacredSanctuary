@@ -54,6 +54,7 @@
         '/archive/organization/inv': true,
         '/archive/organization/pla': true,
         '/archive/organization/tas': true,
+        '/archive/biology': true,
         '/archive/personnel': true,
         '/archive/personnel/sam': true,
         '/archive/personnel/sfm': true,
@@ -122,7 +123,7 @@
     /* 顶栏与样式表的相对地址先固化成绝对地址：换页后文档 base URL 会变，
        各页给「当前页」那一项写的 href="." 会解析到新页面（在关于页点「档案」→ 回 /about/），
        样式表的相对 href 也会在深层路径下解析错。 */
-    Array.prototype.forEach.call(document.querySelectorAll('.navbar a[href], link[rel="stylesheet"][href]'), function (el) {
+    Array.prototype.forEach.call(document.querySelectorAll('.navbar a[href], link[rel="stylesheet"][href], link[rel="icon"][href]'), function (el) {
         var attr = el.tagName === 'LINK' ? 'href' : 'href';
         var abs = resolveUrl(el.getAttribute(attr), location.href);
         if (abs) el.setAttribute(attr, abs);

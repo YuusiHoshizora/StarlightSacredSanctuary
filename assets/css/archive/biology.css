@@ -1,0 +1,289 @@
+/* ==========================================================================
+   生物档案（archive/biology/）
+   --------------------------------------------------------------------------
+   版式照舰船档案 / 人员档案：左栏生物名录（按分类分组）+ 右栏选中条目的档案。
+   条目档案顶部是「概要 + 方形头像」两栏 —— 概要在左，头像在右；
+   头像没有图片时显示 No/Info。其余各节复用组织档案的 .org-block 材质。
+   ========================================================================== */
+
+.biology-section .archive-head {
+    margin-bottom: 16px;
+}
+
+/* ── 左栏名录 + 右栏档案 ── */
+.biology-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
+/* 左栏：整栏固定在滚动区里，自己滚；条目多时不会把页面拉长 */
+.biology-list {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
+    padding-right: 6px;
+    overflow: hidden;
+}
+
+.biology-list__head {
+    flex: 0 0 auto;
+    padding: 0 6px 10px 0;
+}
+
+.biology-list__title {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.biology-list__title span {
+    color: #FFD700;
+}
+
+.biology-list__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px 4px 0;
+}
+
+/* 分类分组头：植物 / 动物 / 真菌 / 微生物 / 人工生物 */
+.biology-list__group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 18px 0 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.biology-list__title + .biology-list__group {
+    margin-top: 4px;
+}
+
+.biology-list__group-en {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.28);
+}
+
+/* 一条名录：中文名在上，英文名在下 */
+.biology-list__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+
+    color: #fff;
+    text-decoration: none;
+
+    border-left: 2px solid transparent;
+    transition: var(--ctl-transition),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.biology-list__item:hover,
+.biology-list__item:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+    border-left-color: rgba(255, 215, 0, 0.35);
+}
+
+.biology-list__item.is-active {
+    background: rgba(255, 215, 0, 0.06);
+    border-left-color: #FFD700;
+}
+
+.biology-list__item:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 1px;
+}
+
+.biology-list__name {
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: color 0.2s ease;
+}
+
+.biology-list__en {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.46);
+}
+
+.biology-list__item.is-active .biology-list__name {
+    color: #FFD700;
+}
+
+/* 分类下暂时没有条目时的占位（模板阶段用） */
+.biology-list__empty {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.26);
+}
+
+/* ── 右栏：条目档案 ── */
+.biology-detail {
+    min-width: 0;
+}
+
+/* 档案头：分类 → 名称 → 英文名 */
+.biology-profile__head {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.biology-profile__kicker {
+    margin: 0 0 8px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.62);
+}
+
+.biology-profile__name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 3px;
+    color: #FFD700;
+}
+
+.biology-profile__en {
+    margin: 6px 0 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* 右栏里的面板比组织页更紧凑 */
+.biology-profile .org-block {
+    padding: 18px 22px;
+    margin-bottom: 14px;
+}
+
+.biology-profile .org-block:last-child {
+    margin-bottom: 0;
+}
+
+.biology-profile .org-block__head {
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.biology-profile .org-meta {
+    gap: 6px;
+}
+
+.biology-profile .org-meta dd {
+    font-size: 13px;
+}
+
+.biology-profile .org-block p {
+    margin-bottom: 0;
+    line-height: 1.85;
+}
+
+/* ── 概要 + 头像：概要在左，方形头像在右 ── */
+.bio-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 18px;
+    align-items: stretch;
+    margin-bottom: 14px;
+}
+
+/* 头像框：宽高由 aspect-ratio 锁死，换图不会把版式撑开。
+   没有图片时这一格就是占位，文字 No/Info 居中。 */
+.bio-avatar {
+    position: relative;
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: 1 / 1;
+    margin: 0;
+    align-self: end;              /* 概要比头像高时，两者底边仍然对齐 */
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+
+    background: rgba(20, 20, 50, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--ctl-panel-radius);
+    backdrop-filter: blur(8px);
+}
+
+.bio-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bio-avatar__empty {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.32);
+    user-select: none;
+}
+
+/* 概要面板跟着头像一起撑满这一行；底边和头像对齐，
+   同时清掉组织档案 .org-block 自带的 margin-bottom，
+   让「头像 / 概要」这一行到下一张卡片的距离和其它卡片一致。 */
+.biology-profile .bio-overview {
+    margin-bottom: 0;
+}
+
+/* ── 窄屏：名录摊到档案上方，概要 / 头像上下排 ── */
+@media (max-width: 900px) {
+
+    .biology-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .biology-list {
+        position: static;
+        max-height: none;
+        padding-right: 0;
+        overflow: visible;
+    }
+
+    .biology-list__scroll {
+        overflow: visible;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .bio-hero {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .bio-avatar {
+        width: min(100%, 220px);
+        margin: 0 auto;
+    }
+}

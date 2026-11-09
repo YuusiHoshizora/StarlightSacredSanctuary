@@ -76,6 +76,8 @@ const PRECACHE_URLS = [
     '/archive/organization/inv.html',
     '/archive/organization/pla.html',
     '/archive/organization/tas.html',
+    '/archive/biology/',
+    '/archive/biology/index.html',
     '/archive/personnel/',
     '/archive/personnel/index.html',
     '/archive/personnel/sxm.html',
@@ -98,6 +100,7 @@ const PRECACHE_URLS = [
     '/assets/css/error.css',
     '/assets/css/archive.css',
     '/assets/css/archive/organization.css',
+    '/assets/css/archive/biology.css',
     '/assets/css/archive/personnel.css',
     '/assets/css/archive/facility.css',
     '/assets/css/archive/vessel.css',
@@ -194,7 +197,10 @@ const PRECACHE_URLS = [
     '/assets/img/Deptlogo/title_Dept.EDU.png',
     '/assets/img/Deptlogo/title_Dept.INV.png',
     '/assets/img/Deptlogo/title_Dept.PLA.png',
-    '/assets/img/Deptlogo/title_Dept.TAS.png'
+    '/assets/img/Deptlogo/title_Dept.TAS.png',
+
+    // 生物档案头像
+    '/assets/img/biology/veridica.png'
 ];
 
 /* 本地预览（localhost / 127.0.0.1 / ::1）：SW 完全不插手 ——

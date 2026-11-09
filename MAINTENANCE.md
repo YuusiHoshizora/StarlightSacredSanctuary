@@ -48,6 +48,8 @@
 ├── archive/personnel/spm.html   预备成员（SPM）：HTML 壳，名单/档案由数据渲染
 ├── archive/facility/index.html 深空设施档案（无分类：左栏设施名录 + 右栏档案，全由数据渲染）
 ├── archive/vessel/index.html     舰船档案（按尺寸分类：左栏舰船名录 + 右栏档案，全由数据渲染）
+├── archive/biology/index.html    生物档案（左栏分类名录 + 右栏条目档案；目前收录真理花）
+├── archive/biology/template.html 生物档案页模板（左栏分类名录 + 右栏条目档案；头像在概要右侧，无图显示 No/Info）
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
@@ -60,6 +62,7 @@
 │   │   ├── archive/personnel.css     人员档案页
 │   │   ├── archive/facility.css      深空设施档案页
 │   │   ├── archive/vessel.css          舰船档案页
+│   │   ├── archive/biology.css       生物档案页（左栏分类名录 / 概要 + 右侧方形头像）
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── main/cq.css         彩蛋页 CQ
 │   │   ├── starmap/index.css   星图 + Starmap®OS 启动画面
