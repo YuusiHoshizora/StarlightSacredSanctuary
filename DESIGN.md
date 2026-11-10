@@ -78,9 +78,9 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 每一页都应包含：
 
 1. **`<head>` 的"启动三件套"**：`boot.css` + `boot.js` + 那段决定是否显示加载屏的内联脚本
-   （见 `MAINTENANCE.md` 的"七件事"，以及第 8 节）
+   （见 `MAINTENANCE.md` 的"八件事"，以及第 8 节）
 2. **favicon**：`<link rel="icon" type="image/svg+xml" href="…/assets/img/logo_SSS.svg">`
-3. **导航栏**：`<nav id="site-nav">` 七个链接（末项「邮箱」指向 `https://mail.stsas.top/`，跨站，暂时停用）+ 紧随其后的折叠按钮 + `navtoggle.js`
+3. **导航栏**：`<nav id="site-nav">` 五个链接（首页 / 舰队 / 工具 / 档案 / 关于）+ 紧随其后的折叠按钮 + `navtoggle.js`
 4. **内容容器**：必须是 `<main>` 或 `.main-layout`（跨页过渡靠它选择，见第 8 节）
 5. **页脚** `.site-footer` —— 除星图外，每页必须是**完全相同的文案**（含「关于本站」；
    关于页也保留指向本页的同款链接），这样任何宽度下换行与高度都一致

@@ -17,6 +17,9 @@ window.SSS_FACILITY = {
     },
     "太空航行管理机构": {
       "abbr": ""
+    },
+    "阿尔赫尼托追随者教团": {
+      "abbr": ""
     }
   },
   "facilities": [
@@ -49,12 +52,12 @@ window.SSS_FACILITY = {
             "name": "物质重构器",
             "en": "Substances Reconstructer",
             "desc": [
-              "负责将被行星分解采集器所收集的物质转化为一种特殊的物质碎星（Broken Stars），且星光圣域目前无法在利用其它设施制造此物质。其由DSRCPSys发现，并将其广泛运用在“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰的制造上。"
+              "负责将被行星分解采集器所收集的物质转化为一种特殊的物质碎星（Broken Stars），且星光圣域目前无法再利用其它设施制造此物质。其由DSRCPSys发现，并将其广泛运用在“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰的制造上。"
             ]
           },
           {
             "name": "全智能生产线",
-            "en": "Fully Intelligent Prodiction Line",
+            "en": "Fully Intelligent Production Line",
             "desc": [
               "是由DSRCPSys所自我迭代、设计完成的生产线，能够在碎星供应充足的情况下源源不断地生产“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰，并根据实时数据将其派遣到最为合适的位置。虽说如此，星光圣域目前尚未将两者投入实战之中，目前仅作为FIPF的护卫舰队存在。"
             ]
@@ -202,7 +205,7 @@ window.SSS_FACILITY = {
         "unique": [
           {
             "name": "主体星环设施",
-            "en": "Main Orbital Ring Facilitiy",
+            "en": "Main Orbital Ring Facility",
             "desc": [
               "是通用研究星环的主体，能够在99%行星的同步轨道上进行固定，并为其他的分段提供安装节点。",
               "由于行星的直径不同，各星环的主体星环设施尺寸也不相同，其上所能拥有的安装节点数量也有所不同。“真理”号是模板星环，其上安装了所有通用性较强的配件，作为其他星环的安装模板。"
@@ -243,7 +246,7 @@ window.SSS_FACILITY = {
                 "name": "防御段",
                 "meta": "占用安装节点数：2",
                 "desc": [
-                  "是通用研究星环用于防范外界攻击的分段，无论是从行星表面（星环内侧）还是深空（星环外侧）都的攻击，都在防御段的防御范围之内。",
+                  "是通用研究星环用于防范外界攻击的分段，无论是从行星表面（星环内侧）还是深空（星环外侧）发起的攻击，都在防御段的防御范围之内。",
                   "如果有需要的话，可以安装复数的防御段进行防御。在这种情况下，通常会将该星环作为星光圣域防御线的一部分。"
                 ]
               },
@@ -307,7 +310,7 @@ window.SSS_FACILITY = {
             "name": "次宇宙局部稳定器",
             "en": "Subuniverse Partial Stabilizer",
             "desc": [
-              "是SSSMS能够在次宇宙中进行运算的重要部分，其能够利用次宇宙内的星能进行对次宇宙的稳定，从而保证极高速计算中心的运算能够正常运行。"
+              "是SSSMS能够在次宇宙中进行运算的重要部分，其能够利用次宇宙内的星能对次宇宙进行稳定，从而保证极高速计算中心的运算能够正常运行。"
             ]
           },
           {
@@ -319,7 +322,7 @@ window.SSS_FACILITY = {
             "children": [
               {
                 "name": "数据统筹规划系统",
-                "en": "Data Coodination and Planning System",
+                "en": "Data Coordination and Planning System",
                 "desc": [
                   "可参见《星光圣域非生物智慧体介绍》（DCPSys）。"
                 ]
@@ -405,7 +408,7 @@ window.SSS_FACILITY = {
           },
           {
             "name": "数据统筹规划系统",
-            "en": "Data Coodination and Planning System",
+            "en": "Data Coordination and Planning System",
             "desc": [
               "可参见《星光圣域非生物智慧体介绍》（DCPSys）。"
             ]
@@ -475,16 +478,16 @@ window.SSS_FACILITY = {
           },
           {
             "name": "极高精度光学观测器",
-            "en": "Untra-Precise Optical Observer",
+            "en": "Ultra-Precise Optical Observer",
             "desc": [
               "是星光圣域对极远距离侦测的一个装置。尽管其受到光速的严重限制，且无法侦测到超光速物体，但在对深空的观测方面发挥着重大的作用。同时，部分亚光速舰船也能够被其侦测到，作为一道可有可无的保险。"
             ]
           },
           {
             "name": "极高精度空间波动监测器",
-            "en": "Untra-Precise Space Fluctuation Monitor",
+            "en": "Ultra-Precise Space Fluctuation Monitor",
             "desc": [
-              "是星光圣域对极远距离进行侦测的一个装置。空间波动能够以数百倍光速传播，对于目前的人类来说，这是暂时难以逾越的速度极限。在星光圣域的预估之中，在未来的三十年内，人类在通常宇宙内的产光速航行都无法达到百倍光速。"
+              "是星光圣域对极远距离进行侦测的一个装置。空间波动能够以数百倍光速传播，对于目前的人类来说，这是暂时难以逾越的速度极限。在星光圣域的预估之中，在未来的三十年内，人类在通常宇宙内的亚光速航行都无法达到百倍光速。"
             ]
           },
           {
@@ -562,7 +565,7 @@ window.SSS_FACILITY = {
       "damaged": true,
       "damagedNote": "记录在「脉冲星干涉器」处中断，配件信息无法读取。",
       "intro": [
-        "通用时间校准设施（Universal Time Calibration Facility，UTCF）“沙漏”（Hourglass）是由星光圣域科研与管理舰队所研发的巨型空间站，其通过复数方法对时间进行极为精确的确定，从而保证星光圣域所有极高精度设备能够正常进行进行计时作业。"
+        "通用时间校准设施（Universal Time Calibration Facility，UTCF）“沙漏”（Hourglass）是由星光圣域科研与管理舰队所研发的巨型空间站，其通过复数方法对时间进行极为精确的确定，从而保证星光圣域所有极高精度设备能够正常进行计时作业。"
       ],
       "parts": {
         "unique": [
@@ -1002,7 +1005,7 @@ window.SSS_FACILITY = {
       "intro": [
         "“英仙座”级重型炮击阵列（Perseus-class Heavy Artillery Array）是由地球联合国所建造的攻击巨构，也是人类历史上第一个攻击性巨构。",
         "尽管历史悠久，其上的部分系统也已经过时，但其仍能正常运作，加上地球联合国对其进行的维护，让“英仙座”级重型炮击阵列即使在现在也能够发挥重要的价值。",
-        "需要注意的是，地球联合国在其星域内有有复数个“英仙座”级重型炮击阵列。尽管地球联合国官方宣布其不会建造新的“英仙座”级重型炮击阵列，但目前“英仙座”级重型炮击阵列的位置与数量均属于保密范畴。"
+        "需要注意的是，地球联合国在其星域内有复数个“英仙座”级重型炮击阵列。尽管地球联合国官方宣布其不会建造新的“英仙座”级重型炮击阵列，但目前“英仙座”级重型炮击阵列的位置与数量均属于保密范畴。"
       ],
       "parts": null,
       "response": [

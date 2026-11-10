@@ -250,7 +250,14 @@ self.addEventListener('install', (event) => {
                 if (response && response.ok) {
                     // 必须洗一遍再存：.html 页面在这条链上是被 307 过的
                     //（见 asDirectResponse 的注释，存原样会让导航整页失败）
-                    await cache.put(url, asDirectResponse(response));
+                    await cache.put(url, asDirectResponse(response.clone()));
+                    // 307 的落点是去扩展名的规范地址（/main/mainpage），而页面里的
+                    // 链接也用这个地址 —— 只存请求键的话，首次离线导航会匹配不到。
+                    // 两个键都存一份，按最终 URL 判断，避免重复。
+                    const finalPath = new URL(response.url).pathname;
+                    if (finalPath !== url) {
+                        await cache.put(finalPath, asDirectResponse(response));
+                    }
                 }
             } catch (err) {
                 console.log('[SW] 预缓存跳过：', url, err && err.message);
@@ -325,11 +332,11 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (request.mode === 'navigate') {
-        event.respondWith(handleNavigate(request));
+        event.respondWith(handleNavigate(request, event));
         return;
     }
 
-    event.respondWith(staleWhileRevalidate(request));
+    event.respondWith(staleWhileRevalidate(request, event));
 });
 
 /** 网络优先：先要最新的，网络不通再退回缓存 */
@@ -377,17 +384,23 @@ async function cacheFirstFont(request) {
 }
 
 /* 导航请求：缓存优先 → 后台更新 → 断网回退 */
-async function handleNavigate(request) {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request, { ignoreSearch: true });
-
-    // 后台更新（不阻塞本次导航）
-    const network = fetch(request)
-        .then(async (response) => {
+async function handleNavigate(request, event) {
+    // 后台更新（不阻塞本次导航）。先把缓存句柄和网络请求挂到 event.waitUntil 上：
+    // 一旦命中缓存立刻返回，SW 线程可能空闲下来并被浏览器回收，
+    // 不延长事件生命周期的话，后台的 fetch / cache.put 会被静默丢掉。
+    // ⚠ event.waitUntil 只能在事件分发期调用，所以这里必须在第一个 await 之前挂上。
+    const cachePromise = caches.open(CACHE_NAME);
+    const network = cachePromise
+        .then(async (cache) => {
+            const response = await fetch(request);
             await putSafely(cache, request, response);
             return response;
         })
         .catch(() => null);
+    event.waitUntil(network);
+
+    const cache = await cachePromise;
+    const cached = await cache.match(request, { ignoreSearch: true });
 
     // 缓存里那份可能是旧版本存下的"被重定向过的"响应，直接交出去会让整次导航失败，
     // 所以出口处统一洗一遍（对没被重定向的响应是零成本的空操作）
@@ -406,16 +419,20 @@ async function handleNavigate(request) {
 }
 
 /* 静态资源：先返回缓存，再在后台刷新 */
-async function staleWhileRevalidate(request) {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request, { ignoreSearch: true });
-
-    const network = fetch(request)
-        .then(async (response) => {
+async function staleWhileRevalidate(request, event) {
+    // 同 handleNavigate：后台刷新也要挂到 event.waitUntil 上，缓存命中后不能被回收。
+    const cachePromise = caches.open(CACHE_NAME);
+    const network = cachePromise
+        .then(async (cache) => {
+            const response = await fetch(request);
             await putSafely(cache, request, response);
             return response;
         })
         .catch(() => null);
+    event.waitUntil(network);
+
+    const cache = await cachePromise;
+    const cached = await cache.match(request, { ignoreSearch: true });
 
     if (cached) return asDirectResponse(cached);
 

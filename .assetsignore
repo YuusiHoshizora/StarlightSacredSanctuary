@@ -24,6 +24,11 @@ MIGRATION-CLOUDFLARE.md
 .graphflow-cache
 graphflow-out
 node_modules
+# 本地冒烟测试的截图 / 临时脚本 / 独立 Chrome profile（可能上百 MB）
+.tmp-shots
+
+# —— 内部模板：带占位符的模板页不该作为站点页面公开 ——
+/archive/biology/template.html
 
 # —— 数据源与构建脚本：站点只需要 assets/data/*.js（生成物），CSV 不必公开托管 ——
 # ⚠️ 必须带开头的斜杠：写成 `data` 会按 gitignore 语义匹配到任意层级，

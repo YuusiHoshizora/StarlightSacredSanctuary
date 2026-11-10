@@ -879,9 +879,7 @@ window.SSS_PERSONNEL = {
         "研究员"
       ],
       "relatives": [],
-      "awards": [
-        "暂无"
-      ],
+      "awards": [],
       "research": [
         "人工种族与人类的基因区别"
       ],
@@ -891,7 +889,7 @@ window.SSS_PERSONNEL = {
     },
     {
       "class": "spm",
-      "anchor": "暂无",
+      "anchor": "pending-kyle-soren",
       "identity": "",
       "name": "凯尔·索伦",
       "latin": "Kyle Soren",
@@ -905,12 +903,8 @@ window.SSS_PERSONNEL = {
         "第VI代科研舰“帆”号勤务处 勤务员"
       ],
       "relatives": [],
-      "awards": [
-        "暂无。"
-      ],
-      "research": [
-        "暂无。"
-      ],
+      "awards": [],
+      "research": [],
       "feedback": [
         "仍在进一步审查中。"
       ]

@@ -307,17 +307,23 @@
     function fromHash() {
         var id = '';
 
-        /* 优先读 ?person=身份编号：静态主机的 clean-url 跳转不会丢 query */
-        try {
-            var q = new URLSearchParams(location.search).get('person');
-            if (q) id = q;
-        } catch (e) { /* 老浏览器不支持 URLSearchParams 时退回 hash */ }
-
-        if (!id) {
-            var raw = location.hash ? location.hash.slice(1) : '';
+        /* 先读 #身份编号：它代表用户最近一次在名录里的选择；
+           同时带 ?person=A#B 时，地址栏与右栏应以 #B 为准。
+           hash 不是本站条目（外部带进来的无效锚点）时再退回 query。 */
+        var raw = location.hash ? location.hash.slice(1) : '';
+        if (raw) {
             try {
                 id = decodeURIComponent(raw);
             } catch (e) { /* 保留原值 */ }
+            if (id && !byId[id]) id = '';
+        }
+
+        /* 没有可用 hash 时读 ?person=身份编号：静态主机的 clean-url 跳转不会丢 query */
+        if (!id) {
+            try {
+                var q = new URLSearchParams(location.search).get('person');
+                if (q) id = q;
+            } catch (e) { /* 老浏览器不支持 URLSearchParams 时退回 hash */ }
         }
 
         activate(id || '');
@@ -391,9 +397,10 @@
     /* 跨文档 View Transition / 预渲染时，脚本可能在 URL 的 query 稳定之前就跑完；
        pageshow 与 load 后再补一次选中，保证从组织页带 ?person= 进来一定落到对应人物 */
     window.addEventListener('pageshow', fromHash);
-    window.addEventListener('load', function () {
+    function onLoadRecheck() {
         window.setTimeout(fromHash, 60);
-    });
+    }
+    window.addEventListener('load', onLoadRecheck);
 
     /* 首次进入：有 ?person= / #身份编号 就选中，没有就显示空白态；都不滚动页面 */
     fromHash();
@@ -402,6 +409,8 @@
         window.__sssPageCleanup.add('personnel', function () {
             window.removeEventListener('hashchange', fromHash);
             window.removeEventListener('popstate', fromHash);
+            window.removeEventListener('pageshow', fromHash);
+            window.removeEventListener('load', onLoadRecheck);
         });
     }
 })();

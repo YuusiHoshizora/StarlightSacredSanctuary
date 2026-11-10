@@ -618,7 +618,9 @@ function main() {
         let dirty = 0;
         for (const out of outputs) {
             const abs = path.join(JS_DIR, out.file);
-            const current = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8') : null;
+            // 工作区是 CRLF、生成物是 LF（core.autocrlf）。只在比较时归一化，
+            // 否则 Windows 上「内容没变」也会被判成不一致。
+            const current = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n') : null;
             if (current !== out.text) {
                 dirty += 1;
                 console.error(`✗ assets/data/${out.file} 与 data/ 下的 CSV 不一致`);

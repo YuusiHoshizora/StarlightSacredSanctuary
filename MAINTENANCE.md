@@ -159,8 +159,8 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 ## 档案页左栏名录：与右栏内容同高、下界对齐
 
-人员档案等级页、舰船档案、深空设施档案的版式是「左名录 + 右档案」两栏。
-这 6 个页面（4 个人员等级页 + 舰船 + 深空设施）的 `<body>` 写
+人员档案等级页、舰船档案、深空设施档案、生物档案的版式是「左名录 + 右档案」两栏。
+这 7 个页面（4 个人员等级页 + 舰船 + 深空设施 + 生物）的 `<body>` 写
 `data-archive="split"`：名录与内容装进同一个 `1fr` 网格行、两栏都是 `height: 100%`，
 所以**两栏的上下界严格对齐**，下界以名录这一栏为基准。
 
@@ -191,7 +191,7 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 ### 左栏名录搜索
 
-6 个两栏页的左栏都有搜索框，用来过滤下面的名录：
+7 个两栏页的左栏都有搜索框，用来过滤下面的名录：
 
 - 搜索框在「名录 N」下面，属于 `.xxx-list__head`，**不随名录滚动**；
 - 按名称过滤（中文名 / 英文名 / 拉丁名），匹配是**就地隐藏**不匹配的条目，
@@ -591,8 +591,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 
 - **「关于」页**（`about/index.html`）—— 面向读者的正式说明：授权条款 + 第三方致谢。
   改授权口径以这页为准
-- **每页底部的 `.site-footer`** —— index / main / fleet / tool / archive（含 archive/organization）/ about / error
-  共 8 个页面。
+- **每页底部的 `.site-footer`** —— 除星图页外，全部 35 个页面都有（含档案各子页），文案必须完全一致。
   **星图页刻意不放页脚**（整屏地图要沉浸感，页脚 HTML 里留了注释说明）；
   样式在 `assets/css/global.css` 的 `.site-footer`。
   **所有页脚（除星图）必须保持完全相同的文案**：包括「关于本站」这一节；
@@ -600,7 +599,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
   否则窄屏换行时那一页会少一行、页脚高度和其它页对不上。不要单独删某页的页脚链接。
 - 仓库根目录 **`LICENSE`** —— 协议全文 + 不在授权范围内的内容说明
 - **`README.md`** 的「授权与致谢」
-- **版权年份**：起始年 **2025**（域名注册那年）写死在 7 个页脚与「关于」页授权列表的
+- **版权年份**：起始年 **2025**（域名注册那年）写死在 35 个页脚与「关于」页授权列表的
   `<span class="copyright-years" data-since="2025">` 里，**结束年由 `assets/js/seamless.js` 末尾那段自动改成当年**。
   另外 `LICENSE` 的 `Copyright (c)` 行和 `README.md` 里的年份是纯文本、**不会自动更新**，跨年时要手动改这两处
 
@@ -609,7 +608,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 1. `<head>` 里加加载屏三件套：那段内联判断脚本 + `<link ... boot.css>` + `<script defer ... boot.js>`
    （路径按页面深度调整），`<body>` 开头放一个空的 `<div class="boot" id="boot"></div>`
 2. `<head>` 里加站点图标：`<link rel="icon" type="image/svg+xml" href="…/assets/img/logo_SSS.svg">`
-   （根目录页 `assets/img/…`、子目录页 `../assets/img/…`、`error.html` 用绝对路径 `/assets/img/…`）
+   （根目录页 `assets/img/…`、子目录页 `../assets/img/…`、`404.html` 用绝对路径 `/assets/img/…`）
 3. 导航栏 logo：`<span class="logo__mark" aria-hidden="true"></span>` 放在「星光圣域」前面
    （它是个 CSS mask，颜色自动跟随文字，不用管图本身是什么颜色）
 4. 导航栏的 `<nav id="site-nav">` 里加链接（注意各页相对路径不同：根目录页用 `about/`，子目录页用 `../about/`，
@@ -658,13 +657,13 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 
 ### 窄屏导航折叠（`assets/js/navtoggle.js`）
 
-≤768px 时 6 个链接会跟 logo 挤在同一行，所以窄屏把它们收进一块从栏下缘铺到屏底的面板。
+≤768px 时 5 个链接会跟 logo 挤在同一行，所以窄屏把它们收进一块从栏下缘铺到屏底的面板。
 结构（每页都要有，见「加新页面时」第 4、5 条）：
 
 ```html
 <header class="navbar">
     <div class="logo">…</div>
-    <nav id="site-nav">…6 条链接…</nav>
+    <nav id="site-nav">…5 条链接…</nav>
     <button class="navbar__toggle" type="button" aria-label="导航菜单"
             aria-controls="site-nav" aria-expanded="false">
         <span class="navbar__toggle__bars" aria-hidden="true"></span>

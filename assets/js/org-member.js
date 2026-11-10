@@ -95,4 +95,16 @@
             show(msgFor(el));
         });
     }
+
+    /* 提示条挂在 <body> 上，站内换页只换 <main> 与页脚，不清理会把它留在下一页。
+       换页前收起并移除（计时器一起清掉）。 */
+    if (window.__sssPageCleanup) {
+        window.__sssPageCleanup.add('org-member', function () {
+            window.clearTimeout(timer);
+            timer = 0;
+            if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+            toast = null;
+            textNode = null;
+        });
+    }
 })();

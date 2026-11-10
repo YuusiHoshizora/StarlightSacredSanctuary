@@ -1187,6 +1187,13 @@ body[data-mainpage] .blog-card:hover {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
+body[data-mainpage] .blog-card:focus-visible {
+    outline: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 215, 0, 0.45);
+    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.45), 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
 body[data-mainpage] .blog-card::after {
     content: none;
 }

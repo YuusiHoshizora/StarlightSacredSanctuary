@@ -192,7 +192,7 @@
 
             <!-- 文章视图（Markdown 渲染后展示） -->
             <div class="article-view" id="article-view">
-                <button class="back-btn" id="back-btn">
+                <button class="back-btn" id="back-btn" type="button">
                     <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9.5 3L5 8l4.5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -210,8 +210,8 @@
                 <div class="calendar-header">
                     <span class="year-month" id="cal-year-month"></span>
                     <div class="nav-arrows">
-                        <button class="nav-arrow" id="cal-prev">‹</button>
-                        <button class="nav-arrow" id="cal-next">›</button>
+                        <button class="nav-arrow" id="cal-prev" type="button">‹</button>
+                        <button class="nav-arrow" id="cal-next" type="button">›</button>
                     </div>
                 </div>
                 <div class="calendar-grid" id="cal-grid">
@@ -644,6 +644,8 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                 var card = document.createElement('article');
                 card.className = 'blog-card';
                 card.setAttribute('data-md-src', postDir + filename);
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
                 card.innerHTML =
                     '<div class="blog-title"></div>' +
                     '<div class="blog-meta">' +
@@ -761,6 +763,14 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                 console.warn('无法获取摘要:', src, err);
             });
         }
+    });
+
+    document.getElementById('blog-list').addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+        var card = e.target.closest('.blog-card');
+        if (!card) return;
+        e.preventDefault();
+        card.click();
     });
 
     // 同时让卡片点击时也使用缓存 fetch，减少重复请求

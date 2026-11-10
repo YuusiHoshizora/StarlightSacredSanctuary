@@ -1,7 +1,7 @@
 ﻿facility,parent,name,en,meta,note,desc
 helios,,行星分解采集器,Planetary Deconstructor and Harvester,,,能够利用功率极高的激光切割行星上的任何物质，将其转化为标准大小的方块，并输送到下一个设施中。根据估算，只需要30个周期便能将维斯佩拉第5行星彻底分解。
-helios,,物质重构器,Substances Reconstructer,,,负责将被行星分解采集器所收集的物质转化为一种特殊的物质碎星（Broken Stars），且星光圣域目前无法在利用其它设施制造此物质。其由DSRCPSys发现，并将其广泛运用在“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰的制造上。
-helios,,全智能生产线,Fully Intelligent Prodiction Line,,,是由DSRCPSys所自我迭代、设计完成的生产线，能够在碎星供应充足的情况下源源不断地生产“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰，并根据实时数据将其派遣到最为合适的位置。虽说如此，星光圣域目前尚未将两者投入实战之中，目前仅作为FIPF的护卫舰队存在。
+helios,,物质重构器,Substances Reconstructer,,,负责将被行星分解采集器所收集的物质转化为一种特殊的物质碎星（Broken Stars），且星光圣域目前无法再利用其它设施制造此物质。其由DSRCPSys发现，并将其广泛运用在“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰的制造上。
+helios,,全智能生产线,Fully Intelligent Production Line,,,是由DSRCPSys所自我迭代、设计完成的生产线，能够在碎星供应充足的情况下源源不断地生产“伊利亚特”级智能战列舰和“奥罗拉”级智能战列巡洋舰，并根据实时数据将其派遣到最为合适的位置。虽说如此，星光圣域目前尚未将两者投入实战之中，目前仅作为FIPF的护卫舰队存在。
 helios,,行星锚定器,Planet Anchoring Device,,,是FIPF最为庞大的配件，其由三个圆环组成，能够将整颗行星包裹其中，并动态调整大小，从而能够便利地完成对行星的分解。同时，其还能维持FIPF在次宇宙内的稳定，收集星能。
 helios,,深空资源统筹规划系统,Deep-Space Resource Coordination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DSRCPSys）。
 occasus,,广域星能收集器,Wide-Range Star Energy Collector,,,能够收集一整个星系内部的星能，从而为残阳号的各武器设备提供充足的能量，并同时干扰星系内的时空，让残阳号的被侦测范围大大缩小。
@@ -9,7 +9,7 @@ occasus,,极远距离跳跃设备,Deep-Space Ultralong-Range Jump Device,,,能�
 occasus,,战略精准狙击光矛系统,Strategic Precision Lance System,,,由主发射器与环绕在其旁的96个小型供能单元共同组成，能够借助次宇宙在通常宇宙1分钟内精准狙击位于通常宇宙25光年内的目标，精度为±5千米。不过，其在狙击前需要进行至多5分钟的充能，在狙击后需要进行至多3分钟的散热，在充能及散热期间ADSO无法进行其它需要高星能的行动。
 occasus,,战术定向干扰系统,Tactical Directional Jamming System,,,由3个干扰器共同组成，能够在通常宇宙中持续定向干扰至远4光年外的敌舰舰队。其需能较少，不需要星能供给，但在不提供额外散热的情况下每次只能至多运作1个周期。
 occasus,,深空资源统筹规划系统,Deep-Space Resource Coordination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（深空资源统筹规划系统）。
-veritas,,主体星环设施,Main Orbital Ring Facilitiy,,,"是通用研究星环的主体，能够在99%行星的同步轨道上进行固定，并为其他的分段提供安装节点。
+veritas,,主体星环设施,Main Orbital Ring Facility,,,"是通用研究星环的主体，能够在99%行星的同步轨道上进行固定，并为其他的分段提供安装节点。
 由于行星的直径不同，各星环的主体星环设施尺寸也不相同，其上所能拥有的安装节点数量也有所不同。“真理”号是模板星环，其上安装了所有通用性较强的配件，作为其他星环的安装模板。"
 veritas,,分段,,,,是一个统称，依照用途分为不同的具体段。详情见下方。
 veritas,分段,管理段,,占用安装节点数：1,,"是通用研究星环的核心，负责管理该星环所有分段，并能够储存部分数据。
@@ -18,25 +18,25 @@ veritas,分段,解析段,,占用安装节点数：1,,"是通用研究星环最�
 一般来说，所有星环都需要安装解析段。"
 veritas,分段,扫描段,,占用安装节点数：1,,"是通用研究星环用于对行星资源进行扫描的分段，只要是星光圣域需要的资源，都能够通过扫描进行锁定。
 视行星体积，完成整颗行星的扫描需要10个周期到360个周期。"
-veritas,分段,防御段,,占用安装节点数：2,,"是通用研究星环用于防范外界攻击的分段，无论是从行星表面（星环内侧）还是深空（星环外侧）都的攻击，都在防御段的防御范围之内。
+veritas,分段,防御段,,占用安装节点数：2,,"是通用研究星环用于防范外界攻击的分段，无论是从行星表面（星环内侧）还是深空（星环外侧）发起的攻击，都在防御段的防御范围之内。
 如果有需要的话，可以安装复数的防御段进行防御。在这种情况下，通常会将该星环作为星光圣域防御线的一部分。"
 veritas,分段,居住段,,占用安装节点数：1,,"是通用研究星环为研究员提供居住环境的分段，能够容纳上千人，并为他们提供所有必备的生活设施。
 如果没有长期居住或大量居住情况的话，管理段能够满足50人的需求。"
 veritas,分段,采集段,,占用安装节点数：1,,是通用研究星环用于采集该行星资源的分段，能够控制采矿无人机进行采集，也能够部署机器人进行生物质收集。
 veritas,分段,加工段,,占用安装节点数：1,,是通用研究星环用于加工并生产产品的分段，
 eternity,,极高速计算中心,Extremely High-speed Computing Center,,,是大型服务器的核心，能够以难以想象的运算速度进行计算，从而使其能够处理星光圣域乃至全宇宙的所有数据流，并提取其中的关键信息。
-eternity,,次宇宙局部稳定器,Subuniverse Partial Stabilizer,,,是SSSMS能够在次宇宙中进行运算的重要部分，其能够利用次宇宙内的星能进行对次宇宙的稳定，从而保证极高速计算中心的运算能够正常运行。
+eternity,,次宇宙局部稳定器,Subuniverse Partial Stabilizer,,,是SSSMS能够在次宇宙中进行运算的重要部分，其能够利用次宇宙内的星能对次宇宙进行稳定，从而保证极高速计算中心的运算能够正常运行。
 eternity,,次宇宙数据传输设备,Subuniverse Data Transfer Module,,,是SSSMS与STRF进行联系的重要设备。尽管次宇宙中有强烈的干扰，但星光圣域高级加密链路仍能够保证数据的安全传输。
-eternity,次宇宙数据传输设备,数据统筹规划系统,Data Coodination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DCPSys）。
+eternity,次宇宙数据传输设备,数据统筹规划系统,Data Coordination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DCPSys）。
 eternity,次宇宙数据传输设备,深空资源统筹规划系统,Deep-Space Resource Coordination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DSRCPSys）。
 eternallight,,极高速计算中心,Extremely High-speed Computing Center,,,是大型服务器的核心，能够以难以想象的运算速度进行计算，从而使其能够处理星光圣域乃至全宇宙的所有数据流，并提取其中的关键信息。
 eternallight,,次宇宙局部稳定器,Subuniverse Partial Stabilizer,,,位于STRF的中心，能够利用次宇宙中的星能稳定一部分的次宇宙，从而让极高速计算中心能够进行正确的计算。同时，其还能阻止次宇宙中的异常靠近STRF，让STRF不需要进行防御，从而让尽可能多的能量集中于数据计算中。
 eternallight,,通常宇宙 - 次宇宙数据传输设备,Prime-Subuniverse Data Transfer Module,,,是STRF与星光圣域进行联系的主要设备，其能够借助星光圣域高级加密链路将数据安全地在通常宇宙与次宇宙之间进行传输，同时能够将误码率降低至0，从而极大地减少数据传输的成本。
-eternallight,,数据统筹规划系统,Data Coodination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DCPSys）。
+eternallight,,数据统筹规划系统,Data Coordination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DCPSys）。
 eternallight,,深空资源统筹规划系统,Deep-Space Resource Coordination and Planning System,,,可参见《星光圣域非生物智慧体介绍》（DSRCPSys）。
 allseeingeye,,极高精度星能波动监测器,Ultra-Precise Star Energy Fluctuation Monitor,,,是星光圣域对极远距离侦测的一个实验型装置。尽管星能在宇宙中处处相等，但在进行星能转换时，还是会在极短时间内产生极其微小的波动。目前，全人类只有星光圣域的极高精度星能波动监测器能够跨越数百光年监测波动。而且，监测瞬间同步，能够超越光速的限制。但需要注意的是，其他势力对星能的利用程度极低，此装置往往无法观测到非星光圣域舰队。
-allseeingeye,,极高精度光学观测器,Untra-Precise Optical Observer,,,是星光圣域对极远距离侦测的一个装置。尽管其受到光速的严重限制，且无法侦测到超光速物体，但在对深空的观测方面发挥着重大的作用。同时，部分亚光速舰船也能够被其侦测到，作为一道可有可无的保险。
-allseeingeye,,极高精度空间波动监测器,Untra-Precise Space Fluctuation Monitor,,,是星光圣域对极远距离进行侦测的一个装置。空间波动能够以数百倍光速传播，对于目前的人类来说，这是暂时难以逾越的速度极限。在星光圣域的预估之中，在未来的三十年内，人类在通常宇宙内的产光速航行都无法达到百倍光速。
+allseeingeye,,极高精度光学观测器,Ultra-Precise Optical Observer,,,是星光圣域对极远距离侦测的一个装置。尽管其受到光速的严重限制，且无法侦测到超光速物体，但在对深空的观测方面发挥着重大的作用。同时，部分亚光速舰船也能够被其侦测到，作为一道可有可无的保险。
+allseeingeye,,极高精度空间波动监测器,Ultra-Precise Space Fluctuation Monitor,,,是星光圣域对极远距离进行侦测的一个装置。空间波动能够以数百倍光速传播，对于目前的人类来说，这是暂时难以逾越的速度极限。在星光圣域的预估之中，在未来的三十年内，人类在通常宇宙内的亚光速航行都无法达到百倍光速。
 allseeingeye,,高精度次宇宙光学观测器,High-Precise Subuniverse,,,是星光圣域用于防卫可能存在于次宇宙中的异常所特别设计的装置。除了常规的天文观测外，还能以极高速率进行环视，从而保证所有异常在进入远距离警戒范围后发出警告。
 hourglass,,脉冲星干涉器,,,,
 p304,,标准灯塔系统接口,,,,

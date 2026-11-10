@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     站点 URL 契约自检 —— 迁移到 Cloudflare 前后都用它。
 
@@ -94,7 +94,7 @@ Test-Path-Code '/archive/vessel/' @(200) '舰船档案页'
 Test-Path-Code '/tool/'       @(200) '工具页'
 Test-Path-Code '/tool/starmap/' @(200) '星图页'
 Test-Path-Code '/fleet/'      @(200) '舰队页'
-Test-Path-Code '/error'       @(200) '错误页（去扩展名）'
+Test-Path-Code '/404.html'    @(200) '错误页（404.html）'
 Test-Path-Code '/sw.js'       @(200) 'Service Worker'
 Test-Path-Code '/assets/post/index.json' @(200) '文章索引'
 

@@ -769,6 +769,13 @@
             }
         });
 
+        /* role="button" 的 <a> 原生只认 Enter；空格键按约定也必须能激活 */
+        btn.addEventListener('keydown', function (e) {
+            if (e.key !== ' ' && e.key !== 'Spacebar') return;
+            e.preventDefault();
+            btn.click();
+        });
+
         audio.addEventListener('play', sync);
         audio.addEventListener('pause', sync);
         audio.addEventListener('ended', sync);
@@ -1237,6 +1244,13 @@
             } else {
                 audio.pause();
             }
+        });
+
+        /* role="button" 的 <a> 原生只认 Enter；空格键按约定也必须能激活 */
+        btn.addEventListener('keydown', function (e) {
+            if (e.key !== ' ' && e.key !== 'Spacebar') return;
+            e.preventDefault();
+            btn.click();
         });
 
         audio.addEventListener('play', sync);
