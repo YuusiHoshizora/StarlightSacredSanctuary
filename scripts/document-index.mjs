@@ -1,18 +1,20 @@
 /* =============================================================================
- * document-index.mjs — 文件档案：扫描 assets/document/ 生成页面数据
+ * document-index.mjs — 文件档案 / 未归类档案：扫描源目录生成页面数据
  * -----------------------------------------------------------------------------
- * 文件档案的「来源」只有一处：assets/document/。目录结构就是来源：
+ * 两个档案页共用这一套：来源目录写法完全相同，只是目录和数据文件不同。
  *
- *   assets/document/<来源>/<文件名>.<扩展名>
- *   assets/document/<来源>/<文件名>.<扩展名>.meta.json   （可选，覆盖标题 / 日期 / 摘要等）
+ *   文件档案     assets/document/<来源>/<文件名>.<扩展名>
+ *   未归类档案   assets/uncategorized/<来源>/<文件名>.<扩展名>
  *
+ * 同目录可放 <文件名>.<扩展名>.meta.json（可选，覆盖标题 / 日期 / 摘要等）。
  * 分类只看扩展名（.md → 文档、.png/.jpg… → 图像、音频、视频，其余进「其他」），
- * 所以加文件只需要丢进这个目录，然后跑一次：
+ * 所以加文件只需要丢进目录，然后跑一次：
  *
- *   node scripts/document-index.mjs           # 重建 assets/data/document.js
+ *   node scripts/document-index.mjs           # 重建两个数据文件
  *   node scripts/document-index.mjs --check   # 只检查是否最新（CI 用）
  *
- * 生成物是 assets/data/document.js（window.SSS_DOCUMENT），页面直接读它；
+ * 生成物：assets/data/document.js（window.SSS_DOCUMENT）与
+ *         assets/data/uncategorized.js（window.SSS_UNCATEGORIZED）。
  * 推送到 master 时 .github/workflows/document-index.yml 会自动跑并提交结果。
  *
  * 元数据 sidecar（全部可选）：
@@ -26,10 +28,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const SRC_REL = 'assets/document';
-const SRC = path.join(ROOT, SRC_REL);
-const OUT = path.join(ROOT, 'assets', 'data', 'document.js');
 const CHECK = process.argv.includes('--check');
+
+const COLLECTIONS = [
+    {
+        key: 'document',
+        label: '文件档案',
+        srcRel: 'assets/document',
+        outRel: 'assets/data/document.js',
+        globalName: 'SSS_DOCUMENT'
+    },
+    {
+        key: 'uncategorized',
+        label: '未归类档案',
+        srcRel: 'assets/uncategorized',
+        outRel: 'assets/data/uncategorized.js',
+        globalName: 'SSS_UNCATEGORIZED'
+    }
+];
 
 const KIND_ORDER = ['image', 'document', 'audio', 'video', 'other'];
 const PREFIX = { image: 'IMG', document: 'DOC', audio: 'AUD', video: 'VID', other: 'FIL' };
@@ -68,8 +84,8 @@ function walk(dir, rel) {
 
 /* ------------------------------- 元数据 ------------------------------- */
 
-function readMeta(rel) {
-    const metaPath = path.join(SRC, ...rel.split('/')) + '.meta.json';
+function readMeta(src, rel) {
+    const metaPath = path.join(src, ...rel.split('/')) + '.meta.json';
     if (!fs.existsSync(metaPath)) return {};
     let text;
     try {
@@ -220,20 +236,22 @@ function wavDuration(file) {
 
 /* ------------------------------- 生成记录 ------------------------------- */
 
-function build() {
-    if (!fs.existsSync(SRC)) {
-        console.error('[document] 找不到目录：' + SRC_REL);
+function build(collection) {
+    const srcRel = collection.srcRel;
+    const src = path.join(ROOT, srcRel);
+    if (!fs.existsSync(src)) {
+        console.error('[' + collection.key + '] 找不到目录：' + srcRel);
         process.exit(1);
     }
 
-    const files = walk(SRC, '').sort();
+    const files = walk(src, '').sort();
     const usedIds = Object.create(null);
     const counters = Object.create(null);
     const records = [];
 
     for (const rel of files) {
         const ext = (path.extname(rel).slice(1) || '').toLowerCase();
-        const meta = readMeta(rel);
+        const meta = readMeta(src, rel);
         let kind = EXT_KIND[ext] || 'other';
         if (meta.kind) {
             if (KIND_ORDER.indexOf(meta.kind) < 0) {
@@ -241,7 +259,7 @@ function build() {
             }
             kind = meta.kind;
         }
-        const abs = path.join(SRC, ...rel.split('/'));
+        const abs = path.join(src, ...rel.split('/'));
         const stat = fs.statSync(abs);
         const size = stat.size;
 
@@ -282,7 +300,7 @@ function build() {
         records.push({
             id: id,
             file: rel,
-            url: SRC_REL + '/' + rel.split('/').map(encodeURIComponent).join('/'),
+            url: rel.split('/').map(encodeURIComponent).join('/'),
             kind: kind,
             ext: ext,
             title: meta.title ? String(meta.title) : baseTitle(rel),
@@ -310,46 +328,52 @@ function build() {
     });
 
     const header = `/* =============================================================================
- * 文件档案数据 —— 星光圣域
+ * ${collection.label}数据 —— 星光圣域
  * -----------------------------------------------------------------------------
- * ⚠️ 生成文件：由 \`node scripts/document-index.mjs\` 扫描 assets/document/ 生成。
+ * ⚠️ 生成文件：由 \`node scripts/document-index.mjs\` 扫描 ${srcRel}/ 生成。
  *   不要直接改这里 —— 加 / 删 / 改文件后重跑脚本（GitHub Actions 也会跑）。
- *   目录结构、sidecar 元数据写法见 MAINTENANCE.md 的「文件档案」。
+ *   目录结构、sidecar 元数据写法见 MAINTENANCE.md 的「文件档案 / 未归类档案」。
  * ========================================================================== */
 `;
 
-    const text = header + 'window.SSS_DOCUMENT = ' + JSON.stringify({ records: records }, null, 2) + ';\n';
-    return { text: text, records: records };
+    const text = header + 'window.' + collection.globalName + ' = ' + JSON.stringify({ records: records }, null, 2) + ';\n';
+    return { text: text, records: records, collection: collection };
 }
 
 /* ------------------------------- 主流程 ------------------------------- */
 
-let result;
-try {
-    result = build();
-} catch (err) {
-    console.error('[document] ' + err.message);
-    process.exit(1);
-}
-
-const exists = fs.existsSync(OUT);
-const old = exists ? fs.readFileSync(OUT, 'utf8').replace(/\r\n/g, '\n') : '';
+const results = COLLECTIONS.map(function (collection) {
+    try {
+        return build(collection);
+    } catch (err) {
+        console.error('[' + collection.key + '] ' + err.message);
+        process.exit(1);
+    }
+});
 
 if (CHECK) {
-    if (old === result.text) {
-        console.log('[document] 已是最新（' + result.records.length + ' 条）');
-        process.exit(0);
-    }
-    console.error('[document] assets/data/document.js 不是最新，请运行 node scripts/document-index.mjs');
-    process.exit(1);
+    let stale = false;
+    results.forEach(function (result) {
+        const out = path.join(ROOT, result.collection.outRel);
+        const old = fs.existsSync(out) ? fs.readFileSync(out, 'utf8').replace(/\r\n/g, '\n') : '';
+        if (old === result.text) {
+            console.log('[' + result.collection.key + '] 已是最新（' + result.records.length + ' 条）');
+        } else {
+            console.error('[' + result.collection.key + '] ' + result.collection.outRel + ' 不是最新，请运行 node scripts/document-index.mjs');
+            stale = true;
+        }
+    });
+    process.exit(stale ? 1 : 0);
 }
 
-fs.writeFileSync(OUT, result.text, 'utf8');
+results.forEach(function (result) {
+    fs.writeFileSync(path.join(ROOT, result.collection.outRel), result.text, 'utf8');
 
-const counts = Object.create(null);
-result.records.forEach(function (r) { counts[r.kind] = (counts[r.kind] || 0) + 1; });
-console.log('[document] 扫描 ' + SRC_REL + '：' + result.records.length + ' 条');
-KIND_ORDER.forEach(function (k) {
-    if (counts[k]) console.log('  ' + k + ': ' + counts[k]);
+    const counts = Object.create(null);
+    result.records.forEach(function (r) { counts[r.kind] = (counts[r.kind] || 0) + 1; });
+    console.log('[' + result.collection.key + '] 扫描 ' + result.collection.srcRel + '：' + result.records.length + ' 条');
+    KIND_ORDER.forEach(function (k) {
+        if (counts[k]) console.log('  ' + k + ': ' + counts[k]);
+    });
+    console.log('[' + result.collection.key + '] 写入 ' + result.collection.outRel);
 });
-console.log('[document] 写入 assets/data/document.js');

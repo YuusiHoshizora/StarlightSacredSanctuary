@@ -52,6 +52,7 @@
 ├── archive/biology/template.html 生物档案页模板（左栏分类名录 + 右栏条目档案；头像在概要右侧，无图显示 No/Info）
 ├── archive/document/index.html   文件档案（记录由 assets/document/ 扫描生成；右栏只留预览，信息收在「详情」面板）
 ├── archive/document/template.html 文件档案页模板（四种载体各一条示例记录；内部模板，不公开）
+├── archive/uncategorized/index.html 未归类档案（与文件档案同构；记录由 assets/uncategorized/ 扫描生成）
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
@@ -103,10 +104,12 @@
 │   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
 │   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
 │   │   ├── starmap-data.js     星系数据（STARMAP_DATA）
-│   │   └── document.js         文件档案数据（扫描 assets/document/ 生成；目录结构 = 来源，按扩展名分类）
+│   │   ├── document.js         文件档案数据（扫描 assets/document/ 生成；目录结构 = 来源，按扩展名分类）
+│   │   └── uncategorized.js    未归类档案数据（扫描 assets/uncategorized/ 生成；同一套规则）
 │   │
 │   ├── document/               文件档案的唯一来源：<来源>/<文件名>.<扩展名> + 可选 .meta.json sidecar
 │   │                           加 / 删文件后跑 `node scripts/document-index.mjs`
+│   ├── uncategorized/          未归类档案的唯一来源（同一套目录规则；空目录也可以）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
@@ -153,16 +156,17 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 - 推送到 master 且改到 `data/**` 时，GitHub Actions 会自动 build 并提交生成结果
   （连同 `sw.js` 的 CACHE_VERSION），本地忘了跑也不会漏
 
-文件档案不是 CSV：源文件就在 `assets/document/`，`assets/data/document.js` 由
-`scripts/document-index.mjs` 扫描生成（目录结构 = 来源、按扩展名分类，详见后面的
-「文件档案」）。加 / 删 / 改名 / 改 sidecar 之后跑：
+文件档案 / 未归类档案不是 CSV：源文件分别在 `assets/document/` 与 `assets/uncategorized/`，
+`assets/data/document.js` / `assets/data/uncategorized.js` 由 `scripts/document-index.mjs`
+扫描生成（目录结构 = 来源、按扩展名分类，详见后面的「文件档案 / 未归类档案」）。
+加 / 删 / 改名 / 改 sidecar 之后跑：
 
 ```bash
-node scripts/document-index.mjs           # assets/document/ → assets/data/document.js
+node scripts/document-index.mjs           # 两个来源目录 → 两个数据文件
 node scripts/document-index.mjs --check   # 只校验是否最新，不写文件
 ```
 
-推送到 master 且改到 `assets/document/**` 时，`.github/workflows/document-index.yml`
+推送到 master 且改到这两个来源目录时，`.github/workflows/document-index.yml`
 会自动重建并提交结果。
 - 每列的含义、子表（配件 / 装备 / 组织）怎么挂、加一条数据要动哪几个文件，
   全部写在 [data/README.md](data/README.md)，这里不重复
@@ -458,6 +462,24 @@ node scripts/document-index.mjs --check   # 只校验是否最新
 - ⚠️ `.org-block p` 会把自己的字号 / 行高 / 颜色压到预览区的说明行与读数上：
   `.doc-media__caption`、`.doc-player__times`、`.doc-media__empty-text` 都带
   `.document-profile .org-block` 前缀，改这些样式时别把前缀删掉
+
+### 未归类档案
+
+与文件档案几乎完全一致，只是换了一套源目录 / 数据 / 页面，版式与脚本共用：
+
+| 项目 | 文件档案 | 未归类档案 |
+| --- | --- | --- |
+| 页面 | `archive/document/index.html` | `archive/uncategorized/index.html` |
+| 来源 | `assets/document/<来源>/` | `assets/uncategorized/<来源>/` |
+| 数据 | `assets/data/document.js`（`SSS_DOCUMENT`） | `assets/data/uncategorized.js`（`SSS_UNCATEGORIZED`） |
+| 样式 / 脚本 | `assets/css/archive/document.css` + `assets/js/document.js` | 同一套 |
+
+- 页面在 `.document-layout` 上用 `data-archive-base` / `data-archive-data` 告诉共享脚本
+  从哪个目录取素材、读哪个全局；`template.html`（静态版式参考）没有这两项，脚本按静态模式跑
+- **空桶是合法的**：还没有文件时左栏 5 个分组都显示「待收录」，右栏 NO / INFO；
+  把文件放进 `assets/uncategorized/<来源>/` 再跑脚本就会自动出现
+- 编号、sidecar、分类规则与文件档案完全相同（各自从 `IMG-0001` / `DOC-0001` 开始）
+- `.assetsignore` 里 `_README.md` 与 sidecar 都不发布；索引脚本一次重建两个数据文件
 
 ---
 

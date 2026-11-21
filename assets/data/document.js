@@ -3,14 +3,14 @@
  * -----------------------------------------------------------------------------
  * ⚠️ 生成文件：由 `node scripts/document-index.mjs` 扫描 assets/document/ 生成。
  *   不要直接改这里 —— 加 / 删 / 改文件后重跑脚本（GitHub Actions 也会跑）。
- *   目录结构、sidecar 元数据写法见 MAINTENANCE.md 的「文件档案」。
+ *   目录结构、sidecar 元数据写法见 MAINTENANCE.md 的「文件档案 / 未归类档案」。
  * ========================================================================== */
 window.SSS_DOCUMENT = {
   "records": [
     {
       "id": "北落师门第三行星-veridica",
       "file": "北落师门第三行星/veridica.png",
-      "url": "assets/document/%E5%8C%97%E8%90%BD%E5%B8%88%E9%97%A8%E7%AC%AC%E4%B8%89%E8%A1%8C%E6%98%9F/veridica.png",
+      "url": "%E5%8C%97%E8%90%BD%E5%B8%88%E9%97%A8%E7%AC%AC%E4%B8%89%E8%A1%8C%E6%98%9F/veridica.png",
       "kind": "image",
       "ext": "png",
       "title": "真理花观测图",
@@ -31,7 +31,7 @@ window.SSS_DOCUMENT = {
     {
       "id": "希望号-hopeship-mission",
       "file": "希望号/hopeship-mission.md",
-      "url": "assets/document/%E5%B8%8C%E6%9C%9B%E5%8F%B7/hopeship-mission.md",
+      "url": "%E5%B8%8C%E6%9C%9B%E5%8F%B7/hopeship-mission.md",
       "kind": "document",
       "ext": "md",
       "title": "希望号任务",

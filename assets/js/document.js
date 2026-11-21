@@ -21,7 +21,9 @@
     var root = document.querySelector('.document-layout');
     if (!root) return;
 
-    var BASE = '../../assets/document/';
+    var BASE = root.getAttribute('data-archive-base') || '../../assets/document/';
+    if (BASE.slice(-1) !== '/') BASE += '/';
+    var DATA_GLOBAL = root.getAttribute('data-archive-data') || 'SSS_DOCUMENT';
     var listEl = root.querySelector('[data-doc-list]');
     var scrollEl = root.querySelector('.document-list__scroll');
     var countEl = root.querySelector('[data-doc-count]');
@@ -38,8 +40,8 @@
         other: { label: '其他', en: 'Other', tag: 'FIL', panel: '预览', panelEn: 'Preview' }
     };
 
-    var records = (window.SSS_DOCUMENT && Array.isArray(window.SSS_DOCUMENT.records))
-        ? window.SSS_DOCUMENT.records
+    var records = (window[DATA_GLOBAL] && Array.isArray(window[DATA_GLOBAL].records))
+        ? window[DATA_GLOBAL].records
         : null;
 
     function refresh() {
@@ -64,7 +66,7 @@
     }
 
     function dataUrl(rec) {
-        return BASE + rec.url.replace(/^assets\/document\//, '');
+        return BASE + rec.url;
     }
 
     function typeText(rec) {

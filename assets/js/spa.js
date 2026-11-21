@@ -56,6 +56,7 @@
         '/archive/organization/tas': true,
         '/archive/biology': true,
         '/archive/document': true,
+        '/archive/uncategorized': true,
         '/archive/personnel': true,
         '/archive/personnel/sam': true,
         '/archive/personnel/sfm': true,
