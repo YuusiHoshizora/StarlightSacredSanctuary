@@ -110,9 +110,11 @@
     <script defer src="../../assets/js/archive-scroll.js"></script>
     <!-- 左栏名录搜索：按名称过滤（外观与交互照星图搜索） -->
     <script defer src="../../assets/js/archive-list-search.js"></script>
+    <!-- 文件数据库：由 scripts/document-index.mjs 扫描 assets/document/ 生成，别手改 -->
+    <script defer src="../../assets/data/document.js"></script>
     <!-- Markdown 渲染（主页面同款，marked v9.1.6） -->
     <script defer src="../../assets/js/marked.min.js"></script>
-    <!-- 文件档案页：搜索 / 选中 / 深链 / 详情面板 / .md 渲染 / 音轨播放条 -->
+    <!-- 文件档案页：读取数据 → 渲染名录 / 档案 / 详情面板，再接搜索、深链、.md、音轨 -->
     <script defer src="../../assets/js/document.js"></script>
     <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
@@ -168,11 +170,14 @@
 
     <main>
         <!-- ══ 文件档案 ══
-             左栏文件名录（按载体分组）+ 右栏选中文件的档案。
-             右栏只保留预览；文件信息 / 摘要 / 备注收在右上角「详情」面板里。
-             新增记录：左栏一个 .document-list__item（href / data-id 同代号）
-             + 右栏一份 .document-profile（id 同代号）；.md 文档用
-             [data-doc-md][data-src] 交给 document.js 渲染（与主页面同一套 .markdown-body）。 -->
+             页面本身不写死任何记录：名录 / 档案 / 预览 / 详情都由 assets/js/document.js
+             读取 assets/data/document.js 后渲染。
+
+             文件放 assets/document/<来源>/<文件名>.<扩展名>，跑：
+               node scripts/document-index.mjs
+             会自动按扩展名归档（.md → 文档、图片 → 图像、音频 / 视频各自一组），
+             来源取第一层目录名；标题 / 日期 / 摘要等写在同目录的
+             <文件名>.<扩展名>.meta.json 里（可选）。详见 MAINTENANCE.md「文件档案」。 -->
         <section class="archive-section document-section">
 
             <nav class="crumb" aria-label="位置">
@@ -192,43 +197,19 @@
 
             <div class="document-layout">
 
-                <!-- ── 左栏：文件名录 ── -->
+                <!-- ── 左栏：文件名录（由 document.js 填充） ── -->
                 <aside class="document-list" aria-label="文件名录">
                     <div class="document-list__head">
-                        <p class="document-list__title">名录 <span>2</span></p>
+                        <p class="document-list__title">名录 <span data-doc-count>0</span></p>
                         <div class="archive-search">
                             <input type="search" class="archive-search__input" placeholder="搜索文件" aria-label="按名称搜索文件" autocomplete="off" spellcheck="false">
                             <p class="archive-search__empty" hidden>没有找到匹配的条目</p>
                         </div>
                     </div>
-                    <div class="document-list__scroll">
-                        <!-- 一个载体一组；其余载体照这个格式往下排 -->
-                        <p class="document-list__group">图像<span class="document-list__group-en">Image</span></p>
-                        <a class="document-list__item" href="#doc-image" data-id="doc-image">
-                            <span class="document-list__tag">IMG</span>
-                            <span class="document-list__name">真理花观测图</span>
-                            <span class="document-list__en">Veridica Observation Image</span>
-                        </a>
-
-                        <p class="document-list__group">文档<span class="document-list__group-en">Document</span></p>
-                        <a class="document-list__item" href="#doc-document" data-id="doc-document">
-                            <span class="document-list__tag">DOC</span>
-                            <span class="document-list__name">希望号任务</span>
-                            <span class="document-list__en">Hopeship Mission</span>
-                        </a>
-
-                        <p class="document-list__group">音频<span class="document-list__group-en">Audio</span></p>
-                        <p class="document-list__empty">待收录</p>
-
-                        <p class="document-list__group">视频<span class="document-list__group-en">Video</span></p>
-                        <p class="document-list__empty">待收录</p>
-
-                        <p class="document-list__group">其他<span class="document-list__group-en">Other</span></p>
-                        <p class="document-list__empty">待收录</p>
-                    </div>
+                    <div class="document-list__scroll" data-doc-list></div>
                 </aside>
 
-                <!-- ── 右栏：选中文件的档案 ── -->
+                <!-- ── 右栏：选中文件的档案（由 document.js 追加） ── -->
                 <div class="document-detail">
 
                     <!-- 未选中任何条目时的空白态；选中后由 document.js 隐藏 -->
@@ -236,159 +217,6 @@
                         <span class="archive-empty__dot" aria-hidden="true"></span>
                         <p class="archive-empty__text">NO / INFO</p>
                     </div>
-
-                    <!-- ══ 图像 ══ -->
-                    <article class="document-profile" id="doc-image">
-                        <header class="document-profile__head">
-                            <div class="document-profile__bar">
-                                <div class="document-profile__heading">
-                                    <p class="document-profile__kicker">图像 / IMAGE · IMG-0001</p>
-                                    <h2 class="document-profile__name">真理花观测图</h2>
-                                    <p class="document-profile__en">Veridica Observation Image</p>
-                                </div>
-                                <button class="doc-info-btn" type="button" aria-expanded="false" aria-controls="doc-image-info" aria-label="查看真理花观测图的文件信息" data-info-toggle>
-                                    <span class="doc-info-btn__icon" aria-hidden="true"></span>
-                                    <span class="doc-info-btn__text">详情</span>
-                                </button>
-                            </div>
-
-                            <!-- 详情面板：默认收起；文件信息在这里，摘要 / 备注也在这里 -->
-                            <div class="doc-info" id="doc-image-info" hidden>
-                                <p class="doc-info__head">文件信息<span class="doc-info__en">File Info</span></p>
-                                <dl class="org-meta">
-                                    <div class="org-meta__row">
-                                        <dt>编号</dt>
-                                        <dd class="doc-mono">IMG-0001</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>类型</dt>
-                                        <dd>图像 · PNG</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>大小</dt>
-                                        <dd class="doc-mono">224 KB</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>尺寸</dt>
-                                        <dd class="doc-mono">512 × 512</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>收录</dt>
-                                        <dd class="doc-mono">A.D. 2026-11-21</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>来源</dt>
-                                        <dd>北落师门第三行星</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>密级</dt>
-                                        <dd>公开</dd>
-                                    </div>
-                                </dl>
-
-                                <section class="doc-info__section">
-                                    <h3 class="doc-info__title">摘要<span class="doc-info__en">Abstract</span></h3>
-                                    <p>真理花的形态记录图，随生物档案「真理花」条目一起保存。</p>
-                                </section>
-                            </div>
-                        </header>
-
-                        <div class="document-profile__body">
-                            <section class="org-block">
-                                <h2 class="org-block__head">预览<span class="org-block__en">Preview</span></h2>
-
-                                <figure class="doc-media doc-media--image">
-                                    <a class="doc-media__open" href="../../assets/img/biology/veridica.png" target="_blank" rel="noopener noreferrer">
-                                        <img class="doc-media__img" src="../../assets/img/biology/veridica.png" alt="真理花观测图（Veridica）" loading="lazy">
-                                    </a>
-                                    <figcaption class="doc-media__caption">
-                                        <span>512 × 512</span>
-                                        <a class="doc-media__link" href="../../assets/img/biology/veridica.png" target="_blank" rel="noopener noreferrer">查看原图 ↗</a>
-                                    </figcaption>
-                                </figure>
-                            </section>
-                        </div>
-                    </article>
-
-                    <!-- ══ 文档（.md，marked 渲染） ══ -->
-                    <article class="document-profile" id="doc-document">
-                        <header class="document-profile__head">
-                            <div class="document-profile__bar">
-                                <div class="document-profile__heading">
-                                    <p class="document-profile__kicker">文档 / DOCUMENT · DOC-0001</p>
-                                    <h2 class="document-profile__name">希望号任务</h2>
-                                    <p class="document-profile__en">Hopeship Mission</p>
-                                </div>
-                                <button class="doc-info-btn" type="button" aria-expanded="false" aria-controls="doc-document-info" aria-label="查看希望号任务的文件信息" data-info-toggle>
-                                    <span class="doc-info-btn__icon" aria-hidden="true"></span>
-                                    <span class="doc-info-btn__text">详情</span>
-                                </button>
-                            </div>
-
-                            <div class="doc-info" id="doc-document-info" hidden>
-                                <p class="doc-info__head">文件信息<span class="doc-info__en">File Info</span></p>
-                                <dl class="org-meta">
-                                    <div class="org-meta__row">
-                                        <dt>编号</dt>
-                                        <dd class="doc-mono">DOC-0001</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>类型</dt>
-                                        <dd>Markdown · .md</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>大小</dt>
-                                        <dd class="doc-mono">604 B</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>行数</dt>
-                                        <dd class="doc-mono">15 行</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>收录</dt>
-                                        <dd class="doc-mono">A.D. 2026-11-21</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>来源</dt>
-                                        <dd>希望号</dd>
-                                    </div>
-                                    <div class="org-meta__row">
-                                        <dt>密级</dt>
-                                        <dd>公开</dd>
-                                    </div>
-                                </dl>
-
-                                <section class="doc-info__section">
-                                    <h3 class="doc-info__title">摘要<span class="doc-info__en">Abstract</span></h3>
-                                    <p>希望号第 IX 代科研舰的航行任务说明。</p>
-                                </section>
-                            </div>
-                        </header>
-
-                        <div class="document-profile__body">
-                            <section class="org-block">
-                                <h2 class="org-block__head">预览<span class="org-block__en">Preview</span></h2>
-
-                                <!-- 原始 .md 由 document.js fetch 后用 marked 渲染进 .doc-md；
-                                     与主页面同一套 .markdown-body 视觉（assets/css/markdown.css）。 -->
-                                <div class="doc-media doc-media--document">
-                                    <div class="doc-sheet">
-                                        <div class="doc-sheet__head">
-                                            <span class="doc-sheet__page">MD · DOC-0001</span>
-                                            <span>MARKDOWN</span>
-                                        </div>
-                                        <article class="doc-md" data-doc-md data-src="../../assets/post/希望号任务.md">
-                                            <p class="doc-md__state">正在读取文档…</p>
-                                        </article>
-                                    </div>
-                                    <p class="doc-media__caption">
-                                        <span>Markdown · 604 B · 15 行</span>
-                                        <a class="doc-media__link" href="../../assets/post/希望号任务.md" target="_blank" rel="noopener noreferrer">打开原件 ↗</a>
-                                    </p>
-                                </div>
-                            </section>
-                        </div>
-                    </article>
 
                 </div>
 

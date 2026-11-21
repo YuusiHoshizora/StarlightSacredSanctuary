@@ -31,6 +31,9 @@ node_modules
 /archive/biology/template.html
 /archive/document/template.html
 
+# —— 文件档案的 sidecar 元数据只是构建输入，页面不读，不必发布 ——
+/assets/document/**/*.meta.json
+
 # —— 数据源与构建脚本：站点只需要 assets/data/*.js（生成物），CSV 不必公开托管 ——
 # ⚠️ 必须带开头的斜杠：写成 `data` 会按 gitignore 语义匹配到任意层级，
 #    把 assets/data/ 也一起排除掉 —— 页面会拿不到数据（实测踩过：数据 JS 全 404）

@@ -50,7 +50,7 @@
 ├── archive/vessel/index.html     舰船档案（按尺寸分类：左栏舰船名录 + 右栏档案，全由数据渲染）
 ├── archive/biology/index.html    生物档案（左栏分类名录 + 右栏条目档案；目前收录真理花）
 ├── archive/biology/template.html 生物档案页模板（左栏分类名录 + 右栏条目档案；头像在概要右侧，无图显示 No/Info）
-├── archive/document/index.html   文件档案（按载体分类：图像 / 文档 / 音频 / 视频；右栏只留预览，信息收在「详情」面板）
+├── archive/document/index.html   文件档案（记录由 assets/document/ 扫描生成；右栏只留预览，信息收在「详情」面板）
 ├── archive/document/template.html 文件档案页模板（四种载体各一条示例记录；内部模板，不公开）
 ├── about/index.html            关于（授权说明与致谢）
 │
@@ -98,11 +98,15 @@
 │   │   ├── starmap-bg.js       星图页专用的背景参数
 │   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
 │   │
-│   ├── data/                   页面读的数据 JS —— **生成物**，源文件是仓库根目录的 data/**/*.csv
+│   ├── data/                   页面读的数据 JS —— **生成物**（CSV 或 assets/document/ 生成）
 │   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
 │   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
 │   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
-│   │   └── starmap-data.js     星系数据（STARMAP_DATA）
+│   │   ├── starmap-data.js     星系数据（STARMAP_DATA）
+│   │   └── document.js         文件档案数据（扫描 assets/document/ 生成；目录结构 = 来源，按扩展名分类）
+│   │
+│   ├── document/               文件档案的唯一来源：<来源>/<文件名>.<扩展名> + 可选 .meta.json sidecar
+│   │                           加 / 删文件后跑 `node scripts/document-index.mjs`
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
@@ -122,18 +126,21 @@
 │   └── README.md               每列含义 + 编辑约定 + 常见操作
 │
 ├── scripts/
-│   └── data-csv.mjs            CSV ⇄ JS：build / check / export
+│   ├── data-csv.mjs            CSV ⇄ JS：build / check / export
+│   └── document-index.mjs      扫描 assets/document/ → assets/data/document.js
 │
-└── .github/workflows/generate-post-index.yml
+└── .github/workflows/
+    ├── generate-post-index.yml
+    └── document-index.yml      推送 assets/document/ 时自动重建文件档案数据
 ```
 
 ---
 
-## 数据怎么改：改 CSV，然后 build
+## 数据怎么改：改源文件，然后 build
 
 人员 / 深空设施 / 舰船 / 星图的数据源在 `data/` 下的 CSV，`assets/data/*.js` 是
-`node scripts/data-csv.mjs build` 从 CSV 生成的。**改数据不要碰 `assets/data/*.js`**，
-下次 build 会整个覆盖。
+`node scripts/data-csv.mjs build` 从 CSV 生成的（文件档案的 `document.js` 例外，
+见下面）。**改数据不要碰 `assets/data/*.js`**，下次 build 会整个覆盖。
 
 ```bash
 node scripts/data-csv.mjs build    # CSV → assets/data/*.js
@@ -145,6 +152,18 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
   自动改成科学计数法 / 日期 —— 用 Excel 要按「文本」导入，细节见 `data/README.md`
 - 推送到 master 且改到 `data/**` 时，GitHub Actions 会自动 build 并提交生成结果
   （连同 `sw.js` 的 CACHE_VERSION），本地忘了跑也不会漏
+
+文件档案不是 CSV：源文件就在 `assets/document/`，`assets/data/document.js` 由
+`scripts/document-index.mjs` 扫描生成（目录结构 = 来源、按扩展名分类，详见后面的
+「文件档案」）。加 / 删 / 改名 / 改 sidecar 之后跑：
+
+```bash
+node scripts/document-index.mjs           # assets/document/ → assets/data/document.js
+node scripts/document-index.mjs --check   # 只校验是否最新，不写文件
+```
+
+推送到 master 且改到 `assets/document/**` 时，`.github/workflows/document-index.yml`
+会自动重建并提交结果。
 - 每列的含义、子表（配件 / 装备 / 组织）怎么挂、加一条数据要动哪几个文件，
   全部写在 [data/README.md](data/README.md)，这里不重复
 
@@ -364,43 +383,81 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 
 ## 文件档案：一个页面，左名录右档案，按载体分类
 
-文件档案收录**图像 / 文档 / 音频 / 视频**等不同载体的记录，所以交互照生物档案
-（左栏名录 + 右栏档案、`#文件代号` 深链、点空白 / 再点一次取消选择），
-但右栏第一条是「预览」面板，四种载体各有自己的一套写法。
+文件档案收录**图像 / 文档 / 音频 / 视频**等不同载体的记录，交互照生物档案
+（左栏名录 + 右栏档案、`#文件代号` 深链、点空白 / 再点一次取消选择）。
 
-**当前状态：已开放。** 页面是 `archive/document/index.html`，档案总览页「文件档案」卡
-链接到这里；目前收录 2 条：**真理花观测图**（图像）与**希望号任务**（.md 文档），
-音频 / 视频 / 其他组显示「待收录」。
+**来源只有一处：`assets/document/`。** 页面是数据驱动的：
+`scripts/document-index.mjs` 扫描这个目录 → 生成 `assets/data/document.js` →
+`assets/js/document.js` 在浏览器里渲染名录 / 档案 / 详情面板。
+`archive/document/index.html` 里没有写死的记录，加文件不用改 HTML。
 
-版式与交互：
+### 文件怎么放
 
-- 右栏只保留预览；**文件信息 / 摘要 / 备注全部收在档案头右上角的「详情」小按钮里**，
-  默认收起。点按钮展开、再点收起；点面板外、按 Esc、切换条目也会收起（一次只开一个）。
-  没有内容的摘要 / 备注整节删掉，不要留空占位
-- 文档记录**不是扫描件**：`.doc-md[data-doc-md][data-src]` 指向 `.md` 原件，
-  `document.js` fetch 后用 marked 渲染成 `.markdown-body`。配置与主页面一致
-  （`breaks` + `gfm`，并套用同样的 `preserveLineIndent` 保留日志树形缩进）；
-  Markdown 的视觉在 `assets/css/markdown.css`（与主页面共用一份，字体族仍在 `global.css`）。
-  页面要引 `markdown.css`、`marked.min.js`、`document.js` 三样，缺一不可
-- 新增一条记录 = 左栏一个 `.document-list__item`（`href="#代号"`、`data-id="代号"`）+
-  右栏一份 `.document-profile`（`id="代号"`）；详情按钮的 `aria-controls` 指向本条
-  `.doc-info` 的 id；左栏「名录 N」的 N 是条目总数。载体签用 `IMG / DOC / AUD / VID / FIL`
-- 四种预览写法照 `template.html` 抄，换素材即可：
-  - **图像**：`.doc-media__open` + `<img>`；没有素材时整块换 `.doc-media__empty`（No / Signal）。
-    图高封顶 `38vh`（窄屏 `32vh`），再大的图交给滚动
-  - **文档**：`.doc-sheet` 纸面包住 `.doc-md`，不要手写正文到 HTML 里，也不嵌 PDF 阅读器
-  - **音频**：`.doc-player` 结构固定（播放键 / 进度条 / 读数），只改 `<audio src>`；
-    播放 / 暂停 / 进度 / 读数都在 `document.js`，带宽度的 `--doc-progress` 由脚本写
-  - **视频**：接入 `<video controls playsinline preload="metadata" poster="…">` 后原生控件就在框里；
-    没有原片时保留 16:9 取景框 + No / Signal + 角标，**不要画假播放键**
-- 素材放 `assets/` 下（图片进 `assets/img/document/`，音视频各自建目录），
-  文件名英文小写 + 连字符。**大文件不要进预缓存**（与字体、`QSL.png`、WAV 同理）
+```
+assets/document/<来源>/<文件名>.<扩展名>
+assets/document/<来源>/<文件名>.<扩展名>.meta.json   （可选）
+```
+
+- **第一层目录名就是「来源」**，会直接显示在详情面板里；文件放在根目录时来源写「未分类」。
+  来源名可以是中文（URL 会编码），但**文件名建议英文小写 + 连字符**，方便分享 / 排查。
+- **分类只看扩展名**：
+  `.md` / `.markdown` / `.pdf` / `.txt` → 文档；
+  `.png` / `.jpg` / `.jpeg` / `.webp` / `.gif` / `.svg` / `.avif` → 图像；
+  `.mp3` / `.wav` / `.ogg` / `.flac` / `.m4a` / `.aac` → 音频；
+  `.mp4` / `.webm` / `.mov` / `.m4v` → 视频；其余 → 其他。
+  只有 `.md` 会内嵌渲染，PDF / TXT 等文档给「打开原件」。
+- 编号自动生成：每个载体各自从 `IMG-0001` / `DOC-0001` / `AUD-0001` / `VID-0001` /
+  `FIL-0001` 往上排；顺序按文件路径（同载体里）。sidecar 里的 `number` 可以覆盖。
+- 标题默认取文件名（连字符 / 下划线换空格），英文名默认为空。
+
+### sidecar 元数据（全部可选）
+
+同目录下的 `<文件名>.<扩展名>.meta.json`，例如
+`assets/document/希望号/hopeship-mission.md.meta.json`：
+
+```json
+{
+  "title": "希望号任务",
+  "en": "Hopeship Mission",
+  "date": "A.D. 2026-11-21",
+  "clearance": "公开",
+  "summary": "希望号第 IX 代科研舰的航行任务说明。"
+}
+```
+
+可写字段：`title` / `en` / `number` / `kind` / `date` / `source` / `clearance` /
+`summary` / `notes` / `width` / `height` / `duration` / `lines`。
+不写 `source` 取第一层目录名；不写 `clearance` 默认「公开」；图片宽高、`.md` 行数、
+WAV 时长会自动读（读不出的格式用 sidecar 的 `width` / `height` / `duration` 补）。
+JSON 写错会让 build 直接报错并指出是哪一个 sidecar。
+sidecar 只是构建输入，页面不读，`.assetsignore` 已排除、不会发布。
+
+### 加 / 删文件之后
+
+```bash
+node scripts/document-index.mjs           # 重建 assets/data/document.js
+node scripts/document-index.mjs --check   # 只校验是否最新
+```
+
+推送到 master 且改到 `assets/document/**` 时，`.github/workflows/document-index.yml`
+会自动重建并提交 `assets/data/document.js` + `sw.js` 的 CACHE_VERSION。
+**不要手改 `assets/data/document.js`**，下次 build 会整个覆盖。
+
+### 页面侧
+
+- 右栏只保留预览；文件信息 / 摘要 / 备注在档案头右上角的「详情」小按钮里，默认收起。
+  点按钮展开、再点收起；点面板外、按 Esc、切换条目都会收起（一次只开一个）。
+  没有内容的摘要 / 备注不会生成
+- `.md` 文档用 marked 渲染（配置与主页面一致：`breaks` + `gfm`，并套同样的
+  `preserveLineIndent` 保留日志树形缩进）；Markdown 视觉在 `assets/css/markdown.css`
+  （与主页面共用一份，字体族仍在 `global.css`）
+- 四种预览的写法由 `document.js` 生成；`archive/document/template.html` 只是静态版式参考
+  （内部模板，`.assetsignore` 已排除、永远不进 `PRECACHE_URLS`），改样式时对照它即可
+- 素材（图片 / 音频 / 视频）**不进预缓存**，只在选中记录时按需加载；
+  `assets/data/document.js` 进预缓存
 - ⚠️ `.org-block p` 会把自己的字号 / 行高 / 颜色压到预览区的说明行与读数上：
   `.doc-media__caption`、`.doc-player__times`、`.doc-media__empty-text` 都带
   `.document-profile .org-block` 前缀，改这些样式时别把前缀删掉
-- 默认不选中任何条目（右栏 NO / INFO）；点条目 / 深链才打开档案。
-  `.assetsignore` 里继续留着 `/archive/document/template.html`，模板页永远不进
-  `PRECACHE_URLS`
 
 ---
 

@@ -167,34 +167,24 @@
     </header>
 
     <main>
-        <!-- ══ 文件档案页模板 ══
-             版式照生物档案：左栏文件名录（按载体类型分组）+ 右栏选中文件的档案。
-             右栏只保留预览：文件名与右上角「详情」按钮在档案头里，
-             文件信息 / 摘要 / 备注全部收在详情面板（默认收起），按下才展开。
-
-             本页是内部模板（.assetsignore 已排除，不公开）。正式页面是
-             archive/document/index.html；新增一条文件记录时：
-               · 左栏：在对应分组下复制一个 .document-list__item，href="#文件代号"，
-                 data-id 写同一个代号；签（IMG / DOC / AUD / VID / FIL）按载体改；
-               · 右栏：复制一份 .document-profile，id 写同一个代号；
-               · 档案头：kicker 写「载体 / 英文载体 · 文件编号」，标题与英文标题照文件名填；
-                 右上角按钮的 aria-controls 指向本条的详情面板 id；
-               · 详情面板：id 与按钮对应；文件信息用 .org-meta，摘要 / 备注用 .doc-info__section
-                 （没有内容就整节删掉，不要留空占位）；
-               · 左栏「名录 N」的 N 是条目总数。
+        <!-- ══ 文件档案版式模板（静态参考） ══
+             正式页面 archive/document/index.html 不写死记录：它读取
+             assets/data/document.js（由 scripts/document-index.mjs 扫描
+             assets/document/ 生成），再由 assets/js/document.js 渲染。文件放
+             assets/document/<来源>/<文件名>.<扩展名>，可选同目录 sidecar
+             <文件名>.<扩展名>.meta.json；加文件后跑一次
+               node scripts/document-index.mjs
+             即可。本页只保留「四种载体 + 详情面板」的静态写法，方便改样式 /
+             改结构时对照；正式页面不要再复制本页。
 
              四种载体的预览写法：
                · 图像 —— .doc-media__open + <img>，点图 / 「查看原图」开原图；
-                         没有素材时整块换 .doc-media__empty（No / Signal）；
-               · 文档 —— .doc-sheet + [data-doc-md][data-src]：document.js 会 fetch 那个 .md，
-                         用 marked 渲染成 .markdown-body（与主页面同一套视觉）；
-                         不要贴扫描件，也不要手写正文到 HTML 里；
-               · 音频 —— .doc-player：播放键 + 进度条 + 读数，逻辑在 document.js；
-                         素材地址直接写 <audio src>，其余结构不要动；
-               · 视频 —— .doc-media__frame：接 <video controls preload="metadata" poster="…">
-                         后原生控件就在框里；还没有原片时用封面帧 + 角标说明。
-             素材放 assets/ 下（图片进 assets/img/document/，音视频各自建目录），
-             文件名用英文小写 + 连字符。模板页本身永远不进 sw.js 的 PRECACHE_URLS。 -->
+               · 文档 —— .doc-sheet + [data-doc-md][data-src]：document.js 会 fetch
+                         那个 .md，用 marked 渲染成 .markdown-body（与主页面同款）；
+               · 音频 —— .doc-player：播放键 + 进度条 + 读数；
+               · 视频 —— .doc-media__frame + <video controls>（没有原片时不画假播放键）。
+
+             文件信息 / 摘要 / 备注全部收在右上角「详情」按钮下面，默认收起。 -->
         <section class="archive-section document-section">
 
             <nav class="crumb" aria-label="位置">
@@ -333,12 +323,12 @@
                                 <h2 class="org-block__head">预览<span class="org-block__en">Preview</span></h2>
 
                                 <figure class="doc-media doc-media--image">
-                                    <a class="doc-media__open" href="../../assets/img/biology/veridica.png" target="_blank" rel="noopener noreferrer">
-                                        <img class="doc-media__img" src="../../assets/img/biology/veridica.png" alt="模板图像（示例素材：真理花）" loading="lazy">
+                                    <a class="doc-media__open" href="../../assets/document/北落师门第三行星/veridica.png" target="_blank" rel="noopener noreferrer">
+                                        <img class="doc-media__img" src="../../assets/document/北落师门第三行星/veridica.png" alt="模板图像（示例素材：真理花）" loading="lazy">
                                     </a>
                                     <figcaption class="doc-media__caption">
                                         <span>示例素材 · 512 × 512</span>
-                                        <a class="doc-media__link" href="../../assets/img/biology/veridica.png" target="_blank" rel="noopener noreferrer">查看原图 ↗</a>
+                                        <a class="doc-media__link" href="../../assets/document/北落师门第三行星/veridica.png" target="_blank" rel="noopener noreferrer">查看原图 ↗</a>
                                     </figcaption>
                                 </figure>
                             </section>
@@ -417,13 +407,13 @@
                                             <span class="doc-sheet__page">MD · DOC-0001</span>
                                             <span>MARKDOWN</span>
                                         </div>
-                                        <article class="doc-md" data-doc-md data-src="../../assets/post/希望号任务.md">
+                                        <article class="doc-md" data-doc-md data-src="../../assets/document/希望号/hopeship-mission.md">
                                             <p class="doc-md__state">正在读取文档…</p>
                                         </article>
                                     </div>
                                     <p class="doc-media__caption">
                                         <span>示例文档 · Markdown · 604 B</span>
-                                        <a class="doc-media__link" href="../../assets/post/希望号任务.md" target="_blank" rel="noopener noreferrer">打开原件 ↗</a>
+                                        <a class="doc-media__link" href="../../assets/document/希望号/hopeship-mission.md" target="_blank" rel="noopener noreferrer">打开原件 ↗</a>
                                     </p>
                                 </div>
                             </section>
