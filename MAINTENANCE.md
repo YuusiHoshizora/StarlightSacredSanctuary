@@ -50,6 +50,8 @@
 ├── archive/vessel/index.html     舰船档案（按尺寸分类：左栏舰船名录 + 右栏档案，全由数据渲染）
 ├── archive/biology/index.html    生物档案（左栏分类名录 + 右栏条目档案；目前收录真理花）
 ├── archive/biology/template.html 生物档案页模板（左栏分类名录 + 右栏条目档案；头像在概要右侧，无图显示 No/Info）
+├── archive/document/index.html   文件档案（按载体分类：图像 / 文档 / 音频 / 视频；右栏只留预览，信息收在「详情」面板）
+├── archive/document/template.html 文件档案页模板（四种载体各一条示例记录；内部模板，不公开）
 ├── about/index.html            关于（授权说明与致谢）
 │
 ├── assets/
@@ -63,6 +65,8 @@
 │   │   ├── archive/facility.css      深空设施档案页
 │   │   ├── archive/vessel.css          舰船档案页
 │   │   ├── archive/biology.css       生物档案页（左栏分类名录 / 概要 + 右侧方形头像）
+│   │   ├── archive/document.css      文件档案页（按载体分类名录 / 预览框 / 详情面板 / 音轨播放条）
+│   │   ├── markdown.css         Markdown 正文（主页面文章 + 文件档案的 .md 预览共用）
 │   │   ├── main/mainpage.css   主页面
 │   │   ├── main/cq.css         彩蛋页 CQ
 │   │   ├── starmap/index.css   星图 + Starmap®OS 启动画面
@@ -81,6 +85,7 @@
 │   │   ├── archive-scroll.js   档案页：给能滚的容器挂 .is-scrollable 并连续写上下淡出长度
 │   │   ├── archive-list-search.js 档案页左栏名录搜索：按名称过滤（外观与交互照星图搜索）
 │   │   ├── biology.js          生物档案页：把搜索接到左栏生物名录
+│   │   ├── document.js         文件档案页：搜索 / 选中 / 深链 / 详情面板 / .md 渲染 / 音轨播放条
 │   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
 │   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案（# 不滚页）
 │   │   ├── vessel.js           舰船档案：左栏名录 / 右栏档案（# 不滚页）
@@ -354,6 +359,48 @@ node scripts/data-csv.mjs check    # 只校验是否一致（CI 同款），不�
 - 正文是纯文本：不要把资料库的 `[[…]]` 链接或资料库路径写进数据，录入时把链接展开成显示文本；
   原文照抄（含原文里的英文拼写与错字），要改先改资料库，再同步到这里
 - 缺失口径与人员 / 深空设施档案一致：截断的整条记录标 `damaged: true` 并写 `damagedNote`
+
+---
+
+## 文件档案：一个页面，左名录右档案，按载体分类
+
+文件档案收录**图像 / 文档 / 音频 / 视频**等不同载体的记录，所以交互照生物档案
+（左栏名录 + 右栏档案、`#文件代号` 深链、点空白 / 再点一次取消选择），
+但右栏第一条是「预览」面板，四种载体各有自己的一套写法。
+
+**当前状态：已开放。** 页面是 `archive/document/index.html`，档案总览页「文件档案」卡
+链接到这里；目前收录 2 条：**真理花观测图**（图像）与**希望号任务**（.md 文档），
+音频 / 视频 / 其他组显示「待收录」。
+
+版式与交互：
+
+- 右栏只保留预览；**文件信息 / 摘要 / 备注全部收在档案头右上角的「详情」小按钮里**，
+  默认收起。点按钮展开、再点收起；点面板外、按 Esc、切换条目也会收起（一次只开一个）。
+  没有内容的摘要 / 备注整节删掉，不要留空占位
+- 文档记录**不是扫描件**：`.doc-md[data-doc-md][data-src]` 指向 `.md` 原件，
+  `document.js` fetch 后用 marked 渲染成 `.markdown-body`。配置与主页面一致
+  （`breaks` + `gfm`，并套用同样的 `preserveLineIndent` 保留日志树形缩进）；
+  Markdown 的视觉在 `assets/css/markdown.css`（与主页面共用一份，字体族仍在 `global.css`）。
+  页面要引 `markdown.css`、`marked.min.js`、`document.js` 三样，缺一不可
+- 新增一条记录 = 左栏一个 `.document-list__item`（`href="#代号"`、`data-id="代号"`）+
+  右栏一份 `.document-profile`（`id="代号"`）；详情按钮的 `aria-controls` 指向本条
+  `.doc-info` 的 id；左栏「名录 N」的 N 是条目总数。载体签用 `IMG / DOC / AUD / VID / FIL`
+- 四种预览写法照 `template.html` 抄，换素材即可：
+  - **图像**：`.doc-media__open` + `<img>`；没有素材时整块换 `.doc-media__empty`（No / Signal）。
+    图高封顶 `38vh`（窄屏 `32vh`），再大的图交给滚动
+  - **文档**：`.doc-sheet` 纸面包住 `.doc-md`，不要手写正文到 HTML 里，也不嵌 PDF 阅读器
+  - **音频**：`.doc-player` 结构固定（播放键 / 进度条 / 读数），只改 `<audio src>`；
+    播放 / 暂停 / 进度 / 读数都在 `document.js`，带宽度的 `--doc-progress` 由脚本写
+  - **视频**：接入 `<video controls playsinline preload="metadata" poster="…">` 后原生控件就在框里；
+    没有原片时保留 16:9 取景框 + No / Signal + 角标，**不要画假播放键**
+- 素材放 `assets/` 下（图片进 `assets/img/document/`，音视频各自建目录），
+  文件名英文小写 + 连字符。**大文件不要进预缓存**（与字体、`QSL.png`、WAV 同理）
+- ⚠️ `.org-block p` 会把自己的字号 / 行高 / 颜色压到预览区的说明行与读数上：
+  `.doc-media__caption`、`.doc-player__times`、`.doc-media__empty-text` 都带
+  `.document-profile .org-block` 前缀，改这些样式时别把前缀删掉
+- 默认不选中任何条目（右栏 NO / INFO）；点条目 / 深链才打开档案。
+  `.assetsignore` 里继续留着 `/archive/document/template.html`，模板页永远不进
+  `PRECACHE_URLS`
 
 ---
 

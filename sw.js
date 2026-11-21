@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.75+b685da91a7';
+const CACHE_VERSION = 'v5.75+8c5c482161';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -78,6 +78,8 @@ const PRECACHE_URLS = [
     '/archive/organization/tas.html',
     '/archive/biology/',
     '/archive/biology/index.html',
+    '/archive/document/',
+    '/archive/document/index.html',
     '/archive/personnel/',
     '/archive/personnel/index.html',
     '/archive/personnel/sxm.html',
@@ -99,11 +101,13 @@ const PRECACHE_URLS = [
     '/assets/css/cq-entry.css',
     '/assets/css/error.css',
     '/assets/css/archive.css',
+    '/assets/css/markdown.css',
     '/assets/css/archive/organization.css',
     '/assets/css/archive/biology.css',
     '/assets/css/archive/personnel.css',
     '/assets/css/archive/facility.css',
     '/assets/css/archive/vessel.css',
+    '/assets/css/archive/document.css',
     '/assets/css/main/mainpage.css',
     '/assets/css/main/cq.css',
     '/assets/css/starmap/index.css',
@@ -125,6 +129,7 @@ const PRECACHE_URLS = [
     '/assets/js/archive-scroll.js',
     '/assets/js/archive-list-search.js',
     '/assets/js/biology.js',
+    '/assets/js/document.js',
     '/assets/js/org-member.js',
     '/assets/js/org-secret.js',
     '/assets/js/eggs.js',

@@ -1,0 +1,1096 @@
+/* ==========================================================================
+   文件档案（archive/document/）
+   --------------------------------------------------------------------------
+   版式照生物档案：左栏文件名录（按载体类型分组）+ 右栏选中文件的档案。
+   文件档案会收录图片 / 文档 / 音频 / 视频等多种载体，所以右栏第一条是
+   「预览」面板，四种载体各有一套外观（见下面的「媒体预览框」）：
+
+     · 图像 —— .doc-media--image：原图按比例放进深色取景框，可点开原图；
+     · 文档 —— .doc-sheet：一张纸面，放扫描页或正文摘录，页脚给页数 / 格式；
+     · 音频 —— .doc-player：自绘播放条（播放键 + 进度 + 读数），不吃系统控件外观；
+     · 视频 —— .doc-media__frame：16:9 取景框，接入 <video> 后原生控件直接在框里。
+
+   其余各节复用组织档案的 .org-block / .org-meta 材质，只把内边距收紧一档。
+   颜色、圆角、过渡一律取 global.css 的 --ctl-* 令牌，不另立新值。
+   ========================================================================== */
+
+.document-section .archive-head {
+    margin-bottom: 16px;
+}
+
+/* ── 左栏名录 + 右栏档案 ── */
+.document-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
+/* 左栏：整栏固定在滚动区里，自己滚；条目多时不会把页面拉长。 */
+.document-list {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
+    padding-right: 6px;
+    overflow: hidden;
+}
+
+.document-list__head {
+    flex: 0 0 auto;
+    padding: 0 6px 10px 0;
+}
+
+.document-list__title {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.document-list__title span {
+    color: #FFD700;
+}
+
+.document-list__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px 4px 0;
+}
+
+/* 载体分组：图像 / 文档 / 音频 / 视频 / 其他 */
+.document-list__group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 18px 0 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.document-list__title + .document-list__group {
+    margin-top: 4px;
+}
+
+.document-list__group-en {
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.28);
+}
+
+/* 一条名录：左侧载体签（IMG / DOC / AUD / VID）+ 右侧中文名 / 英文名。
+   签是等宽的「仪器读数」，不是按钮 —— 只做识别，不参与点击。 */
+.document-list__item {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 2px;
+    padding: 8px 10px;
+
+    color: #fff;
+    text-decoration: none;
+
+    border-left: 2px solid transparent;
+    transition: var(--ctl-transition),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.document-list__item:hover,
+.document-list__item:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+    border-left-color: rgba(255, 215, 0, 0.35);
+}
+
+.document-list__item.is-active {
+    background: rgba(255, 215, 0, 0.06);
+    border-left-color: #FFD700;
+}
+
+.document-list__item:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 1px;
+}
+
+.document-list__tag {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: start;
+    margin-top: 1px;
+    padding: 2px 0;
+    text-align: center;
+
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 9px;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+
+    color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    transition: var(--ctl-transition);
+}
+
+.document-list__item.is-active .document-list__tag {
+    color: #FFD700;
+    border-color: rgba(255, 215, 0, 0.45);
+    background: rgba(255, 215, 0, 0.08);
+}
+
+.document-list__name {
+    grid-column: 2;
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: color 0.2s ease;
+}
+
+.document-list__en {
+    grid-column: 2;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.46);
+}
+
+.document-list__item.is-active .document-list__name {
+    color: #FFD700;
+}
+
+/* 分组下暂时没有条目时的占位（模板阶段用） */
+.document-list__empty {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.26);
+}
+
+/* ── 右栏：条目档案 ── */
+.document-detail {
+    min-width: 0;
+}
+
+.document-profile {
+    display: none;
+}
+
+.document-profile.is-active {
+    display: block;
+}
+
+/* 档案头：载体小标签（含编号）→ 标题 → 英文标题；右上角是「详情」小按钮。
+   标题与按钮同一行，标题太长会自然折行，按钮不被挤走。 */
+.document-profile__head {
+    position: relative;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.document-profile__bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.document-profile__heading {
+    min-width: 0;
+}
+
+.document-profile__kicker {
+    margin: 0 0 8px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.62);
+}
+
+.document-profile__name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 3px;
+    color: #FFD700;
+}
+
+.document-profile__en {
+    margin: 6px 0 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── 右上角「详情」小按钮 ──
+   文件信息 / 摘要 / 备注默认都收在它下面（右栏只留预览）。
+   按钮本身是标准控件：半透明底 + 1px 描边 + 4px 圆角；打开时是常驻强调态。
+   图标是 2×2 方点阵（不是字母 i）：与站内「小方点」的语汇一致，
+   也避免小字号下字母 i 的易读性问题。 */
+.doc-info-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 6px 12px;
+    margin-top: 2px;
+
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.5);
+
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    border-radius: var(--ctl-radius);
+    transition: var(--ctl-transition);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
+}
+
+.doc-info-btn:hover,
+.doc-info-btn:focus-visible,
+.doc-info-btn[aria-expanded="true"] {
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+}
+
+.doc-info-btn:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+.doc-info-btn__icon {
+    width: 10px;
+    height: 10px;
+    background-image: radial-gradient(circle, currentColor 1.4px, transparent 1.5px);
+    background-size: 5px 5px;
+    background-repeat: repeat;
+    opacity: 0.85;
+}
+
+/* ── 详情面板 ──
+   从按钮下方展开，盖在预览上；不改变版式高度（absolute）。
+   玻璃面板（比 .org-block 更实一点，保证读数清楚），窄屏铺满右栏。 */
+.doc-info {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 6;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    max-height: min(60vh, 520px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 18px 20px;
+
+    background: rgba(14, 16, 36, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--ctl-panel-radius);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+
+    animation: doc-info-in 0.18s ease-out both;
+}
+
+.doc-info[hidden] {
+    display: none !important;
+}
+
+@keyframes doc-info-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.doc-info__head {
+    margin: 0 0 12px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #FFD700;
+}
+
+.doc-info__en {
+    margin-left: 10px;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.32);
+}
+
+.doc-info .org-meta {
+    gap: 6px;
+}
+
+.doc-info .org-meta dt {
+    font-size: 11px;
+}
+
+.doc-info .org-meta dd {
+    font-size: 13px;
+}
+
+/* 详情里的摘要 / 备注：只有真的有内容时才出现（模板里是占位句） */
+.doc-info__section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.doc-info__title {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.doc-info__title .doc-info__en {
+    margin-left: 8px;
+}
+
+.doc-info__section p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* 右栏里的面板比组织页更紧凑 */
+.document-profile .org-block {
+    padding: 18px 22px;
+    margin-bottom: 14px;
+}
+
+.document-profile .org-block:last-child {
+    margin-bottom: 0;
+}
+
+.document-profile .org-block__head {
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.document-profile .org-meta {
+    gap: 6px;
+}
+
+.document-profile .org-meta dd {
+    font-size: 13px;
+}
+
+.document-profile .org-block p {
+    margin-bottom: 0;
+    line-height: 1.85;
+}
+
+/* 读数（编号 / 大小 / 尺寸 / 日期）：等宽栈，小一号，比正文弱一档。
+   ⚠️ .org-meta dd 自带字号与颜色，这里必须带上 dd 才压得住
+   （与 DESIGN.md 第十一节第 3 条同一个道理：去线 / 改色都要先看权重）。 */
+.document-profile .org-meta dd.doc-mono {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+/* ==========================================================================
+   媒体预览框
+   --------------------------------------------------------------------------
+   四种载体共用一条底座：深色取景框（.doc-media__open / .doc-media__frame）
+   + 下方一行说明（.doc-media__caption：左侧读数、右侧动作链接）。
+   帧一律 4px 圆角，与按钮同一个 --ctl-radius —— 它是嵌在 16px 面板里的
+   "屏幕"，不是另一块面板。取景框底色压到接近不透明，透明背景的素材才不会
+   透出后面的六边形网格。
+   ========================================================================== */
+
+.doc-media {
+    margin: 0;
+}
+
+/* 图像取景框：宽度吃满面板，高度跟着图走，封顶 38vh
+   （首屏还能看见「文件信息」的开头；再长的图交给滚动）。
+   图用 contain 放进框里，任何长宽比都不会裁掉内容。 */
+.doc-media__open {
+    display: block;
+    padding: 10px;
+    overflow: hidden;
+
+    background: rgba(4, 6, 16, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-radius);
+    transition: var(--ctl-transition);
+}
+
+.doc-media__open:hover,
+.doc-media__open:focus-visible {
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.03);
+}
+
+.doc-media__open:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+.doc-media__img {
+    display: block;
+    width: 100%;
+    max-height: 38vh;
+    object-fit: contain;
+}
+
+/* 说明行：左边读数（尺寸 / 时长 / 页数），右边动作（查看原图 / 打开原件）。
+   动作链接照全站正文链接的样子，但不要下划线把读数压乱。
+   ⚠️ 带 .org-block 前缀：.org-block p 会把自己的字号 / 行高 / 颜色压到这行上。 */
+.document-profile .org-block .doc-media__caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 16px;
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.7;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.doc-media__link {
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: var(--ctl-transition);
+}
+
+.doc-media__link:hover,
+.doc-media__link:focus-visible {
+    color: #FFD700;
+}
+
+.doc-media__link:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+/* ── 文档：纸面 ──
+   不嵌 PDF 阅读器（各浏览器外观不一、窄屏几乎不可用）：纸面里放扫描页图片
+   或正文摘录，原件通过右下角「打开原件」打开。纸面宽度跟面板走，不设固定高。 */
+.doc-sheet {
+    padding: 22px 24px;
+    overflow: hidden;
+
+    /* 纸面比面板更"实"一点：正文要能读，别让后面的六边形网格穿过来。
+       与 .org-block 一样加薄模糊，但底色压深一档。 */
+    background-color: rgba(10, 12, 28, 0.72);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-radius);
+    backdrop-filter: blur(6px);
+}
+
+.doc-sheet__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.doc-sheet__page {
+    color: rgba(255, 215, 0, 0.62);
+}
+
+/* ── Markdown 文档正文 ──
+   .md 原件在浏览器端用 marked 渲染（与主页面同一套 .markdown-body 视觉，
+   样式在 assets/css/markdown.css），document.js 负责 fetch + 渲染。
+   这里只补纸面里的第一块不要顶出多余的上边距，以及读取中 / 失败的两种状态。 */
+.doc-md > .markdown-body > :first-child {
+    margin-top: 0;
+}
+
+.doc-md__state {
+    margin: 0;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.doc-md__failed {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: var(--ctl-err);
+}
+
+/* ── 音频：自绘播放条 ──
+   结构：播放键 + 进度条 + 读数。进度条是原生 range（键盘可达、自带语义），
+   只把轨道 / 滑钮换成站内样式；金色只涂「已播过」的那一段（进行中 = 金）。 */
+.doc-player {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0 2px;
+}
+
+.doc-player__toggle {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+
+    color: rgba(255, 255, 255, 0.85);
+    background: var(--ctl-bg);
+    border: 1px solid var(--ctl-border);
+    border-radius: var(--ctl-radius);
+    transition: var(--ctl-transition);
+}
+
+.doc-player__toggle:hover,
+.doc-player__toggle:focus-visible {
+    color: var(--ctl-fg-hover);
+    background: var(--ctl-bg-strong);
+    border-color: var(--ctl-border-hover);
+}
+
+.doc-player__toggle:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 3px;
+}
+
+/* 播放 / 暂停图形：纯 CSS，跟着 currentColor 走；两态共用一个盒子，
+   切换时按钮尺寸不变。 */
+.doc-player__glyph {
+    position: relative;
+    display: block;
+    width: 10px;
+    height: 12px;
+    color: currentColor;
+}
+
+.doc-player__glyph::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 1px;
+    border-left: 9px solid currentColor;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+}
+
+.doc-player.is-playing .doc-player__glyph::before {
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 12px;
+    border: 0;
+    background: linear-gradient(
+        to right,
+        currentColor 0 3px,
+        transparent 3px 7px,
+        currentColor 7px 10px
+    );
+}
+
+.doc-player__track {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 进度条：轨道 2px，已播段金色；滑钮 9px 方点（与站内「小方点」同一语汇）。
+   --doc-progress 由 document.js 按播放位置写成百分比。 */
+.doc-player__seek {
+    -webkit-appearance: none;
+            appearance: none;
+    width: 100%;
+    height: 16px;
+    margin: 0;
+    background: transparent;
+    --doc-progress: 0%;
+}
+
+.doc-player__seek::-webkit-slider-runnable-track {
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(
+        to right,
+        #FFD700 0,
+        #FFD700 var(--doc-progress),
+        rgba(255, 255, 255, 0.16) var(--doc-progress),
+        rgba(255, 255, 255, 0.16) 100%
+    );
+}
+
+.doc-player__seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 9px;
+    height: 9px;
+    margin-top: -3.5px;
+
+    background: #FFD700;
+    border: 0;
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
+}
+
+.doc-player__seek::-moz-range-track {
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(
+        to right,
+        #FFD700 0,
+        #FFD700 var(--doc-progress),
+        rgba(255, 255, 255, 0.16) var(--doc-progress),
+        rgba(255, 255, 255, 0.16) 100%
+    );
+}
+
+.doc-player__seek::-moz-range-thumb {
+    width: 9px;
+    height: 9px;
+    background: #FFD700;
+    border: 0;
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+
+    --cursor-kind: pointer; cursor: var(--cur-pointer);
+}
+
+.doc-player__seek:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 4px;
+    border-radius: 1px;
+}
+
+/* ⚠️ 带 .org-block 前缀：.org-block p 会把自己的字号 / 行高压到读数上。 */
+.document-profile .org-block .doc-player__times {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.doc-player__time {
+    min-width: 38px;
+}
+
+.doc-player__time--total {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* 正在播放：当前时间属于「进行中」，转金 */
+.doc-player.is-playing .doc-player__time--now {
+    color: #FFD700;
+}
+
+.doc-player__sep {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* 素材缺失 / 解码失败时：整条压暗，播放键不可点 */
+.doc-player.is-broken {
+    opacity: 0.45;
+}
+
+.doc-player.is-broken .doc-player__toggle {
+    --cursor-kind: not-allowed; cursor: var(--cur-not-allowed);
+}
+
+/* ── 视频：16:9 取景框 ──
+   接入 <video controls> 后原生控件就在框里；还没有原片时用同一张框放
+   No / Signal，右下角一行角标说明，不画假的播放键。 */
+.doc-media__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+
+    background: rgba(4, 6, 16, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--ctl-radius);
+}
+
+/* 没有原片时的取景框：仍是 16:9 的框，中央 No / Signal，角标说明未接入 */
+.doc-media__frame--empty {
+    display: grid;
+    place-items: center;
+}
+
+.doc-media__empty-inner {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+}
+
+.doc-media__frame video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 取景框里的一行角标：压一层底，白字小号等宽，不放按钮 */
+.doc-media__badge {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 3px 8px;
+
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+
+    background: rgba(4, 6, 16, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--ctl-radius);
+}
+
+/* 素材还没接入（没有图片 / 音频）时的空白态：取景框还在，内容写 No / Signal */
+.doc-media__empty {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    min-height: 220px;
+    padding: 32px 24px;
+    text-align: center;
+
+    background: rgba(20, 20, 50, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--ctl-radius);
+}
+
+.doc-media__empty-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+    opacity: 0.55;
+}
+
+.document-profile .org-block .doc-media__empty-text {
+    margin: 0;
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+/* ── 附属文件：一行一份（签 / 名 / 大小） ──
+   整行可点（换成 <a> 并加 href），hover 只提亮，不做位移。 */
+.doc-files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.doc-file {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 8px;
+
+    color: #fff;
+    text-decoration: none;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: var(--ctl-transition);
+}
+
+.doc-file:last-child {
+    border-bottom: 0;
+}
+
+a.doc-file:hover,
+a.doc-file:focus-visible {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+a.doc-file:focus-visible {
+    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline-offset: 1px;
+}
+
+.doc-file__tag {
+    padding: 2px 0;
+    text-align: center;
+
+    font-family: "Sarasa Mono", "Sarasa", monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+}
+
+a.doc-file:hover .doc-file__tag,
+a.doc-file:focus-visible .doc-file__tag {
+    color: #FFD700;
+    border-color: rgba(255, 215, 0, 0.45);
+}
+
+.doc-file__name {
+    font-size: 13px;
+    line-height: 1.6;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.doc-file__size {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── 两栏档案：与舰船 / 人员 / 生物一致，左栏与右栏各自滚动 ──
+   body 用 data-archive="split"；左栏固定、右栏档案头固定，
+   只有 .document-list__scroll 与 .document-profile__body 各自滚。 */
+body[data-archive="split"] .document-layout {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+}
+
+body[data-archive="split"] .document-list {
+    position: static;
+    top: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+    padding: 0;
+
+    /* 名录只是索引，淡出长度比右栏内容短一截 */
+    --archive-fade: 56px;
+    --archive-fade-min: 0px;
+}
+
+body[data-archive="split"] .document-list__head {
+    flex: 0 0 auto;
+    padding: var(--archive-pad) 6px 10px 0;
+}
+
+body[data-archive="split"] .document-list__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px var(--archive-pad) 0;
+}
+
+body[data-archive="split"] .document-detail {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body[data-archive="split"] .document-profile.is-active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+body[data-archive="split"] .document-profile__head {
+    flex: 0 0 auto;
+    padding-top: var(--archive-pad);
+}
+
+body[data-archive="split"] .document-profile__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px 0 var(--archive-pad);
+}
+
+/* 搜索过滤用 [hidden] 藏条目。名录里的条目 / 分组是 grid 布局，
+   author 的 display 会盖掉 UA 的 [hidden] —— 这里显式压回去。 */
+body[data-archive="split"] .document-list__scroll [hidden] {
+    display: none !important;
+}
+
+/* ── 窄屏：名录摊到档案上方，预览跟着面板走 ── */
+@media (max-width: 900px) {
+
+    /* 两栏档案在窄屏退回整页滚动（照 archive.css 的处理） */
+    body[data-archive="split"] .archive-body {
+        overflow-y: auto;
+        padding-top: var(--archive-pad);
+        padding-bottom: var(--archive-pad);
+    }
+
+    .document-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    body[data-archive="split"] .document-layout {
+        height: auto;
+        grid-template-rows: none;
+        align-items: start;
+    }
+
+    .document-list {
+        position: static;
+        max-height: none;
+        padding-right: 0;
+        overflow: visible;
+    }
+
+    body[data-archive="split"] .document-list {
+        display: block;
+        height: auto;
+        overflow: visible;
+        padding: 0;
+    }
+
+    body[data-archive="split"] .document-list__head {
+        padding: 0 0 12px;
+    }
+
+    .document-list__scroll {
+        overflow: visible;
+    }
+
+    body[data-archive="split"] .document-list__scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        column-gap: 8px;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        -webkit-mask-image: none;
+                mask-image: none;
+    }
+
+    body[data-archive="split"] .document-list__scroll > .document-list__group {
+        grid-column: 1 / -1;
+    }
+
+    body[data-archive="split"] .document-detail {
+        display: block;
+        height: auto;
+        overflow: visible;
+    }
+
+    body[data-archive="split"] .document-profile.is-active {
+        display: block;
+        height: auto;
+    }
+
+    body[data-archive="split"] .document-profile__head {
+        padding-top: 0;
+    }
+
+    body[data-archive="split"] .document-profile__body {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        -webkit-mask-image: none;
+                mask-image: none;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .doc-media__img {
+        max-height: 32vh;
+    }
+
+    .doc-sheet {
+        padding: 16px 16px;
+    }
+
+    /* 详情面板在窄屏铺满右栏，别再挤在按钮下面 */
+    .doc-info {
+        left: 0;
+        right: 0;
+        width: auto;
+        max-width: none;
+        max-height: 56vh;
+    }
+
+    .doc-player {
+        gap: 10px;
+    }
+
+    .doc-file {
+        grid-template-columns: 34px minmax(0, 1fr);
+        row-gap: 2px;
+    }
+
+    /* 文件大小在窄屏排到名字下面一行，别跟名字挤在同一行 */
+    .doc-file__size {
+        grid-column: 2;
+    }
+}
+
+/* 「减少动态效果」：不要过渡 / 不要面板展开动画 */
+@media (prefers-reduced-motion: reduce) {
+    .document-list__item,
+    .document-list__item .document-list__name,
+    .document-list__tag,
+    .doc-media__open,
+    .doc-media__link,
+    .doc-player__toggle,
+    .doc-file {
+        transition: none;
+    }
+
+    .doc-info {
+        animation: none;
+    }
+}

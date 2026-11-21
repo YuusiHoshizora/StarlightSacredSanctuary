@@ -55,6 +55,7 @@
         '/archive/organization/pla': true,
         '/archive/organization/tas': true,
         '/archive/biology': true,
+        '/archive/document': true,
         '/archive/personnel': true,
         '/archive/personnel/sam': true,
         '/archive/personnel/sfm': true,
