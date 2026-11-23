@@ -35,7 +35,7 @@ window.SSS_DOCUMENT = {
       "kind": "document",
       "ext": "md",
       "title": "记录：星能",
-      "en": "",
+      "en": "RECORD: Star Energy",
       "number": "DOC-0002",
       "size": 2201,
       "sizeText": "2 KB",
@@ -43,10 +43,10 @@ window.SSS_DOCUMENT = {
       "height": null,
       "duration": "",
       "lines": 13,
-      "date": "",
+      "date": "S.E. 4021124",
       "source": "资料部独立档案",
-      "clearance": "公开",
-      "summary": "",
+      "clearance": "SXM",
+      "summary": "资料部对星能的记录",
       "notes": ""
     }
   ]
