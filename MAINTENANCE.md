@@ -107,9 +107,9 @@
 │   │   ├── document.js         文件档案数据（扫描 assets/document/ 生成；目录结构 = 来源，按扩展名分类）
 │   │   └── uncategorized.js    未归类档案数据（扫描 assets/uncategorized/ 生成；同一套规则）
 │   │
-│   ├── document/               文件档案的唯一来源：<来源>/<文件名>.<扩展名> + 可选 .meta.json sidecar
+│   ├── document/               文件档案的唯一来源：<来源>/<文件名>.<扩展名> + .meta.json sidecar（number 必写）
 │   │                           加 / 删文件后跑 `node scripts/document-index.mjs`
-│   ├── uncategorized/          未归类档案的唯一来源（同一套目录规则；空目录也可以）
+│   ├── uncategorized/          未归类档案的唯一来源（同一套目录规则；sidecar 可选、编号自动）
 │   │
 │   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
 │   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
@@ -410,17 +410,19 @@ assets/document/<来源>/<文件名>.<扩展名>.meta.json   （可选）
   `.mp3` / `.wav` / `.ogg` / `.flac` / `.m4a` / `.aac` → 音频；
   `.mp4` / `.webm` / `.mov` / `.m4v` → 视频；其余 → 其他。
   只有 `.md` 会内嵌渲染，PDF / TXT 等文档给「打开原件」。
-- 编号自动生成：每个载体各自从 `IMG-0001` / `DOC-0001` / `AUD-0001` / `VID-0001` /
-  `FIL-0001` 往上排；顺序按文件路径（同载体里）。sidecar 里的 `number` 可以覆盖。
+- 编号：**文件档案不自动编号**——每条记录必须在 sidecar 里手写 `number`（唯一），
+  缺失会直接让 build 报错。**未归类档案**仍按载体自动排（`IMG-0001` / `DOC-0001` /
+  `AUD-0001` / `VID-0001` / `FIL-0001`），sidecar 里的 `number` 可以覆盖。
 - 标题默认取文件名（连字符 / 下划线换空格），英文名默认为空。
 
-### sidecar 元数据（全部可选）
+### sidecar 元数据（文件档案的 `number` 必填，其余可选）
 
 同目录下的 `<文件名>.<扩展名>.meta.json`，例如
 `assets/document/希望号/hopeship-mission.md.meta.json`：
 
 ```json
 {
+  "number": "DOC-0001",
   "title": "希望号任务",
   "en": "Hopeship Mission",
   "date": "A.D. 2026-11-21",
@@ -431,6 +433,7 @@ assets/document/<来源>/<文件名>.<扩展名>.meta.json   （可选）
 
 可写字段：`title` / `en` / `number` / `kind` / `date` / `source` / `clearance` /
 `summary` / `notes` / `width` / `height` / `duration` / `lines`。
+`number` 在**文件档案**里必填（手写编号，唯一）；未归类档案可写可不写。
 不写 `source` 取第一层目录名；不写 `clearance` 默认「公开」；图片宽高、`.md` 行数、
 WAV 时长会自动读（读不出的格式用 sidecar 的 `width` / `height` / `duration` 补）。
 JSON 写错会让 build 直接报错并指出是哪一个 sidecar。
@@ -478,7 +481,8 @@ node scripts/document-index.mjs --check   # 只校验是否最新
   从哪个目录取素材、读哪个全局；`template.html`（静态版式参考）没有这两项，脚本按静态模式跑
 - **空桶是合法的**：还没有文件时左栏 5 个分组都显示「待收录」，右栏 NO / INFO；
   把文件放进 `assets/uncategorized/<来源>/` 再跑脚本就会自动出现
-- 编号、sidecar、分类规则与文件档案完全相同（各自从 `IMG-0001` / `DOC-0001` 开始）
+- 分类 / sidecar / 来源规则与文件档案相同；**编号不同**：文件档案的 `number`
+  必须手写在 sidecar 里，未归类档案按载体自动排（`IMG-0001` / `DOC-0001` …）
 - `.assetsignore` 里 `_README.md` 与 sidecar 都不发布；索引脚本一次重建两个数据文件
 
 ---

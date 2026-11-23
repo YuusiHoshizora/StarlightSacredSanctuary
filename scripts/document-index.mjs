@@ -13,6 +13,9 @@
  *   node scripts/document-index.mjs           # 重建两个数据文件
  *   node scripts/document-index.mjs --check   # 只检查是否最新（CI 用）
  *
+ * 编号：文件档案的编号已经确定，**必须**在 sidecar 里手写 number，缺失会直接报错；
+ *       未归类档案没有固定编号，按载体自动排（IMG-0001 / DOC-0001 …）。
+ *
  * 生成物：assets/data/document.js（window.SSS_DOCUMENT）与
  *         assets/data/uncategorized.js（window.SSS_UNCATEGORIZED）。
  * 推送到 master 时 .github/workflows/document-index.yml 会自动跑并提交结果。
@@ -36,19 +39,26 @@ const COLLECTIONS = [
         label: '文件档案',
         srcRel: 'assets/document',
         outRel: 'assets/data/document.js',
-        globalName: 'SSS_DOCUMENT'
+        globalName: 'SSS_DOCUMENT',
+        /* 文件档案的编号已经确定，必须由 sidecar 手写，不做自动编号 */
+        numbering: 'manual'
     },
     {
         key: 'uncategorized',
         label: '未归类档案',
         srcRel: 'assets/uncategorized',
         outRel: 'assets/data/uncategorized.js',
-        globalName: 'SSS_UNCATEGORIZED'
+        globalName: 'SSS_UNCATEGORIZED',
+        /* 未归类档案没有固定编号，按载体自动排 */
+        numbering: 'auto'
     }
 ];
 
 const KIND_ORDER = ['image', 'document', 'audio', 'video', 'other'];
 const PREFIX = { image: 'IMG', document: 'DOC', audio: 'AUD', video: 'VID', other: 'FIL' };
+/* 文本类按 LF 统计大小：仓库里存 LF、Windows 工作区可能是 CRLF，
+   直接用 stat.size 会让同一份文件在本地和 CI 生成不同的大小。 */
+const TEXT_EXT = new Set(['md', 'markdown', 'txt', 'svg', 'json', 'csv']);
 const EXT_KIND = {
     md: 'document', markdown: 'document', pdf: 'document', txt: 'document',
     png: 'image', jpg: 'image', jpeg: 'image', webp: 'image', gif: 'image', svg: 'image', avif: 'image',
@@ -131,6 +141,12 @@ function sizeText(bytes) {
     if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
     if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
     return (bytes / 1024 / 1024 / 1024).toFixed(1) + ' GB';
+}
+
+function contentSize(abs, ext, stat) {
+    if (!TEXT_EXT.has(ext)) return stat.size;
+    const text = fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n');
+    return Buffer.byteLength(text, 'utf8');
 }
 
 function formatDuration(sec) {
@@ -246,6 +262,7 @@ function build(collection) {
 
     const files = walk(src, '').sort();
     const usedIds = Object.create(null);
+    const usedNumbers = Object.create(null);
     const counters = Object.create(null);
     const records = [];
 
@@ -261,7 +278,7 @@ function build(collection) {
         }
         const abs = path.join(src, ...rel.split('/'));
         const stat = fs.statSync(abs);
-        const size = stat.size;
+        const size = contentSize(abs, ext, stat);
 
         let id = slugify(rel);
         if (usedIds[id]) {
@@ -271,8 +288,23 @@ function build(collection) {
         }
         usedIds[id] = true;
 
-        counters[kind] = (counters[kind] || 0) + 1;
-        const autoNumber = PREFIX[kind] + '-' + String(counters[kind]).padStart(4, '0');
+        let number;
+        if (collection.numbering === 'manual') {
+            if (meta.number === undefined || meta.number === null || String(meta.number).trim() === '') {
+                throw new Error(collection.label + '的记录必须手写 number（sidecar）：' + rel + '.meta.json');
+            }
+            number = String(meta.number).trim();
+        } else {
+            counters[kind] = (counters[kind] || 0) + 1;
+            const autoNumber = PREFIX[kind] + '-' + String(counters[kind]).padStart(4, '0');
+            number = (meta.number !== undefined && meta.number !== null && String(meta.number).trim() !== '')
+                ? String(meta.number).trim()
+                : autoNumber;
+        }
+        if (usedNumbers[number]) {
+            throw new Error('编号重复：' + number + '（' + rel + '）');
+        }
+        usedNumbers[number] = true;
 
         let width = Number(meta.width) ? Number(meta.width) : null;
         let height = Number(meta.height) ? Number(meta.height) : null;
@@ -305,7 +337,7 @@ function build(collection) {
             ext: ext,
             title: meta.title ? String(meta.title) : baseTitle(rel),
             en: meta.en ? String(meta.en) : '',
-            number: meta.number ? String(meta.number) : autoNumber,
+            number: number,
             size: size,
             sizeText: sizeText(size),
             width: width,
