@@ -8,27 +8,6 @@
 window.SSS_DOCUMENT = {
   "records": [
     {
-      "id": "北落师门第三行星-veridica",
-      "file": "北落师门第三行星/veridica.png",
-      "url": "%E5%8C%97%E8%90%BD%E5%B8%88%E9%97%A8%E7%AC%AC%E4%B8%89%E8%A1%8C%E6%98%9F/veridica.png",
-      "kind": "image",
-      "ext": "png",
-      "title": "真理花观测图",
-      "en": "Veridica Observation Image",
-      "number": "IMG-0001",
-      "size": 229213,
-      "sizeText": "224 KB",
-      "width": 512,
-      "height": 512,
-      "duration": "",
-      "lines": null,
-      "date": "A.D. 2026-11-21",
-      "source": "北落师门第三行星",
-      "clearance": "公开",
-      "summary": "真理花的形态记录图，随生物档案「真理花」条目一起保存。",
-      "notes": ""
-    },
-    {
       "id": "希望号-hopeship-mission",
       "file": "希望号/hopeship-mission.md",
       "url": "%E5%B8%8C%E6%9C%9B%E5%8F%B7/hopeship-mission.md",
@@ -47,6 +26,27 @@ window.SSS_DOCUMENT = {
       "source": "希望号",
       "clearance": "公开",
       "summary": "希望号第 IX 代科研舰的航行任务说明。",
+      "notes": ""
+    },
+    {
+      "id": "资料部独立档案-记录-星能",
+      "file": "资料部独立档案/记录：星能.md",
+      "url": "%E8%B5%84%E6%96%99%E9%83%A8%E7%8B%AC%E7%AB%8B%E6%A1%A3%E6%A1%88/%E8%AE%B0%E5%BD%95%EF%BC%9A%E6%98%9F%E8%83%BD.md",
+      "kind": "document",
+      "ext": "md",
+      "title": "记录：星能",
+      "en": "",
+      "number": "DOC-0002",
+      "size": 2201,
+      "sizeText": "2 KB",
+      "width": null,
+      "height": null,
+      "duration": "",
+      "lines": 13,
+      "date": "",
+      "source": "资料部独立档案",
+      "clearance": "公开",
+      "summary": "",
       "notes": ""
     }
   ]
