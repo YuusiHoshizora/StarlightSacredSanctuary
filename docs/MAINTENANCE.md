@@ -510,7 +510,11 @@ Redirect Rule 301 过来，见下）。
   也用这份文件，地址仍是请求时的 URL，所以离线打开 `/error/503` 同样显示 503。
 - 自检：`powershell -NoProfile -ExecutionPolicy Bypass -File .github\verify-site.ps1`
   （可加 `-ShortUrl https://stsas.top -WwwUrl https://www.starlightsacredsanctuary.top`）。
-  迁移前基线 PASS 16 / FAIL 0；出现 FAIL 都值得查
+  迁移前基线 PASS 16 / FAIL 0；出现 FAIL 都值得查。
+  两条与托管层有关的判定已按现状对齐：`.html` 地址会被 307 到不带扩展名的地址，所以错误页
+  按 `/404`（200）与 `/404.html`（200/307）两条验；Cloudflare 还会往 HTML 响应注入
+  bot 检测标记（`/cdn-cgi/content` 锚点 + 一段带 `window.__CF$cv$params` 的脚本），
+  脚本比对前用 `Remove-CfInjection` 剥掉，否则 404 永远「不一致」。
 
 ### 短域名 `stsas.top` 跳到长域名
 

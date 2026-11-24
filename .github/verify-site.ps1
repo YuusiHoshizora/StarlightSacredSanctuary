@@ -66,6 +66,16 @@ function Get-Body([string]$url, [string]$outFile) {
     return @{ Code = [int]$parts[0]; Size = [int]$parts[1] }
 }
 
+function Remove-CfInjection([string]$Text) {
+    # 托管层注入的内容与本仓库无关，逐字节比对前先剥掉：
+    #   1) <body> 之后一个 display:none 的 /cdn-cgi/content 锚点（Bot 检测）
+    #   2) </body> 之前一段带 window.__CF$cv$params 的检测脚本
+    # 不剥的话，线上 404 会永远比本地 404.html「多」，被误判成内容被改了。
+    $Text = $Text -replace '<a href="[^"]*/cdn-cgi/content\?[^"]*"[^>]*></a>', ''
+    $Text = $Text -replace '(?s)<script>(?:(?!</script>)[\s\S])*?__CF\$cv\$params[\s\S]*?</script>', ''
+    return ($Text -replace "`r`n", "`n")
+}
+
 function Test-Path-Code([string]$path, [int[]]$expect, [string]$label) {
     $url = $BaseUrl.TrimEnd('/') + $path
     $h = Get-Head $url
@@ -94,7 +104,10 @@ Test-Path-Code '/archive/vessel/' @(200) '舰船档案页'
 Test-Path-Code '/tool/'       @(200) '工具页'
 Test-Path-Code '/tool/starmap/' @(200) '星图页'
 Test-Path-Code '/fleet/'      @(200) '舰队页'
-Test-Path-Code '/404.html'    @(200) '错误页（404.html）'
+# Cloudflare 会把 .html 地址 307 到不带扩展名的规范地址（见 docs/MAINTENANCE.md「重定向坑」），
+# 所以错误页分两条验：「/404 本身可达」+「/404.html 能到达它（200 或 307）」。
+Test-Path-Code '/404'         @(200)     '错误页（/404）'
+Test-Path-Code '/404.html'    @(200,307) '错误页（/404.html → /404）'
 Test-Path-Code '/sw.js'       @(200) 'Service Worker'
 Test-Path-Code '/assets/post/index.json' @(200) '文章索引'
 
@@ -112,14 +125,15 @@ if ($r404.Code -eq 404) {
         # 返回 404 但响应体是空的 —— 访问者看到一片空白。
         Add-Result 'FAIL' '不存在的路径' '[404 + 自定义错误页]' "404，但响应体是空的（$($r404.Size) B）—— 缺顶层 404.html"
     } elseif (Test-Path $localError) {
-        # 注意：工作区是 CRLF、部署出去的 blob 是 LF（core.autocrlf），
-        # 必须先归一化行尾再比，否则永远不相等（5972 B vs 6092 B）。
-        $localText  = ([System.IO.File]::ReadAllText($localError)) -replace "`r`n", "`n"
-        $remoteText = ([System.IO.File]::ReadAllText($tmp404))     -replace "`r`n", "`n"
+        # 注意：工作区是 CRLF、部署出去的 blob 是 LF（core.autocrlf），先归一化行尾再比。
+        # 另外 Cloudflare 会往 HTML 响应里注入 bot 检测标记（与本仓库内容无关），
+        # 逐字节比对前要先剥掉，否则「线上 404 与本地 404.html 一致」永远不成立。
+        $localText  = Remove-CfInjection ([System.IO.File]::ReadAllText($localError))
+        $remoteText = Remove-CfInjection ([System.IO.File]::ReadAllText($tmp404))
         if ($localText -ceq $remoteText) {
-            Add-Result 'PASS' '不存在的路径' '[404 + 自定义错误页]' "404，内容与 404.html 完全一致（$($r404.Size) B）"
+            Add-Result 'PASS' '不存在的路径' '[404 + 自定义错误页]' "404，内容与 404.html 一致（已剔除 Cloudflare 注入，$($r404.Size) B）"
         } else {
-            Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' "404，但内容与 404.html 不一致（$($r404.Size) B）—— 可能被压缩/注入了，人工看一眼"
+            Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' "404，但与 404.html 不一致（已剔除 Cloudflare 注入，$($r404.Size) B）—— 人工看一眼"
         }
     } else {
         Add-Result 'WARN' '不存在的路径' '[404 + 自定义错误页]' '404，但本地找不到 404.html 无法比对'
