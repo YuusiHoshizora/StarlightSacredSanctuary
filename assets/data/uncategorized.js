@@ -3,7 +3,7 @@
  * -----------------------------------------------------------------------------
  * ⚠️ 生成文件：由 `node scripts/document-index.mjs` 扫描 assets/uncategorized/ 生成。
  *   不要直接改这里 —— 加 / 删 / 改文件后重跑脚本（GitHub Actions 也会跑）。
- *   目录结构、sidecar 元数据写法见 MAINTENANCE.md 的「文件档案 / 未归类档案」。
+ *   目录结构、sidecar 元数据写法见 docs/MAINTENANCE.md 的「文件档案 / 未归类档案」。
  * ========================================================================== */
 window.SSS_UNCATEGORIZED = {
   "records": [

@@ -77,7 +77,7 @@ button.tool-entry {
 
 /* 左侧那条标识竖线：落在卡片**外面**（留白里），一根实心金线，默认不显示，hover / 键盘聚焦时亮起。
    选中态整体照主页面左栏的分类列表（.left-panel nav.vertical-nav a）：内容向右让开、左边亮一条竖线。
-   ⚠️ 全站只有这一处卡片会位移：其余可点击卡片一律只换描边/阴影，见 DESIGN.md 第五节。 */
+   ⚠️ 全站只有这一处卡片会位移：其余可点击卡片一律只换描边/阴影，见 docs/DESIGN.md 第五节。 */
 .tool-entry::before {
     content: "";
     position: absolute;
@@ -157,7 +157,7 @@ button.tool-entry {
 /* ── 右栏：小工具 ──
    三张同宽的卡**横着**排：一屏放得下，页面就不用滚。宽度都按 234px 写死，
    横排时不会互相拉扯。窄到放不下三张时退成两列（见下面的 1160px 断点），
-   ≤900px 再退成单列。规则见 DESIGN.md「一屏放得下」。 */
+   ≤900px 再退成单列。规则见 docs/DESIGN.md「一屏放得下」。 */
 .tool-main {
     display: grid;
     grid-template-columns: repeat(3, 234px);
@@ -434,7 +434,7 @@ button.tool-entry {
     text-align: center;
 }
 
-/* 提示行：平时为空，只在输入有误时显示错误（换算成功不写推导过程，见 DESIGN.md
+/* 提示行：平时为空，只在输入有误时显示错误（换算成功不写推导过程，见 docs/DESIGN.md
    「操作界面的文案」）。行高和最小高度对齐，提示出现 / 消失时卡片下边界不动。
    时间转换与罗马数字两张卡共用。 */
 .timeconv__note,

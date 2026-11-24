@@ -12,10 +12,11 @@
 netlify.toml
 
 # —— 部署配置 / 仓库文档：GitHub 上本来就是公开的，没必要再占一份站点资源 ——
-# （实测：没有这几行时 /wrangler.jsonc、/MAINTENANCE.md、/MIGRATION-CLOUDFLARE.md 都是 200）
+# （实测：没有这几行时 /wrangler.jsonc、/MAINTENANCE.md 都是 200）
+# 仓库文档统一收进 docs/（结构与约定见 docs/STRUCTURE.md），整目录不发布：
+# 线上 /docs/** 一律 404。README.md 与 LICENSE 仍然公开（给读者 / 给协议）
 wrangler.jsonc
-MAINTENANCE.md
-MIGRATION-CLOUDFLARE.md
+/docs
 
 # —— 本地环境 / 工具产物（CI 的干净 clone 里本来没有，列上是防手工上传时误带）——
 .venv

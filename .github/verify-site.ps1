@@ -3,7 +3,7 @@
     站点 URL 契约自检 —— 迁移到 Cloudflare 前后都用它。
 
 .DESCRIPTION
-    逐条核对 MIGRATION-CLOUDFLARE.md 第 8 节那份「切换后必须验的清单」。
+    逐条核对 docs/MIGRATION-CLOUDFLARE.md 第 8 节那份「切换后必须验的清单」。
     判定标准全部来自仓库里的文件（404.html、sw.js、assets/），不写死内容。
 
     放在 .github/ 下是故意的：两个托管（Netlify 与 Cloudflare Pages 的构建命令）

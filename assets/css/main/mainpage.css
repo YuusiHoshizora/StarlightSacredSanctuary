@@ -553,7 +553,7 @@
     color: #FFD700;
     background: rgba(255, 215, 0, 0.06);
     border-left-color: #FFD700;
-    padding-left: 17px;          /* 与 DESIGN.md 的基准一致：选中时整块右挪 5px */
+    padding-left: 17px;          /* 与 docs/DESIGN.md 的基准一致：选中时整块右挪 5px */
     opacity: 1;
 }
 

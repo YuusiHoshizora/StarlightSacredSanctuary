@@ -1,141 +1,15 @@
 # 维护备忘
 
-给自己看的操作说明 —— 面向读者那部分在 [README.md](README.md)。
+给自己看的操作说明 —— 面向读者那部分在 [../README.md](../README.md)。
 本地怎么预览、怎么加文章、部署怎么走、改完要做什么，都记在这里。
 
 ---
 
 ## 目录结构
 
-```
-.
-├── index.html                  首页
-├── 404.html                    错误页（唯一的源）：CF 静态资源 Worker 的 404 页，也是 SW 的离线页
-├── sw.js                       Service Worker：预缓存 + 缓存优先
-├── wrangler.jsonc              部署配置：资源目录 = 仓库根、未匹配路径回 404.html
-├── .assetsignore               不上传清单（.git/、内部文档、编辑器与工具产物…）
-├── MIGRATION-CLOUDFLARE.md     迁往 Cloudflare 的迁移手册（收尾完成后可删）
-│
-├── main/mainpage.html          主页面（事件列表 + Markdown 阅读器）
-├── main/cq.html                彩蛋：CQ（无入口页，见「设计约定 · 彩蛋」）
-├── starmap/index.html          旧地址重定向 → /tool/starmap/
-├── fleet/index.html            舰队
-├── tool/index.html             工具
-├── tool/starmap/index.html     星图（canvas + 数据 + Starmap®OS 启动画面；刻意没有页脚）
-├── archive/index.html          档案（分类导航）
-├── archive/organization/index.html  组织档案（组织名录导航：官方 / 半官方 / 非官方三类，目前只有官方组织有内容）
-├── archive/organization/cam.html    管理成员议会（最高权力机构；3 列 × 4 位议员）
-├── archive/organization/dgam.html   管理成员讨论组（机密彩蛋页，无入口、无站内跳转）
-├── archive/organization/res.html    科研部（部门页模板：题图 / 概要 / 详情 / 四个下属局）
-├── archive/organization/ind.html    工业部（题图 / 概要 / 详情 / 下属「数据损坏」占位）
-├── archive/organization/adm.html    管理部（题图 / 概要 / 详情 / 下属「数据损坏」）
-├── archive/organization/int.html    情报部（题图 / 概要 / 详情 / 下属「数据损坏」）
-├── archive/organization/dip.html    外交部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/col.html    收集部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/log.html    后勤部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/flo.html    舰队后勤部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/arc.html    资料部（题图 / 概要 / 详情 / 下属「数据损坏」）
-├── archive/organization/eco.html    经济部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/lif.html    生命部（题图 / 概要 / 详情 / 下属「数据损坏」）
-├── archive/organization/edu.html    教育部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/inv.html    调查部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/pla.html    规划部（题图 / 概要 / 下属「数据损坏」）
-├── archive/organization/tas.html    战术战略部（题图 / 概要 / 下属「数据损坏」）
-├── archive/personnel/index.html 人员档案（四个等级入口；卡片人数由数据渲染）
-├── archive/personnel/sxm.html   管理成员（SXM）：HTML 壳，名单/档案由数据渲染
-├── archive/personnel/sam.html   高级成员（SAM）：HTML 壳，名单/档案由数据渲染
-├── archive/personnel/sfm.html   正式成员（SFM）：HTML 壳，名单/档案由数据渲染
-├── archive/personnel/spm.html   预备成员（SPM）：HTML 壳，名单/档案由数据渲染
-├── archive/facility/index.html 深空设施档案（无分类：左栏设施名录 + 右栏档案，全由数据渲染）
-├── archive/vessel/index.html     舰船档案（按尺寸分类：左栏舰船名录 + 右栏档案，全由数据渲染）
-├── archive/biology/index.html    生物档案（左栏分类名录 + 右栏条目档案；目前收录真理花）
-├── archive/biology/template.html 生物档案页模板（左栏分类名录 + 右栏条目档案；头像在概要右侧，无图显示 No/Info）
-├── archive/document/index.html   文件档案（记录由 assets/document/ 扫描生成；右栏只留预览，信息收在「详情」面板）
-├── archive/document/template.html 文件档案页模板（四种载体各一条示例记录；内部模板，不公开）
-├── archive/uncategorized/index.html 未归类档案（与文件档案同构；记录由 assets/uncategorized/ 扫描生成）
-├── about/index.html            关于（授权说明与致谢）
-│
-├── assets/
-│   ├── css/
-│   │   ├── global.css          全站共用：字体声明 + 控件设计令牌（--ctl-*）
-│   │   ├── index.css           首页
-│   │   ├── error.css           错误页
-│   │   ├── archive.css         档案页
-│   │   ├── archive/organization.css  组织档案页
-│   │   ├── archive/personnel.css     人员档案页
-│   │   ├── archive/facility.css      深空设施档案页
-│   │   ├── archive/vessel.css          舰船档案页
-│   │   ├── archive/biology.css       生物档案页（左栏分类名录 / 概要 + 右侧方形头像）
-│   │   ├── archive/document.css      文件档案页（按载体分类名录 / 预览框 / 详情面板 / 音轨播放条）
-│   │   ├── markdown.css         Markdown 正文（主页面文章 + 文件档案的 .md 预览共用）
-│   │   ├── main/mainpage.css   主页面
-│   │   ├── main/cq.css         彩蛋页 CQ
-│   │   ├── starmap/index.css   星图 + Starmap®OS 启动画面
-│   │   ├── fleet/index.css     舰队页
-│   │   ├── tool/index.css      工具页
-│   │   └── about/index.css     关于页
-│   │
-│   ├── js/
-│   │   ├── background.js       全站背景（星野 / 六边形网格 / 鼠标激活区）
-│   │   ├── cursor.js           指针动效：自绘指针，只转外环（精细指针 + 非 reduced-motion）
-│   │   ├── fleet.js            舰队页：悬停卡片时把整页主题色（紫）切到该舰队的颜色（含背景 / 顶栏）
-│   │   ├── notice.js           一次性欢迎通知（localStorage 记已读）
-│   │   ├── seamless.js         Service Worker 注册与更新 + 非 Chromium 的预取回退
-│   │   ├── spa.js              站内同文档导航（除星图 / 彩蛋外全站）
-│   │   ├── navtoggle.js        窄屏顶栏折叠（汉堡按钮 + 下拉面板）
-│   │   ├── archive-scroll.js   档案页：给能滚的容器挂 .is-scrollable 并连续写上下淡出长度
-│   │   ├── archive-list-search.js 档案页左栏名录搜索：按名称过滤（外观与交互照星图搜索）
-│   │   ├── biology.js          生物档案页：把搜索接到左栏生物名录
-│   │   ├── document.js         文件档案页：搜索 / 选中 / 深链 / 详情面板 / .md 渲染 / 音轨播放条
-│   │   ├── personnel.js        人员档案：从 personnel.js 数据渲染首页卡片 / 等级页名录与档案 + 亲属跳转（# 不滚页）
-│   │   ├── facility.js         深空设施档案：左栏名录 / 右栏档案（# 不滚页）
-│   │   ├── vessel.js           舰船档案：左栏名录 / 右栏档案（# 不滚页）
-│   │   ├── org-member.js       未建档成员名的提示条（已建档的名字直接链到人员档案）
-│   │   ├── org-secret.js       组织档案页的隐藏入口：三张部门卡拖到议会卡上解锁 DGAM
-│   │   ├── eggs.js             彩蛋登记册（记已发现 + 填「关于」页那张卡片）
-│   │   ├── main.js             首页打字机效果
-│   │   ├── tool.js             工具页（拾色器 + 时间转换 + 罗马数字）
-│   │   ├── starmap.js          星图绘制与交互（渲染脚本，页面在 tool/starmap/index.html 直接引用）
-│   │   ├── starmap-bg.js       星图页专用的背景参数
-│   │   └── marked.min.js       Markdown 渲染（marked v9.1.6）
-│   │
-│   ├── data/                   页面读的数据 JS —— **生成物**（CSV 或 assets/document/ 生成）
-│   │   ├── personnel.js        人员数据（SXM/SAM/SFM/SPM 名单 / 身份 / 亲属 / 科研 / 反馈；亲属名在库内自动链到成员）
-│   │   ├── facility.js         深空设施数据（名录 / 归属 / 配件 / 应对措施；正文纯文本，不写资料库 wiki 链接）
-│   │   ├── vessel.js           舰船数据（尺寸分类 / 舰种 / 迭代次数 / 简介 / 详细装备；正文纯文本）
-│   │   ├── starmap-data.js     星系数据（STARMAP_DATA）
-│   │   ├── document.js         文件档案数据（扫描 assets/document/ 生成；目录结构 = 来源，按扩展名分类）
-│   │   └── uncategorized.js    未归类档案数据（扫描 assets/uncategorized/ 生成；同一套规则）
-│   │
-│   ├── document/               文件档案的唯一来源：<来源>/<文件名>.<扩展名> + .meta.json sidecar（number 必写）
-│   │                           加 / 删文件后跑 `node scripts/document-index.mjs`
-│   ├── uncategorized/          未归类档案的唯一来源（同一套目录规则；sidecar 可选、编号自动）
-│   │
-│   ├── fonts/                  Gothic / Mono 两族共 7 个 woff2（约 43 MB）
-│   ├── img/                    logo_SSS.svg（站点图标 + 导航栏 logo，见「设计约定」）
-│   │                           logo_SSS_boot.svg（加载屏徽记用；同上图，四周多留 6px 画布，
-│   │                           否则外圈描边被 viewBox 裁掉，放大后圆边会平切）
-│   │                           QSL.png（彩蛋页用，2854×2008）
-│   │                           cursor/ 24 个 32×32 SVG 指针（星芒家族：默认星芒、金星 +
-│   │                           轨道环、文本菱、准星、拖拽、缩放、禁止、复制…由 global.css 的 --cur-* 引用）
-│   ├── audio/                  彩蛋页用的两段 WAV（cq.wav / QSL-sstv.wav，共约 5 MB）
-│   └── post/                   事件正文 .md + 自动生成的 index.json
-│
-├── data/                       数据源（CSV，人直接编辑；说明见 data/README.md）
-│   ├── personnel/              classes.csv / members.csv
-│   ├── facility/               affiliations / facilities / unique-parts / common-parts / orgs
-│   ├── vessel/                 sizes / vessels / equipment
-│   ├── starmap/                systems.csv
-│   └── README.md               每列含义 + 编辑约定 + 常见操作
-│
-├── scripts/
-│   ├── data-csv.mjs            CSV ⇄ JS：build / check / export
-│   └── document-index.mjs      扫描 assets/document/ → assets/data/document.js
-│
-└── .github/workflows/
-    ├── generate-post-index.yml
-    └── document-index.yml      推送 assets/document/ 时自动重建文件档案数据
-```
+完整目录树、每层放什么、命名规则、新增内容该落在哪个目录，集中写在
+[STRUCTURE.md](STRUCTURE.md)。**结构以那一份为准** —— 改了目录只改那里，
+这份备忘不再抄一遍目录树（抄两份就一定有一份过期）。
 
 ---
 
@@ -169,7 +43,7 @@ node scripts/document-index.mjs --check   # 只校验是否最新，不写文件
 推送到 master 且改到这两个来源目录时，`.github/workflows/document-index.yml`
 会自动重建并提交结果。
 - 每列的含义、子表（配件 / 装备 / 组织）怎么挂、加一条数据要动哪几个文件，
-  全部写在 [data/README.md](data/README.md)，这里不重复
+  全部写在 [data/README.md](../data/README.md)，这里不重复
 
 ---
 
@@ -759,7 +633,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 工具页左栏是目录：**通用工具**（星图）在上，**测试工具**（公告测试 / 加载测试 / 指针测试）在下；右栏是「便捷转换」，
 拾色器 / 时间转换 / 罗马数字 三张工具卡都放在里面。
 
-· 星图已经从顶栏撤下，入口只在工具页「通用工具」里（`tool/starmap/`，旧地址 `/starmap/` 会重定向过去）
+· 星图已经从顶栏撤下，入口只在工具页「通用工具」里（`tool/starmap/`；根路径 `/starmap/` 的重定向页已删除，不再有旧地址）
 · 公告测试 —— `tool/index.html` 里发一个 `sss:notice` 事件，`notice.js` 收到就弹公告
 · 加载测试 —— 普通链接 `../?boot=1`；各页 `<head>` 里那段判断见到 `boot` 参数就重播一次加载屏（`spa.js` 会跳过带 `boot` 参数的 URL，
   交给整页加载，否则会被同文档导航吃掉、加载屏不播）
@@ -1176,7 +1050,7 @@ stale-while-revalidate）。而浏览器只在 **`sw.js` 的字节变化**时才
 ## 设计语言另见
 
 新页面 / 新组件怎么写、颜色与动效的约定、以及一份「踩过的坑」清单，
-见根目录的 [DESIGN.md](DESIGN.md)。
+见同目录的 [DESIGN.md](DESIGN.md)。
 
 ---
 

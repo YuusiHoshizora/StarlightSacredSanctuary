@@ -406,7 +406,7 @@
 
 /* 读数（编号 / 大小 / 尺寸 / 日期）：等宽栈，小一号，比正文弱一档。
    ⚠️ .org-meta dd 自带字号与颜色，这里必须带上 dd 才压得住
-   （与 DESIGN.md 第十一节第 3 条同一个道理：去线 / 改色都要先看权重）。 */
+   （与 docs/DESIGN.md 第十一节第 3 条同一个道理：去线 / 改色都要先看权重）。 */
 .document-profile .org-meta dd.doc-mono {
     font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 12px;

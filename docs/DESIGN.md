@@ -259,7 +259,7 @@ a:hover { color: #FFD700; text-decoration-color: currentColor; }
 - 加一种新状态要做三件事：图形放进 `assets/img/cursor/`、`:root` 里加一条 `--cur-*`、
   `sw.js` 的 `PRECACHE_URLS` 里补一行（否则离线时那一种会退回系统光标）
 - **动效 = 自绘指针，只转外环**：原生 `cursor` 图片是静态的（浏览器不会播放 GIF / APNG /
-  SVG 动画），所以 [cursor.js](assets/js/cursor.js) 在精细指针下隐藏系统光标，把同一张
+  SVG 动画），所以 [cursor.js](../assets/js/cursor.js) 在精细指针下隐藏系统光标，把同一张
   32×32 图形按指针坐标 **1:1** 画到 DOM 上。图形在 SVG 文件里拆成两组：
   `<g class="cursor-ring">` 是外圈，其余是本体；**只让 ring 组转，本体永远静止**
   （pointer / grab / grabbing / wait / progress / help / no-drop 有环才转；默认星芒没有环，
@@ -381,7 +381,7 @@ navbar、背景画布不重载，所以 Firefox 也能拿到真正的交叉淡�
 ⚠️ **不能用 `CSS.supports('view-transition-name','none')` 判断跨文档过渡**：Firefox 支持
 同文档的 View Transitions，属性存在但没有 `@view-transition`（158 实测：属性 true、
 at-rule 被丢弃），属性判断会把兜底动画变成死代码。现在用 `sssSupportsCrossDocVT()`
-（[boot.js](assets/js/boot.js)）把 at-rule 塞进样式表看会不会被解析。
+（[boot.js](../assets/js/boot.js)）把 at-rule 塞进样式表看会不会被解析。
 
 ---
 

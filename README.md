@@ -43,6 +43,16 @@
 - 有一个 Service Worker：访问过一次之后，断网也能打开站内页面；页面之间的跳转带淡入淡出
 - 手机 / 平板等窄屏上，每一页都有单独的排版
 
+## 仓库怎么组织
+
+仓库根目录就是网站根目录，目录名基本就是公开 URL 的路径。完整约定（每个目录放什么、
+命名规则、新增内容该落哪儿、哪些文件不进发布）写在
+**[docs/STRUCTURE.md](docs/STRUCTURE.md)**，文档索引见 **[docs/README.md](docs/README.md)**。
+
+- 页面按路径分目录：`main/`、`fleet/`、`tool/`、`archive/`、`about/`
+- 页面读的数据由 `data/` 下的 CSV 生成到 `assets/data/`（生成物不要手改）
+- 仓库文档（维护备忘、设计语言、迁移记录）都收在 `docs/`，不随站点发布
+
 ## 授权与致谢
 
 **© 2025–2026 余事星空（YuusiHoshizora）**
@@ -66,4 +76,4 @@
 
 ---
 
-> 本地怎么预览、怎么发新事件、部署与改样式之后要注意什么，见 [MAINTENANCE.md](MAINTENANCE.md)。
+> 本地怎么预览、怎么发新事件、部署与改样式之后要注意什么，见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。

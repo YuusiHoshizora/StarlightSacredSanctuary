@@ -93,7 +93,7 @@
 
     /* 扫出来时放的那声有 20 多秒。音频对象是 new Audio() 建的，不在 <main> 里，
        站内换页换不掉它 —— 不主动 pause 的话，切到别的页面之后它还在后台响。
-       按站里的规矩（见 MAINTENANCE「CQ 页的生命周期」），离开页面必须停音频。 */
+       按站里的规矩（见 docs/MAINTENANCE.md 的「CQ 页的生命周期」），离开页面必须停音频。 */
     function stopQuiet() {
         if (!audio) return;
         try { audio.pause(); } catch (e) { /* 忽略 */ }
