@@ -20,7 +20,7 @@
 | [DESIGN.md](DESIGN.md) | 设计语言：定位、色板、排版、组件、动效 | 视觉规范变化时 |
 | [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md) | Netlify → Cloudflare 的完整准备与执行记录 | 只作历史记录，不再更新 |
 | `drafts/` | 未定稿草稿（当前：双语 README 草稿） | 定稿后替换 `README.md` 或直接删除 |
-| [../data/README.md](../data/README.md) | CSV 每列含义、编辑与校验约定 | 改了表结构 / 校验规则时 |
+| [../src/csv/README.md](../src/csv/README.md) | CSV 每列含义、编辑与校验约定 | 改了表结构 / 校验规则时 |
 | [../assets/uncategorized/_README.md](../assets/uncategorized/_README.md) | 未归类档案目录怎么放文件 | 目录规则变化时 |
 
 ## 维护约定

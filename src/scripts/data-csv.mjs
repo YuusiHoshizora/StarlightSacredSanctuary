@@ -2,13 +2,13 @@
 /* =============================================================================
  * data-csv.mjs — 站点数据：CSV（人读 / 表格软件编辑）⇄ JS（站点读取）
  * -----------------------------------------------------------------------------
- * 数据源在 data/ 下的 CSV；站点读的 assets/data/*.js 是**生成物**。
+ * 数据源在 src/csv/ 下的 CSV；站点读的 assets/data/*.js 是**生成物**。
  *
- *   node scripts/data-csv.mjs build     CSV → assets/data/*.js（日常用这个）
- *   node scripts/data-csv.mjs check     只检查 JS 是否和 CSV 一致（CI 用，不写文件）
- *   node scripts/data-csv.mjs export    assets/data/*.js → CSV（会覆盖 CSV，慎用）
+ *   node src/scripts/data-csv.mjs build     CSV → assets/data/*.js（日常用这个）
+ *   node src/scripts/data-csv.mjs check     只检查 JS 是否和 CSV 一致（CI 用，不写文件）
+ *   node src/scripts/data-csv.mjs export    assets/data/*.js → CSV（会覆盖 CSV，慎用）
  *
- * CSV 约定（详见 data/README.md）：
+ * CSV 约定（详见 src/csv/README.md）：
  *   - UTF-8（带 BOM，Excel 直接双击不乱码），逗号分隔，CRLF
  *   - 单元格里可以写换行（Excel 里是 Alt+Enter），表示「段落列表」
  *   - 同一份记录的多行子表（配件 / 装备 / 组织）按文件中的先后顺序渲染
@@ -18,8 +18,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DATA_DIR = path.join(ROOT, 'data');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const DATA_DIR = path.join(ROOT, 'src', 'csv');
 const JS_DIR = path.join(ROOT, 'assets', 'data');
 
 const BOM = '\uFEFF';
@@ -81,23 +81,23 @@ function writeCsv(rel, columns, records) {
 /* -- 读取：按列名映射，行号带进报错信息 -------------------------------- */
 function readTable(rel, columns) {
     const abs = path.join(DATA_DIR, rel);
-    if (!fs.existsSync(abs)) throw new Error(`缺少文件 data/${rel}（先跑 export，或从 git 恢复）`);
+    if (!fs.existsSync(abs)) throw new Error(`缺少文件 src/csv/${rel}（先跑 export，或从 git 恢复）`);
     const { rows, lines } = parseCsv(fs.readFileSync(abs, 'utf8'));
-    if (!rows.length) throw new Error(`data/${rel} 是空文件`);
+    if (!rows.length) throw new Error(`src/csv/${rel} 是空文件`);
     const header = rows[0].map((h) => h.trim());
     const dup = header.filter((h, i) => h && header.indexOf(h) !== i);
-    if (dup.length) throw new Error(`data/${rel}:1 表头重复：${[...new Set(dup)].join(', ')}`);
+    if (dup.length) throw new Error(`src/csv/${rel}:1 表头重复：${[...new Set(dup)].join(', ')}`);
     const missing = columns.filter((c) => !header.includes(c));
     const unknown = header.filter((h) => h && !columns.includes(h));
-    if (missing.length) throw new Error(`data/${rel}:1 表头缺列：${missing.join(', ')}（需要：${columns.join(', ')}）`);
-    if (unknown.length) throw new Error(`data/${rel}:1 表头有未知列：${unknown.join(', ')}（拼错了？可选列：${columns.join(', ')}）`);
+    if (missing.length) throw new Error(`src/csv/${rel}:1 表头缺列：${missing.join(', ')}（需要：${columns.join(', ')}）`);
+    if (unknown.length) throw new Error(`src/csv/${rel}:1 表头有未知列：${unknown.join(', ')}（拼错了？可选列：${columns.join(', ')}）`);
 
     const out = [];
     for (let r = 1; r < rows.length; r += 1) {
         const cells = rows[r];
         if (cells.every((c) => c === '')) continue;
         if (cells.length > header.length) {
-            throw new Error(`data/${rel}:${lines[r]} 列数比表头多（表头 ${header.length} 列，这一行 ${cells.length} 列）`);
+            throw new Error(`src/csv/${rel}:${lines[r]} 列数比表头多（表头 ${header.length} 列，这一行 ${cells.length} 列）`);
         }
         const rec = { __file: rel, __line: lines[r] };
         for (const c of columns) {
@@ -110,7 +110,7 @@ function readTable(rel, columns) {
     return out;
 }
 
-function where(rec) { return `data/${rec.__file}:${rec.__line}`; }
+function where(rec) { return `src/csv/${rec.__file}:${rec.__line}`; }
 
 /* Excel 会把长数字 / 日期样子的文本自动改写，这里专门抓回来 */
 function looksLikeExcelNumber(v) { return /^\s*-?\d+(\.\d+)?[eE][+-]?\d+\s*$/.test(v); }
@@ -187,7 +187,7 @@ function rowsOf(map, key) {
 
 function assertNoStrayRows(map, knownKeys, tableRel, col) {
     for (const key of map.keys()) {
-        if (!knownKeys.has(key)) throw new Error(`data/${tableRel}: 找不到对应的${col}「${key}」，这一行的归属写错了？`);
+        if (!knownKeys.has(key)) throw new Error(`src/csv/${tableRel}: 找不到对应的${col}「${key}」，这一行的归属写错了？`);
     }
 }
 
@@ -266,7 +266,7 @@ function buildPersonnel() {
 
     return {
         file: 'personnel.js',
-        text: jsModule('window.SSS_PERSONNEL', { classes, members }, '人员数据 —— 星光圣域', 'data/personnel/*.csv'),
+        text: jsModule('window.SSS_PERSONNEL', { classes, members }, '人员数据 —— 星光圣域', 'src/csv/personnel/*.csv'),
     };
 }
 
@@ -377,7 +377,7 @@ function buildFacility() {
 
     return {
         file: 'facility.js',
-        text: jsModule('window.SSS_FACILITY', { affiliations, facilities }, '深空设施数据 —— 星光圣域', 'data/facility/*.csv'),
+        text: jsModule('window.SSS_FACILITY', { affiliations, facilities }, '深空设施数据 —— 星光圣域', 'src/csv/facility/*.csv'),
     };
 }
 
@@ -420,7 +420,7 @@ function buildVessel() {
 
     return {
         file: 'vessel.js',
-        text: jsModule('window.SSS_VESSEL', { sizes, vessels }, '舰船数据 —— 星光圣域', 'data/vessel/*.csv'),
+        text: jsModule('window.SSS_VESSEL', { sizes, vessels }, '舰船数据 —— 星光圣域', 'src/csv/vessel/*.csv'),
     };
 }
 
@@ -449,8 +449,8 @@ function buildStarmap() {
         text: '/* =============================================================================\n' +
             ' * 星图数据\n' +
             ' * -----------------------------------------------------------------------------\n' +
-            ' * ⚠ 生成文件：由 `node scripts/data-csv.mjs build` 从 data/starmap/systems.csv 生成，\n' +
-            ' *   不要直接改这里 —— 改 CSV 再 build。字段说明见 data/README.md。\n' +
+            ' * ⚠ 生成文件：由 `node src/scripts/data-csv.mjs build` 从 src/csv/starmap/systems.csv 生成，\n' +
+            ' *   不要直接改这里 —— 改 CSV 再 build。字段说明见 src/csv/README.md。\n' +
             ' * 坐标单位：小格；原点 = 维斯佩拉星系，x 向右为正、y 向下为正。\n' +
             ' * ========================================================================== */\n' +
             `const STARMAP_DATA = ${JSON.stringify(systems, null, 2)};\n`,
@@ -461,8 +461,8 @@ function jsModule(globalName, data, title, source) {
     return '/* =============================================================================\n' +
         ` * ${title}\n` +
         ' * -----------------------------------------------------------------------------\n' +
-        ` * ⚠ 生成文件：由 \`node scripts/data-csv.mjs build\` 从 ${source} 生成，\n` +
-        ' *   不要直接改这里 —— 改 CSV 再 build。字段说明见 data/README.md。\n' +
+        ` * ⚠ 生成文件：由 \`node src/scripts/data-csv.mjs build\` 从 ${source} 生成，\n` +
+        ' *   不要直接改这里 —— 改 CSV 再 build。字段说明见 src/csv/README.md。\n' +
         ' * ========================================================================== */\n' +
         `${globalName} = ${JSON.stringify(data, null, 2)};\n`;
 }
@@ -591,7 +591,7 @@ function exportData() {
     const S = loadJs('starmap-data.js', 'STARMAP_DATA');
     writeCsv('starmap/systems.csv', COLUMNS['starmap/systems.csv'], S);
 
-    console.log(`已从 assets/data/*.js 导出 ${Object.keys(COLUMNS).length} 个 CSV 到 data/`);
+    console.log(`已从 assets/data/*.js 导出 ${Object.keys(COLUMNS).length} 个 CSV 到 src/csv/`);
 }
 
 /* ========================================================================== *
@@ -607,7 +607,7 @@ function main() {
         return;
     }
     if (cmd !== 'build' && cmd !== 'check') {
-        console.error(`用法：node scripts/data-csv.mjs <build|check|export>`);
+        console.error(`用法：node src/scripts/data-csv.mjs <build|check|export>`);
         process.exitCode = 2;
         return;
     }
@@ -623,13 +623,13 @@ function main() {
             const current = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n') : null;
             if (current !== out.text) {
                 dirty += 1;
-                console.error(`✗ assets/data/${out.file} 与 data/ 下的 CSV 不一致`);
+                console.error(`✗ assets/data/${out.file} 与 src/csv/ 下的 CSV 不一致`);
             } else {
                 console.log(`✓ assets/data/${out.file}`);
             }
         }
         if (dirty) {
-            console.error('\n先跑 `node scripts/data-csv.mjs build` 再提交。');
+            console.error('\n先跑 `node src/scripts/data-csv.mjs build` 再提交。');
             process.exitCode = 1;
         }
         return;
@@ -639,7 +639,7 @@ function main() {
         fs.writeFileSync(path.join(JS_DIR, out.file), out.text, 'utf8');
         console.log(`✓ assets/data/${out.file}`);
     }
-    console.log('build 完成：assets/data/*.js 已按 data/ 下的 CSV 重写。');
+    console.log('build 完成：assets/data/*.js 已按 src/csv/ 下的 CSV 重写。');
 }
 
 try {

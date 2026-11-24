@@ -10,8 +10,8 @@
  * 分类只看扩展名（.md → 文档、.png/.jpg… → 图像、音频、视频，其余进「其他」），
  * 所以加文件只需要丢进目录，然后跑一次：
  *
- *   node scripts/document-index.mjs           # 重建两个数据文件
- *   node scripts/document-index.mjs --check   # 只检查是否最新（CI 用）
+ *   node src/scripts/document-index.mjs           # 重建两个数据文件
+ *   node src/scripts/document-index.mjs --check   # 只检查是否最新（CI 用）
  *
  * 编号：文件档案的编号已经确定，**必须**在 sidecar 里手写 number，缺失会直接报错；
  *       未归类档案没有固定编号，按载体自动排（IMG-0001 / DOC-0001 …）。
@@ -30,7 +30,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CHECK = process.argv.includes('--check');
 
 const COLLECTIONS = [
@@ -362,7 +362,7 @@ function build(collection) {
     const header = `/* =============================================================================
  * ${collection.label}数据 —— 星光圣域
  * -----------------------------------------------------------------------------
- * ⚠️ 生成文件：由 \`node scripts/document-index.mjs\` 扫描 ${srcRel}/ 生成。
+ * ⚠️ 生成文件：由 \`node src/scripts/document-index.mjs\` 扫描 ${srcRel}/ 生成。
  *   不要直接改这里 —— 加 / 删 / 改文件后重跑脚本（GitHub Actions 也会跑）。
  *   目录结构、sidecar 元数据写法见 docs/MAINTENANCE.md 的「文件档案 / 未归类档案」。
  * ========================================================================== */
@@ -391,7 +391,7 @@ if (CHECK) {
         if (old === result.text) {
             console.log('[' + result.collection.key + '] 已是最新（' + result.records.length + ' 条）');
         } else {
-            console.error('[' + result.collection.key + '] ' + result.collection.outRel + ' 不是最新，请运行 node scripts/document-index.mjs');
+            console.error('[' + result.collection.key + '] ' + result.collection.outRel + ' 不是最新，请运行 node src/scripts/document-index.mjs');
             stale = true;
         }
     });

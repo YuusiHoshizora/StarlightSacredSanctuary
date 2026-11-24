@@ -1,8 +1,8 @@
 /* =============================================================================
  * 人员数据 —— 星光圣域
  * -----------------------------------------------------------------------------
- * ⚠ 生成文件：由 `node scripts/data-csv.mjs build` 从 data/personnel/*.csv 生成，
- *   不要直接改这里 —— 改 CSV 再 build。字段说明见 data/README.md。
+ * ⚠ 生成文件：由 `node src/scripts/data-csv.mjs build` 从 src/csv/personnel/*.csv 生成，
+ *   不要直接改这里 —— 改 CSV 再 build。字段说明见 src/csv/README.md。
  * ========================================================================== */
 window.SSS_PERSONNEL = {
   "classes": [

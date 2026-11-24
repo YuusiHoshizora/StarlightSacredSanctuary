@@ -1,8 +1,8 @@
 name: Build Data from CSV
 
-# data/**/*.csv 是数据源，assets/data/*.js 是生成物。
+# src/csv/**/*.csv 是数据源，assets/data/*.js 是生成物。
 # 改了 CSV 却忘了在本地跑 build 时，这里补上，并把结果提交回去：
-#   人 push（改 data/**）→ 本工作流 build → 提交 assets/data/*.js + 盖 CACHE_VERSION
+#   人 push（改 src/csv/**）→ 本工作流 build → 提交 assets/data/*.js + 盖 CACHE_VERSION
 #   → Cloudflare 按这次提交部署 → 访客拿到新数据。
 #
 # 为什么顺手盖 CACHE_VERSION：站内是缓存优先的，只有 sw.js 变了浏览器才会换缓存。
@@ -16,8 +16,8 @@ on:
   push:
     branches: [master]
     paths:
-      - 'data/**'
-      - 'scripts/data-csv.mjs'
+      - 'src/csv/**'
+      - 'src/scripts/data-csv.mjs'
       - '.github/workflows/build-data.yml'
   workflow_dispatch:
 
@@ -36,8 +36,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Build assets/data/*.js from data/**/*.csv
-        run: node scripts/data-csv.mjs build
+      - name: Build assets/data/*.js from src/csv/**/*.csv
+        run: node src/scripts/data-csv.mjs build
 
       - name: Stamp CACHE_VERSION in sw.js
         run: node .github/stamp-sw-version.mjs
@@ -59,7 +59,7 @@ jobs:
           # push 仍会被判非快进而失败。
           if ! git push; then
             git pull --rebase --autostash origin master
-            node scripts/data-csv.mjs build
+            node src/scripts/data-csv.mjs build
             node .github/stamp-sw-version.mjs
             git add assets/data sw.js
             if ! git diff --cached --quiet; then

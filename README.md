@@ -34,7 +34,7 @@
 ## 技术上的事（给同好）
 
 纯静态站点：没有框架、没有依赖、没有运行时构建 —— 仓库根目录就是网站根目录，
-部署也只是把这个目录原样交给静态托管。构建有两条：把 `data/` 下给人编辑的 CSV
+部署也只是把这个目录原样交给静态托管。构建有两条：把 `src/csv/` 下给人编辑的 CSV
 源数据生成成页面加载的 `assets/data/*.js`；扫描 `assets/document/` 与
 `assets/uncategorized/` 生成两份档案索引（各一条 node 命令；推送后 CI 也会自动跑）。
 
@@ -50,7 +50,7 @@
 **[docs/STRUCTURE.md](docs/STRUCTURE.md)**，文档索引见 **[docs/README.md](docs/README.md)**。
 
 - 页面按路径分目录：`main/`、`fleet/`、`tool/`、`archive/`、`about/`
-- 页面读的数据由 `data/` 下的 CSV 生成到 `assets/data/`（生成物不要手改）
+- 页面读的数据由 `src/csv/` 下的 CSV 生成到 `assets/data/`（生成物不要手改）
 - 仓库文档（维护备忘、设计语言、迁移记录）都收在 `docs/`，不随站点发布
 
 ## 授权与致谢

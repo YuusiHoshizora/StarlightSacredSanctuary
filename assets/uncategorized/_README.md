@@ -13,5 +13,5 @@ assets/uncategorized/<来源>/<文件名>.<扩展名>.meta.json   （可选）
 
 文件 / 目录名以 `_` 或 `.` 开头的会被扫描器忽略（本文件就是）。
 
-加完后跑 `node scripts/document-index.mjs`，或推送到 master 交给
+加完后跑 `node src/scripts/document-index.mjs`，或推送到 master 交给
 `.github/workflows/document-index.yml` 自动重建。

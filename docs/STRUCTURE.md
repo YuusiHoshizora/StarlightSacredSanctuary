@@ -13,8 +13,8 @@
    `/archive/personnel/sxm.html`（Cloudflare 会再 307 到不带扩展名的 `/archive/personnel/sxm`）。
    **挪一个页面 = 改一个公开 URL**，必须同时改：站内链接、`sw.js` 的 `PRECACHE_URLS`、
    `.assetsignore`、README / 文档里的路径。
-3. **不是站点资源的东西不进公开面。** 仓库文档进 `docs/`、数据源进 `data/`、构建脚本进
-   `scripts/`，并在 `.assetsignore` 里排除；`GitHub` 上公开是另一回事，别让它们额外占一份
+3. **不是站点资源的东西不进公开面。** 仓库文档进 `docs/`、数据源进 `src/csv/`、构建脚本进
+   `src/scripts/`，并在 `.assetsignore` 里排除；`GitHub` 上公开是另一回事，别让它们额外占一份
    站点资源（也免得 `.git/` 这种误发布）。
 
 ---
@@ -71,15 +71,26 @@
 │   ├── img/                   logo、QSL、Deptlogo/、contact/、cursor/、biology/
 │   └── audio/                 彩蛋页用的两段 WAV
 │
-├── data/                      数据源 CSV（人直接编辑）+ README.md（列含义与编辑约定）
-├── scripts/                   build / 索引脚本（不发布）
-│   ├── data-csv.mjs           CSV ⇄ JS：build / check / export
-│   └── document-index.mjs     扫描两个档案源目录 → assets/data/{document,uncategorized}.js
+├── src/                       仓库侧的构建物料（不发布）
+│   ├── csv/                   CSV 源数据（人直接编辑；说明见 src/csv/README.md）
+│   │   ├── personnel/         classes.csv / members.csv
+│   │   ├── facility/          affiliations / facilities / unique-parts / common-parts / orgs
+│   │   ├── vessel/            sizes / vessels / equipment
+│   │   ├── starmap/           systems.csv
+│   │   └── README.md          每列含义 + 编辑约定 + 常见操作
+│   └── scripts/               构建 / 索引脚本
+│       ├── data-csv.mjs       CSV ⇄ JS：build / check / export
+│       └── document-index.mjs 扫描两个档案源目录 → assets/data/{document,uncategorized}.js
 └── .github/                   CI 与自检（不发布）
     ├── workflows/             build-data / document-index / generate-post-index / stamp-sw-version
     ├── stamp-sw-version.mjs   按预缓存文件内容指纹写 sw.js 的 CACHE_VERSION
     └── verify-site.ps1        线上 URL 契约自检
 ```
+
+> **源叫 `src/csv/`，生成物才叫 `assets/data/`。** 以前源目录也叫 `data/`，和
+> `assets/data/` 同名，很容易搞混「改哪份」。现在全仓库只有一个 `data` 目录（页面读的生成物），
+> 源永远是 `src/csv/`：改 CSV → `build` → 页面读 `assets/data/*.js`。源和脚本都收在 `src/`，
+> 整个目录不发布。
 
 ---
 
@@ -90,14 +101,14 @@
 | 页面目录 | 全小写、`-` 分词；一个页面一个目录，入口固定 `index.html` | `tool/starmap/index.html` |
 | 子页 | 短名 `.html`（放在同一目录里） | `archive/personnel/sxm.html` |
 | CSS / JS | 与页面路径同名，放 `assets/css|js/` 下对应子目录 | `assets/css/archive/personnel.css` |
-| 数据源 | `data/<档案>/<表名>.csv`，表名用 `-` 分词 | `data/facility/unique-parts.csv` |
+| 数据源 | `src/csv/<档案>/<表名>.csv`，表名用 `-` 分词 | `src/csv/facility/unique-parts.csv` |
 | 数据生成物 | `assets/data/<档案>.js`，全局变量 `window.SSS_*` | `assets/data/personnel.js` |
 | 事件文章 | `assets/post/<显示标题>.md`，**文件名就是标题** | `assets/post/希望号任务.md` |
 | 档案文件 | `assets/document/<来源>/<文件名>.<扩展名>`，一层目录名 = 来源 | `assets/document/资料部独立档案/记录：星能.md` |
 | sidecar | 紧跟源文件：`<文件名>.<扩展名>.meta.json` | `记录：星能.md.meta.json` |
 | 扫描忽略 | 以 `_` 或 `.` 开头的文件 / 目录，扫描器直接跳过 | `assets/uncategorized/_README.md` |
 | 仓库文档 | `docs/` 下大白话文件名；索引固定 `README.md` | `docs/MAINTENANCE.md` |
-| 脚本 | `scripts/<用途>.mjs`；CI 辅助放 `.github/` | `scripts/data-csv.mjs` |
+| 脚本 | `src/scripts/<用途>.mjs`；CI 辅助放 `.github/` | `src/scripts/data-csv.mjs` |
 
 中文文件名是允许的（文章标题、档案来源 / 文件名本来就该是中文）。两个注意点：
 
@@ -113,11 +124,11 @@
 | --- | --- | --- |
 | 一个新页面 | `<目录>/index.html`，CSS / JS 放 `assets/css|js/<同路径>.css|js` | 做 MAINTENANCE「加新页面时要一起做的八件事」；补 `sw.js` 预缓存 |
 | 一篇事件文章 | `assets/post/<标题>.md` | 推上去 CI 重排 `index.json`，不用手改 |
-| 一名成员 / 设施 / 舰船 / 星系 | `data/<档案>/*.csv` 对应行 | `node scripts/data-csv.mjs build` |
-| 一份档案文件 | `assets/document/<来源>/` + sidecar（`number` 必填） | `node scripts/document-index.mjs` |
+| 一名成员 / 设施 / 舰船 / 星系 | `src/csv/<档案>/*.csv` 对应行 | `node src/scripts/data-csv.mjs build` |
+| 一份档案文件 | `assets/document/<来源>/` + sidecar（`number` 必填） | `node src/scripts/document-index.mjs` |
 | 一份未归类文件 | `assets/uncategorized/<来源>/` + sidecar（可选） | 同上（编号自动） |
 | 一篇仓库文档 | `docs/` | 到 `docs/README.md` 登记一行；不要写成站点页面 |
-| 一个构建 / 校验脚本 | `scripts/` | `.assetsignore` 已经排除整个目录 |
+| 一个构建 / 校验脚本 | `src/scripts/` | 不用动 `.assetsignore`（`src/` 整个目录都不发布） |
 | 一张图 / 字体 / 音频 | `assets/img/` `assets/fonts/` `assets/audio/` | 若页面要预缓存，补 `sw.js` |
 | 一个新依赖 | **不要** —— 站点是零依赖纯静态 | 真要引入先看 MAINTENANCE「本地预览」 |
 
@@ -133,7 +144,7 @@
 | `.git/`、`.github/`、`.gitignore` | 仓库历史 / CI；`.git/` 等于把历史挂到公网 |
 | `wrangler.jsonc` | 部署配置 |
 | `/docs` | 仓库文档（含本文件、草稿）只给仓库看 |
-| `/data`、`/scripts` | 源文件与构建脚本；站点只需要生成出来的 `assets/data/*.js` |
+| `/src` | CSV 源与构建脚本；站点只需要生成出来的 `assets/data/*.js` |
 | `archive/biology/template.html`、`archive/document/template.html` | 带占位符的内部模板 |
 | `/assets/**/*.meta.json` | sidecar 只是构建输入，页面不读 |
 | `assets/uncategorized/_README.md` | 目录说明只给仓库看 |
@@ -148,7 +159,7 @@ curl.exe -sSI https://starlightsacredsanctuary.top/README.md           # 应为 
 ```
 
 **缓存**：`sw.js` 预缓存清单里的文件 + `assets/post/**/*.md` 一有字节变化，CI（`stamp-sw-version`）
-就会改 `CACHE_VERSION`，浏览器才会装新 SW。改 `docs/`、`data/`、`scripts/`、`.assetsignore`
+就会改 `CACHE_VERSION`，浏览器才会装新 SW。改 `docs/`、`src/csv/`、`src/scripts/`、`.assetsignore`
 **不**在指纹范围内，不会触发版本号 —— 这是对的，它们不进站点。
 
 ---
@@ -157,13 +168,13 @@ curl.exe -sSI https://starlightsacredsanctuary.top/README.md           # 应为 
 
 | 生成物 | 源 | 生成命令 | CI |
 | --- | --- | --- | --- |
-| `assets/data/personnel.js`、`facility.js`、`vessel.js`、`starmap-data.js` | `data/**/*.csv` | `node scripts/data-csv.mjs build` | `build-data.yml`（push `data/**`） |
-| `assets/data/document.js`、`uncategorized.js` | `assets/document/**`、`assets/uncategorized/**` | `node scripts/document-index.mjs` | `document-index.yml` |
+| `assets/data/personnel.js`、`facility.js`、`vessel.js`、`starmap-data.js` | `src/csv/**/*.csv` | `node src/scripts/data-csv.mjs build` | `build-data.yml`（push `src/csv/**`） |
+| `assets/data/document.js`、`uncategorized.js` | `assets/document/**`、`assets/uncategorized/**` | `node src/scripts/document-index.mjs` | `document-index.yml` |
 | `assets/post/index.json` | `assets/post/*.md` | 由 CI 的 Python 片段生成 | `generate-post-index.yml` |
 | `sw.js` 的 `CACHE_VERSION` | `PRECACHE_URLS` 列出的文件 + 文章正文 | `node .github/stamp-sw-version.mjs` | `stamp-sw-version.yml` |
 
 生成物文件头里写着「不要直接改这里」和对应文档名。要改行为就改生成器
-（`scripts/*.mjs`），再重新生成 —— 直接改生成物会被下一次 build / CI 覆盖。
+（`src/scripts/*.mjs`），再重新生成 —— 直接改生成物会被下一次 build / CI 覆盖。
 
 ---
 
@@ -171,11 +182,11 @@ curl.exe -sSI https://starlightsacredsanctuary.top/README.md           # 应为 
 
 ```bash
 python -m http.server 8000            # 本地预览（不要双击 HTML，file:// 下文章列表读不到）
-node scripts/data-csv.mjs build       # CSV → assets/data/*.js
-node scripts/data-csv.mjs check       # 只校验，不写文件（CI 同款）
-node scripts/data-csv.mjs export      # 反向导出（会覆盖 CSV，慎用）
-node scripts/document-index.mjs       # 重建两份档案索引
-node scripts/document-index.mjs --check
+node src/scripts/data-csv.mjs build       # CSV → assets/data/*.js
+node src/scripts/data-csv.mjs check       # 只校验，不写文件（CI 同款）
+node src/scripts/data-csv.mjs export      # 反向导出（会覆盖 CSV，慎用）
+node src/scripts/document-index.mjs       # 重建两份档案索引
+node src/scripts/document-index.mjs --check
 node .github/stamp-sw-version.mjs --check
 pwsh -File .github/verify-site.ps1    # 线上 URL 契约自检（迁移前后都用它）
 ```
@@ -192,7 +203,7 @@ pwsh -File .github/verify-site.ps1    # 线上 URL 契约自检（迁移前后�
 | [MAINTENANCE.md](MAINTENANCE.md) | 自己 | 操作手册 + 踩坑记录 | 写文章、改数据、部署、改样式时 |
 | [DESIGN.md](DESIGN.md) | 自己 | 设计语言与组件规范 | 写新页面 / 调样式时 |
 | [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md) | 自己 | Netlify → Cloudflare 的完整过程 | 查迁移细节或 DNS / 部署决策时 |
-| [data/README.md](../data/README.md) | 自己 | CSV 每列含义、编辑与校验约定 | 改数据时 |
+| [src/csv/README.md](../src/csv/README.md) | 自己 | CSV 每列含义、编辑与校验约定 | 改数据时 |
 | 目录里的 `_README.md` | 自己 | 该源目录怎么放文件 | 往档案目录丢文件时 |
 
 ---
@@ -207,7 +218,7 @@ pwsh -File .github/verify-site.ps1    # 线上 URL 契约自检（迁移前后�
 - [ ] 站内链接与相对路径（各页导航、页脚、侧栏、返回链接）
 - [ ] `.github/workflows/*.yml` 里的 `on.push.paths` 与脚本路径
 - [ ] 各文档里的路径引用（`grep` 一遍 `MAINTENANCE.md` / `DESIGN.md` / 旧路径）
-- [ ] `node scripts/data-csv.mjs check`、`node scripts/document-index.mjs --check`
+- [ ] `node src/scripts/data-csv.mjs check`、`node src/scripts/document-index.mjs --check`
 - [ ] 推送后等 CI，确认 `CACHE_VERSION` 有没有跟着变
 - [ ] `pwsh -File .github/verify-site.ps1` 跑一遍线上契约
 
@@ -219,7 +230,7 @@ pwsh -File .github/verify-site.ps1    # 线上 URL 契约自检（迁移前后�
   `.github/verify-site.ps1` —— 它必须带 BOM，否则 Windows PowerShell 5.1 会把中文解析坏。
 - Git 里存 **LF**；Windows 工作区是 CRLF（`core.autocrlf=true`）。生成脚本按 LF 比较内容，
   所以本地和 CI 得到同一个指纹。
-- CSV 用 **UTF-8 带 BOM**，方便 Excel 双击不乱码（见 `data/README.md`）。
+- CSV 用 **UTF-8 带 BOM**，方便 Excel 双击不乱码（见 `src/csv/README.md`）。
 - 文章 .md 用 LF 入库即可，Obsidian 写入的换行不影响发布。
 
 ---

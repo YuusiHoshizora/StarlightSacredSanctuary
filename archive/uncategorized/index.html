@@ -110,7 +110,7 @@
     <script defer src="../../assets/js/archive-scroll.js"></script>
     <!-- 左栏名录搜索：按名称过滤（外观与交互照星图搜索） -->
     <script defer src="../../assets/js/archive-list-search.js"></script>
-    <!-- 未归类档案数据库：由 scripts/document-index.mjs 扫描 assets/uncategorized/ 生成，别手改 -->
+    <!-- 未归类档案数据库：由 src/scripts/document-index.mjs 扫描 assets/uncategorized/ 生成，别手改 -->
     <script defer src="../../assets/data/uncategorized.js"></script>
     <!-- Markdown 渲染（主页面同款，marked v9.1.6） -->
     <script defer src="../../assets/js/marked.min.js"></script>
@@ -174,7 +174,7 @@
              读取 assets/data/uncategorized.js 后渲染。
 
              文件放 assets/uncategorized/<来源>/<文件名>.<扩展名>，跑：
-               node scripts/document-index.mjs
+               node src/scripts/document-index.mjs
              会自动按扩展名归档（.md → 文档、图片 → 图像、音频 / 视频各自一组），
              来源取第一层目录名；标题 / 日期 / 摘要等写在同目录的
              <文件名>.<扩展名>.meta.json 里（可选）。详见 docs/MAINTENANCE.md「未归类档案」。 -->

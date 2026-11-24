@@ -169,11 +169,11 @@
     <main>
         <!-- ══ 文件档案版式模板（静态参考） ══
              正式页面 archive/document/index.html 不写死记录：它读取
-             assets/data/document.js（由 scripts/document-index.mjs 扫描
+             assets/data/document.js（由 src/scripts/document-index.mjs 扫描
              assets/document/ 生成），再由 assets/js/document.js 渲染。文件放
              assets/document/<来源>/<文件名>.<扩展名>，可选同目录 sidecar
              <文件名>.<扩展名>.meta.json；加文件后跑一次
-               node scripts/document-index.mjs
+               node src/scripts/document-index.mjs
              即可。本页只保留「四种载体 + 详情面板」的静态写法，方便改样式 /
              改结构时对照；正式页面不要再复制本页。
 

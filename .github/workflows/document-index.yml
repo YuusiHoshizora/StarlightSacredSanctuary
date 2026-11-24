@@ -16,7 +16,7 @@ on:
     paths:
       - 'assets/document/**'
       - 'assets/uncategorized/**'
-      - 'scripts/document-index.mjs'
+      - 'src/scripts/document-index.mjs'
       - '.github/workflows/document-index.yml'
   workflow_dispatch:
 
@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Build archive indexes from assets/document/ and assets/uncategorized/
-        run: node scripts/document-index.mjs
+        run: node src/scripts/document-index.mjs
 
       - name: Stamp CACHE_VERSION in sw.js
         run: node .github/stamp-sw-version.mjs
@@ -53,7 +53,7 @@ jobs:
           git commit -m "chore(file-archive): rebuild index from assets/document + assets/uncategorized"
           if ! git push; then
             git pull --rebase --autostash origin master
-            node scripts/document-index.mjs
+            node src/scripts/document-index.mjs
             node .github/stamp-sw-version.mjs
             git add assets/data sw.js
             if ! git diff --cached --quiet; then

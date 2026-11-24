@@ -2,7 +2,7 @@
  * document.js — 文件档案页：读数据 → 渲染名录 / 档案 / 详情面板
  *                 + 搜索 + 选中 / 取消选择 + .md 渲染 + 音轨播放
  * -----------------------------------------------------------------------------
- * 数据来源只有一处：assets/document/。scripts/document-index.mjs 扫描它并生成
+ * 数据来源只有一处：assets/document/。src/scripts/document-index.mjs 扫描它并生成
  * assets/data/document.js（window.SSS_DOCUMENT），本脚本在页面里把每条记录渲染成
  * 左栏条目 + 右栏档案；页面 HTML 里没有写死的记录。
  *

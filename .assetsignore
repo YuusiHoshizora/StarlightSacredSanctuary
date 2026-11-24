@@ -39,11 +39,9 @@ node_modules
 # —— 未归类档案的目录说明只给仓库看 ——
 /assets/uncategorized/_README.md
 
-# —— 数据源与构建脚本：站点只需要 assets/data/*.js（生成物），CSV 不必公开托管 ——
-# ⚠️ 必须带开头的斜杠：写成 `data` 会按 gitignore 语义匹配到任意层级，
-#    把 assets/data/ 也一起排除掉 —— 页面会拿不到数据（实测踩过：数据 JS 全 404）
-/data
-/scripts
+# —— 源数据与构建脚本：都收在 src/（站点只需要 assets/data/*.js 生成物）——
+# ⚠️ 必须带开头的斜杠：写成 `src` 会按 gitignore 语义匹配到任意层级
+/src
 
 # —— 文章目录里那份 Obsidian 配置（36 MB、上百个文件，含同步冲突垃圾）——
 # 它在发布目录里面，本地 wrangler deploy 时会被整个传上去，务必留着这条
