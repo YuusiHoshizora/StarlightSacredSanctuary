@@ -47,7 +47,7 @@ function Add-Result([string]$level, [string]$name, [string]$expect, [string]$act
 }
 
 function Get-Head([string]$url) {
-    $raw = (& $curl -sS -k -I --max-redirs 0 --connect-timeout 20 $url 2>&1 | Out-String)
+    $raw = (& $curl -sS -k -I --max-redirs 0 --connect-timeout 20 --max-time 45 $url 2>&1 | Out-String)
     $code = 0
     $m = [regex]::Match($raw, 'HTTP/[\d.]+\s+(\d{3})')
     if ($m.Success) { $code = [int]$m.Groups[1].Value }
@@ -58,7 +58,7 @@ function Get-Head([string]$url) {
 }
 
 function Get-Body([string]$url, [string]$outFile) {
-    $meta = (& $curl -sS -k -o $outFile --connect-timeout 60 -w '%{http_code} %{size_download}' $url 2>&1 | Out-String).Trim()
+    $meta = (& $curl -sS -k -o $outFile --connect-timeout 60 --max-time 120 -w '%{http_code} %{size_download}' $url 2>&1 | Out-String).Trim()
     $parts = @($meta -split '\s+')
     if ($parts.Count -lt 2 -or $parts[0] -notmatch '^\d+$') {
         return @{ Code = 0; Size = 0 }
