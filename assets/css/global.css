@@ -562,7 +562,8 @@ nav a{
     color:var(--fg-3);
     text-decoration:none;
 
-    font-size:var(--fs-small);
+    /* 顶栏菜单不再比正文小一档：与 --fs-body 同级（v5.1） */
+    font-size:var(--fs-body);
     letter-spacing:0.14em;
 
     transition:color var(--dur) var(--ease);
