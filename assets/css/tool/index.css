@@ -125,30 +125,6 @@ button.tool-entry {
     color: var(--fg-4);
 }
 
-/* 联网工具在本机只能离线运行（星图系统）：状态写成铭牌，不抢主标题 */
-.tool-entry__state {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-
-    margin-top: 8px;
-
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.24em;
-    color: var(--signal-dim);
-    text-transform: uppercase;
-}
-
-.tool-entry__state::before {
-    content: "";
-    width: 5px;
-    height: 5px;
-    border: 1px solid var(--signal);
-    border-radius: 1px;
-    background: transparent;
-}
-
 .tool-entry__arrow {
     position: absolute;
     top: 50%;

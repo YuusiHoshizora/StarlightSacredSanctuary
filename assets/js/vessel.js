@@ -195,7 +195,7 @@
         '            <p class="archive-search__empty" hidden>没有找到匹配的条目</p>\n' +
         '        </div>\n' +
         '    </div>\n' +
-        '    <div class="vessel-list__scroll" data-catalog data-catalog-kind="list" data-catalog-unit="型" data-catalog-note="其余舰型未缓存至本地">\n' +
+        '    <div class="vessel-list__scroll" data-catalog data-catalog-kind="list" data-catalog-unit="型" data-catalog-note="检测到数据损坏 · 无法访问部分舰型">\n' +
         listHtml() + '\n' +
         '    </div>\n' +
         '</aside>\n' +

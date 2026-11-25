@@ -203,7 +203,7 @@
         '                            <p class="archive-search__empty" hidden>没有找到匹配的条目</p>\n' +
         '                        </div>\n' +
         '                    </div>\n' +
-        '                    <div class="personnel-list__scroll" data-catalog data-catalog-kind="list" data-catalog-unit="人" data-catalog-note="其余成员未缓存至本地">\n' +
+        '                    <div class="personnel-list__scroll" data-catalog data-catalog-kind="list" data-catalog-unit="人" data-catalog-note="检测到数据损坏 · 无法访问部分成员">\n' +
         listHtml() +
         '                    </div>\n' +
         '                </aside>\n\n' +

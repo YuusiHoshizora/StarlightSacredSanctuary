@@ -275,6 +275,14 @@
 .document-list__scroll > .catalog-bar,
 .biology-list__scroll > .catalog-bar {
     flex-wrap: wrap;
+
+    /* v5：状态条固定在名录 / 搜索正下方（图 2 位置），列表滚动时保持吸顶。 */
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--surface-veil);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     gap: 4px 10px;
     margin-bottom: 12px;
     padding-bottom: 10px;

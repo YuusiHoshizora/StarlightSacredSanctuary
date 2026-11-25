@@ -5,7 +5,7 @@
    是「还没缓存到本地」，不是「圣域没有收录」。状态条只报状态，不报数量。
    所以：
 
-     A. 未完整（默认）—— CATALOG // 本地缓存 + 其余未缓存至本地。
+     A. 未完整（默认）—— CATALOG // 本地缓存 + 检测到数据损坏 · 无法访问部分数据。
         **不插任何占位卡**：预留空间靠数据与组件保持结构可扩展，
         不靠一张「待收录」的假卡片。
      B. 完整（data-catalog-state="完整"）—— CATALOG // 完整 + 该分区已完整收录。
@@ -37,7 +37,7 @@
         var unit = container.getAttribute('data-catalog-unit') || '条';
         var complete = container.getAttribute('data-catalog-state') === '完整';
         var note = container.getAttribute('data-catalog-note') ||
-                   (complete ? '该分区已完整收录' : '其余未缓存至本地 · 接入星域网后同步');
+                   (complete ? '该分区已完整收录' : '检测到数据损坏 · 无法访问部分数据');
         var stateLabel = complete ? '完整' : '本地缓存';
 
         var bar = document.createElement('p');

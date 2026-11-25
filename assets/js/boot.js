@@ -64,20 +64,8 @@ function sssHydrateTerminalIdentity() {
         if (map[key]) nodes[i].textContent = map[key];
     }
 }
-function sssInjectNetStatus() {
-    var navbar = document.querySelector('.navbar');
-    if (!navbar || navbar.querySelector('.navbar__net')) return;
-    var status = document.createElement('span');
-    status.className = 'navbar__net';
-    status.setAttribute('role', 'status');
-    status.innerHTML = '<i aria-hidden="true"></i>LINK <b>OFFLINE</b>';
-    var nav = navbar.querySelector('#site-nav');
-    if (nav) navbar.insertBefore(status, nav);
-    else navbar.appendChild(status);
-}
 function sssInitTerminalChrome() {
     sssHydrateTerminalIdentity();
-    sssInjectNetStatus();
 }
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', sssInitTerminalChrome, { once: true });
