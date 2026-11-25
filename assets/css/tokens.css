@@ -1,0 +1,212 @@
+/* ==========================================================================
+   星光圣域 · 设计令牌（Design Tokens）v3
+   --------------------------------------------------------------------------
+   这是全站唯一的设计变量表。所有页面样式、加载屏、错误页、目录组件都从这里取色 /
+   取字号 / 取间距 / 取圆角 / 取过渡；页面样式表只负责布局，不再写死色值。
+   规范说明见 docs/DESIGN-LANGUAGE.md。
+
+   v3 的核心变化（世界观权威色板落地）：
+     · 主体色 = 圣域紫 #3A3072。墨色阶、表面、结构线、星野、顶栏、加载屏全部由它推导，
+       不再是"深靛蓝 #264270 + 冰蓝 #8AD6E8"的旧盘。
+     · 基本色 = #C0C0C0 银。承担结构线、刻度、等宽铭牌、占位槽 —— 它是"仪器"的中性骨架。
+     · 高亮色 = #FFD700 金。只用于"被点亮"：当前项、已收录、关键读数、焦点、hover。
+     · 舰队三色（科研管理 #3DAEFF / 工业收集 #DBA400 / 主防御 #E0544C）是唯一允许在
+       舰队页大面积出现的"功能色"，且只在舰队页生效。
+   紫是氛围，银是结构，金是点亮 —— 三者分工写死，页面不要混用。
+
+   加载顺序：本文件必须在 boot.css 与 global.css 之前 —— 加载屏也要用同一套令牌，
+   不然「加载界面」与「正文」就会再次割裂。
+
+   分组：
+     1. 墨色阶 / 表面        2. 语义色与舰队色   3. 线 / 网格
+     4. 字体与层级            5. 间距 / 圆角     6. 高度 / 动效 / 层级
+     7. 渐变 / 发光          8. 旧令牌别名（--ctl-* 兼容层）
+   ========================================================================== */
+
+:root {
+    color-scheme: dark;
+
+    /* ================================================================ 1. 墨色阶
+       由 #3A3072（HSL 249 41% 32%）向黑端推导：保持同一色相 249–251，饱和 38–42%，
+       只压明度。这样黑不是"死黑"，是一块被紫光照过的墨。 */
+    --ink-1000: #05040A;          /* 最深处：加载屏门板、取景框 */
+    --ink-900:  #080711;          /* 页面底色 */
+    --ink-800:  #0B0917;          /* 大面板 / 三栏侧栏 */
+    --ink-700:  #0F0C1F;          /* 抬升面板 */
+    --ink-600:  #141029;          /* 弹层 / Toast */
+    --ink-500:  #1A1431;          /* 最亮的面板阶 */
+
+    /* 面板统一用半透明墨色叠在星野上（星野透出来才有"仪器在观测深空"的感觉） */
+    --surface-panel:  rgba(15, 12, 31, 0.55);
+    --surface-raised: rgba(21, 17, 41, 0.78);
+    --surface-inset:  rgba(5, 4, 10, 0.55);
+    --surface-veil:   rgba(8, 7, 17, 0.88);
+    --surface-hover:  rgba(255, 215, 0, 0.05);      /* 金色雾，只取一丝 */
+
+    /* 面板渐变的上下两端（比纯色更厚实，像一块真的玻璃） */
+    --panel-top:    rgba(27, 21, 52, 0.78);
+    --panel-bottom: rgba(8, 7, 17, 0.72);
+
+    /* 供 rgba(var(--x-rgb), α) 使用 */
+    --panel-rgb: 18, 15, 36;
+    --nav-rgb:   10, 8, 21;
+
+    /* ================================================================ 2. 语义色 */
+    /* ── 高亮色：基本色板里的 #FFD700 ── */
+    --accent-rgb:    255, 215, 0;
+    --accent:        #FFD700;     /* 高亮金：唯一的"点亮"色 */
+    --accent-bright: #FFE873;     /* hover 文字 / 进度弧高光 */
+    --accent-deep:   #C9A400;     /* 淡金描边、下划线 */
+
+    /* ── 基本色：#C0C0C0 银。结构、刻度、铭牌、占位 ── */
+    --basic:     #C0C0C0;
+    --basic-rgb: 192, 192, 192;
+
+    --signal-rgb:    192, 192, 192;
+    --signal:        #C0C0C0;     /* 银：结构 / 刻度 / 目录状态 / 等宽读数 */
+    --signal-dim:    rgba(196, 190, 216, 0.68);   /* 偏淡紫的银，长文本时更柔 */
+    --signal-soft:   #9C93BE;                      /* 银与紫之间的一档：次级结构 */
+
+    /* ── 主体色：圣域紫 #3A3072 ── */
+    --tone-rgb:      58, 48, 114;
+    --tone:          #3A3072;     /* 主题：星野 / 激活区 / 选区 / 顶栏 / 发光 */
+    --tone-light:    #5F51B0;     /* 激活区描边、可见的紫（不是霓虹） */
+    --tone-soft:     #2B2356;     /* 紫雾 / 面板内发光 */
+    --tone-deep:     #1B1440;     /* 紫的最深一档：极光内圈、门板 */
+
+    --alert-rgb:     255, 122, 107;
+    --alert:         #FF7A6B;     /* 仅失败 / 破坏性 / 拒绝访问 */
+
+    /* ── 舰队色（只在舰队页生效；卡面 / 描边 / 标签 / 氛围色） ── */
+    --fleet-research:     #3DAEFF;    /* 科研与管理舰队 */
+    --fleet-research-rgb: 61, 174, 255;
+    --fleet-industry:     #DBA400;    /* 工业与收集舰队 */
+    --fleet-industry-rgb: 219, 164, 0;
+    --fleet-defense:      #E0544C;    /* 主防御舰队 */
+    --fleet-defense-rgb:  224, 84, 76;
+
+    /* ── 前景：偏紫的冷白，不用纯白 ── */
+    --fg-1: #ECE9F7;
+    --fg-2: rgba(216, 210, 236, 0.82);
+    --fg-3: rgba(197, 190, 222, 0.62);
+    --fg-4: rgba(184, 177, 212, 0.44);
+    --fg-5: rgba(168, 161, 198, 0.28);
+
+    /* ================================================================ 3. 线 / 网格
+       结构线取基本色银（极低不透明度）；紫只在"结构属于圣域"时出现（--line-tone）。 */
+    --line-1: rgba(192, 192, 192, 0.09);
+    --line-2: rgba(192, 192, 192, 0.16);
+    --line-3: rgba(204, 200, 224, 0.28);
+    --line-accent: rgba(255, 215, 0, 0.42);
+    --line-signal: rgba(192, 192, 192, 0.28);
+    --line-tone:   rgba(95, 81, 176, 0.45);
+
+    /* 星野画布（background.js 的 CFG 默认值与之对齐） */
+    --grid-line: rgba(192, 192, 192, 0.20);
+    --grid-dot: var(--accent);
+
+    /* ================================================================ 4. 字体与层级 */
+    --font-sans: "Sarasa", "Sarasa Gothic SC", system-ui, "Segoe UI", sans-serif;
+    --font-mono: "Sarasa Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+    --fs-display: clamp(36px, 5vw, 62px);
+    --fs-h1: clamp(24px, 3.2vw, 30px);
+    --fs-h2: 17px;
+    --fs-h3: 15px;
+    --fs-lead: 15px;
+    --fs-body: 14px;
+    --fs-small: 13px;
+    --fs-meta: 12px;
+    --fs-label: 10px;
+    --fs-micro: 9px;
+
+    --lh-display: 1.08;
+    --lh-h1: 1.3;
+    --lh-body: 1.9;
+
+    --track-display: 0.10em;
+    --track-h1: 0.20em;
+    --track-h2: 0.08em;
+    --track-label: 0.26em;
+    --track-mono: 0.10em;
+    --track-body: 0.01em;
+
+    /* ================================================================ 5. 间距 / 圆角
+       v3 复核结论：直角感的控件（3px）+ 玻璃面板（12px）与"紫金仪器"一致，保持不变。
+       不要引入 8/16px 的中等圆角 —— 那会让面板变成"卡片 App"，失去仪表面板的锐度。 */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-24: 96px;
+
+    --radius-xs: 2px;
+    --radius-control: 3px;        /* 按钮 / 输入框：直角感 */
+    --radius-s: 6px;
+    --radius-panel: 12px;         /* 面板 / 卡片 */
+
+    /* ================================================================ 6. 高度 / 动效 / 层级
+       v3 复核结论：140 / 220 / 420ms 三档 + cubic-bezier(.22,.61,.36,1) 保持；
+       位移上限 8px、不做弹跳/旋转 —— 只有"读数切换"与"门开"允许更大的位移。
+       v3 新增 --dur-swap：主题色 / 舰队色这类"整页氛围换色"专用（与 fleet.js 同步）。 */
+    --navbar-h: 72px;
+    --dur-fast: 140ms;
+    --dur: 220ms;
+    --dur-slow: 420ms;
+    --dur-swap: 320ms;
+    --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+
+    /* ================================================================ 7. 渐变 / 发光
+       v3 复核结论：渐变全部改为"紫底 + 银线 + 金点"，且每种渐变只有一处定义，
+       页面直接引用，不再各写一套 rgba。 */
+    --grad-panel:    linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
+    --grad-panel-in: linear-gradient(180deg, rgba(5, 4, 10, 0.55), rgba(8, 7, 17, 0.35));
+    --grad-fade-bottom: linear-gradient(180deg, transparent, rgba(5, 4, 10, 0.72));
+    /* 星野：紫从上方压下来，越往下越沉（background.js 的天空三段与它同色） */
+    --grad-sky:      linear-gradient(180deg, #0C0A1C 0%, #0A0817 45%, #05040C 100%);
+    /* 顶栏 / 导航玻璃：顶栏用 --nav-rgb 的半透明平涂（fleet 会改写），
+       手机上展开的整屏导航面板用这条更实的渐变（星野不能透过来糊字） */
+    --grad-nav:      linear-gradient(180deg, rgba(var(--nav-rgb), 0.97), rgba(var(--nav-rgb), 0.92));
+    /* 按钮 hover：金色从上方渗下来，不是整块变金 */
+    --grad-btn-hover: linear-gradient(180deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.05));
+    /* 面板顶部的一道紫光：只有"抬升"面板才用（弹层、悬浮卡） */
+    --grad-lift:     linear-gradient(180deg, rgba(58, 48, 114, 0.22), transparent 42%);
+    /* 目录占位卡的斜纹（银） */
+    --grad-hatch:    repeating-linear-gradient(135deg, rgba(var(--basic-rgb), 0.045) 0 1px, transparent 1px 9px);
+
+    --shadow-panel: 0 24px 64px rgba(3, 2, 8, 0.55), 0 0 0 1px rgba(58, 48, 114, 0.18);
+    --shadow-card:  0 12px 40px rgba(3, 2, 8, 0.48);
+    --glow-accent:  0 0 18px rgba(255, 215, 0, 0.16);
+    --glow-signal:  0 0 16px rgba(192, 192, 192, 0.12);
+    --glow-tone:    0 0 28px rgba(58, 48, 114, 0.45);
+
+    --z-bg: -9;
+    --z-veil: -1;
+    --z-nav: 100;
+    --z-toast: 210;
+    --z-boot: 99999;
+
+    /* ================================================================ 8. 旧令牌别名
+       历史样式表大量使用 --ctl-*；这里把它们指向新令牌，改一次全站生效。
+       新代码请直接用上面的新令牌，不要新增 --ctl-* 变体。 */
+    --ctl-bg: rgba(var(--basic-rgb), 0.05);
+    --ctl-bg-strong: rgba(var(--accent-rgb), 0.12);
+    --ctl-bg-focus: rgba(var(--accent-rgb), 0.06);
+    --ctl-border: var(--line-2);
+    --ctl-border-hover: var(--accent);
+    --ctl-fg: var(--fg-1);
+    --ctl-fg-dim: var(--fg-3);
+    --ctl-fg-hover: var(--accent-bright);
+    --ctl-radius: var(--radius-control);
+    --ctl-panel-radius: var(--radius-panel);
+    --ctl-ease: var(--dur);       /* ⚠️ 是时长，不是缓动函数（见 docs/DESIGN.md 第十一节） */
+    --ctl-err: var(--alert);
+    --ctl-transition: color var(--dur) var(--ease),
+                      background-color var(--dur) var(--ease),
+                      border-color var(--dur) var(--ease);
+}

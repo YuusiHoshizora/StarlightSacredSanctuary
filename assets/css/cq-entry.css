@@ -39,9 +39,9 @@
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: #FFD700;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85),
-                0 0 20px rgba(255, 215, 0, 0.35);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.85),
+                0 0 20px rgba(var(--accent-rgb), 0.35);
 }
 
 /* 外层扫描环：像残留的波纹那样慢慢呼吸（呼应背景那圈点击波纹） */
@@ -53,7 +53,7 @@
     width: 30px;
     height: 30px;
     margin: -15px 0 0 -15px;
-    border: 1px solid rgba(255, 215, 0, 0.35);
+    border: 1px solid rgba(var(--accent-rgb), 0.35);
     border-radius: 50%;
     animation: cq-dot-ring 2.6s ease-in-out infinite;
 }
@@ -66,7 +66,7 @@
 .cq-dot__name {
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--fg-3);
     transition: var(--ctl-transition);
 }
 
@@ -77,7 +77,7 @@
 }
 
 .cq-dot:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 6px;
     border-radius: var(--ctl-radius);
 }

@@ -17,10 +17,10 @@
 
   /* ── 通知内容：改这里就行 ── */
   const NOTICE = {
-    id: "20261121-1421",     // 换新 id = 当成一条新通知，所有人会再看一次，ID命名方式：YYYYMMDD-Time
-    label: "通知",
-    title: "文件档案已开放",
-    body: "文件档案数据库已完成部分修复，图像与文档档案现可查阅；音频、影像仍在修复中。",
+    id: "20261125-1820",     // 换新 id = 当成一条新通知，所有人会再看一次，ID命名方式：YYYYMMDD-Time
+    label: "系统",
+    title: "正在热更新",
+    body: "终端系统正在进行热更新，部分界面与数据可能短暂不可用；已缓存的档案仍可正常查阅。",
     confirm: "了解"
   };
 
@@ -65,36 +65,43 @@
   /* ── 样式（跟着站内的暗底 + 金色 + 玻璃质感） ── */
   const CSS = `
   .sss-notice{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
-    padding:20px;background:rgba(4,4,12,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    padding:20px;background:rgba(5,4,10,.80);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
     animation:sss-notice-fade .22s ease-out both}
-  .sss-notice__card{position:relative;width:100%;max-width:440px;padding:26px 24px 22px;
-    background:rgba(18,18,38,.96);border:1px solid rgba(255,215,0,.28);border-radius:16px;
-    box-shadow:0 24px 60px rgba(0,0,0,.6);color:#fff;text-align:left;
-    animation:sss-notice-pop .26s cubic-bezier(.2,.9,.3,1.2) both}
-  .sss-notice__label{display:inline-block;margin-bottom:12px;padding:3px 10px;font-size:12px;
-    letter-spacing:2px;color:#FFD700;background:rgba(255,215,0,.12);
-    border:1px solid rgba(255,215,0,.3);border-radius:999px}
-  .sss-notice__title{margin:0 0 10px;font-size:20px;line-height:1.4;color:#FFD700;letter-spacing:1px}
-  .sss-notice__body{margin:0;font-size:14px;line-height:1.8;color:rgba(255,255,255,.78);
-    overflow-wrap:break-word}
-  .sss-notice__actions{display:flex;justify-content:flex-end;margin-top:20px}
-  .sss-notice__ok{min-height:42px;padding:11px 30px;font:inherit;font-size:15px;letter-spacing:2px;
-    color:var(--ctl-fg);background:var(--ctl-bg);border:1px solid var(--ctl-border);
-    border-radius:var(--ctl-radius);--cursor-kind: pointer; cursor: var(--cur-pointer);transition:var(--ctl-transition)}
+  .sss-notice__card{position:relative;width:100%;max-width:460px;padding:26px 26px 22px;
+    background:linear-gradient(180deg,var(--panel-top),var(--panel-bottom));
+    border:1px solid var(--line-2);border-radius:var(--radius-panel);
+    box-shadow:var(--shadow-panel);color:var(--fg-1);text-align:left;
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    animation:sss-notice-pop .26s cubic-bezier(.22,.61,.36,1) both}
+  .sss-notice__card::before{content:"";position:absolute;left:26px;right:26px;top:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,215,0,.45),transparent);pointer-events:none}
+  .sss-notice__label{display:inline-block;margin-bottom:13px;padding:4px 9px;
+    font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:var(--track-label);
+    text-transform:uppercase;color:var(--accent);background:rgba(255,215,0,.08);
+    border:1px solid var(--line-accent);border-radius:var(--radius-xs)}
+  .sss-notice__title{margin:0 0 10px;font-size:var(--fs-h2);font-weight:400;line-height:1.45;
+    color:var(--fg-1);letter-spacing:var(--track-h2)}
+  .sss-notice__body{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);
+    color:var(--fg-2);overflow-wrap:break-word}
+  .sss-notice__actions{display:flex;justify-content:flex-end;margin-top:22px}
+  .sss-notice__ok{min-height:44px;padding:11px 28px;font:inherit;font-size:var(--fs-small);
+    letter-spacing:0.14em;color:var(--fg-1);background:var(--ctl-bg);
+    border:1px solid var(--line-2);border-radius:var(--radius-control);
+    --cursor-kind: pointer; cursor: var(--cur-pointer);transition:var(--ctl-transition)}
   .sss-notice__ok:hover,.sss-notice__ok:focus-visible{
-    color:var(--ctl-fg-hover);background:var(--ctl-bg-strong);border-color:var(--ctl-border-hover)}
-  .sss-notice__close{position:absolute;top:10px;right:10px;width:32px;height:32px;display:flex;
-    align-items:center;justify-content:center;font:inherit;font-size:20px;line-height:1;
-    color:var(--ctl-fg-dim);background:var(--ctl-bg);border:1px solid var(--ctl-border);
-    border-radius:var(--ctl-radius);--cursor-kind: pointer; cursor: var(--cur-pointer);transition:var(--ctl-transition)}
+    color:var(--accent);background:var(--ctl-bg-strong);border-color:var(--accent)}
+  .sss-notice__close{position:absolute;top:12px;right:12px;width:32px;height:32px;display:flex;
+    align-items:center;justify-content:center;font:inherit;font-size:18px;line-height:1;
+    color:var(--fg-3);background:var(--ctl-bg);border:1px solid var(--line-2);
+    border-radius:var(--radius-control);--cursor-kind: pointer; cursor: var(--cur-pointer);transition:var(--ctl-transition)}
   .sss-notice__close:hover,.sss-notice__close:focus-visible{
-    color:var(--ctl-fg-hover);background:var(--ctl-bg-strong);border-color:var(--ctl-border-hover)}
+    color:var(--accent);background:var(--ctl-bg-strong);border-color:var(--accent)}
   @keyframes sss-notice-fade{from{opacity:0}to{opacity:1}}
-  @keyframes sss-notice-pop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+  @keyframes sss-notice-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
   @media (max-width:768px){
     .sss-notice{padding:16px}
-    .sss-notice__card{padding:22px 18px 18px;border-radius:14px}
-    .sss-notice__title{font-size:18px}
+    .sss-notice__card{padding:22px 18px 18px}
+    .sss-notice__title{font-size:var(--fs-h2)}
     .sss-notice__ok{width:100%;min-height:46px}
   }
   @media (prefers-reduced-motion:reduce){

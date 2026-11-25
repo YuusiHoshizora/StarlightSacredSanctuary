@@ -86,10 +86,12 @@
             window.setTimeout(function () { h.classList.add('css-ready'); }, 2000);
         })();
     </script>
+    <link rel="stylesheet" href="../assets/css/tokens.css">
     <link rel="stylesheet" href="../assets/css/boot.css">
     <script defer src="../assets/js/boot.js"></script>
 
     <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/catalog.css">
     <link rel="stylesheet" href="../assets/css/fleet/index.css">
     <script defer src="../assets/js/background.js"></script>
     <script defer src="../assets/js/cursor.js"></script>
@@ -99,6 +101,7 @@
     <script defer src="../assets/js/seamless.js"></script>
     <script defer src="../assets/js/spa.js"></script>
     <script defer src="../assets/js/navtoggle.js"></script>
+    <script defer src="../assets/js/catalog.js"></script>
     <!-- 彩蛋登记册：记录 <body data-egg> 的彩蛋、给「关于」页那张卡片填内容。
          ⚠️ 外壳脚本，站内换页（spa.js）不会重跑它 —— 每页都必须引，否则经由同文档换页
          进「关于」页 / 进彩蛋页时，登记与卡片都不会发生。 -->
@@ -159,26 +162,47 @@
 
     <main>
         <section class="fleet-section">
-            <div class="fleet-grid">
+            <div class="fleet-inner">
 
-                <a href="#" class="fleet-card fleet-card--research" data-fleet-color="#3DAEFF">
-                    <h2>科研与管理舰队</h2>
-                    <p class="english">Research & Administration Fleet</p>
-                    <p class="desc">科研与管理舰队是星光圣域人口最为密集的舰队，负责星光圣域绝大部分的科研任务。</p>
-                </a>
+                <header class="fleet-head">
+                    <p class="page-eyebrow">
+                        <span class="page-eyebrow__id">FLEET</span>
+                        <span class="page-eyebrow__no">// 02</span>
+                        <span class="page-eyebrow__tail">编成 · 已建档</span>
+                    </p>
+                    <h1>舰队</h1>
+                    <p class="fleet-sub">Fleet Composition</p>
+                    <p class="fleet-lead">
+                        星光圣域的舰队按职能分为三支。悬停任一编成，观测终端的主题色会切换为该编成的勤务色。
+                    </p>
+                </header>
 
-                <a href="#" class="fleet-card fleet-card--industry" data-fleet-color="#DBA400">
-                    <h2>工业与收集舰队</h2>
-                    <p class="english">Industry & Collection Fleet</p>
-                    <p class="desc">工业与收集舰队是星光圣域对外交流的主要舰队，负责几乎所有物资的收集和制造。</p>
-                </a>
+                <!-- 三支编成均已建档：目录视为「完整」——不插 VACANT SLOT 占位卡，
+                     状态条显示「CATALOG // 完整」（见 docs/DESIGN-LANGUAGE.md 第五节）。 -->
+                <div class="fleet-grid" data-catalog data-catalog-unit="支" data-catalog-state="完整" data-catalog-note="三支编成均已建档">
 
-                <a href="#" class="fleet-card fleet-card--defense" data-fleet-color="#E0544C">
-                    <h2>主防御舰队</h2>
-                    <p class="english">Primary Defense Fleet</p>
-                    <p class="desc">主防御舰队是星光圣域的军事舰队，负责所有的军事行动。</p>
-                </a>
+                    <a href="#" class="fleet-card fleet-card--research" data-fleet-color="#3DAEFF">
+                        <h2>科研与管理舰队</h2>
+                        <p class="english">Research &amp; Administration Fleet</p>
+                        <p class="desc">科研与管理舰队是星光圣域人口最为密集的舰队，负责星光圣域绝大部分的科研任务。</p>
+                        <span class="fleet-card__go">进入编成 ›</span>
+                    </a>
 
+                    <a href="#" class="fleet-card fleet-card--industry" data-fleet-color="#DBA400">
+                        <h2>工业与收集舰队</h2>
+                        <p class="english">Industry &amp; Collection Fleet</p>
+                        <p class="desc">工业与收集舰队是星光圣域对外交流的主要舰队，负责几乎所有物资的收集和制造。</p>
+                        <span class="fleet-card__go">进入编成 ›</span>
+                    </a>
+
+                    <a href="#" class="fleet-card fleet-card--defense" data-fleet-color="#E0544C">
+                        <h2>主防御舰队</h2>
+                        <p class="english">Primary Defense Fleet</p>
+                        <p class="desc">主防御舰队是星光圣域的军事舰队，负责所有的军事行动。</p>
+                        <span class="fleet-card__go">进入编成 ›</span>
+                    </a>
+
+                </div>
             </div>
         </section>
     </main>

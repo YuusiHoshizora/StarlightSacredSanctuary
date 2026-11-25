@@ -38,6 +38,38 @@ var SSS_SITE_ROOT = (function () {
     return '/';
 })();
 
+/* ── 终端身份（世界观）────────────────────────────────────────────────
+   终端系统的版本号与当前权限只在这里定义一次：
+     · 加载屏左上 / 右上的读数直接用下面两个值
+     · 页面里任何 [data-terminal="os|version|full|auth"] 都会被自动填上
+   权限系统以后要重做时，改 auth（以及需要时加 authLabel）即可，不要散落到页面。
+   现在：AstraOS ver.7.0.4-5500430，权限 SXM（管理成员）。 */
+var SSS_TERMINAL = window.SSS_TERMINAL || {
+    os: 'AstraOS',
+    version: 'ver.7.0.4-5500430',
+    auth: 'SXM'
+};
+window.SSS_TERMINAL = SSS_TERMINAL;
+
+function sssHydrateTerminalIdentity() {
+    var map = {
+        os: SSS_TERMINAL.os,
+        version: SSS_TERMINAL.version,
+        full: SSS_TERMINAL.os + ' ' + SSS_TERMINAL.version,
+        auth: SSS_TERMINAL.auth
+    };
+    var nodes = document.querySelectorAll('[data-terminal]');
+    for (var i = 0; i < nodes.length; i++) {
+        var key = nodes[i].getAttribute('data-terminal');
+        if (map[key]) nodes[i].textContent = map[key];
+    }
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', sssHydrateTerminalIdentity, { once: true });
+} else {
+    sssHydrateTerminalIdentity();
+}
+
 /* 这台浏览器能不能做"跨文档"的 View Transition（也就是 @view-transition 那套）。
    ⚠️ 不能用 CSS.supports('view-transition-name','none') 判断：Firefox 从 144 起支持
    **同文档**的 View Transitions（属性存在、document.startViewTransition 也有），
@@ -118,8 +150,12 @@ function sssSupportsCrossDocVT() {
                 '<i class="boot__corner boot__corner--bl"></i>' +
                 '<i class="boot__corner boot__corner--br"></i>' +
             '</div>' +
-            '<div class="boot__code boot__code--tl" aria-hidden="true">SSS<b>//</b>SYS</div>' +
-            '<div class="boot__code boot__code--tr" aria-hidden="true">BOOT<b>//</b>01</div>' +
+            '<div class="boot__code boot__code--tl" aria-hidden="true">' +
+                SSS_TERMINAL.os.toUpperCase() + '<b>//</b>' +
+                String(SSS_TERMINAL.version).replace(/^ver\./i, '') +
+            '</div>' +
+            '<div class="boot__code boot__code--tr" aria-hidden="true">AUTH<b>//</b>' +
+                SSS_TERMINAL.auth + '</div>' +
             '<div class="boot__code boot__code--bl" aria-hidden="true">T+ <b id="boot-clock">00:00.0</b></div>' +
             '<div class="boot__code boot__code--br" aria-hidden="true"><b id="boot-count">00/00</b></div>' +
             '<div class="boot__emblem" aria-hidden="true">' +

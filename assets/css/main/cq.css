@@ -25,7 +25,7 @@
     font-size: 15px;
     line-height: 1.9;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--fg-2);
 }
 
 /* 逐条出现：默认藏着，脚本按顺序加 .is-in（日志块那一步见页面的 runSteps） */
@@ -49,7 +49,7 @@
     max-height: 380px;             /* 展开态的上限，够装下所有行 */
     margin: 18px 0 8px;
     padding-left: 14px;
-    border-left: 1px solid rgba(255, 215, 0, 0.28);
+    border-left: 1px solid rgba(var(--accent-rgb), 0.28);
     transition: max-height 0.44s ease, opacity 0.3s ease, margin 0.44s ease,
                 padding 0.44s ease;
 }
@@ -72,7 +72,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 12px;
     line-height: 1.85;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--fg-4);
 }
 
 .cq-log__line {
@@ -81,11 +81,11 @@
 }
 
 .cq-log__tag {
-    color: rgba(255, 255, 255, 0.28);
+    color: var(--fg-4);
 }
 
 .cq-log__tag--ok {
-    color: rgba(255, 215, 0, 0.75);          /* 金色在这站上就是"强调/通过" */
+    color: rgba(var(--accent-rgb), 0.75);          /* 金色在这站上就是"强调/通过" */
 }
 
 .cq-log__tag--warn {
@@ -99,7 +99,7 @@
     height: 1em;
     margin-left: 2px;
     vertical-align: -0.15em;
-    background: rgba(255, 215, 0, 0.8);
+    background: rgba(var(--accent-rgb), 0.8);
     animation: cq-caret 1.05s steps(1, end) infinite;
 }
 
@@ -113,13 +113,13 @@
     font-size: 15px;              /* 与 .cq-line 逐项对齐：字号、字距、行高、颜色 */
     letter-spacing: 1px;
     line-height: 1.9;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--fg-2);
 }
 
 .cq-start {
     color: inherit;                                   /* 就是正文那支色 */
     text-decoration: underline;                       /* 唯一的外观区别 */
-    text-decoration-color: rgba(255, 215, 0, 0.35);
+    text-decoration-color: rgba(var(--accent-rgb), 0.35);
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
     --cursor-kind: pointer; cursor: var(--cur-pointer);
@@ -128,25 +128,25 @@
 
 .cq-start:hover,
 .cq-start:focus-visible {
-    color: #FFD700;                                   /* 另一个区别：hover / 聚焦变色 */
+    color: var(--accent);                                   /* 另一个区别：hover / 聚焦变色 */
     text-decoration-color: currentColor;              /* 下划线跟着变金 */
 }
 
 .cq-start:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);       /* 纯键盘可达性，平时看不见 */
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);       /* 纯键盘可达性，平时看不见 */
     outline-offset: 4px;
 }
 
 /* 正在解析时（文案变"暂停"）：常驻金色 */
 .cq-start[aria-pressed="true"] {
-    color: #FFD700;
+    color: var(--accent);
     text-decoration-color: currentColor;
 }
 
 /* 解析完成：文案定格，不再是可点的链接 */
 .cq-start[aria-disabled="true"] {
-    color: rgba(255, 255, 255, 0.45);
-    text-decoration-color: rgba(255, 255, 255, 0.2);
+    color: var(--fg-4);
+    text-decoration-color: var(--fg-4);
     --cursor-kind: not-allowed; cursor: var(--cur-not-allowed);
     pointer-events: none;         /* 连 hover 变色也一并收掉 */
 }
@@ -158,8 +158,8 @@
 .cq-console {
     margin-top: 26px;
     padding: 16px 18px;
-    background: rgba(8, 10, 24, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(8, 7, 17, 0.72);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-panel-radius);
 }
 
@@ -190,21 +190,21 @@
 }
 
 .cq-console__lamp.is-on {
-    background: #FFD700;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.85);
 }
 
 .cq-console__meta {
     font-size: 11px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 /* 已收到的点划 */
 .cq-console__code {
     min-height: 1.9em;
     letter-spacing: 4px;
-    color: #FFD700;
+    color: var(--accent);
     word-break: break-all;
 }
 
@@ -213,7 +213,7 @@
     margin-top: 2px;
     min-height: 1.9em;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.86);
+    color: var(--fg-1);
     word-break: break-word;
 }
 
@@ -233,12 +233,12 @@
     height: 1em;
     margin-left: 2px;
     vertical-align: -0.15em;
-    background: rgba(255, 215, 0, 0.7);
+    background: rgba(var(--accent-rgb), 0.7);
     animation: cq-caret 1.05s steps(1, end) infinite;
 }
 
 .cq-console__caret.is-live {
-    background: #FFD700;
+    background: var(--accent);
     animation-duration: 0.45s;
 }
 
@@ -286,7 +286,7 @@
     height: auto;
     margin: 0 0 14px;
     background: #000;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-radius);
 }
 
@@ -317,7 +317,7 @@
 }
 
 .cq-result img:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 4px;
 }
 
@@ -325,7 +325,7 @@
     margin-top: 10px;
     font-size: 12px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 /* 补在卡后面的空白：平时 0 高，页面脚本在"要把它滚到视口正中"时按需设高度
@@ -345,7 +345,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(4, 6, 16, 0.82);
+    background: rgba(5, 4, 10, 0.82);
     backdrop-filter: blur(6px);
 }
 
@@ -361,7 +361,7 @@
     max-height: calc(100vh - 48px);
     overflow-y: auto;
     padding: 22px 24px 24px;
-    background: rgba(18, 18, 42, 0.97);
+    background: rgba(21, 17, 44, 0.97);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--ctl-panel-radius);
 }
@@ -371,7 +371,7 @@
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 2px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .cq-modal__img {
@@ -386,7 +386,7 @@
     margin: 12px 0 16px;
     font-size: 12px;
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
 }
 
 .cq-modal__close {
@@ -451,9 +451,9 @@ html.cq-modal-open {
     padding: 12px 20px;
     font-size: 13px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(18, 18, 42, 0.97);
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    color: var(--fg-1);
+    background: rgba(21, 17, 44, 0.97);
+    border: 1px solid rgba(var(--accent-rgb), 0.4);
     border-radius: var(--ctl-panel-radius);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     opacity: 0;
@@ -475,8 +475,8 @@ html.cq-modal-open {
     height: 7px;
     margin-right: 8px;
     border-radius: 1px;
-    background: #FFD700;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.85);
     vertical-align: 1px;
 }
 
@@ -498,7 +498,7 @@ html.cq-modal-open {
     margin-top: 12px;
     font-size: 12px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 @media (max-width: 768px) {

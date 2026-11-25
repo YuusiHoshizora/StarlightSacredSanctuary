@@ -353,7 +353,7 @@ node src/scripts/document-index.mjs --check   # 只校验是否最新
 
 - 页面在 `.document-layout` 上用 `data-archive-base` / `data-archive-data` 告诉共享脚本
   从哪个目录取素材、读哪个全局；`template.html`（静态版式参考）没有这两项，脚本按静态模式跑
-- **空桶是合法的**：还没有文件时左栏 5 个分组都显示「待收录」，右栏 NO / INFO；
+- **空桶是合法的**：还没有文件时左栏 5 个分组都显示「本地暂无条目」，右栏 NO / INFO；
   把文件放进 `assets/uncategorized/<来源>/` 再跑脚本就会自动出现
 - 分类 / sidecar / 来源规则与文件档案相同；**编号不同**：文件档案的 `number`
   必须手写在 sidecar 里，未归类档案按载体自动排（`IMG-0001` / `DOC-0001` …）

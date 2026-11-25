@@ -189,8 +189,8 @@
            滑块从一头平顺滑到另一头就够了。 */
         '  transition:left 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease}',
         '.egg-switch.is-on{border-color:var(--ctl-border-hover);background:var(--ctl-bg-strong)}',
-        '.egg-switch.is-on .egg-switch__knob{left:26px;background:#FFD700;',
-        '  box-shadow:0 0 8px rgba(255,215,0,0.8)}',
+        '.egg-switch.is-on .egg-switch__knob{left:26px;background:var(--accent);',
+        '  box-shadow:0 0 8px rgba(255,215,0,0.7)}',
         '.egg-switch:focus-visible{outline:2px solid rgba(255,215,0,0.55);outline-offset:2px}',
         /* 用户要求减少动态效果：不做滑动，状态直接切 */
         '@media (prefers-reduced-motion:reduce){',

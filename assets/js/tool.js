@@ -23,7 +23,7 @@
   const outHsl = document.getElementById("hue-hsl");
   const ctx = canvas.getContext("2d");
 
-  /* 初始颜色：#3A3072（站内那抹深紫）。改这一行就能换默认色。 */
+  /* 初始颜色：#3A3072（圣域紫，= tokens.css 的 --tone）。改这一行就能换默认色。 */
   const INITIAL = "#3A3072";
   const initHsl = rgbToHsl(hexToRgb(INITIAL));
 

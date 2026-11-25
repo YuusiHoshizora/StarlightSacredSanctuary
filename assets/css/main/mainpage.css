@@ -64,21 +64,21 @@
 .article-header {
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--line-1);
 }
 
 .article-header h1 {
     font-size: 26px;
     font-weight: 400;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
     margin-bottom: 10px;
     line-height: 1.4;
 }
 
 .article-header .article-meta {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
     display: flex;
     gap: 14px;
     letter-spacing: 1px;
@@ -88,7 +88,7 @@
 .md-loading {
     text-align: center;
     padding: 48px 0;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--fg-4);
     font-size: 13px;
     letter-spacing: 2px;
 }
@@ -99,7 +99,7 @@
     width: 24px;
     height: 24px;
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-top-color: rgba(255, 215, 0, 0.5);
+    border-top-color: rgba(var(--accent-rgb), 0.5);
     border-radius: 50%;
     margin: 0 auto 16px;
     animation: spin 0.8s linear infinite;
@@ -117,7 +117,7 @@
     height: calc(100vh - 72px);
     overflow-y: auto;
     padding: 40px 20px 30px 40px;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid var(--line-1);
 }
 
 .left-panel nav.vertical-nav {
@@ -127,7 +127,7 @@
 }
 
 .left-panel nav.vertical-nav a {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--fg-3);
     text-decoration: none;
     font-size: 15px;
     transition: 0.3s;
@@ -138,14 +138,14 @@
 
 .left-panel nav.vertical-nav a:hover,
 .left-panel nav.vertical-nav a.active {
-    color: #FFD700;
+    color: var(--accent);
     opacity: 1;
     padding-left: 10px;
-    border-left-color: #FFD700;
+    border-left-color: var(--accent);
 }
 
 .left-panel .nav-section-title {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -163,7 +163,7 @@
     flex: 1;
     min-width: 0;
     padding: 40px 36px;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid var(--line-1);
 }
 
 .blog-header {
@@ -174,12 +174,12 @@
     font-size: 28px;
     font-weight: 400;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
 }
 
 .blog-header .subtitle {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
     margin-top: 8px;
     letter-spacing: 1px;
 }
@@ -192,7 +192,7 @@
 
 .blog-card {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line-1);
     border-radius: 8px;
     padding: 24px;
     transition: 0.3s;
@@ -201,26 +201,26 @@
 
 .blog-card:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 215, 0, 0.2);
+    border-color: rgba(var(--accent-rgb), 0.2);
 }
 
 .blog-card .blog-title {
     font-size: 18px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--fg-2);
     margin-bottom: 8px;
     letter-spacing: 1px;
 }
 
 .blog-card .blog-meta {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
     display: flex;
     gap: 16px;
 }
 
 .blog-card .blog-excerpt {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
     margin-top: 12px;
     line-height: 1.7;
 }
@@ -280,7 +280,7 @@
 /* ===== 日历组件 ===== */
 .calendar-widget {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--line-1);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 24px;
@@ -296,7 +296,7 @@
 .calendar-header .year-month {
     font-size: 16px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--fg-2);
 }
 
 .calendar-header .nav-arrows {
@@ -307,7 +307,7 @@
 .calendar-header .nav-arrow {
     background: none;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
     width: 28px;
     height: 28px;
     border-radius: 4px;
@@ -320,8 +320,8 @@
 }
 
 .calendar-header .nav-arrow:hover {
-    border-color: rgba(255, 215, 0, 0.4);
-    color: #FFD700;
+    border-color: rgba(var(--accent-rgb), 0.4);
+    color: var(--accent);
 }
 
 .calendar-grid {
@@ -333,7 +333,7 @@
 .calendar-grid .day-name {
     text-align: center;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
     padding: 6px 0;
     letter-spacing: 1px;
 }
@@ -342,7 +342,7 @@
     text-align: center;
     padding: 6px 0;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--fg-3);
     border-radius: 4px;
     transition: 0.2s;
     --cursor-kind: default; cursor: var(--cur-default);
@@ -353,14 +353,14 @@
 }
 
 .calendar-grid .day-cell.today {
-    background: rgba(255, 215, 0, 0.15);
-    color: #FFD700;
+    background: rgba(var(--accent-rgb), 0.15);
+    color: var(--accent);
     font-weight: 500;
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 
 .calendar-grid .day-cell.other-month {
-    color: rgba(255, 255, 255, 0.15);
+    color: var(--fg-5);
 }
 
 .calendar-grid .day-cell.other-month:hover {
@@ -376,13 +376,13 @@
 
 .info-item {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--fg-4);
     letter-spacing: 1px;
     line-height: 1.6;
 }
 
 .info-item .label {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--fg-4);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -454,12 +454,12 @@
     margin: 0 0 20px;
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 .blog-header__crumb span {
     margin: 0 8px;
-    color: rgba(255, 255, 255, 0.16);
+    color: var(--fg-5);
 }
 
 .blog-header__kicker {
@@ -470,7 +470,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 .blog-header__kicker::before {
@@ -478,8 +478,8 @@
     width: 6px;
     height: 6px;
     border-radius: 1px;
-    background: #FFD700;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.75);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.75);
 }
 
 .blog-header h1 {
@@ -487,14 +487,14 @@
     font-size: 30px;
     font-weight: 400;
     letter-spacing: 4px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .blog-header__en {
     margin: 8px 0 0;
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 .blog-header .subtitle {
@@ -502,13 +502,13 @@
     font-size: 13px;
     line-height: 1.8;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-3);
 }
 
 /* ── 左栏：分类列表变成站内名录式的读数列表 ── */
 .left-panel {
     padding: 48px 24px 40px 40px;
-    border-right-color: rgba(255, 255, 255, 0.07);
+    border-right-color: var(--fg-5);
 }
 
 .left-panel .nav-section-title {
@@ -517,7 +517,7 @@
     margin: 0 0 18px;
     font-size: 11px;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--fg-4);
 }
 
 .left-panel .nav-section-title::after {
@@ -541,7 +541,7 @@
     padding: 8px 8px 8px 12px;
     font-size: 14px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-3);
 
     border-left: 3px solid transparent;
     border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
@@ -550,9 +550,9 @@
 
 .left-panel nav.vertical-nav a:hover,
 .left-panel nav.vertical-nav a.active {
-    color: #FFD700;
-    background: rgba(255, 215, 0, 0.06);
-    border-left-color: #FFD700;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.06);
+    border-left-color: var(--accent);
     padding-left: 17px;          /* 与 docs/DESIGN.md 的基准一致：选中时整块右挪 5px */
     opacity: 1;
 }
@@ -561,12 +561,12 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.26);
+    color: var(--fg-4);
 }
 
 .left-panel nav.vertical-nav a:hover .vertical-nav__count,
 .left-panel nav.vertical-nav a.active .vertical-nav__count {
-    color: rgba(255, 215, 0, 0.7);
+    color: rgba(var(--accent-rgb), 0.7);
 }
 
 /* ── 中栏卡片：暗蓝玻璃 + 金色描边 hover，和档案 / 工具页卡片同一套 ── */
@@ -579,7 +579,7 @@
     padding: 24px 28px 40px;
     padding-right: 82px;
 
-    background: rgba(20, 20, 50, 0.45);
+    background: var(--grad-panel);
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: blur(8px);
@@ -587,8 +587,8 @@
 }
 
 .blog-card:hover {
-    background: rgba(24, 24, 60, 0.55);
-    border-color: rgba(255, 215, 0, 0.42);
+    background: rgba(43, 35, 86, 0.55);
+    border-color: rgba(var(--accent-rgb), 0.42);
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
 }
 
@@ -596,12 +596,12 @@
     margin: 0 0 10px;
     font-size: 18px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
     transition: var(--ctl-transition);
 }
 
 .blog-card:hover .blog-title {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .blog-card .blog-meta {
@@ -611,22 +611,22 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.32);
+    color: var(--fg-4);
 }
 
 .blog-card .blog-meta .sep {
-    color: rgba(255, 255, 255, 0.14);
+    color: var(--fg-5);
 }
 
 .blog-card .blog-tag {
-    color: rgba(255, 215, 0, 0.65);
+    color: rgba(var(--accent-rgb), 0.65);
 }
 
 .blog-card .blog-excerpt {
     margin-top: 12px;
     font-size: 13px;
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--fg-3);
 }
 
 /* ── 右栏：日历 / 当前位置都套进同一支玻璃面板 ── */
@@ -637,7 +637,7 @@
 .calendar-widget {
     padding: 20px;
     margin-bottom: 20px;
-    background: rgba(20, 20, 50, 0.42);
+    background: rgba(var(--panel-rgb), 0.42);
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: blur(8px);
@@ -646,14 +646,14 @@
 .calendar-header {
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--line-1);
 }
 
 .calendar-header .year-month {
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 15px;
     letter-spacing: 2px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .calendar-header .nav-arrow {
@@ -679,12 +679,12 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
 }
 
 .calendar-grid .day-cell {
     border-radius: var(--ctl-radius);
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--fg-3);
 }
 
 .calendar-grid .day-cell:hover {
@@ -692,13 +692,13 @@
 }
 
 .calendar-grid .day-cell.today {
-    background: rgba(255, 215, 0, 0.12);
-    border: 1px solid rgba(255, 215, 0, 0.35);
-    color: #FFD700;
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.35);
+    color: var(--accent);
 }
 
 .calendar-grid .day-cell.other-month {
-    color: rgba(255, 255, 255, 0.18);
+    color: var(--fg-4);
 }
 
 .right-info {
@@ -707,7 +707,7 @@
     margin-top: 20px;
     padding: 20px;
 
-    background: rgba(20, 20, 50, 0.32);
+    background: rgba(var(--panel-rgb), 0.32);
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: blur(8px);
@@ -719,24 +719,24 @@
     justify-content: space-between;
     margin: 0 0 8px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--line-1);
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 .right-info__title span {
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--fg-4);
 }
 
 .info-item {
     padding: 12px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--fg-3);
 }
 
 .info-item:last-child {
@@ -748,7 +748,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.28);
+    color: var(--fg-4);
     margin-bottom: 4px;
 }
 
@@ -756,7 +756,7 @@
 .article-header {
     margin-bottom: 28px;
     padding-bottom: 22px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line-1);
 }
 
 .article-header__kicker {
@@ -764,7 +764,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--fg-4);
 }
 
 .article-header h1 {
@@ -772,18 +772,18 @@
     font-size: 27px;
     font-weight: 400;
     letter-spacing: 3px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .article-header .article-meta {
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.32);
+    color: var(--fg-4);
 }
 
 .article-header .article-meta span:last-child {
-    color: rgba(255, 215, 0, 0.65);
+    color: rgba(var(--accent-rgb), 0.65);
 }
 
 /* ── 窄屏：页头 / 卡片 / 面板收紧，但不改变信息层级 ── */
@@ -939,7 +939,7 @@ body[data-mainpage] .article-view {
     z-index: 2;
     padding: 20px 24px 0;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-panel-radius);
 
     transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1011,7 +1011,7 @@ body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source {
 body[data-mainpage] .blog-card {
     padding: 24px 26px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: none;
     transition: var(--ctl-transition), box-shadow 0.3s ease, opacity 0.16s ease;
@@ -1019,15 +1019,15 @@ body[data-mainpage] .blog-card {
 
 body[data-mainpage] .blog-card:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 215, 0, 0.2);
+    border-color: rgba(var(--accent-rgb), 0.2);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 body[data-mainpage] .blog-card:focus-visible {
     outline: none;
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 215, 0, 0.45);
-    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.45), 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-color: rgba(var(--accent-rgb), 0.45);
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.45), 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 body[data-mainpage] .blog-card::after {
@@ -1036,7 +1036,7 @@ body[data-mainpage] .blog-card::after {
 
 body[data-mainpage] .blog-card .blog-title,
 body[data-mainpage] .blog-card:hover .blog-title {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--fg-2);
 }
 
 /* 左栏：照工具页的二级入口，整块右移 5px + 左侧 3px 金线淡入 */
@@ -1068,8 +1068,8 @@ body[data-mainpage] .left-panel nav.vertical-nav a::before {
 body[data-mainpage] .left-panel nav.vertical-nav a:hover,
 body[data-mainpage] .left-panel nav.vertical-nav a.active {
     padding-left: 12px;
-    color: #FFD700;
-    background: rgba(255, 215, 0, 0.1);
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
     transform: translateX(5px);
 }
 
@@ -1144,5 +1144,214 @@ body[data-mainpage] .right-panel {
     body[data-mainpage] .left-panel nav.vertical-nav a:hover,
     body[data-mainpage] .left-panel nav.vertical-nav a.active {
         transform: none;
+    }
+}
+
+/* ==========================================================================
+   统一层 v2（设计语言 docs/DESIGN-LANGUAGE.md）
+   --------------------------------------------------------------------------
+   主页面是"事件列表"这一目录页：页头语法、列表卡片、左右栏全部对齐站内令牌。
+   卡片右上角是事件序号（等宽冰蓝），底部留出目录状态的余量。
+   ========================================================================== */
+
+.blog-header {
+    margin-bottom: 24px;
+}
+
+.blog-header h1 {
+    margin: 0;
+    font-size: var(--fs-h1);
+    font-weight: 400;
+    line-height: var(--lh-h1);
+    letter-spacing: var(--track-h1);
+    color: var(--fg-1);
+}
+
+.blog-header .blog-header__en {
+    margin: 9px 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.24em;
+    color: var(--fg-3);
+    text-transform: uppercase;
+}
+
+.blog-header .subtitle {
+    margin: 12px 0 0;
+    font-size: var(--fs-small);
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+}
+
+/* 列表卡片：玻璃面板 + 序号；hover 只换描边，不位移 */
+.blog-list {
+    counter-reset: event;
+    gap: 14px;
+}
+
+.blog-card {
+    position: relative;
+    padding: 22px 24px 20px;
+    background: var(--grad-panel);
+    border: 1px solid var(--line-1);
+    border-radius: var(--radius-panel);
+    -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+    transition: var(--ctl-transition), box-shadow var(--dur) var(--ease);
+}
+
+.blog-card::before {
+    counter-increment: event;
+    content: counter(event, decimal-leading-zero);
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-label);
+    color: var(--fg-5);
+}
+
+.blog-card:hover {
+    background: var(--grad-panel);
+    border-color: var(--line-accent);
+    box-shadow: var(--shadow-card);
+}
+
+.blog-card .blog-title {
+    padding-right: 34px;
+    font-size: var(--fs-h2);
+    font-weight: 400;
+    letter-spacing: var(--track-h2);
+    color: var(--fg-1);
+    margin-bottom: 9px;
+}
+
+.blog-card:hover .blog-title {
+    color: var(--accent);
+}
+
+.blog-card .blog-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-mono);
+    color: var(--fg-4);
+    text-transform: uppercase;
+}
+
+.blog-card .blog-tag {
+    color: var(--signal-dim);
+}
+
+.blog-card .blog-excerpt {
+    margin-top: 12px;
+    font-size: var(--fs-small);
+    line-height: 1.85;
+    color: var(--fg-3);
+}
+
+/* 目录占位：整行形态，和列表卡片同宽 */
+.blog-list > .catalog-slot {
+    min-height: 72px;
+}
+
+/* ── 左右栏：更薄的玻璃、更静的底 ── */
+.left-panel {
+    background: linear-gradient(180deg, rgba(11, 9, 23, 0.55), rgba(5, 4, 10, 0.25));
+    border-right: 1px solid var(--line-1);
+    padding-top: 32px;
+}
+
+.left-panel .nav-section-title {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-label);
+    color: var(--fg-4);
+    text-transform: uppercase;
+}
+
+.left-panel nav.vertical-nav a {
+    font-size: var(--fs-small);
+    letter-spacing: 0.06em;
+    color: var(--fg-3);
+    padding: 4px 0 4px 12px;
+}
+
+.left-panel nav.vertical-nav a:hover,
+.left-panel nav.vertical-nav a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+}
+
+.vertical-nav__count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: 0.1em;
+    color: var(--fg-5);
+}
+
+.center-panel {
+    padding: 32px 34px;
+    border-right: 1px solid var(--line-1);
+    /* 中间栏是阅读区：给它一层更实的底，长文不会被六边形网格切碎 */
+    background: linear-gradient(180deg, rgba(8, 7, 17, 0.72), rgba(5, 4, 10, 0.52));
+    -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+}
+
+.right-panel {
+    padding-top: 32px;
+}
+
+.calendar-widget {
+    background: linear-gradient(180deg, rgba(21, 17, 41, 0.55), rgba(8, 7, 17, 0.45));
+    border: 1px solid var(--line-1);
+    border-radius: var(--radius-panel);
+}
+
+.calendar-header .year-month {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    letter-spacing: 0.14em;
+    color: var(--fg-2);
+}
+
+/* 文章视图：标题与元信息用同一套层级 */
+.article-header h1 {
+    font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: var(--track-h2);
+    color: var(--fg-1);
+}
+
+.article-header .article-meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-mono);
+    color: var(--fg-4);
+    text-transform: uppercase;
+}
+
+/* 窄屏：上面的稠密样式收回单栏 */
+@media (max-width: 768px) {
+    .left-panel,
+    .right-panel,
+    .center-panel {
+        border-right: none;
+        border-left: none;
+        background: transparent;
+    }
+
+    .blog-card {
+        padding: 18px 18px 16px;
+    }
+
+    .blog-card .blog-title {
+        font-size: var(--fs-h2);
+        padding-right: 30px;
     }
 }

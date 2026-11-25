@@ -46,11 +46,11 @@
     margin: 0;
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 .document-list__title span {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .document-list__scroll {
@@ -68,11 +68,11 @@
     gap: 8px;
     margin: 18px 0 4px;
     padding-bottom: 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--line-1);
 
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
 }
 
 .document-list__title + .document-list__group {
@@ -83,7 +83,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.28);
+    color: var(--fg-4);
 }
 
 /* 一条名录：左侧载体签（IMG / DOC / AUD / VID）+ 右侧中文名 / 英文名。
@@ -95,7 +95,7 @@
     row-gap: 2px;
     padding: 8px 10px;
 
-    color: #fff;
+    color: var(--fg-1);
     text-decoration: none;
 
     border-left: 2px solid transparent;
@@ -107,16 +107,16 @@
 .document-list__item:hover,
 .document-list__item:focus-visible {
     background: rgba(255, 255, 255, 0.03);
-    border-left-color: rgba(255, 215, 0, 0.35);
+    border-left-color: rgba(var(--accent-rgb), 0.35);
 }
 
 .document-list__item.is-active {
-    background: rgba(255, 215, 0, 0.06);
-    border-left-color: #FFD700;
+    background: rgba(var(--accent-rgb), 0.06);
+    border-left-color: var(--accent);
 }
 
 .document-list__item:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 1px;
 }
 
@@ -133,16 +133,16 @@
     line-height: 1.4;
     letter-spacing: 0.5px;
 
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--fg-4);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 2px;
     transition: var(--ctl-transition);
 }
 
 .document-list__item.is-active .document-list__tag {
-    color: #FFD700;
-    border-color: rgba(255, 215, 0, 0.45);
-    background: rgba(255, 215, 0, 0.08);
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.45);
+    background: rgba(var(--accent-rgb), 0.08);
 }
 
 .document-list__name {
@@ -150,7 +150,7 @@
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
     transition: color 0.2s ease;
 }
 
@@ -160,11 +160,11 @@
     font-size: 11px;
     line-height: 1.5;
     letter-spacing: 0;
-    color: rgba(255, 255, 255, 0.46);
+    color: var(--fg-4);
 }
 
 .document-list__item.is-active .document-list__name {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 /* 分组下暂时没有条目时的占位（模板阶段用） */
@@ -173,7 +173,7 @@
     padding: 6px 10px;
     font-size: 12px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.26);
+    color: var(--fg-4);
 }
 
 /* ── 右栏：条目档案 ── */
@@ -195,7 +195,7 @@
     position: relative;
     margin-bottom: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line-1);
 }
 
 .document-profile__bar {
@@ -214,7 +214,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 2px;
-    color: rgba(255, 215, 0, 0.62);
+    color: rgba(var(--accent-rgb), 0.62);
 }
 
 .document-profile__name {
@@ -223,7 +223,7 @@
     font-weight: 400;
     line-height: 1.45;
     letter-spacing: 3px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .document-profile__en {
@@ -232,7 +232,7 @@
     font-size: 12px;
     line-height: 1.7;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 /* ── 右上角「详情」小按钮 ──
@@ -252,7 +252,7 @@
     font: inherit;
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
 
     background: var(--ctl-bg);
     border: 1px solid var(--ctl-border);
@@ -270,7 +270,7 @@
 }
 
 .doc-info-btn:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 3px;
 }
 
@@ -298,7 +298,7 @@
     overscroll-behavior: contain;
     padding: 18px 20px;
 
-    background: rgba(14, 16, 36, 0.96);
+    background: rgba(20, 16, 41, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--ctl-panel-radius);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
@@ -326,7 +326,7 @@
     margin: 0 0 12px;
     font-size: 13px;
     letter-spacing: 2px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .doc-info__en {
@@ -334,7 +334,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 10px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.32);
+    color: var(--fg-4);
 }
 
 .doc-info .org-meta {
@@ -353,7 +353,7 @@
 .doc-info__section {
     margin-top: 14px;
     padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--line-1);
 }
 
 .doc-info__title {
@@ -361,7 +361,7 @@
     font-size: 12px;
     font-weight: 400;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--fg-3);
 }
 
 .doc-info__title .doc-info__en {
@@ -373,7 +373,7 @@
     font-size: 13px;
     line-height: 1.8;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--fg-3);
 }
 
 /* 右栏里的面板比组织页更紧凑 */
@@ -412,7 +412,7 @@
     font-size: 12px;
     line-height: 1.8;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--fg-3);
 }
 
 /* ==========================================================================
@@ -437,20 +437,20 @@
     padding: 10px;
     overflow: hidden;
 
-    background: rgba(4, 6, 16, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(5, 4, 10, 0.88);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-radius);
     transition: var(--ctl-transition);
 }
 
 .doc-media__open:hover,
 .doc-media__open:focus-visible {
-    border-color: rgba(255, 215, 0, 0.4);
-    background: rgba(255, 215, 0, 0.03);
+    border-color: rgba(var(--accent-rgb), 0.4);
+    background: rgba(var(--accent-rgb), 0.03);
 }
 
 .doc-media__open:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 3px;
 }
 
@@ -474,22 +474,22 @@
     font-size: 12px;
     line-height: 1.7;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--fg-4);
 }
 
 .doc-media__link {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
     text-decoration: none;
     transition: var(--ctl-transition);
 }
 
 .doc-media__link:hover,
 .doc-media__link:focus-visible {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .doc-media__link:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 3px;
 }
 
@@ -502,9 +502,9 @@
 
     /* 纸面比面板更"实"一点：正文要能读，别让后面的六边形网格穿过来。
        与 .org-block 一样加薄模糊，但底色压深一档。 */
-    background-color: rgba(10, 12, 28, 0.72);
+    background-color: rgba(11, 9, 23, 0.72);
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-radius);
     backdrop-filter: blur(6px);
 }
@@ -521,11 +521,11 @@
     font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 10px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 .doc-sheet__page {
-    color: rgba(255, 215, 0, 0.62);
+    color: rgba(var(--accent-rgb), 0.62);
 }
 
 /* ── Markdown 文档正文 ──
@@ -541,7 +541,7 @@
     font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 .doc-md__failed {
@@ -569,7 +569,7 @@
     display: grid;
     place-items: center;
 
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--fg-2);
     background: var(--ctl-bg);
     border: 1px solid var(--ctl-border);
     border-radius: var(--ctl-radius);
@@ -584,7 +584,7 @@
 }
 
 .doc-player__toggle:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 3px;
 }
 
@@ -647,8 +647,8 @@
     border-radius: 1px;
     background: linear-gradient(
         to right,
-        #FFD700 0,
-        #FFD700 var(--doc-progress),
+        var(--accent) 0,
+        var(--accent) var(--doc-progress),
         rgba(255, 255, 255, 0.16) var(--doc-progress),
         rgba(255, 255, 255, 0.16) 100%
     );
@@ -660,10 +660,10 @@
     height: 9px;
     margin-top: -3.5px;
 
-    background: #FFD700;
+    background: var(--accent);
     border: 0;
     border-radius: 1px;
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.6);
 
     --cursor-kind: pointer; cursor: var(--cur-pointer);
 }
@@ -673,8 +673,8 @@
     border-radius: 1px;
     background: linear-gradient(
         to right,
-        #FFD700 0,
-        #FFD700 var(--doc-progress),
+        var(--accent) 0,
+        var(--accent) var(--doc-progress),
         rgba(255, 255, 255, 0.16) var(--doc-progress),
         rgba(255, 255, 255, 0.16) 100%
     );
@@ -683,16 +683,16 @@
 .doc-player__seek::-moz-range-thumb {
     width: 9px;
     height: 9px;
-    background: #FFD700;
+    background: var(--accent);
     border: 0;
     border-radius: 1px;
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.6);
 
     --cursor-kind: pointer; cursor: var(--cur-pointer);
 }
 
 .doc-player__seek:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 4px;
     border-radius: 1px;
 }
@@ -708,7 +708,7 @@
     font-size: 11px;
     line-height: 1.6;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--fg-4);
 }
 
 .doc-player__time {
@@ -716,16 +716,16 @@
 }
 
 .doc-player__time--total {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
 }
 
 /* 正在播放：当前时间属于「进行中」，转金 */
 .doc-player.is-playing .doc-player__time--now {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .doc-player__sep {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--fg-4);
 }
 
 /* 素材缺失 / 解码失败时：整条压暗，播放键不可点 */
@@ -745,8 +745,8 @@
     aspect-ratio: 16 / 9;
     overflow: hidden;
 
-    background: rgba(4, 6, 16, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(5, 4, 10, 0.88);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-radius);
 }
 
@@ -779,9 +779,9 @@
     font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-3);
 
-    background: rgba(4, 6, 16, 0.78);
+    background: rgba(5, 4, 10, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--ctl-radius);
 }
@@ -795,8 +795,8 @@
     padding: 32px 24px;
     text-align: center;
 
-    background: rgba(20, 20, 50, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(var(--panel-rgb), 0.18);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-radius);
 }
 
@@ -804,8 +804,8 @@
     width: 7px;
     height: 7px;
     border-radius: 1px;
-    background: #FFD700;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.85);
     opacity: 0.55;
 }
 
@@ -815,7 +815,7 @@
     font-size: 12px;
     line-height: 1.6;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--fg-4);
 }
 
 /* ── 附属文件：一行一份（签 / 名 / 大小） ──
@@ -833,10 +833,10 @@
     gap: 12px;
     padding: 9px 8px;
 
-    color: #fff;
+    color: var(--fg-1);
     text-decoration: none;
 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--line-1);
     transition: var(--ctl-transition);
 }
 
@@ -850,7 +850,7 @@ a.doc-file:focus-visible {
 }
 
 a.doc-file:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 1px;
 }
 
@@ -861,29 +861,29 @@ a.doc-file:focus-visible {
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 9px;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--fg-4);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 2px;
 }
 
 a.doc-file:hover .doc-file__tag,
 a.doc-file:focus-visible .doc-file__tag {
-    color: #FFD700;
-    border-color: rgba(255, 215, 0, 0.45);
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.45);
 }
 
 .doc-file__name {
     font-size: 13px;
     line-height: 1.6;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--fg-2);
 }
 
 .doc-file__size {
     font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
     font-size: 11px;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--fg-4);
 }
 
 /* ── 两栏档案：与舰船 / 人员 / 生物一致，左栏与右栏各自滚动 ──

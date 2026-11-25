@@ -86,6 +86,7 @@
             window.setTimeout(function () { h.classList.add('css-ready'); }, 2000);
         })();
     </script>
+    <link rel="stylesheet" href="/assets/css/tokens.css">
     <link rel="stylesheet" href="/assets/css/boot.css">
     <script defer src="/assets/js/boot.js"></script>
 
@@ -93,12 +94,14 @@
          （任意路径都可能），所以资源必须用绝对路径，否则带子目录的 404（如 /foo/bar）
          会去找 /foo/assets/... 而加载不到样式。 -->
     <link rel="stylesheet" href="/assets/css/global.css">
+    <link rel="stylesheet" href="/assets/css/catalog.css">
     <link rel="stylesheet" href="/assets/css/error.css">
     <script defer src="/assets/js/background.js"></script>
     <script defer src="/assets/js/cursor.js"></script>
     <script defer src="/assets/js/seamless.js"></script>
     <script defer src="/assets/js/navtoggle.js"></script>
-    <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
+    <script defer src="/assets/js/catalog.js"></script>
+        <!-- 预渲染 / 预取：鼠标悬停或按下导航链接时，提前把目标页面准备好（仅 Chromium 内核生效） -->
     <script type="speculationrules">
         {
             "prerender": [
@@ -159,6 +162,12 @@
             </div>
 
             <div class="error-panel__body">
+
+                <p class="page-eyebrow">
+                    <span class="page-eyebrow__id">LINK</span>
+                    <span class="page-eyebrow__no">// ERROR</span>
+                    <span class="page-eyebrow__tail">SSS · LOCAL CACHE</span>
+                </p>
 
                 <div class="error-head">
                     <!-- 全页只有这一个金色元素：错误码是这一屏的「关键读数」 -->

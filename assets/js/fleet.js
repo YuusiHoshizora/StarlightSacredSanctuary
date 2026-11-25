@@ -3,11 +3,11 @@
    ------------------------------------------------------------
    全站有两套颜色，分工不同：
 
-     · 主题色（紫色基调）：天空底色、激活区描边、柔光、极光、选区、顶栏。
-     · 强调色（金色 #FFD700）：导航 / 页脚 hover、焦点、卡片标题等强调态。
+     · 主题色（圣域紫 #3A3072）：天空底色、激活区描边、柔光、极光、选区、顶栏。
+     · 高亮色（#FFD700）：导航 / 页脚 hover、焦点、眉标编号、已收录计数。
 
    鼠标移到某张舰队卡片上（或键盘聚焦）时，**只换主题色**：
-   把页面里的紫色换成该舰队的颜色，强调色始终是金色、不参与换色。
+   把页面里的紫色换成该舰队的颜色，高亮色始终是金色、不参与换色。
    银色的六边形网格线也不换色。
 
    换色范围：
@@ -15,11 +15,11 @@
      · 顶栏底色 --fleet-nav-bg（透明度和玻璃模糊不变，只换色调）
      · 背景画布的天空底色、激活区描边 / 柔光 / 极光（window.SSSHex.setTone）
 
-   强调色（金色）不参与换色：导航 / 页脚 hover、焦点、卡片标题、圆点 / 连线 /
+   高亮色（金色）不参与换色：导航 / 页脚 hover、焦点、卡片标题、圆点 / 连线 /
    金环 / 掠光 / 点击波纹都保持原样。
 
    移出卡片（或失焦）后平滑回到紫色。颜色写在卡片的 data-fleet-color 上。
-   动效：320ms easeOutCubic；系统偏好「减少动态」时直接切换。
+   动效：320ms easeOutCubic（= tokens.css 的 --dur-swap）；系统偏好「减少动态」时直接切换。
    点击卡片：三支舰队目前都无法打开，从底部弹错误说明（.fleet-toast）。
    ============================================================ */
 (function () {
@@ -29,7 +29,8 @@
   var cards = document.querySelectorAll('.fleet-card[data-fleet-color]');
   if (!cards.length) return;
 
-  /* 默认主题色 = 全站紫色基调（与 background.js 的 TONE_COLOR、global.css 的选区同色） */
+  /* 默认主题色 = 全站圣域紫（与 tokens.css 的 --tone、background.js 的 TONE_COLOR、
+     global.css 的选区同色） */
   var DEFAULT_TONE = '#3A3072';
   var DEFAULT_RGB = parseHex(DEFAULT_TONE);
 
@@ -77,11 +78,11 @@
     ];
   }
 
-  /* 顶栏底色的原始值（与 global.css 的 .navbar background 一致） */
-  var NAV_BASE = [10, 10, 30];
+  /* 顶栏底色的原始值（与 global.css 的 --nav-rgb / .navbar background 一致） */
+  var NAV_BASE = [10, 8, 21];
 
   /* 把当前主题色写进页面令牌、顶栏底色与背景画布。
-     强调色令牌（--ctl-*）不动，金色保持原样。
+     高亮色令牌（--accent / --ctl-*）不动，金色保持原样。
      背景画布由 background.js 维护，页面没装它（例如脚本顺序变了）时静默跳过。 */
   function paint(rgb) {
     var r = Math.round(rgb[0]);
@@ -96,7 +97,7 @@
     /* 顶栏：底色向舰队色偏移，透明度和玻璃质感不变 */
     var nav = shiftColor(NAV_BASE, [r, g, b], 0.20);
     root.style.setProperty('--fleet-nav-bg',
-      'rgba(' + nav[0] + ', ' + nav[1] + ', ' + nav[2] + ', 0.35)');
+      'rgba(' + nav[0] + ', ' + nav[1] + ', ' + nav[2] + ', 0.62)');
 
     if (window.SSSHex && typeof window.SSSHex.setTone === 'function') {
       window.SSSHex.setTone([r, g, b]);

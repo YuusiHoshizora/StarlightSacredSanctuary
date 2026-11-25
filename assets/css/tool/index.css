@@ -42,7 +42,7 @@
     margin: 0;
     font-size: 17px;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
 }
 .tool-side__title--second {
     margin-top: 26px;
@@ -56,7 +56,7 @@
     padding: 16px 34px 16px 16px;
     margin-top: 14px;
 
-    color: #fff;
+    color: var(--fg-1);
     text-decoration: none;
 
     background: rgba(255, 255, 255, 0.04);
@@ -96,8 +96,8 @@ button.tool-entry {
 /* 选中态：金色底 + 金色描边 + 整块向右抬起一点（右侧箭头不再另外滑动） */
 .tool-entry:hover,
 .tool-entry:focus-visible {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.45);
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: rgba(var(--accent-rgb), 0.45);
     transform: translateX(5px);
 }
 
@@ -115,14 +115,14 @@ button.tool-entry {
 
 .tool-entry:hover .tool-entry__name,
 .tool-entry:focus-visible .tool-entry__name {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .tool-entry__desc {
     display: block;
     font-size: 12px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 .tool-entry__arrow {
@@ -131,13 +131,13 @@ button.tool-entry {
     right: 14px;
     transform: translateY(-50%);     /* 垂直居中，不是 hover 位移 */
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
     transition: color 0.25s;
 }
 
 .tool-entry:hover .tool-entry__arrow,
 .tool-entry:focus-visible .tool-entry__arrow {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 /* 「减少动态效果」：不位移、不过渡 */
@@ -171,7 +171,7 @@ button.tool-entry {
     margin: 0;
     font-size: 17px;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
 }
 
 
@@ -179,7 +179,7 @@ button.tool-entry {
     flex: 0 0 auto;
     scroll-margin-top: 96px;
     padding: 14px 16px 16px;
-    background: rgba(20, 20, 50, 0.42);
+    background: rgba(var(--panel-rgb), 0.42);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: blur(10px);
@@ -189,7 +189,7 @@ button.tool-entry {
     margin: 0 0 12px;
     font-size: 15px;
     letter-spacing: 2px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 /* ── 拾色器：圆环与下方色值同宽（都跟着这个宽度走） ──
@@ -226,7 +226,7 @@ button.tool-entry {
 /* 键盘聚焦：跟站内其它控件一样用金色焦点环，别只靠浏览器自带的细框
    （深色画布上不够显眼，也和全站不一致） */
 .hue__wheel:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 4px;
 }
 
@@ -240,7 +240,7 @@ button.tool-entry {
     margin-bottom: 10px;
     border-radius: var(--ctl-radius);
     border: 1px solid var(--ctl-border);
-    background: #3A3072;
+    background: var(--tone);
     transition: background 0.15s;
 }
 
@@ -260,7 +260,7 @@ button.tool-entry {
     flex: 0 0 30px;
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 
 /* 数值可以直接改：填好按回车就跳到那个颜色（外观走全站控件令牌） */
@@ -286,7 +286,7 @@ button.tool-entry {
 
 .hue__input:hover,
 .tool-field:hover {
-    border-color: rgba(255, 215, 0, 0.35);
+    border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 .hue__input:focus,
@@ -354,7 +354,7 @@ button.tool-entry {
     min-height: 1.45em;            /* 给这行提示预先占好整行位置 */
     font-size: 11px;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.32);
+    color: var(--fg-4);
 }
 
 .hue__tip--done {
@@ -376,7 +376,7 @@ button.tool-entry {
 .timeconv__block {
     padding: 9px 10px 10px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--line-1);
     border-radius: var(--ctl-radius);
 }
 
@@ -391,13 +391,13 @@ button.tool-entry {
 .timeconv__label {
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.86);
+    color: var(--fg-1);
 }
 
 .timeconv__unit {
     font-size: 10px;
     letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
 }
 
 /* 三组「输入框 + 框外的年/月/日」。
@@ -422,7 +422,7 @@ button.tool-entry {
     flex: 0 0 auto;
     font-size: 12px;
     letter-spacing: 0;
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--fg-4);
     pointer-events: none;          /* 点字上当点空白，交给 label 聚焦输入框 */
 }
 
@@ -444,7 +444,7 @@ button.tool-entry {
     min-height: 1.45em;
     font-size: 11px;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
 }
 
 .timeconv__note--err,
@@ -459,7 +459,7 @@ button.tool-entry {
     align-items: center;
     justify-content: center;
     height: 30px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--fg-4);
 }
 
 .timeconv__switch svg,
@@ -491,7 +491,7 @@ button.tool-entry {
     flex: 0 0 44px;                /* 三种字数的标签都占这么宽，两行的输入框左边缘对齐 */
     font-size: 12px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--fg-4);
     white-space: nowrap;           /* 「阿拉伯」不能被挤成竖排 */
     pointer-events: none;          /* 点字上当点空白，交给 label 聚焦输入框 */
 }
@@ -544,7 +544,7 @@ button.tool-entry {
 
     .tool-side {
         padding-bottom: 14px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--line-1);
     }
 
     /* 单列时仍然是一列窄卡：宽度按「圆环 240px + 左右内边距 + 左右描边」写死，
@@ -588,7 +588,7 @@ button.tool-entry {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(4, 4, 12, 0.72);
+    background: rgba(5, 4, 10, 0.72);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     animation: cursor-test-fade 0.22s ease-out both;
@@ -602,11 +602,11 @@ button.tool-entry {
     overflow: auto;
     overscroll-behavior: contain;
     padding: 26px 28px 22px;
-    background: rgba(18, 18, 38, 0.96);
+    background: rgba(20, 16, 41, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--ctl-panel-radius);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-    animation: cursor-test-pop 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+    animation: cursor-test-pop 0.26s var(--ease) both;
 }
 
 /* 进场动画与公告（notice.js）同一套：遮罩淡入 + 面板轻微上浮放大；
@@ -616,7 +616,7 @@ button.tool-entry {
     to { opacity: 1; }
 }
 @keyframes cursor-test-pop {
-    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
     to { opacity: 1; transform: none; }
 }
 
@@ -626,20 +626,20 @@ button.tool-entry {
     justify-content: space-between;
     gap: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line-1);
 }
 .cursor-test__kicker {
     font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
     font-size: 11px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--fg-4);
 }
 .cursor-test__title {
     margin-top: 7px;
     font-size: 20px;
     font-weight: 400;
     letter-spacing: 2px;
-    color: #fff;
+    color: var(--fg-1);
 }
 .cursor-test__close {
     flex: 0 0 auto;
@@ -661,7 +661,7 @@ button.tool-entry {
     border-color: var(--ctl-border-hover);
 }
 .cursor-test__close:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 2px;
 }
 
@@ -670,7 +670,7 @@ button.tool-entry {
     font-size: 12px;
     line-height: 1.8;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
 }
 
 .cursor-test__grid {
@@ -682,15 +682,15 @@ button.tool-entry {
 
 .cursor-test__cell {
     padding: 12px 10px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--line-1);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.03);
     text-align: center;
     transition: border-color var(--ctl-ease), background-color var(--ctl-ease);
 }
 .cursor-test__cell:hover {
-    border-color: rgba(255, 215, 0, 0.45);
-    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(var(--accent-rgb), 0.45);
+    background: rgba(var(--accent-rgb), 0.08);
 }
 .cursor-test__glyph {
     display: block;
@@ -702,7 +702,7 @@ button.tool-entry {
     display: block;
     font-size: 12px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--fg-2);
 }
 .cursor-test__token {
     display: block;
@@ -710,13 +710,13 @@ button.tool-entry {
     font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
     font-size: 10px;
     line-height: 1.4;
-    color: rgba(255, 255, 255, 0.32);
+    color: var(--fg-4);
 }
 .cursor-test__note {
     margin-top: 16px;
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--fg-4);
 }
 
 @media (max-width: 900px) {
@@ -735,4 +735,98 @@ button.tool-entry {
 @media (prefers-reduced-motion: reduce) {
     .cursor-test,
     .cursor-test__panel { animation: none; }
+}
+
+/* ==========================================================================
+   统一层 v2（docs/DESIGN-LANGUAGE.md）
+   --------------------------------------------------------------------------
+   工具页保持"一屏放得下"：不加大块页头，只在左栏顶部放一行编号眉标。
+   控件 / 卡片沿用 tokens.css；目录的不完整态由 catalog.css 提供。
+   ========================================================================== */
+.tool-side {
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-side > .page-eyebrow {
+    order: -1;
+    margin: 0 0 14px;
+}
+
+/* 目录状态条在 250px 的窄栏里要折行，绝不能溢出到右栏去 */
+.tool-side > .catalog-bar {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    letter-spacing: 0.18em;
+}
+
+.tool-side > .catalog-bar .catalog-bar__tail {
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    white-space: normal;
+}
+
+.tool-side > .catalog-slot {
+    min-height: 56px;
+    margin-top: 14px;
+    padding: 10px 12px;
+}
+
+/* 250px 窄栏里只留结论，不写长说明 */
+.tool-side > .catalog-slot .catalog-slot__desc,
+.tool-side > .catalog-slot .catalog-slot__plus {
+    display: none;
+}
+
+.tool-side__title {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    font-weight: 400;
+    letter-spacing: var(--track-label);
+    color: var(--fg-4);
+    text-transform: uppercase;
+}
+
+.tool-entry {
+    border-radius: var(--radius-s);
+}
+
+.tool-card {
+    background: var(--grad-panel);
+    border: 1px solid var(--line-1);
+    border-radius: var(--radius-panel);
+}
+
+.tool-main__title {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 400;
+    letter-spacing: var(--track-label);
+    color: var(--fg-3);
+    text-transform: uppercase;
+}
+
+.tool-card__name {
+    font-size: var(--fs-h2);
+    font-weight: 400;
+    letter-spacing: var(--track-h2);
+    color: var(--fg-1);
+}
+
+.hue__input {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    background: var(--surface-inset);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-control);
+    color: var(--fg-1);
+}
+
+.hue__input:focus {
+    border-color: var(--line-accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10);
+    outline: none;
 }

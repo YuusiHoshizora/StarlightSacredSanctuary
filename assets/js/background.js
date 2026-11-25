@@ -8,30 +8,34 @@
      4. .hex-bg__fx     鼠标激活区特效
 
    激活区：
-   · 以鼠标为圆心；内圈描边 -> 页面主题色（默认 #3a3072，紫色基调），越远越淡，圆外保持 #c0c0c0
-   · 每个六边形中心 -> 强调色（默认 #ffd700）实心圆点（半径 = 1.5 倍描边）
-   · 相邻圆点用同一强调色细线连接，越远越透明
+   · 以鼠标为圆心；内圈描边 -> 页面主题色（默认 #3A3072 圣域紫），越远越淡，圆外保持 #C0C0C0 银
+   · 每个六边形中心 -> 高亮色（默认 #FFD700）实心圆点（半径 = 1.5 倍描边）
+   · 相邻圆点用同一高亮色细线连接，越远越透明
    · 主题色（天空底色 / 激活区 / 柔光 / 极光）可在运行时通过
-     window.SSSHex.setTone() 切换，强调色与银色网格线不随之改变
-     （舰队页悬停卡片时把紫色换成舰队色、金色强调保持原样）
+     window.SSSHex.setTone() 切换，高亮色与银色网格线不随之改变
+     （舰队页悬停卡片时把紫换成舰队色、金色高亮保持原样）
    · 内圈（0 ~ FALLOFF_START 比例）不衰减，只有外层衰减
    · 边界的细色环 + 移动时掠过的一道浅光（华丽感，但保持暗调）
+
+   配色纪律（v3，与 docs/DESIGN-LANGUAGE.md 一致）：
+     紫 = 氛围（天空 / 极光 / 激活区），银 = 结构（六边形网格线），金 = 点亮（圆点 / 连线 / 环）。
+     不要在别处再写死这三种颜色的十六进制值 —— 页面侧的默认值在 tokens.css 里。
    ============================================================ */
 (function () {
   'use strict';
 
   var DEFAULTS = {
     R: 30,                    // 六边形外接圆半径（CSS px）
-    STROKE: 1.8,              // 六边形描边粗细
-    BASE_STROKE: '#c0c0c0',   // 普通六边形描边（网格线）
-    ACTIVE_STROKE: '#3a3072', // 页面主题色（激活区内圈描边）
-    DOT_COLOR: '#ffd700',     // 旧配置名，仅为兼容保留；实际强调色见 THEME_COLOR
-    /* 强调色：**始终金色**，不随页面主题色变 —— 圆点 / 连线 / 金环 / 掠光 / 点击波纹 /
-       坐标原点 / 偏金的星星都用它。 */
+    STROKE: 1.4,              // 六边形描边粗细
+    BASE_STROKE: '#6E6880',   // 普通六边形描边（基本色银压暗一档，带一点紫）
+    ACTIVE_STROKE: '#3A3072', // 页面主题色（激活区内圈描边）
+    DOT_COLOR: '#ffd700',     // 旧配置名，仅为兼容保留；实际高亮色见 THEME_COLOR
+    /* 高亮色：**始终金色 #FFD700**，不随页面主题色变 —— 圆点 / 连线 / 金环 / 掠光 /
+       点击波纹 / 坐标原点 / 偏金的星星都用它。 */
     THEME_COLOR: '#ffd700',
-    /* 页面主题色（紫色基调）：激活区描边、柔光、极光、选区（选区在 CSS 侧取同一个值）。
+    /* 页面主题色（圣域紫 #3A3072）：激活区描边、柔光、极光、选区（选区在 CSS 侧取同一个值）。
        舰队页悬停卡片时用 window.SSSHex.setTone() 换成该舰队的颜色。 */
-    TONE_COLOR: '#3a3072',
+    TONE_COLOR: '#3A3072',
     RADIUS: 260,              // 激活区半径（CSS px）
     FALLOFF_START: 0.45,      // 内圈比例：该范围内完全不衰减
     FALLOFF_POW: 1.1,         // 衰减曲线指数：越大末端收得越平缓（过渡越柔）
@@ -40,10 +44,11 @@
 
     /* --- 华丽度相关，全部可调；设为 0 即关闭对应特效 --- */
     SKY_PARALLAX: 0.03,       // 星云随鼠标的视差强度（相对位移比例）
-    /* 天空底色三段。默认是深蓝紫；星图页会覆盖成和启动画面一致的 #05060b */
-    SKY_TOP: '#0a0a14',
-    SKY_MID: '#0c0c12',
-    SKY_BOTTOM: '#0b0a10',
+    /* 天空底色三段（圣域紫的墨）：与 tokens.css 的 --grad-sky 同色；
+       星图页会覆盖成和启动画面一致的 #04070d */
+    SKY_TOP: '#0C0A1C',
+    SKY_MID: '#0A0817',
+    SKY_BOTTOM: '#05040C',
     /* 可选的中心光晕：{x, y, r, mid, inner, outer}，不设则不画 */
     SKY_GLOW: null,
     AURORA: 0.5,              // 极光强度
@@ -72,10 +77,10 @@
        三级之间是固定比值，所以缩放时"哪条线属于哪一级"永远不变，不会跳格。 */
     GRID_STYLE: 'hex',
     COORD_N: 20,                 // 纵向小格数（小格数量）
-    COORD_MINOR: '#232334',      // 小坐标线颜色
-    COORD_MEDIUM_C: '#3d3d5c',   // 中坐标线颜色
-    COORD_MAJOR_C: '#5a5a7a',    // 大坐标线颜色
-    COORD_AXIS: '#6a6a8e',       // 坐标轴（x = 0 / y = 0）颜色
+    COORD_MINOR: '#16202f',      // 小坐标线颜色
+    COORD_MEDIUM_C: '#26374f',   // 中坐标线颜色
+    COORD_MAJOR_C: '#3c5470',    // 大坐标线颜色
+    COORD_AXIS: '#527093',       // 坐标轴（x = 0 / y = 0）颜色
     COORD_MEDIUM_STEP: 5,        // 中坐标：每 5 个小格
     COORD_MAJOR_STEP: 25,        // 大坐标：每 5 个中格
     COORD_MINOR_MIN_PX: 26,      // 小格屏上间距小于该值就不画小坐标
@@ -110,14 +115,13 @@
     }
   })();
 
-  /* 当前强调色（RGB 数组，默认金色，恒定）与它的浅色版（掠光的高光端）。
-     绘制强调色时一律读这两个变量，不再写死 #ffd700。 */
+  /* 当前高亮色（RGB 数组，默认金 #FFD700，恒定）与它的浅色版（掠光的高光端）。
+     绘制高亮色时一律读这两个变量，不再写死 #ffd700。 */
   var THEME = parseColor(CFG.THEME_COLOR) || parseColor(CFG.DOT_COLOR) || [0xff, 0xd7, 0x00];
   var THEME_LIGHT = mix(THEME, [0xff, 0xff, 0xff], 0.72);
 
-  /* 当前页面主题色（紫色基调，可运行时切换）与它的浅色 / 深色变体。
-     激活区描边、柔光、极光、天空底色、六边形网格都从这里取色；
-     强调色（THEME）不受影响。 */
+  /* 当前页面主题色（圣域紫，可运行时切换）与它的浅色 / 深色变体。
+     激活区描边、柔光、极光、天空底色都从这里取色；高亮色（THEME）不受影响。 */
   var TONE = parseColor(CFG.TONE_COLOR) || parseColor(CFG.ACTIVE_STROKE) || [0x3a, 0x30, 0x72];
   var TONE_LIGHT = mix(TONE, [0xff, 0xff, 0xff], 0.18);
   var TONE_DEEP = mix(TONE, [0x00, 0x00, 0x00], 0.35);
@@ -465,7 +469,7 @@
     if (CFG.COORD_MARK > 0 && showMajor) {
       var r = 1.7;
       var a1 = 0.20 * CFG.COORD_MARK;
-      ctx.fillStyle = 'rgba(192,192,192,' + a1 + ')';
+      ctx.fillStyle = 'rgba(168,192,224,' + a1 + ')';
       ctx.beginPath();
       for (var i = Math.ceil(kx0 / majStep) * majStep; i <= kx1; i += majStep) {
         for (var j = Math.ceil(ky0 / majStep) * majStep; j <= ky1; j += majStep) {
@@ -557,11 +561,11 @@
     sctx.save();
     sctx.clearRect(0, 0, vw, vh);
 
-    /* 底色：深蓝紫，与 #0c0c0c 的网格自然衔接 */
+    /* 底色：圣域紫的墨，与银色网格自然衔接 */
     var g = sctx.createLinearGradient(0, 0, 0, vh);
-    g.addColorStop(0, CFG.SKY_TOP || '#0a0a14');
-    g.addColorStop(0.55, CFG.SKY_MID || '#0c0c12');
-    g.addColorStop(1, CFG.SKY_BOTTOM || '#0b0a10');
+    g.addColorStop(0, CFG.SKY_TOP || '#0C0A1C');
+    g.addColorStop(0.55, CFG.SKY_MID || '#0A0817');
+    g.addColorStop(1, CFG.SKY_BOTTOM || '#05040C');
     sctx.fillStyle = g;
     sctx.fillRect(0, 0, vw, vh);
 
@@ -572,9 +576,9 @@
       var gy = vh * (gl.y == null ? 0.42 : gl.y);
       var gr = Math.max(vw, vh) * (gl.r || 0.75);
       var gg = sctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
-      gg.addColorStop(0, gl.inner || 'rgba(40,52,86,0.32)');
-      gg.addColorStop(gl.mid == null ? 0.68 : gl.mid, gl.outer || 'rgba(5,6,11,0.98)');
-      gg.addColorStop(1, gl.outer || 'rgba(5,6,11,0.98)');
+      gg.addColorStop(0, gl.inner || 'rgba(58,48,114,0.34)');
+      gg.addColorStop(gl.mid == null ? 0.68 : gl.mid, gl.outer || 'rgba(5,4,10,0.98)');
+      gg.addColorStop(1, gl.outer || 'rgba(5,4,10,0.98)');
       sctx.fillStyle = gg;
       sctx.fillRect(0, 0, vw, vh);
     }
@@ -665,7 +669,7 @@
         tctx.moveTo(s.x + rad, s.y);
         tctx.arc(s.x, s.y, rad, 0, Math.PI * 2);
       }
-      tctx.fillStyle = big ? 'rgba(226,214,255,0.95)' : 'rgba(200,204,224,0.75)';
+      tctx.fillStyle = big ? 'rgba(236,233,247,0.95)' : 'rgba(216,210,236,0.75)';
       tctx.fill();
     }
     /* 少量偏金的亮星 */
@@ -884,7 +888,7 @@
       fctx.restore();
     }
 
-    /* --- 2. 六边形描边：颜色由 #3a3072 连续过渡到背景的 #c0c0c0 --- */
+    /* --- 2. 六边形描边：颜色由 #3A3072（圣域紫）连续过渡到背景的 #C0C0C0（基本色银） --- */
     strokeActive(list);
 
     /* --- 2b. 边界一圈会呼吸的细色环 --- */
@@ -894,7 +898,7 @@
       fctx.beginPath();
       fctx.arc(cur.x, cur.y, rr, 0, Math.PI * 2);
       fctx.lineWidth = CFG.STROKE * 0.9;
-      fctx.strokeStyle = rgb(THEME, 0.22 * CFG.RING * pulse);
+      fctx.strokeStyle = rgb(THEME, 0.18 * CFG.RING * pulse);
       fctx.stroke();
     }
 
@@ -939,7 +943,7 @@
         fctx.beginPath();
         fctx.moveTo(c.x, c.y);
         fctx.lineTo(nb.x, nb.y);
-        fctx.strokeStyle = rgb(THEME, fm * 0.72);
+        fctx.strokeStyle = rgb(THEME, fm * 0.58);
         fctx.stroke();
       }
     }

@@ -1,17 +1,24 @@
 /* ==========================================================================
-   舰队主题色
+   舰队页 · 舰队色的唯一落点
    --------------------------------------------------------------------------
-   全站主题色是紫色基调（天空底色、激活区、柔光、极光、选区、顶栏）；强调色始终是金色。
-   六边形网格的银描边不是主题色，不参与换色。
-   鼠标移到某张舰队卡片上时，fleet.js 只把「主题色」平滑换成该舰队的颜色，
-   金色强调（导航 / 页脚 hover、焦点、卡片标题）保持不变。
-   这里只给默认值，颜色切换逻辑不在 CSS 里。
+   全站只有这一页允许出现"功能色"：舰队三色（科研管理 #3DAEFF / 工业收集 #DBA400 /
+   主防御 #E0544C）。它们来自世界观权威色板，写在 tokens.css 的 --fleet-* 上，
+   这里只负责把它们应用到卡面（left stripe / 序号 / hover 描边与标题 / 氛围换色）。
+
+   与全站的分工：
+     · 紫（--tone）  ：页面氛围 —— 星野底色、激活区、柔光、极光、选区、顶栏。
+     · 银（--basic） ：结构 —— 六边形网格线、英文副题、读数、占位卡。
+     · 金（--accent）：点亮 —— 眉标编号、已收录、hover 的"进入编成"、焦点环。
+     · 舰队色        ：本页的"编成归属"，静止态就以左侧 2px 色条 + 序号出现，
+                       不是只有 hover 才看得见（v3 修正：三色必须静态生效）。
+   鼠标移到卡片上时，fleet.js 只把「主题色」平滑换成该舰队的颜色（320ms），
+   金色强调保持不变。颜色切换逻辑不在 CSS 里。
    ========================================================================== */
 :root {
     --fleet-tone: #3A3072;
     --fleet-tone-rgb: 58, 48, 114;
-    /* 顶栏底色：默认值与 global.css 完全一致，悬停卡片时由 fleet.js 改写成舰队色 */
-    --fleet-nav-bg: rgba(10, 10, 30, 0.35);
+    /* 顶栏底色：默认值与 global.css 一致，悬停卡片时由 fleet.js 改写成舰队色 */
+    --fleet-nav-bg: rgba(var(--nav-rgb), 0.62);
 }
 
 /* 顶栏底色跟随整页主题色（其余玻璃参数仍用 global.css 的） */
@@ -19,9 +26,9 @@
     background: var(--fleet-nav-bg);
 }
 
-/* 选区跟随页面主题色（默认就是 global.css 里的紫色；换色时一起变） */
+/* 选区跟随页面主题色（默认就是 global.css 的圣域紫；换色时一起变） */
 ::selection {
-    background-color: rgba(var(--fleet-tone-rgb), 0.25);
+    background-color: rgba(var(--fleet-tone-rgb), 0.55);
 }
 
 /* 不铺半透明遮罩（那样会像加了一层滤镜）：悬停时把页面里的紫色元素
@@ -34,96 +41,190 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 100px 60px;
+    padding: 104px 60px 72px;
+}
+
+.fleet-inner {
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* ── 页头：与档案 / 关于同一套语法（眉标 → 标题 → 等宽副题 → 导语） ── */
+.fleet-head {
+    margin-bottom: 28px;
+}
+
+.fleet-head h1 {
+    margin: 0;
+    font-size: var(--fs-h1);
+    font-weight: 400;
+    line-height: var(--lh-h1);
+    letter-spacing: var(--track-h1);
+    color: var(--fg-1);
+}
+
+.fleet-head .fleet-sub {
+    margin: 9px 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.24em;
+    color: var(--fg-3);
+    text-transform: uppercase;
+}
+
+.fleet-head .fleet-lead {
+    margin: 18px 0 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    letter-spacing: var(--track-body);
+    color: var(--fg-2);
 }
 
 .fleet-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 40px;
-    justify-content: center;
-    max-width: 1200px;
+    gap: 20px;
+    justify-content: flex-start;
     width: 100%;
+
+    counter-reset: fleet;
 }
 
 .fleet-card {
+    position: relative;
     flex: 1 1 300px;
-    max-width: 350px;
-    background: rgba(255, 255, 255, 0.06);
+    max-width: 380px;
+    min-height: 210px;
+
+    display: flex;
+    flex-direction: column;
+
+    /* 每张卡自己的编成色：modifier 处覆盖 --fc / --fc-rgb */
+    --fc: var(--fleet-research);
+    --fc-rgb: var(--fleet-research-rgb);
+
+    background: var(--grad-panel);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--ctl-panel-radius);
-    padding: 40px 30px;
-    text-align: center;
-    /* 与背景换色同速：320ms easeOutCubic（见 fleet.js 的 DURATION） */
-    transition: 320ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--line-1);
+    border-left: 2px solid rgba(var(--fc-rgb), 0.55);
+    border-radius: var(--radius-panel);
+    padding: 32px 28px 26px;
+
     --cursor-kind: pointer; cursor: var(--cur-pointer);
     text-decoration: none;
-    color: white;
-    display: block;
+    color: var(--fg-1);
+
+    /* 与背景换色同速：--dur-swap（与 fleet.js 的 DURATION 一致） */
+    transition: var(--dur-swap) cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-/* 卡片 hover 只换底色与描边，不做位移
-   （全站可点击卡片统一如此 —— 档案主页的 .archive-card 就只有描边/阴影，见 docs/DESIGN.md 第五节） */
+/* 右上角编成序号：用编成色（银的读数换成该编成的标记色） */
+.fleet-card::before {
+    counter-increment: fleet;
+    content: counter(fleet, decimal-leading-zero);
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-label);
+    color: rgba(var(--fc-rgb), 0.62);
+    transition: color var(--dur-swap) cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/* 卡片 hover 只换底色、描边与文字色，不做位移
+   （全站可点击卡片统一如此 —— 档案主页的 .archive-card 就只有描边/阴影） */
 
 /* 科研与管理舰队 */
-.fleet-card--research:hover {
-    background: rgba(61, 174, 255, 0.10);
-    border-color: #3DAEFF;
+.fleet-card--research {
+    --fc: var(--fleet-research);
+    --fc-rgb: var(--fleet-research-rgb);
 }
 
 /* 工业与收集舰队 */
-.fleet-card--industry:hover {
-    background: rgba(219, 164, 0, 0.10);
-    border-color: #DBA400;
+.fleet-card--industry {
+    --fc: var(--fleet-industry);
+    --fc-rgb: var(--fleet-industry-rgb);
 }
 
 /* 主防御舰队 */
-.fleet-card--defense:hover {
-    background: rgba(224, 84, 76, 0.10);
-    border-color: #E0544C;
+.fleet-card--defense {
+    --fc: var(--fleet-defense);
+    --fc-rgb: var(--fleet-defense-rgb);
+}
+
+/* hover / 键盘聚焦：整卡按编成色点亮（描边 + 一层很薄的编成色玻璃） */
+.fleet-card:hover,
+.fleet-card:focus-visible {
+    background:
+        linear-gradient(180deg, rgba(var(--fc-rgb), 0.10), rgba(8, 7, 17, 0.55)),
+        var(--grad-panel);
+    border-color: rgba(var(--fc-rgb), 0.85);
+    border-left-color: var(--fc);
+    box-shadow: 0 0 0 1px rgba(var(--fc-rgb), 0.18), var(--shadow-card);
 }
 
 .fleet-card:focus-visible {
-    outline: 2px solid var(--ctl-border-hover);
+    outline: 2px solid var(--accent);
     outline-offset: 4px;
 }
 
 /* 悬停 / 键盘聚焦时，舰队名称用该舰队自己的颜色高亮 */
-.fleet-card--research:hover h2,
-.fleet-card--research:focus-visible h2 {
-    color: #3DAEFF;
-}
-
-.fleet-card--industry:hover h2,
-.fleet-card--industry:focus-visible h2 {
-    color: #DBA400;
-}
-
-.fleet-card--defense:hover h2,
-.fleet-card--defense:focus-visible h2 {
-    color: #E0544C;
+.fleet-card:hover h2,
+.fleet-card:focus-visible h2 {
+    color: var(--fc);
 }
 
 .fleet-card h2 {
-    font-size: 22px;
-    letter-spacing: 4px;
-    margin-bottom: 8px;
+    margin: 0 0 8px;
+    padding-right: 34px;
+    font-size: var(--fs-h2);
+    font-weight: 400;
+    letter-spacing: var(--track-h2);
+    color: var(--fg-1);
     /* 标题与背景换色同步：320ms easeOutCubic */
     transition: color 320ms cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .fleet-card .english {
-    font-size: 14px;
-    opacity: 0.6;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
+    margin: 0 0 20px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-mono);
+    color: var(--signal-dim);
+    text-transform: uppercase;
 }
 
 .fleet-card .desc {
-    font-size: 14px;
-    opacity: 0.7;
-    line-height: 1.6;
+    margin: 0;
+    font-size: var(--fs-small);
+    line-height: 1.85;
+    color: var(--fg-2);
+}
+
+/* 卡片底部动作读数：默认银，hover 点亮为编成色（"进入编成"就是这次点亮的动作） */
+.fleet-card__go {
+    margin-top: auto;
+    padding-top: 20px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
+    color: var(--fg-4);
+    text-transform: uppercase;
+    transition: color var(--dur-swap) cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.fleet-card:hover .fleet-card__go,
+.fleet-card:focus-visible .fleet-card__go {
+    color: var(--fc);
+}
+
+/* 占位卡与真实卡片同宽，让"编成未完整"这件事在网格里就看得见 */
+.fleet-grid > .catalog-slot {
+    flex: 1 1 300px;
+    max-width: 380px;
+    min-height: 210px;
 }
 
 /* ==========================================================================
@@ -136,20 +237,20 @@
     position: fixed;
     left: 50%;
     bottom: 28px;
-    z-index: 210;
+    z-index: var(--z-toast);
 
     max-width: calc(100vw - 48px);
     padding: 12px 20px;
 
-    font-size: 13px;
+    font-size: var(--fs-small);
     line-height: 1.8;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.04em;
+    color: var(--fg-1);
 
-    background: rgba(18, 18, 42, 0.97);
-    border: 1px solid rgba(255, 107, 107, 0.4);
-    border-radius: var(--ctl-panel-radius);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    background: rgba(var(--panel-rgb), 0.97);
+    border: 1px solid rgba(var(--alert-rgb), 0.4);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
 
     opacity: 0;
     visibility: hidden;
@@ -172,14 +273,17 @@
     margin-right: 8px;
     border-radius: 1px;
     background: var(--ctl-err);
-    box-shadow: 0 0 8px rgba(255, 107, 107, 0.85);
+    box-shadow: 0 0 8px rgba(var(--alert-rgb), 0.85);
     vertical-align: 1px;
 }
 
 /* 「减少动态效果」：提示条不滑动，直接出现 */
 @media (prefers-reduced-motion: reduce) {
     .fleet-toast,
-    .fleet-toast.is-in {
+    .fleet-toast.is-in,
+    .fleet-card,
+    .fleet-card h2,
+    .fleet-card__go {
         transition: none;
     }
 }
@@ -193,49 +297,48 @@
     }
 }
 
-/* 「减少动态」：与 fleet.js 的 reduced 分支一致，直接切换 */
-@media (prefers-reduced-motion: reduce) {
-    .fleet-card,
-    .fleet-card h2 {
-        transition: none;
-    }
-}
-
 /* ==========================================================================
    移动端适配：三张卡片竖排，去掉过大的内边距
    ========================================================================== */
 @media (max-width: 768px) {
 
     .fleet-section {
-        padding: 84px 18px 48px;
+        padding: 96px 18px 48px;
         align-items: flex-start;
+    }
+
+    .fleet-head {
+        margin-bottom: 20px;
     }
 
     .fleet-grid {
         flex-direction: column;
         flex-wrap: nowrap;
-        gap: 18px;
+        gap: 14px;
     }
 
-    .fleet-card {
+    .fleet-card,
+    .fleet-grid > .catalog-slot {
         flex: none;
         max-width: none;
         width: 100%;
-        padding: 26px 20px;
-        border-radius: var(--ctl-panel-radius);
+        min-height: 0;
+        padding: 24px 20px 20px;
     }
 
-    /* 手机上不靠 hover，卡片本身给一点静态底色区分 */
-    .fleet-card--research { border-color: rgba(61, 174, 255, 0.35); }
-    .fleet-card--industry { border-color: rgba(219, 164, 0, 0.35); }
-    .fleet-card--defense  { border-color: rgba(224, 84, 76, 0.35); }
+    /* 手机上不靠 hover：编成色本来就在左侧色条与序号上，这里只把描边也提到编成色 */
+    .fleet-card {
+        border-color: rgba(var(--fc-rgb), 0.32);
+        border-left-color: var(--fc);
+    }
 
     .fleet-card h2 {
-        font-size: 19px;
-        letter-spacing: 3px;
+        font-size: var(--fs-h2);
+        letter-spacing: 0.06em;
     }
 
     .fleet-card .desc {
-        font-size: 13px;
+        font-size: var(--fs-meta);
+        line-height: 1.8;
     }
 }

@@ -25,12 +25,12 @@ let overviewMode = false;   // 全面浏览中：缩放 / 星系点击 / 信息�
 // ── 过渡动画参数 ──
 const ANIM_SPEED = 0.05;   // 每帧插值步长（越大越快）
 
-// 为每个星系创建动画状态（初始默认态：半透明 #C0C0C0）
+// 为每个星系创建动画状态（初始默认态：半透明 #8FA8C8）
 const animState = {};
 STARMAP_DATA.forEach(sys => {
   animState[sys.id] = {
     glowAlpha: 0,          // 光晕不透明度
-    glowR: 192, glowG: 192, glowB: 192, // 默认冷灰 (#C0C0C0)
+    glowR: 143, glowG: 168, glowB: 200, // 默认冷灰 (#8FA8C8)
     dotBrightness: 0.5,       // 星点透明度（0.5半透明）
     nameBrightness: 0,        // 名称透明度（0=完全透明）
   };
@@ -44,7 +44,7 @@ function getTargetState(sysId) {
     // 选中态：金色光晕 + 不透明金色星点
     return {
       glowAlpha: 0.35,
-      glowR: 255, glowG: 215, glowB: 0,  // #DDA520
+      glowR: 242, glowG: 206, glowB: 123,  // #F2CE7B
       dotBrightness: 1.0,        // 完全不透明
       nameBrightness: 1,
     };
@@ -52,7 +52,7 @@ function getTargetState(sysId) {
     // 悬停态：柔和金色光晕 + 较高透明度
     return {
       glowAlpha: 0.15,
-      glowR: 255, glowG: 215, glowB: 0,
+      glowR: 242, glowG: 206, glowB: 123,
       dotBrightness: 0.8,        // 较明显
       nameBrightness: 0.85,
     };
@@ -60,7 +60,7 @@ function getTargetState(sysId) {
     // 默认态：极淡灰色光晕、半透明星点
     return {
       glowAlpha: 0.05,
-      glowR: 192, glowG: 192, glowB: 192,
+      glowR: 143, glowG: 168, glowB: 200,
       dotBrightness: 0.5,
       nameBrightness: 0,
     };
@@ -175,7 +175,7 @@ function drawStarMap() {
     ctx.fill();
 
     // ── 星点 ──
-    // 颜色固定：默认 #C0C0C0 (192,192,192) / 激活 #DDA520 (255, 215, 0)
+    // 颜色固定：默认钢青 #8FA8C8 (143,168,200) / 激活圣域金 #F2CE7B (242,206,123)
     const dotR = isActive ? 255 : 192;
     const dotG = isActive ? 215 : 192;
     const dotB = isActive ? 32  : 192;
@@ -185,11 +185,11 @@ function drawStarMap() {
     ctx.fillStyle = `rgba(${dotR},${dotG},${dotB},${s.dotBrightness})`;
     ctx.fill();
 
-    // ── 选中时外圈（颜色为 #DDA520） ──
+    // ── 选中时外圈（颜色为 #F2CE7B） ──
     if (selectedId === sys.id) {
       ctx.beginPath();
       ctx.arc(px, py, 8, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255, 215, 0,${s.glowAlpha * 1.2})`;
+      ctx.strokeStyle = `rgba(242, 206, 123,${s.glowAlpha * 1.2})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }

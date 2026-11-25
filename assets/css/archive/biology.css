@@ -38,11 +38,11 @@
     margin: 0;
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 .biology-list__title span {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .biology-list__scroll {
@@ -60,11 +60,11 @@
     gap: 8px;
     margin: 18px 0 4px;
     padding-bottom: 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--line-1);
 
     font-size: 11px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-3);
 }
 
 .biology-list__title + .biology-list__group {
@@ -75,7 +75,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.28);
+    color: var(--fg-4);
 }
 
 /* 一条名录：中文名在上，英文名在下 */
@@ -85,7 +85,7 @@
     gap: 2px;
     padding: 8px 10px;
 
-    color: #fff;
+    color: var(--fg-1);
     text-decoration: none;
 
     border-left: 2px solid transparent;
@@ -97,16 +97,16 @@
 .biology-list__item:hover,
 .biology-list__item:focus-visible {
     background: rgba(255, 255, 255, 0.03);
-    border-left-color: rgba(255, 215, 0, 0.35);
+    border-left-color: rgba(var(--accent-rgb), 0.35);
 }
 
 .biology-list__item.is-active {
-    background: rgba(255, 215, 0, 0.06);
-    border-left-color: #FFD700;
+    background: rgba(var(--accent-rgb), 0.06);
+    border-left-color: var(--accent);
 }
 
 .biology-list__item:focus-visible {
-    outline: 2px solid rgba(255, 215, 0, 0.55);
+    outline: 2px solid rgba(var(--accent-rgb), 0.55);
     outline-offset: 1px;
 }
 
@@ -114,7 +114,7 @@
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fg-1);
     transition: color 0.2s ease;
 }
 
@@ -123,11 +123,11 @@
     font-size: 11px;
     line-height: 1.5;
     letter-spacing: 0;
-    color: rgba(255, 255, 255, 0.46);
+    color: var(--fg-4);
 }
 
 .biology-list__item.is-active .biology-list__name {
-    color: #FFD700;
+    color: var(--accent);
 }
 
 /* 分类下暂时没有条目时的占位（模板阶段用） */
@@ -136,7 +136,7 @@
     padding: 6px 10px;
     font-size: 12px;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.26);
+    color: var(--fg-4);
 }
 
 /* ── 右栏：条目档案 ── */
@@ -156,7 +156,7 @@
 .biology-profile__head {
     margin-bottom: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line-1);
 }
 
 .biology-profile__kicker {
@@ -164,7 +164,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 11px;
     letter-spacing: 2px;
-    color: rgba(255, 215, 0, 0.62);
+    color: rgba(var(--accent-rgb), 0.62);
 }
 
 .biology-profile__name {
@@ -173,7 +173,7 @@
     font-weight: 400;
     line-height: 1.45;
     letter-spacing: 3px;
-    color: #FFD700;
+    color: var(--accent);
 }
 
 .biology-profile__en {
@@ -182,7 +182,7 @@
     font-size: 12px;
     line-height: 1.7;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--fg-4);
 }
 
 /* 右栏里的面板比组织页更紧凑 */
@@ -235,7 +235,7 @@
     place-items: center;
     overflow: hidden;
 
-    background: rgba(20, 20, 50, 0.45);
+    background: var(--grad-panel);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--ctl-panel-radius);
     backdrop-filter: blur(8px);
@@ -252,7 +252,7 @@
     font-family: "Sarasa Mono", "Sarasa", monospace;
     font-size: 13px;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.32);
+    color: var(--fg-4);
     user-select: none;
 }
 

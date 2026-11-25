@@ -1,3 +1,11 @@
+/* ==========================================================================
+   首页（登录门）
+   --------------------------------------------------------------------------
+   与加载屏同一块投影面：冷白主标题 + 冰蓝读数 + 唯一的金色入口按钮。
+   层级来自 tokens.css：--fs-display / --fs-label / --track-*。
+   一屏放得下（不出现纵向滚动条）：高度由 body / main 的 flex 分配。
+   ========================================================================== */
+
 .hero{
     /* 高度由 body / main 的 flex 分配（撑满页脚以上的空间），不写死 100vh ——
        写死的话加上页脚就会多出一条滚动条 */
@@ -8,52 +16,180 @@
     justify-content:center;
 
     text-align:center;
+    padding:0 24px;
+}
+
+/* 四个角标：和加载屏 / 404 的取景框同一语汇，把首屏定成一块"观察窗" */
+.hero-content{
+    position:relative;
+    width:100%;
+    max-width:900px;
+    padding:clamp(28px, 6vh, 56px) clamp(18px, 5vw, 56px);
+}
+
+.hero-content::before,
+.hero-content::after{
+    content:"";
+    position:absolute;
+    width:16px;
+    height:16px;
+    border:1px solid var(--line-signal);
+    pointer-events:none;
+}
+
+.hero-content::before{
+    top:0;
+    left:0;
+    border-right:0;
+    border-bottom:0;
+}
+
+.hero-content::after{
+    right:0;
+    bottom:0;
+    border-left:0;
+    border-top:0;
+}
+
+/* ── 顶部读数：站点代号 + 星纪元坐标 ── */
+.hero__readout{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+
+    margin:0 0 clamp(18px, 3.4vh, 30px);
+
+    font-family:var(--font-mono);
+    font-size:var(--fs-label);
+    letter-spacing:var(--track-label);
+    color:var(--fg-4);
+    text-transform:uppercase;
+}
+
+.hero__readout b{
+    font-weight:400;
+    color:var(--accent);
+}
+
+.hero__readout i{
+    font-style:normal;
+    color:var(--line-3);
 }
 
 .sub{
-    letter-spacing:8px;
-    opacity:0.6;
-    margin-bottom:20px;
+    font-family:var(--font-mono);
+    font-size:var(--fs-meta);
+    letter-spacing:0.30em;
+    line-height:2.0;
+    color:var(--signal);
+    text-transform:uppercase;
+    opacity:1;
+    margin-bottom:clamp(14px, 2.4vh, 22px);
 }
 
 .hero h1{
-    font-size:72px;
-    margin-bottom:24px;
-    /* 粗体在两种浏览器里的统一处理见 global.css（h1 那组规则）：
-       字体只有 Regular 字面，所以关掉浏览器的字重合成、用同色描边模拟粗体。 */
+    font-size:var(--fs-display);
+    font-weight:400;
+    line-height:var(--lh-display);
+    letter-spacing:var(--track-display);
+    color:var(--fg-1);
+    margin-bottom:clamp(14px, 2.6vh, 24px);
+    text-shadow:0 0 44px rgba(var(--tone-rgb), 0.70);
 }
 
 .desc{
-    opacity:0.75;
-    margin-bottom:40px;
+    font-family:var(--font-mono);
+    font-size:var(--fs-small);
+    letter-spacing:0.14em;
+    color:var(--fg-3);
+    margin-bottom:clamp(26px, 4.4vh, 44px);
 }
 
+/* ── 入口按钮：默认玻璃态，hover / 聚焦才点亮金色；
+      四角是"可进入"的取景框，不做胶囊、不做位移。 ── */
 .enter-btn{
-    /* 真链接（<a>）代替 <button>：可被预渲染/预取，支持中键与新标签打开。
-       外观走 global.css 里那套控件令牌；字体族由 global.css 的「*」规则统一给 Sarasa。 */
-    display:inline-block;
-    font-size:15px;
-    letter-spacing:2px;
-    text-decoration:none;
+    /* 真链接（<a>）代替 <button>：可被预渲染/预取，支持中键与新标签打开。 */
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
 
-    padding:12px 32px;
+    min-height:48px;
+    padding:13px 34px;
 
-    color:var(--ctl-fg);
+    font-family:var(--font-mono);
+    font-size:var(--fs-small);
+    letter-spacing:0.34em;
+    text-indent:0.34em;             /* 抵消末字字距，视觉居中 */
+    text-transform:uppercase;
+
+    color:var(--fg-1);
     background:var(--ctl-bg);
-
     border:1px solid var(--ctl-border);
-    border-radius:var(--ctl-radius);
+    border-radius:var(--radius-control);
 
     --cursor-kind: pointer; cursor: var(--cur-pointer);
+    transition:var(--ctl-transition), box-shadow var(--dur) var(--ease);
+}
 
-    transition:var(--ctl-transition);
+/* 左侧方点：未进入 = 空心冰蓝；hover / 聚焦 = 金色实心（"通电"） */
+.enter-btn::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border:1px solid var(--signal);
+    background:transparent;
+    transition:background-color var(--dur) var(--ease),
+               border-color var(--dur) var(--ease),
+               box-shadow var(--dur) var(--ease);
 }
 
 .enter-btn:hover,
 .enter-btn:focus-visible{
-    color:var(--ctl-fg-hover);
-    background:var(--ctl-bg-strong);
+    color:var(--accent);
+    background:var(--grad-btn-hover);
     border-color:var(--ctl-border-hover);
+    box-shadow:var(--glow-accent);
+}
+
+.enter-btn:hover::before,
+.enter-btn:focus-visible::before{
+    background:var(--accent);
+    border-color:var(--accent);
+    box-shadow:0 0 10px rgba(var(--accent-rgb), 0.75);
+}
+
+/* ── 底部读数：链路 / 身份 / 版本。与加载屏四角读数同一语气。 ── */
+.hero__status{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px 22px;
+
+    margin:clamp(26px, 4.6vh, 46px) 0 0;
+
+    font-family:var(--font-mono);
+    font-size:var(--fs-micro);
+    letter-spacing:0.24em;
+    color:var(--fg-4);
+    text-transform:uppercase;
+}
+
+.hero__status span{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+}
+
+.hero__status b{
+    font-weight:400;
+    color:var(--fg-3);
+}
+
+.hero__status .is-on b{
+    color:var(--accent);
 }
 
 /* ==========================================================================
@@ -62,30 +198,68 @@
 @media (max-width: 768px){
 
     .hero{
-        /* 高度仍然交给 flex；手机地址栏占高度的问题由 body 的 min-height:100svh 处理
-           （见 global.css 的窄屏片段），这里不再写死 100svh */
-        padding: 0 20px;
+        padding:0 18px;
+    }
+
+    .hero-content{
+        padding:24px 16px;
+    }
+
+    .hero__readout{
+        font-size:var(--fs-micro);
+        letter-spacing:0.2em;
+        gap:10px;
     }
 
     .sub{
-        font-size: 12px;
-        letter-spacing: 3px;      /* 8px 时那句英文会超出窄屏 */
-        margin-bottom: 14px;
+        font-size:10px;
+        letter-spacing:0.22em;
+        margin-bottom:14px;
     }
 
     .hero h1{
-        /* 10 个字的 slogan：320px 屏也放得下，随屏宽平滑放大 */
-        font-size: clamp(26px, 8.4vw, 56px);
-        letter-spacing: 0;
-        margin-bottom: 18px;
+        /* 10 个字的 slogan：320px 屏也放得下，随屏宽平滑放大；必要时均分两行 */
+        font-size:clamp(24px, 7vw, 48px);
+        letter-spacing:0.04em;
+        text-wrap:balance;
+        margin-bottom:16px;
+    }
+
+    /* 顶部读数在窄屏只留代号与终端名，长拉丁串换行会碎成三行 */
+    .hero__readout{
+        font-size:8px;
+        letter-spacing:0.16em;
+    }
+
+    .hero__readout i,
+    .hero__readout span:nth-child(3){
+        display:none;
     }
 
     .desc{
-        font-size: 13px;
-        margin-bottom: 28px;
+        font-size:var(--fs-meta);
+        letter-spacing:0.08em;
+        margin-bottom:26px;
     }
 
     .enter-btn{
-        padding: 12px 24px;
+        padding:12px 26px;
+        letter-spacing:0.28em;
+        text-indent:0.28em;
+    }
+
+    .hero__status{
+        gap:8px 16px;
+        margin-top:26px;
+        font-size:9px;
+        letter-spacing:0.16em;
+        color:var(--fg-4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .enter-btn,
+    .enter-btn::before{
+        transition:none;
     }
 }

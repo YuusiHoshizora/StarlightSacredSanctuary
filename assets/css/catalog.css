@@ -1,0 +1,330 @@
+/* ==========================================================================
+   目录状态条 · 组件样式
+   --------------------------------------------------------------------------
+   与 assets/js/catalog.js 配套：容器加 data-catalog 后，脚本在列表顶部插入
+   .catalog-bar；占位卡只在容器显式写 data-catalog-slot 时才插入（目前只有
+   「未归类档案」——世界观里的本地文件集合）。也可手写这两块做静态兜底。
+
+   视觉：
+     · 状态条 —— 等宽小字、银、上接一条由深到浅的细线；计数数字用金色。
+       未完整 = `CATALOG // 本地缓存`（默认）；完整 = `CATALOG // 完整`（金点）。
+     · 占位卡 —— 虚线银描边 + 45° 细斜纹 + 居中的 VACANT SLOT / 待收录，
+                不可点、不参与 hover；不写进计数。
+     · 未缓存到本地是正常状态 → 银；只有「拒绝访问 / 数据损坏」才用 --alert。
+   ========================================================================== */
+
+/* ── 状态条 ── */
+.catalog-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    margin: 0 0 var(--space-4);
+    padding: 0 0 var(--space-3);
+
+    border-bottom: 1px solid var(--line-1);
+    background:
+        linear-gradient(90deg, var(--line-signal), transparent 38%) left bottom / 100% 1px no-repeat;
+
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
+    line-height: 1.4;
+    color: var(--fg-3);
+    text-transform: uppercase;
+}
+
+/* 网格容器里的状态条横跨全部列 */
+.archive-grid > .catalog-bar,
+.org-grid > .catalog-bar,
+.personnel-grid > .catalog-bar,
+.vessel-grid > .catalog-bar,
+.facility-grid > .catalog-bar,
+.tool-grid > .catalog-bar,
+.blog-list > .catalog-bar {
+    grid-column: 1 / -1;
+    flex: 1 1 100%;
+}
+
+/* 舰队页是 flex 换行网格：状态条独占一行 */
+.fleet-grid > .catalog-bar {
+    flex: 1 1 100%;
+}
+
+/* 方点：未完整 = 空心银点；完整 = 金色实心（"已点亮"）
+   状态条下缘那道线同理：银 = 仍在补录，金 = 已完整收录。 */
+.catalog-bar__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    flex: 0 0 auto;
+    color: var(--signal);
+    white-space: nowrap;
+}
+
+.catalog-bar__label::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border: 1px solid var(--signal);
+    background: transparent;
+    box-shadow: 0 0 8px rgba(var(--basic-rgb), 0.22);
+}
+
+.catalog-bar.is-complete {
+    background:
+        linear-gradient(90deg, var(--line-accent), transparent 38%) left bottom / 100% 1px no-repeat;
+}
+
+.catalog-bar.is-complete .catalog-bar__label {
+    color: var(--accent);
+}
+
+.catalog-bar.is-complete .catalog-bar__label::before {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
+}
+
+.catalog-bar__sep {
+    margin: 0 7px;
+    font-weight: 400;
+    color: var(--line-accent);
+}
+
+.catalog-bar__count {
+    flex: 0 0 auto;
+    color: var(--fg-4);
+    font-variant-numeric: tabular-nums;
+}
+
+.catalog-bar__num {
+    font-weight: 400;
+    color: var(--accent);
+}
+
+.catalog-bar__tail {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: auto;
+    text-align: right;
+    color: var(--fg-4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── 占位卡 ── */
+.catalog-slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 172px;
+    padding: var(--space-6);
+
+    border: 1px dashed var(--line-signal);
+    border-radius: var(--radius-panel);
+    background:
+        var(--grad-hatch),
+        var(--grad-panel-in);
+
+    color: var(--fg-4);
+    text-align: center;
+    pointer-events: none;              /* 占位不是控件 */
+    overflow: hidden;
+}
+
+/* 四角取景框：占位卡的"仪器感"来源 */
+.catalog-slot::before,
+.catalog-slot::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--line-signal);
+}
+.catalog-slot::before {
+    top: 10px;
+    left: 10px;
+    border-right: 0;
+    border-bottom: 0;
+}
+.catalog-slot::after {
+    right: 10px;
+    bottom: 10px;
+    border-left: 0;
+    border-top: 0;
+}
+
+.catalog-slot__tag {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-label);
+    color: var(--signal-dim);
+    text-transform: uppercase;
+}
+
+.catalog-slot__title {
+    font-size: var(--fs-meta);
+    letter-spacing: 0.14em;
+    color: var(--fg-3);
+}
+
+.catalog-slot__desc {
+    font-size: 11px;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    color: var(--fg-4);
+    max-width: 22em;
+}
+
+.catalog-slot__plus {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1;
+    color: var(--fg-5);
+}
+
+/* 列表形态：整行；左侧刻度 + 右侧文字，像一条"待装填的槽位" */
+.catalog-slot--row {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-4);
+    min-height: 64px;
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+}
+
+.catalog-slot--row .catalog-slot__tag {
+    order: 1;
+    flex: 0 0 auto;
+}
+
+.catalog-slot--row .catalog-slot__title {
+    order: 2;
+    flex: 0 0 auto;
+    color: var(--fg-3);
+}
+
+.catalog-slot--row .catalog-slot__desc {
+    order: 3;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.catalog-slot--row .catalog-slot__plus {
+    order: 4;
+    position: static;
+    margin-left: auto;
+}
+
+/* 列表页容器多为 flex / block：占位整行铺满 */
+.personnel-list__scroll > .catalog-slot,
+.vessel-list__scroll > .catalog-slot,
+.facility-list__scroll > .catalog-slot {
+    margin-top: var(--space-2);
+}
+
+/* 页面级余量提示（没有 data-catalog 的轻量页可用） */
+.catalog-note {
+    margin: var(--space-6) 0 0;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line-1);
+
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
+    color: var(--fg-5);
+    text-transform: uppercase;
+}
+
+/* ── 窄屏 ── */
+@media (max-width: 768px) {
+    .catalog-bar {
+        flex-wrap: wrap;
+        gap: var(--space-2) var(--space-3);
+        font-size: var(--fs-micro);
+        letter-spacing: 0.2em;
+    }
+
+    .catalog-bar__tail {
+        flex: 1 1 100%;
+        margin-left: 0;
+        text-align: left;
+    }
+
+    .catalog-slot {
+        min-height: 132px;
+        padding: var(--space-4);
+    }
+
+    .catalog-slot--row {
+        min-height: 56px;
+    }
+
+    .catalog-slot--row .catalog-slot__desc {
+        display: none;
+    }
+}
+
+/* 减少动态：本组件没有动画，但保留钩子以便以后加呼吸灯 */
+@media (prefers-reduced-motion: reduce) {
+    .catalog-bar,
+    .catalog-slot {
+        transition: none;
+    }
+}
+
+/* ==========================================================================
+   两栏档案的左栏名录：目录状态条在窄栏里折行（不能溢出到右栏）
+   ========================================================================== */
+.personnel-list__scroll > .catalog-bar,
+.vessel-list__scroll > .catalog-bar,
+.facility-list__scroll > .catalog-bar,
+.document-list__scroll > .catalog-bar,
+.biology-list__scroll > .catalog-bar {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    letter-spacing: 0.18em;
+}
+
+.personnel-list__scroll > .catalog-bar .catalog-bar__tail,
+.vessel-list__scroll > .catalog-bar .catalog-bar__tail,
+.facility-list__scroll > .catalog-bar .catalog-bar__tail,
+.document-list__scroll > .catalog-bar .catalog-bar__tail,
+.biology-list__scroll > .catalog-bar .catalog-bar__tail {
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: left;
+    white-space: normal;
+}
+
+.personnel-list__scroll > .catalog-slot,
+.vessel-list__scroll > .catalog-slot,
+.facility-list__scroll > .catalog-slot,
+.document-list__scroll > .catalog-slot,
+.biology-list__scroll > .catalog-slot {
+    min-height: 58px;
+    padding: 12px 14px;
+}
+
+.personnel-list__scroll > .catalog-slot .catalog-slot__desc,
+.vessel-list__scroll > .catalog-slot .catalog-slot__desc,
+.facility-list__scroll > .catalog-slot .catalog-slot__desc,
+.document-list__scroll > .catalog-slot .catalog-slot__desc,
+.biology-list__scroll > .catalog-slot .catalog-slot__desc {
+    display: none;
+}

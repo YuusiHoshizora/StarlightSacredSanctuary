@@ -1,5 +1,6 @@
 *{
-    font-family:"Sarasa";
+    /* 字体族来自 tokens.css；界面与正文同族，读数 / 编号用 --font-mono 单独指定。 */
+    font-family:var(--font-sans);
     margin:0;
     padding:0;
     box-sizing:border-box;
@@ -20,27 +21,13 @@
     color-scheme: dark;
 
     /* ==========================================================================
-       控件（按钮 / 输入框）的统一设计语言
+       控件令牌：已统一到 assets/css/tokens.css
        --------------------------------------------------------------------------
-       全站只用这套值，别再各写各的：
-         · 默认 = 半透明底 + 1px 淡描边 + 4px 圆角 + 白色文字
-         · 强调（hover / 键盘聚焦 / 选中）= 金色描边 + 淡金底 + 金色文字
-       金色只当「强调态」用，不做默认态；也不引入任何新颜色。
+       旧代码仍可继续写 --ctl-*（tokens.css 里别名到新语义色），
+       新代码请直接用 --accent / --signal / --line-* / --surface-* / --fs-*。
+       默认 = 冷色玻璃 + 1px 淡描边 + 3px 直角圆角；金色只出现在
+       hover / 键盘聚焦 / 选中 / 关键读数上。
        ========================================================================== */
-    --ctl-bg: rgba(255, 255, 255, 0.04);
-    --ctl-bg-strong: rgba(255, 215, 0, 0.15);     /* 强调态底色 */
-    --ctl-bg-focus: rgba(255, 215, 0, 0.08);      /* 输入框聚焦底色 */
-    --ctl-border: rgba(255, 255, 255, 0.12);
-    --ctl-border-hover: #FFD700;
-    --ctl-fg: #ffffff;
-    --ctl-fg-dim: rgba(255, 255, 255, 0.5);       /* 图标按钮 / 次要按钮 */
-    --ctl-fg-hover: #FFD700;
-    --ctl-radius: 4px;
-    --ctl-ease: 0.25s;
-    --ctl-transition: color var(--ctl-ease), background-color var(--ctl-ease),
-                      border-color var(--ctl-ease);
-    --ctl-panel-radius: 16px;                     /* 面板 / 卡片统一圆角 */
-    --ctl-err: #ff6b6b;                           /* 站内失败提示红，仅用于失败提示 / 破坏性操作 */
 
     /* ==========================================================================
        指针（鼠标光标）
@@ -93,8 +80,127 @@
 }
 
 ::selection {
-    background-color: rgba(58, 48, 114, 0.25);
-    color:#C0C0C0
+    background-color: rgba(var(--tone-rgb), 0.55);
+    color: var(--fg-1);
+}
+
+/* ==========================================================================
+   基础排版：所有页面共用同一套层级
+   --------------------------------------------------------------------------
+   · 标题冷白、不加粗，靠字号 / 字距 / 留白分层；金色只给眉标编号与关键读数。
+   · 拉丁文（英文副题、状态、代号）走等宽 + 大写 + 宽字距 = 仪器铭牌。
+   · 层级令牌见 tokens.css 第 4 组，页面样式只覆盖尺寸特例，不重定义字体族。
+   ========================================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--fg-1);
+    font-weight: 400;
+}
+
+p {
+    color: inherit;
+}
+
+strong, b {
+    font-weight: 700;
+}
+
+/* 等宽读数：读数是"仪器输出"，不是正文 */
+.mono,
+.readout {
+    font-family: var(--font-mono);
+    letter-spacing: var(--track-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── 页头语法（所有页面统一，见 docs/DESIGN-LANGUAGE.md 3.3） ──
+   编号眉标 → 中文标题 → 等宽英文副题 → 导语。间距在这里定死，页面不要各写一套。 */
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0 0 14px;
+
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
+    line-height: 1.4;
+    color: var(--signal);
+    text-transform: uppercase;
+}
+
+.page-eyebrow__id::after {
+    content: "";
+    display: inline-block;
+    width: 36px;
+    height: 1px;
+    margin-left: 12px;
+    vertical-align: middle;
+    background: linear-gradient(90deg, var(--line-accent), transparent);
+}
+
+.page-eyebrow__no {
+    color: var(--accent);
+}
+
+.page-eyebrow__tail {
+    color: var(--fg-3);
+}
+
+.page-sub {
+    margin: 9px 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.24em;
+    line-height: 1.6;
+    color: var(--fg-3);
+    text-transform: uppercase;
+}
+
+.page-lead {
+    margin: 18px 0 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    letter-spacing: var(--track-body);
+    color: var(--fg-2);
+}
+
+/* 页头标题：在旧页面（archive-head / org-head / about-head）里也适用 */
+.archive-head h1,
+.org-head h1,
+.about-head h1,
+.page-head h1 {
+    margin: 0;
+    font-size: var(--fs-h1);
+    font-weight: 400;
+    letter-spacing: var(--track-h1);
+    line-height: var(--lh-h1);
+    color: var(--fg-1);
+}
+
+/* 旧页面的英文副题统一成等宽铭牌 */
+.archive-sub,
+.org-sub,
+.about-sub,
+.page-head .page-sub {
+    margin: 9px 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.24em;
+    color: var(--fg-3);
+    text-transform: uppercase;
+}
+
+.archive-lead,
+.org-lead,
+.about-lead,
+.page-head .page-lead {
+    margin: 18px 0 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    letter-spacing: var(--track-body);
+    color: var(--fg-2);
 }
 
 /* ==========================================================================
@@ -263,16 +369,26 @@ h1, h2, h3, h4, h5, h6, b, strong, th, legend, summary {
    ========================================================================== */
 
 /* ==========================================================================
-   Markdown 正文字体：文章内容整篇用等宽
+   文章正文：与全站同一套正文字体
    --------------------------------------------------------------------------
-   主页面渲染出来的文章（.markdown-body 及其所有后代）统一用 "Sarasa Mono" SC。
-   和上面「界面字体」同理：`*` 规则给每个元素都直接指定了 Sarasa，
-   所以必须连后代一起写（`.markdown-body *`），否则里面的元素还是 Gothic。
-   文章标题 / 日期 / 分类（.article-header）和列表里的摘要卡片不在其中，
-   仍是正常正文字体。
+   旧版整篇用 Sarasa Mono（"终端打印稿"），但它让长文阅读明显变慢，也和「关于」
+   「档案」的正文割裂。现在正文统一 --font-sans；等宽只留给代码 / 读数 / 行内 code。
+   `*` 规则给每个元素直接指定了字体，所以这里用 * 的继承重置。
    ========================================================================== */
-.markdown-body, .markdown-body * {
-    font-family: "Sarasa Mono", "Sarasa", monospace;
+.markdown-body {
+    font-family: var(--font-sans);
+}
+
+.markdown-body * {
+    font-family: inherit;
+}
+
+.markdown-body code,
+.markdown-body pre,
+.markdown-body kbd,
+.markdown-body samp,
+.markdown-body pre * {
+    font-family: var(--font-mono);
 }
 
 html{
@@ -282,8 +398,8 @@ html{
 }
 
 body{
-    background:black;
-    color:white;
+    background:var(--ink-900);
+    color:var(--fg-1);
     overflow-x:hidden;
     /* 超长英文 / URL 不撑破窄屏 */
     overflow-wrap:break-word;
@@ -313,11 +429,11 @@ body > main{
 
 /* 静态背景纹理：仅在 JS 未启用时显示（background.js 会移除 .no-js） */
 .no-js .background{
-    background-color:#0c0c0c;
+    background-color:#05090F;
 
-    /* 密集平铺的小六边形：填充 #0c0c0c，描边 #c0c0c0 */
+    /* 密集平铺的小六边形：填充 #080711（页面墨色），描边银 #8B849C（与画布版同一色系） */
     /* 尖顶六边形 R=30：宽 51.9615，高 60；平铺周期 51.9615 x 90 */
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='51.9615' height='90' viewBox='0 0 51.9615 90'%3E%3Cg fill='%230c0c0c' stroke='%23c0c0c0' stroke-width='1.8' stroke-linejoin='miter'%3E%3Cpath d='M0 -60L25.9808 -45L25.9808 -15L0 0L-25.9808 -15L-25.9808 -45Z'/%3E%3Cpath d='M51.9615 -60L77.9423 -45L77.9423 -15L51.9615 0L25.9808 -15L25.9808 -45Z'/%3E%3Cpath d='M-25.9808 -15L0 0L0 30L-25.9808 45L-51.9615 30L-51.9615 0Z'/%3E%3Cpath d='M25.9808 -15L51.9615 0L51.9615 30L25.9808 45L0 30L0 0Z'/%3E%3Cpath d='M77.9423 -15L103.923 0L103.923 30L77.9423 45L51.9615 30L51.9615 0Z'/%3E%3Cpath d='M0 30L25.9808 45L25.9808 75L0 90L-25.9808 75L-25.9808 45Z'/%3E%3Cpath d='M51.9615 30L77.9423 45L77.9423 75L51.9615 90L25.9808 75L25.9808 45Z'/%3E%3Cpath d='M-25.9808 75L0 90L0 120L-25.9808 135L-51.9615 120L-51.9615 90Z'/%3E%3Cpath d='M25.9808 75L51.9615 90L51.9615 120L25.9808 135L0 120L0 90Z'/%3E%3Cpath d='M77.9423 75L103.923 90L103.923 120L77.9423 135L51.9615 120L51.9615 90Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='51.9615' height='90' viewBox='0 0 51.9615 90'%3E%3Cg fill='%23080711' stroke='%238B849C' stroke-width='1.8' stroke-linejoin='miter'%3E%3Cpath d='M0 -60L25.9808 -45L25.9808 -15L0 0L-25.9808 -15L-25.9808 -45Z'/%3E%3Cpath d='M51.9615 -60L77.9423 -45L77.9423 -15L51.9615 0L25.9808 -15L25.9808 -45Z'/%3E%3Cpath d='M-25.9808 -15L0 0L0 30L-25.9808 45L-51.9615 30L-51.9615 0Z'/%3E%3Cpath d='M25.9808 -15L51.9615 0L51.9615 30L25.9808 45L0 30L0 0Z'/%3E%3Cpath d='M77.9423 -15L103.923 0L103.923 30L77.9423 45L51.9615 30L51.9615 0Z'/%3E%3Cpath d='M0 30L25.9808 45L25.9808 75L0 90L-25.9808 75L-25.9808 45Z'/%3E%3Cpath d='M51.9615 30L77.9423 45L77.9423 75L51.9615 90L25.9808 75L25.9808 45Z'/%3E%3Cpath d='M-25.9808 75L0 90L0 120L-25.9808 135L-51.9615 120L-51.9615 90Z'/%3E%3Cpath d='M25.9808 75L51.9615 90L51.9615 120L25.9808 135L0 120L0 90Z'/%3E%3Cpath d='M77.9423 75L103.923 90L103.923 120L77.9423 135L51.9615 120L51.9615 90Z'/%3E%3C/g%3E%3C/svg%3E");
 
     background-repeat:repeat;
     background-size:51.9615px 90px;
@@ -345,20 +461,28 @@ body > main{
 }
 
 /* 星云层必须不透明，作为整个背景的底 */
-.hex-bg__sky{ z-index:0; background:#0a0a12 }
+.hex-bg__sky{ z-index:0; background:var(--ink-900) }
 .hex-bg__stars{ z-index:1 }
 .hex-bg__grid{ z-index:2 }
 .hex-bg__fx{ z-index:3 }
 
+/* 压暗层：横向 1px 扫描线 + 上浅下深的墨色渐变。
+   扫描线与加载屏的 .boot__grid 是同一语汇 —— 进门前后看到的是同一块投影面。
+   v3：扫描线取基本色银，压暗取紫墨（不再是冷蓝）。 */
 .overlay{
     position:fixed;
     inset:0;
 
     background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(var(--basic-rgb), 0.018) 0 1px,
+            transparent 1px 3px
+        ),
         linear-gradient(
             to bottom,
-            rgba(0,0,0,0.4),
-            rgba(0,0,0,0.8)
+            rgba(5, 4, 10, 0.32),
+            rgba(5, 4, 10, 0.86)
         );
 
     z-index:-1;
@@ -369,7 +493,7 @@ body > main{
     top:0;
 
     width:100%;
-    height:72px;
+    height:var(--navbar-h);
 
     display:flex;
     justify-content:space-between;
@@ -377,24 +501,46 @@ body > main{
 
     padding:0 60px;
 
-    backdrop-filter:blur(12px);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
 
-    background:
-        rgba(10,10,30,0.35);
+    background:rgba(var(--nav-rgb), 0.62);
 
-    border-bottom:
-        1px solid rgba(255,255,255,0.08);
+    border-bottom:1px solid var(--line-1);
+    /* 顶栏顶上的一道银线：玻璃板的上边缘 */
+    box-shadow:inset 0 1px 0 rgba(var(--basic-rgb), 0.05);
 
-    z-index:100;
+    z-index:var(--z-nav);
+}
+
+/* 顶栏下缘的一条冷光：两端淡出、中间偏金 —— 比整条实线更像仪器边缘 */
+.navbar::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:-1px;
+    height:1px;
+    pointer-events:none;
+    background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(var(--basic-rgb), 0.30) 18%,
+        var(--line-accent) 50%,
+        rgba(var(--basic-rgb), 0.30) 82%,
+        transparent
+    );
 }
 
 .logo{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:11px;
 
-    font-size:24px;
-    letter-spacing:4px;
+    font-size:22px;
+    font-weight:400;
+    letter-spacing:0.28em;
+    color:var(--fg-1);
 }
 
 /* ── 导航栏图标 ──
@@ -406,7 +552,9 @@ body > main{
     flex:0 0 auto;
     width:1.35em;
     height:1.35em;
-    background-color:currentColor;
+    /* 站徽是全站唯一常驻的金色：它是"被点亮"的本体，其余金色都只在交互态出现。 */
+    background-color:var(--accent);
+    filter:drop-shadow(0 0 7px rgba(var(--accent-rgb), 0.32));
 
     -webkit-mask:url("../img/logo_SSS.svg") center / contain no-repeat;
             mask:url("../img/logo_SSS.svg") center / contain no-repeat;
@@ -414,34 +562,63 @@ body > main{
 
 nav{
     display:flex;
-    gap:40px;
+    gap:36px;
 }
 
 nav a{
-    color:white;
+    position:relative;
+    color:var(--fg-3);
     text-decoration:none;
 
-    opacity:0.75;
+    font-size:var(--fs-small);
+    letter-spacing:0.14em;
 
-    transition:0.3s;
+    transition:color var(--dur) var(--ease);
 }
 
-nav a:hover{
-    opacity:1;
-    color:var(--ctl-fg-hover);
+/* 当前项 / hover：底部一条短金线（不移位、不加粗） */
+nav a::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:100%;
+    bottom:-7px;
+    height:1px;
+    background:var(--accent);
+    transition:right var(--dur) var(--ease);
+}
+
+nav a:hover,
+nav a:focus-visible{
+    color:var(--accent);
+}
+
+nav a:hover::after,
+nav a:focus-visible::after,
+nav a[aria-current="page"]::after{
+    right:0;
+}
+
+nav a[aria-current="page"]{
+    color:var(--fg-1);
 }
 
 /* ==========================================================================
    面包屑（「档案」各页共用）
    --------------------------------------------------------------------------
    结构：
-     <nav class="crumb" aria-label="位置">
-         <a href="..">首页</a>
-         <span class="crumb__sep" aria-hidden="true">/</span>
-         <span class="crumb__here">档案</span>
-     </nav>
-   档案总览页是「首页 / 档案」，再往下的子页从「档案」起算（例如「档案 / 组织档案」）——
-   所以它总有两项，不会只剩一个孤零零的当前位置。
+     子页：
+      <nav class="crumb" aria-label="位置">
+          <a href="../">档案</a>
+          <span class="crumb__sep" aria-hidden="true">/</span>
+          <span class="crumb__here">组织档案</span>
+      </nav>
+     总览页（档案自身就是最上层）：
+      <nav class="crumb crumb--root" aria-label="位置">
+          <span class="crumb__here">档案</span>
+      </nav>
+   规范（v3 明确）：**档案页不从「首页」起算**。档案是这条路径的最上层，
+   所以总览页只剩当前层一项，子页一律「档案 / X」——不再是「首页 / 档案 / X」。
    ⚠️ 它是 <nav>，会被上面那两条 `nav{display:flex;gap:40px}` / `nav a{opacity:.75}` 波及：
    这里显式收掉 40px 间距、把 opacity 还给 1。
    ========================================================================== */
@@ -456,9 +633,23 @@ nav a:hover{
     letter-spacing:2px;
 }
 
+/* 总览页只有一层：用一道短金线代替"上一级链接"的位置，金 = 当前所在（被点亮） */
+.crumb--root .crumb__here{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+}
+
+.crumb--root .crumb__here::before{
+    content:"";
+    width:18px;
+    height:1px;
+    background:linear-gradient(90deg, var(--line-accent), transparent);
+}
+
 .crumb a{
     opacity:1;                        /* 盖掉 nav a 的 .75 */
-    color:rgba(255,255,255,0.5);
+    color:var(--fg-3);
     text-decoration:none;
     transition:var(--ctl-transition);
 }
@@ -470,12 +661,12 @@ nav a:hover{
 
 /* 当前位置：比可点的上一级亮一档 */
 .crumb__here{
-    color:rgba(255,255,255,0.75);
+    color:var(--fg-2);
 }
 
 /* 分隔符：金色只取很淡的一档，不抢标题 */
 .crumb__sep{
-    color:rgba(255,215,0,0.35);
+    color:var(--line-accent);
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -597,25 +788,25 @@ html.sss-switch-in .site-footer{
 .site-footer{
     flex:0 0 auto;
 
-    padding:18px 24px calc(18px + env(safe-area-inset-bottom, 0px));
-    border-top:1px solid rgba(255,255,255,0.08);
+    padding:16px 24px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line-1);
 
-    font-size:12px;
-    line-height:1.7;
-    letter-spacing:0.5px;
+    font-size:11px;
+    line-height:1.8;
+    letter-spacing:0.06em;
     text-align:center;
-    color:rgba(255,255,255,0.38);
+    color:var(--fg-4);
 }
 
 .site-footer__author{
-    color:rgba(255,255,255,0.62);
+    color:var(--fg-3);
 }
 
 .site-footer a{
     color:inherit;
     text-decoration:underline;
-    text-decoration-color:rgba(255,255,255,0.25);
-    text-underline-offset:2px;
+    text-decoration-color:var(--line-2);
+    text-underline-offset:3px;
     transition:var(--ctl-transition);
 }
 
@@ -656,7 +847,7 @@ html.sss-switch-in .site-footer{
     padding:0;
     background:none;
     border:none;
-    color:#fff;                            /* 三条杠用 currentColor，hover 时整体转金 */
+    color: var(--fg-1);                            /* 三条杠用 currentColor，hover 时整体转金 */
     --cursor-kind: pointer; cursor: var(--cur-pointer);
 }
 
@@ -715,7 +906,7 @@ html.sss-switch-in .site-footer{
 }
 
 .navbar__toggle:focus-visible{
-    outline:2px solid rgba(255, 215, 0, 0.55);
+    outline:2px solid var(--line-accent);
     outline-offset:2px;
 }
 
@@ -780,11 +971,7 @@ html.sss-switch-in .site-footer{
         gap:4px;                               /* 原本是横向的 40px 间距 */
 
         /* 铺满屏幕的高面板要够实，星野背景才不会透过来把字糊掉 */
-        background:linear-gradient(
-            to bottom,
-            rgba(10, 10, 30, 0.97),
-            rgba(10, 10, 30, 0.90)
-        );
+        background:var(--grad-nav);
 
         /* 面板顶上留一道极淡的分光，接住导航栏的下边缘 */
         box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -831,13 +1018,18 @@ html.sss-switch-in .site-footer{
         display:block;
         flex:0 0 auto;
         padding:13px 14px;
-        font-size:15px;
-        letter-spacing:1px;
-        opacity:0.75;
+        font-size:var(--fs-h3);
+        letter-spacing:0.08em;
+        opacity:0.85;
 
         border:1px solid transparent;
         border-radius:var(--ctl-radius);
-        background:rgba(255, 255, 255, 0.03);
+        background:rgba(var(--basic-rgb), 0.03);
+    }
+
+    /* 桌面那条 hover 下划线在纵向面板里不要（由左侧竖条代替） */
+    #site-nav a::after{
+        display:none;
     }
 
     /* 强调态沿用站内那套：金色描边 + 淡金底 + 金色文字 */
@@ -879,7 +1071,7 @@ html.sss-switch-in .site-footer{
         opacity:1;
         color:var(--ctl-fg-hover);
         background:var(--ctl-bg-strong);
-        border-color:rgba(255, 215, 0, 0.35);
+        border-color:var(--line-accent);
     }
 
     /* 逐条错开入场（只在展开方向加延迟；收起时不留延迟）。

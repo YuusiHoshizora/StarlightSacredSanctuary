@@ -329,7 +329,7 @@
 
             var groupRecords = records.filter(function (r) { return r.kind === kind; });
             if (!groupRecords.length) {
-                listEl.appendChild(h('p', 'document-list__empty', '待收录'));
+                listEl.appendChild(h('p', 'document-list__empty', '本地暂无条目'));
                 return;
             }
 
