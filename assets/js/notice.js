@@ -65,13 +65,13 @@
   /* ── 样式（跟着站内的暗底 + 金色 + 玻璃质感） ── */
   const CSS = `
   .sss-notice{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
-    padding:20px;background:rgba(5,4,10,.80);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    padding:20px;background:rgba(5,4,10,.72);
     animation:sss-notice-fade .22s ease-out both}
   .sss-notice__card{position:relative;width:100%;max-width:460px;padding:26px 26px 22px;
-    background:linear-gradient(180deg,var(--panel-top),var(--panel-bottom));
+    background:var(--surface-card);
     border:1px solid var(--line-2);border-radius:var(--radius-panel);
-    box-shadow:var(--shadow-panel);color:var(--fg-1);text-align:left;
-    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    color:var(--fg-1);text-align:left;
+    -webkit-backdrop-filter:blur(var(--blur-ui));backdrop-filter:blur(var(--blur-ui));
     animation:sss-notice-pop .26s cubic-bezier(.22,.61,.36,1) both}
   .sss-notice__card::before{content:"";position:absolute;left:26px;right:26px;top:0;height:1px;
     background:linear-gradient(90deg,transparent,rgba(255,215,0,.45),transparent);pointer-events:none}

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   星光圣域 · 设计令牌（Design Tokens）v3
+   星光圣域 · 设计令牌（Design Tokens）v6
    --------------------------------------------------------------------------
    这是全站唯一的设计变量表。所有页面样式、加载屏、错误页、目录组件都从这里取色 /
    取字号 / 取间距 / 取圆角 / 取过渡；页面样式表只负责布局，不再写死色值。
@@ -43,9 +43,16 @@
     --surface-veil:   rgba(8, 7, 17, 0.88);
     --surface-hover:  rgba(255, 215, 0, 0.05);      /* 金色雾，只取一丝 */
 
-    /* 面板渐变的上下两端（比纯色更厚实，像一块真的玻璃） */
-    --panel-top:    rgba(27, 21, 52, 0.78);
-    --panel-bottom: rgba(8, 7, 17, 0.72);
+    /* ── 卡片：v6 扁平化 ──
+       所有卡片共用一个半透明平涂。不做液态玻璃（无渐变、无高光、无投影），
+       只靠 1px 描边与空间分隔；卡片 / 面板的模糊统一走 --blur-ui（2px，极轻）。 */
+    --surface-card:       rgba(18, 14, 36, 0.58);
+    --surface-card-hover: rgba(30, 24, 56, 0.66);
+    --blur-ui: 2px;
+
+    /* 面板用的上下两端：v6 起与卡片平涂同色（保留变量名兼容旧样式） */
+    --panel-top:    var(--surface-card);
+    --panel-bottom: var(--surface-card);
 
     /* 供 rgba(var(--x-rgb), α) 使用 */
     --panel-rgb: 18, 15, 36;
@@ -162,10 +169,10 @@
     --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
 
     /* ================================================================ 7. 渐变 / 发光
-       v3 复核结论：渐变全部改为"紫底 + 银线 + 金点"，且每种渐变只有一处定义，
-       页面直接引用，不再各写一套 rgba。 */
-    --grad-panel:    linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
-    --grad-panel-in: linear-gradient(180deg, rgba(5, 4, 10, 0.55), rgba(8, 7, 17, 0.35));
+       v6 扁平化：卡片 / 面板一律用 --surface-card 半透明平涂，
+       不再做玻璃渐变、顶部高光与投影。渐变只保留星野、导航（移动端）与占位斜纹。 */
+    --grad-panel:    var(--surface-card);
+    --grad-panel-in: var(--surface-card);
     --grad-fade-bottom: linear-gradient(180deg, transparent, rgba(5, 4, 10, 0.72));
     /* 星野：紫从上方压下来，越往下越沉（background.js 的天空三段与它同色） */
     --grad-sky:      linear-gradient(180deg, #0C0A1C 0%, #0A0817 45%, #05040C 100%);
@@ -174,13 +181,14 @@
     --grad-nav:      linear-gradient(180deg, rgba(var(--nav-rgb), 0.97), rgba(var(--nav-rgb), 0.92));
     /* 按钮 hover：金色从上方渗下来，不是整块变金 */
     --grad-btn-hover: linear-gradient(180deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.05));
-    /* 面板顶部的一道紫光：只有"抬升"面板才用（弹层、悬浮卡） */
-    --grad-lift:     linear-gradient(180deg, rgba(58, 48, 114, 0.22), transparent 42%);
+    /* 抬升面板：v6 不再加紫色顶光，直接用同一块平涂 */
+    --grad-lift:     var(--surface-card);
     /* 目录占位卡的斜纹（银） */
     --grad-hatch:    repeating-linear-gradient(135deg, rgba(var(--basic-rgb), 0.045) 0 1px, transparent 1px 9px);
 
-    --shadow-panel: 0 24px 64px rgba(3, 2, 8, 0.55), 0 0 0 1px rgba(58, 48, 114, 0.18);
-    --shadow-card:  0 12px 40px rgba(3, 2, 8, 0.48);
+    /* v6：扁平化后不再用大投影；层次只靠描边与半透明叠色 */
+    --shadow-panel: none;
+    --shadow-card:  none;
     --glow-accent:  0 0 18px rgba(255, 215, 0, 0.16);
     --glow-signal:  0 0 16px rgba(192, 192, 192, 0.12);
     --glow-tone:    0 0 28px rgba(58, 48, 114, 0.45);

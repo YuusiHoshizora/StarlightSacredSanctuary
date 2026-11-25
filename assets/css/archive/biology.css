@@ -238,7 +238,7 @@
     background: var(--grad-panel);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(var(--blur-ui));
 }
 
 .bio-avatar img {

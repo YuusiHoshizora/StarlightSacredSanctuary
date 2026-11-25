@@ -193,7 +193,7 @@
 .blog-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--line-1);
-    border-radius: 8px;
+    border-radius: var(--radius-panel);
     padding: 24px;
     transition: 0.3s;
     --cursor-kind: pointer; cursor: var(--cur-pointer);
@@ -281,7 +281,7 @@
 .calendar-widget {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--line-1);
-    border-radius: 10px;
+    border-radius: var(--radius-panel);
     padding: 20px;
     margin-bottom: 24px;
 }
@@ -582,14 +582,13 @@
     background: var(--grad-panel);
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(var(--blur-ui));
     transition: var(--ctl-transition), box-shadow 0.3s ease;
 }
 
 .blog-card:hover {
-    background: rgba(43, 35, 86, 0.55);
+    background: var(--surface-card-hover);
     border-color: rgba(var(--accent-rgb), 0.42);
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
 }
 
 .blog-card .blog-title {
@@ -640,7 +639,7 @@
     background: rgba(var(--panel-rgb), 0.42);
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(var(--blur-ui));
 }
 
 .calendar-header {
@@ -710,7 +709,7 @@
     background: rgba(var(--panel-rgb), 0.32);
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(var(--blur-ui));
 }
 
 .right-info__title {
@@ -1010,24 +1009,23 @@ body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source {
 /* 卡片回到淡白透明；去掉“阅读”提示与右侧专用留白 */
 body[data-mainpage] .blog-card {
     padding: 24px 26px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-card);
     border: 1px solid var(--line-1);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: none;
-    transition: var(--ctl-transition), box-shadow 0.3s ease, opacity 0.16s ease;
+    -webkit-backdrop-filter: blur(var(--blur-ui));
+    backdrop-filter: blur(var(--blur-ui));
+    transition: var(--ctl-transition), opacity 0.16s ease;
 }
 
 body[data-mainpage] .blog-card:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-card-hover);
     border-color: rgba(var(--accent-rgb), 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 body[data-mainpage] .blog-card:focus-visible {
     outline: none;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-card-hover);
     border-color: rgba(var(--accent-rgb), 0.45);
-    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.45), 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 body[data-mainpage] .blog-card::after {
@@ -1070,7 +1068,6 @@ body[data-mainpage] .left-panel nav.vertical-nav a.active {
     padding-left: 12px;
     color: var(--accent);
     background: rgba(var(--accent-rgb), 0.1);
-    transform: translateX(5px);
 }
 
 body[data-mainpage] .left-panel nav.vertical-nav a:hover::before,
@@ -1195,8 +1192,8 @@ body[data-mainpage] .right-panel {
     background: var(--grad-panel);
     border: 1px solid var(--line-1);
     border-radius: var(--radius-panel);
-    -webkit-backdrop-filter: blur(8px);
-            backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(var(--blur-ui));
+            backdrop-filter: blur(var(--blur-ui));
     transition: var(--ctl-transition), box-shadow var(--dur) var(--ease);
 }
 
@@ -1260,7 +1257,7 @@ body[data-mainpage] .right-panel {
 
 /* ── 左右栏：更薄的玻璃、更静的底 ── */
 .left-panel {
-    background: linear-gradient(180deg, rgba(11, 9, 23, 0.55), rgba(5, 4, 10, 0.25));
+    background: var(--surface-card);
     border-right: 1px solid var(--line-1);
     padding-top: 32px;
 }
@@ -1297,9 +1294,9 @@ body[data-mainpage] .right-panel {
     padding: 32px 34px;
     border-right: 1px solid var(--line-1);
     /* 中间栏是阅读区：给它一层更实的底，长文不会被六边形网格切碎 */
-    background: linear-gradient(180deg, rgba(8, 7, 17, 0.72), rgba(5, 4, 10, 0.52));
-    -webkit-backdrop-filter: blur(6px);
-            backdrop-filter: blur(6px);
+    background: rgba(8, 7, 17, 0.72);
+    -webkit-backdrop-filter: blur(var(--blur-ui));
+            backdrop-filter: blur(var(--blur-ui));
 }
 
 .right-panel {
@@ -1307,7 +1304,7 @@ body[data-mainpage] .right-panel {
 }
 
 .calendar-widget {
-    background: linear-gradient(180deg, rgba(21, 17, 41, 0.55), rgba(8, 7, 17, 0.45));
+    background: var(--surface-card);
     border: 1px solid var(--line-1);
     border-radius: var(--radius-panel);
 }

@@ -269,31 +269,24 @@
 /* ==========================================================================
    两栏档案的左栏名录：目录状态条在窄栏里折行（不能溢出到右栏）
    ========================================================================== */
-.personnel-list__scroll > .catalog-bar,
-.vessel-list__scroll > .catalog-bar,
-.facility-list__scroll > .catalog-bar,
-.document-list__scroll > .catalog-bar,
-.biology-list__scroll > .catalog-bar {
+.personnel-list > .catalog-bar,
+.vessel-list > .catalog-bar,
+.facility-list > .catalog-bar,
+.document-list > .catalog-bar,
+.biology-list > .catalog-bar {
     flex-wrap: wrap;
 
-    /* v5：状态条固定在名录 / 搜索正下方（图 2 位置），列表滚动时保持吸顶。 */
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background-color: var(--surface-veil);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     gap: 4px 10px;
     margin-bottom: 12px;
     padding-bottom: 10px;
     letter-spacing: 0.18em;
 }
 
-.personnel-list__scroll > .catalog-bar .catalog-bar__tail,
-.vessel-list__scroll > .catalog-bar .catalog-bar__tail,
-.facility-list__scroll > .catalog-bar .catalog-bar__tail,
-.document-list__scroll > .catalog-bar .catalog-bar__tail,
-.biology-list__scroll > .catalog-bar .catalog-bar__tail {
+.personnel-list > .catalog-bar .catalog-bar__tail,
+.vessel-list > .catalog-bar .catalog-bar__tail,
+.facility-list > .catalog-bar .catalog-bar__tail,
+.document-list > .catalog-bar .catalog-bar__tail,
+.biology-list > .catalog-bar .catalog-bar__tail {
     flex: 1 1 100%;
     margin-left: 0;
     text-align: left;

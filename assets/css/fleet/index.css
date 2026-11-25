@@ -104,8 +104,8 @@
     --fc-rgb: var(--fleet-research-rgb);
 
     background: var(--grad-panel);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(var(--blur-ui));
+    -webkit-backdrop-filter: blur(var(--blur-ui));
     border: 1px solid var(--line-1);
     border-left: 2px solid rgba(var(--fc-rgb), 0.55);
     border-radius: var(--radius-panel);
@@ -157,12 +157,9 @@
 /* hover / 键盘聚焦：整卡按编成色点亮（描边 + 一层很薄的编成色玻璃） */
 .fleet-card:hover,
 .fleet-card:focus-visible {
-    background:
-        linear-gradient(180deg, rgba(var(--fc-rgb), 0.10), rgba(8, 7, 17, 0.55)),
-        var(--grad-panel);
+    background: rgba(var(--fc-rgb), 0.10);
     border-color: rgba(var(--fc-rgb), 0.85);
     border-left-color: var(--fc);
-    box-shadow: 0 0 0 1px rgba(var(--fc-rgb), 0.18), var(--shadow-card);
 }
 
 .fleet-card:focus-visible {

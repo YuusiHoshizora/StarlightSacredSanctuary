@@ -59,11 +59,13 @@
     color: var(--fg-1);
     text-decoration: none;
 
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-card);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--ctl-panel-radius);
+    -webkit-backdrop-filter: blur(var(--blur-ui));
+    backdrop-filter: blur(var(--blur-ui));
 
-    transition: background 0.25s, border-color 0.25s, transform 0.25s ease;
+    transition: background 0.25s, border-color 0.25s;
 }
 
 /* 「公告测试」是按钮（只发事件、不该是一条能跳转的链接）：button 自带的字体、
@@ -77,7 +79,7 @@ button.tool-entry {
 
 /* 左侧那条标识竖线：落在卡片**外面**（留白里），一根实心金线，默认不显示，hover / 键盘聚焦时亮起。
    选中态整体照主页面左栏的分类列表（.left-panel nav.vertical-nav a）：内容向右让开、左边亮一条竖线。
-   ⚠️ 全站只有这一处卡片会位移：其余可点击卡片一律只换描边/阴影，见 docs/DESIGN.md 第五节。 */
+   v6 扁平化：全站可点击卡片都不位移，hover 只换描边 / 底色 / 文字色。 */
 .tool-entry::before {
     content: "";
     position: absolute;
@@ -98,7 +100,6 @@ button.tool-entry {
 .tool-entry:focus-visible {
     background: rgba(var(--accent-rgb), 0.1);
     border-color: rgba(var(--accent-rgb), 0.45);
-    transform: translateX(5px);
 }
 
 .tool-entry:hover::before,
@@ -179,10 +180,10 @@ button.tool-entry {
     flex: 0 0 auto;
     scroll-margin-top: 96px;
     padding: 14px 16px 16px;
-    background: rgba(var(--panel-rgb), 0.42);
+    background: var(--surface-card);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(var(--blur-ui));
 }
 
 .tool-card__name {
@@ -589,8 +590,8 @@ button.tool-entry {
     justify-content: center;
     padding: 24px;
     background: rgba(5, 4, 10, 0.72);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(var(--blur-ui));
+    backdrop-filter: blur(var(--blur-ui));
     animation: cursor-test-fade 0.22s ease-out both;
 }
 .cursor-test[hidden] { display: none; }
@@ -605,7 +606,6 @@ button.tool-entry {
     background: rgba(20, 16, 41, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--ctl-panel-radius);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
     animation: cursor-test-pop 0.26s var(--ease) both;
 }
 
@@ -683,7 +683,7 @@ button.tool-entry {
 .cursor-test__cell {
     padding: 12px 10px 10px;
     border: 1px solid var(--line-1);
-    border-radius: 10px;
+    border-radius: var(--radius-panel);
     background: rgba(255, 255, 255, 0.03);
     text-align: center;
     transition: border-color var(--ctl-ease), background-color var(--ctl-ease);
@@ -791,7 +791,7 @@ button.tool-entry {
 }
 
 .tool-entry {
-    border-radius: var(--radius-s);
+    border-radius: var(--radius-panel);
 }
 
 .tool-card {

@@ -86,8 +86,8 @@
     background: var(--grad-panel);
     border: 1px solid var(--line-1);
     border-radius: var(--radius-panel);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(var(--blur-ui));
+    -webkit-backdrop-filter: blur(var(--blur-ui));
 
     transition: var(--ctl-transition),
                 box-shadow var(--dur) var(--ease);
@@ -145,7 +145,6 @@
 a.archive-card:hover,
 a.archive-card:focus-visible {
     border-color: rgba(var(--accent-rgb), 0.4);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
 a.archive-card:hover .archive-card__go,

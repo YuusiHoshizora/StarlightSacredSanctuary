@@ -42,6 +42,7 @@
 
         var bar = document.createElement('p');
         bar.className = 'catalog-bar' + (complete ? ' is-complete' : '');
+        bar.setAttribute('data-catalog-bar', '');
         bar.setAttribute('role', 'note');
         bar.setAttribute('aria-label',
             '目录状态：' + (complete ? '完整收录' : '本地缓存，未完整') +
@@ -100,17 +101,38 @@
         return slot;
     }
 
+    /* 左栏名录（*.xxx-list__scroll）的状态条要放在滚动容器**外面**：
+       它固定在「名录 + 搜索」正下方，透明背景，列表滚动时不会变成一条实心黑带。
+       其它目录（网格 / 工具侧栏 / 事件列表）仍放在容器内部最前面。 */
+    function isScrollList(container) {
+        return /(?:^|\s)[a-z-]*list__scroll(?:\s|$)/.test(container.className || '');
+    }
+
+    function findBar(container, scrolled) {
+        var scope = scrolled ? container.parentNode : container;
+        return scope ? scope.querySelector(':scope > [data-catalog-bar]') : null;
+    }
+
+    function mountBar(bar, container, scrolled) {
+        if (scrolled) {
+            if (bar.parentNode !== container.parentNode || bar.nextElementSibling !== container) {
+                container.parentNode.insertBefore(bar, container);
+            }
+        } else if (container.firstElementChild !== bar) {
+            container.insertBefore(bar, container.firstElementChild);
+        }
+    }
+
     function decorate(container) {
         if (!container || !container.hasAttribute) return;
         if (!container.hasAttribute(ATTR)) return;
 
         var complete = container.getAttribute('data-catalog-state') === '完整';
+        var scrolled = isScrollList(container);
 
-        var bar = container.querySelector(':scope > .catalog-bar');
-        if (!bar) {
-            bar = buildBar(container);
-            container.insertBefore(bar, container.firstChild);
-        }
+        var bar = findBar(container, scrolled);
+        if (!bar) bar = buildBar(container);
+        mountBar(bar, container, scrolled);
 
         var slot = container.querySelector(':scope > .catalog-slot');
         var wantSlot = !complete && container.hasAttribute('data-catalog-slot');
@@ -121,9 +143,6 @@
             /* 始终把占位放在末尾：页面脚本可能在占位之后继续追加卡片 */
             if (container.lastElementChild !== slot) container.appendChild(slot);
         }
-
-        /* 状态条始终在最前 */
-        if (container.firstElementChild !== bar) container.insertBefore(bar, container.firstElementChild);
 
         container.setAttribute(READY, '');
     }
@@ -142,12 +161,15 @@
             (function (container) {
                 if (container.__sssCatalogObserver) return;
                 var mo = new MutationObserver(function () {
-                    var bar = container.querySelector(':scope > .catalog-bar');
+                    var scrolled = isScrollList(container);
+                    var bar = findBar(container, scrolled);
                     var slot = container.querySelector(':scope > .catalog-slot');
                     var complete = container.getAttribute('data-catalog-state') === '完整';
                     var wantSlot = !complete && container.hasAttribute('data-catalog-slot');
 
-                    var barWrong = !bar || container.firstElementChild !== bar;
+                    var barWrong = !bar || (scrolled
+                        ? bar.parentNode !== container.parentNode || bar.nextElementSibling !== container
+                        : container.firstElementChild !== bar);
                     var slotWrong = wantSlot
                         ? (!slot || container.lastElementChild !== slot)
                         : !!slot;

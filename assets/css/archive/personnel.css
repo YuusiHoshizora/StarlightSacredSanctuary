@@ -28,7 +28,7 @@
     background: var(--grad-panel);
     border: 1px solid var(--line-1);
     border-radius: var(--ctl-panel-radius);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(var(--blur-ui));
 
     transition: var(--ctl-transition),
                 box-shadow 0.3s ease;
@@ -84,7 +84,6 @@
 a.personnel-card:hover,
 a.personnel-card:focus-visible {
     border-color: rgba(var(--accent-rgb), 0.4);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
 a.personnel-card:hover .personnel-card__meta,
