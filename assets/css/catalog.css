@@ -6,7 +6,7 @@
    「未归类档案」——世界观里的本地文件集合）。也可手写这两块做静态兜底。
 
    视觉：
-     · 状态条 —— 等宽小字、银、上接一条由深到浅的细线；计数数字用金色。
+     · 状态条 —— 等宽小字、银、上接一条由深到浅的细线；不显示数量。
        未完整 = `CATALOG // 本地缓存`（默认）；完整 = `CATALOG // 完整`（金点）。
      · 占位卡 —— 虚线银描边 + 45° 细斜纹 + 居中的 VACANT SLOT / 待收录，
                 不可点、不参与 hover；不写进计数。
@@ -92,27 +92,7 @@
     color: var(--line-accent);
 }
 
-.catalog-bar__count {
-    flex: 0 0 auto;
-    color: var(--fg-4);
-    font-variant-numeric: tabular-nums;
-}
-
-.catalog-bar__num {
-    font-weight: 400;
-    color: var(--accent);
-}
-
-.catalog-bar__tail {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin-left: auto;
-    text-align: right;
-    color: var(--fg-4);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+/* 计数元素已移除（v4）：状态条不再显示已记录数量。 */
 
 /* ── 占位卡 ── */
 .catalog-slot {

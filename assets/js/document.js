@@ -34,7 +34,7 @@
     var KIND_ORDER = ['image', 'document', 'audio', 'video', 'other'];
     var KIND = {
         image: { label: '图像', en: 'Image', tag: 'IMG', panel: '预览', panelEn: 'Preview' },
-        document: { label: '文档', en: 'Document', tag: 'DOC', panel: '预览', panelEn: 'Preview' },
+        document: { label: '文档', en: 'Document', tag: 'DOC', panel: '正文', panelEn: 'Content' },
         audio: { label: '音频', en: 'Audio', tag: 'AUD', panel: '播放', panelEn: 'Playback' },
         video: { label: '视频', en: 'Video', tag: 'VID', panel: '预览', panelEn: 'Preview' },
         other: { label: '其他', en: 'Other', tag: 'FIL', panel: '预览', panelEn: 'Preview' }
@@ -159,28 +159,21 @@
     function buildDocument(rec) {
         var url = dataUrl(rec);
         var isMd = rec.ext === 'md' || rec.ext === 'markdown';
-        var wrap = h('div', 'doc-media doc-media--document');
-        var sheet = h('div', 'doc-sheet');
 
-        var head = h('div', 'doc-sheet__head');
-        head.appendChild(h('span', 'doc-sheet__page', String(rec.ext || '').toUpperCase() + ' · ' + rec.number));
-        head.appendChild(h('span', null, isMd ? 'MARKDOWN' : String(rec.ext || '').toUpperCase()));
-        sheet.appendChild(head);
-
+        /* .md 不套纸面 / 不套取景框：正文本身就是内容，再包一层卡片只会变成
+           「卡片套卡片」，而「预览原件」对纯文本也没有意义。直接在档案面板里渲染。 */
         if (isMd) {
             var box = h('article', 'doc-md');
             box.setAttribute('data-doc-md', '');
             box.setAttribute('data-src', url);
             box.appendChild(h('p', 'doc-md__state', '正在读取文档…'));
-            sheet.appendChild(box);
-        } else {
-            /* 只内嵌 .md；PDF / TXT 等给一行说明，原件走右下角「打开原件」 */
-            sheet.appendChild(h('p', 'doc-md__state', '此格式不内嵌预览，请打开原件。'));
+            return box;
         }
-        wrap.appendChild(sheet);
 
-        var left = String(rec.ext || '').toUpperCase() + ' · ' + rec.sizeText + (rec.lines ? ' · ' + rec.lines + ' 行' : '');
-        wrap.appendChild(mediaCaption(rec, left, '打开原件 ↗', url));
+        /* 其它格式不在本地内嵌，给一行说明 + 打开原件 */
+        var wrap = h('div', 'doc-media doc-media--document');
+        wrap.appendChild(h('p', 'doc-md__state', '此格式不在本地内嵌预览，请打开原件。'));
+        wrap.appendChild(mediaCaption(rec, String(rec.ext || '').toUpperCase() + ' · ' + rec.sizeText, '打开原件 ↗', url));
         return wrap;
     }
 

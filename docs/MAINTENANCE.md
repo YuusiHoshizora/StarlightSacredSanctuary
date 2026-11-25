@@ -86,8 +86,7 @@ node src/scripts/document-index.mjs --check   # 只校验是否最新，不写�
   （`archive-swap-out`），浮在新内容上做交叉淡化，190ms 后由脚本收掉 ——
   取消选择时旧档案也是淡出而不是瞬间消失。离场层只在桌面 ≥901px 且
   不减少动态效果时启用；窄屏直接换，不做上下跳动；
-- 两栏各自按滚动状态淡出；名录的淡出长度比内容短
-  （桌面 56px / 窄屏 40px，内容栏是 120px / 80px），见下面「滚动淡出」；
+- 两栏各自滚动；内容边缘不再淡出（v4 移除 mask），上下缘保持清晰；
 - 页面本身与 `.archive-body` 都不滚，只有上面这两个内层容器滚；
 - ≤900px 两栏退回上下排：名录摊成网格、`height: auto`，由 `.archive-body` 整页滚。
 
@@ -109,7 +108,7 @@ node src/scripts/document-index.mjs --check   # 只校验是否最新，不写�
 
 ---
 
-## 档案页的视口框：页头常驻 / 页脚常驻 / 内容两端淡出
+## 档案页的视口框：页头常驻 / 页脚常驻 / 内容在中间滚
 
 **这是档案页的版式规范**（2026-11 起）：`archive/` 下**所有**页面都不整页滚动，
 而是像一块仪表屏 ——
@@ -121,22 +120,9 @@ node src/scripts/document-index.mjs --check   # 只校验是否最新，不写�
 3. **内容在中间滚**：标题以下的一切包进 `.archive-body`。普通档案页由它自己滚；
    `data-archive="split"` 的两栏页里它不滚，改由左栏名录列表和右栏档案正文
    各自滚 —— 右栏的档案标题固定在正文外面，不跟着滚（见上一节）；
-4. **两端淡出**：滚动容器在**还有内容可滚**的方向上淡出
-   （内容栏最大 120px；窄屏 80px），由 `assets/js/archive-scroll.js` 连续控制：
-   - 能滚才加 `.is-scrollable`（只在"能滚 / 不能滚"切换时变一次，不在滚动中变）；
-   - 上端 `--fade-top` 从 0 开始，按 2 倍滚动距离长到 `--archive-fade`
-     （滚 60px 就长满），面板框进入视口时已经被压得很淡；
-   - 下端 `--fade-bottom` 随剩余距离收缩，但内容栏保留 `--archive-fade-min`
-     （64px；窄屏 40px），滚到最底部也不会把面板背景框硬切掉；
-   - 短内容没有 `.is-scrollable`，不挂 mask，不会被压暗。
-   因为长度是**连续变化**的，开始滚 / 滚到底不会突然挂上或摘掉整条 mask，
-   标题和面板框不会"突变"（Firefox 下尤其明显）。
-   **左栏名录的淡出更短**：`--archive-fade: 56px`（窄屏 40px）、
-   `--archive-fade-min: 0`；它只是索引，不需要跟右栏内容一样长的渐变。
-   **渐变曲线是前段压得很低、后段才抬起来的（不是线性）**：面板背景 / 1px 描边
-   刚进入过渡带时几乎看不见，不会留下一条硬边。
-   **渐变长度与留白是两个变量**：`--archive-fade` 管渐变长度，`--archive-pad`
-   管内容与盒边的呼吸留白，别混在一起。
+4. **不再渐隐（v4）**：滚动容器不挂 `mask-image`，内容上下边缘始终清晰。
+   `assets/js/archive-scroll.js` 仍保留（写 `--fade-top` / `--fade-bottom` 的接口留给
+   以后可能的动效），但 `archive.css` 已不消费这些变量。不要再把 mask 加回来。
 
 实现全在 `assets/css/archive.css` 末尾的「档案页视口框」块，页面侧只有两处标记：
 
@@ -167,19 +153,13 @@ node src/scripts/document-index.mjs --check   # 只校验是否最新，不写�
   `data-archive` 的值也会跟着搬，所以两栏页进出站内换页同样会自动切对。
 - **别把滚动内容放到 `.archive-body` 外面**：`.archive-body` 之外的部分不会滚，
   超出一屏会被 `overflow: hidden` 直接裁掉（页头和页脚本来就要留在外面）。
-- **别把滚动容器的上下 padding 改成 0**：`--archive-pad` 是内容与盒边的呼吸留白，
-  改小会让第一行贴着页头 / 页脚。渐变长度是另一个变量 `--archive-fade`，
-  只在 `archive.css` 的 `body[data-archive]` 上改。
-- **`mask-image` 必须同时写 `-webkit-mask-image`**（Safari 只认带前缀的那条）；
-  mask 的渐变坐标相对容器的边框盒，所以它固定在窗口两端。
-- **滚动淡出靠 `assets/js/archive-scroll.js`**：它只给能滚的容器加
-  `.is-scrollable`，并连续写 `--fade-top` / `--fade-bottom`；短内容不挂 mask。
-  **每个档案页都要引它**，放在页面自己的脚本之后（人员 / 设施 / 舰船是
-  `.xxx.js` 之后）；切换条目后页面脚本会调
-  `window.__sssArchiveScroll.refresh()` 重算。
+- **`--archive-pad` 是内容与盒边的呼吸留白**，改小会让第一行贴着页头 / 页脚。
+- **滚动淡出已移除（v4）**：`assets/js/archive-scroll.js` 仍会被页面引用（保留
+  `window.__sssArchiveScroll.refresh()` 接口），但它写入的 `--fade-top` / `--fade-bottom`
+  已不再被任何 CSS 使用。不要重新加 `mask-image`。
 - 窄屏**不退回整页滚动**（普通档案页）：`100dvh` 保证页脚始终可见；
   两栏页在 ≤900px 才退回整页滚动，名录摊成网格（`height: auto`）；
-  ≤768px 渐变缩到 80px、留白缩到 16px。
+  ≤768px 留白缩到 16px。
 - `body[data-archive]` 下 `main` / `section` 都要带 `min-height: 0`（flex 子项默认
   `min-height: auto`，不给的话内部滚动区会被内容撑高、页脚重新被顶出视口）。
 

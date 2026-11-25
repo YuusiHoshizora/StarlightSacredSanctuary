@@ -513,6 +513,39 @@ body > main{
     z-index:var(--z-nav);
 }
 
+/* 终端联网状态：固定在顶栏中线偏右，等宽小字。
+   v4：终端连不上星域网，这是常态，所以用银（不是错误红）；红只给拒绝访问 / 损坏。 */
+.navbar__net{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.26em;
+    text-transform:uppercase;
+    color:var(--fg-4);
+    white-space:nowrap;
+    pointer-events:none;
+}
+
+.navbar__net i{
+    width:6px;
+    height:6px;
+    border:1px solid var(--signal);
+    border-radius:1px;
+    background:transparent;
+}
+
+.navbar__net b{
+    font-weight:400;
+    color:var(--signal);
+}
+
+@media (max-width: 900px){
+    .navbar__net{ display:none; }
+}
+
 /* 顶栏下缘的一条冷光：两端淡出、中间偏金 —— 比整条实线更像仪器边缘 */
 .navbar::after{
     content:"";
@@ -633,18 +666,10 @@ nav a[aria-current="page"]{
     letter-spacing:2px;
 }
 
-/* 总览页只有一层：用一道短金线代替"上一级链接"的位置，金 = 当前所在（被点亮） */
+/* 总览页只有一层。v4：不再用装饰线撑开位置 —— 面包屑每一层在所有页面里
+   都从同一个起点开始（「档案」永远落在同一条 x 轴上），层级只靠顺序区分。 */
 .crumb--root .crumb__here{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-}
-
-.crumb--root .crumb__here::before{
-    content:"";
-    width:18px;
-    height:1px;
-    background:linear-gradient(90deg, var(--line-accent), transparent);
+    display:inline;
 }
 
 .crumb a{
@@ -659,9 +684,11 @@ nav a[aria-current="page"]{
     color:var(--ctl-fg-hover);
 }
 
-/* 当前位置：比可点的上一级亮一档 */
+/* 当前位置：字体与其它层完全一致（同字号 / 同字距 / 同字族），
+   只用字重加粗作区分。颜色也只亮一档，不再抢标题。 */
 .crumb__here{
     color:var(--fg-2);
+    font-weight:700;
 }
 
 /* 分隔符：金色只取很淡的一档，不抢标题 */
