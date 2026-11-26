@@ -100,7 +100,7 @@
 
 .desc{
     font-family:var(--font-mono);
-    font-size:var(--fs-small);
+    font-size:var(--signal);
     letter-spacing:0.14em;
     color:var(--fg-3);
     margin-bottom:clamp(26px, 4.4vh, 44px);
