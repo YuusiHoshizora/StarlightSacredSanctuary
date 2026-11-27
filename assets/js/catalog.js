@@ -1,71 +1,24 @@
 /* ==========================================================================
-   目录状态条（本地缓存态）
+   目录占位（仅未归类档案）
    --------------------------------------------------------------------------
-   世界观前提：这个终端连不上星域网，只能读本地缓存。名录里暂时没有的条目，
-   是「还没缓存到本地」，不是「圣域没有收录」。状态条只报状态，不报数量。
-   所以：
+   v7：全站移除 `CATALOG // …` 状态条。
+   目录不再报状态、不报数量，也不在页面上显示任何“缓存 / 完整”读数；
+   页面正文与页头已经说明了数据损坏 / 本地缓存。
 
-     A. 未完整（默认）—— CATALOG // 本地缓存 + 检测到数据损坏 · 无法访问部分数据。
-        **不插任何占位卡**：预留空间靠数据与组件保持结构可扩展，
-        不靠一张「待收录」的假卡片。
-     B. 完整（data-catalog-state="完整"）—— CATALOG // 完整 + 该分区已完整收录。
+   唯一的例外仍然是「未归类档案」：它是世界观里的本地文件集合，会持续有新文件归档，
+   所以保留一张 `VACANT SLOT / 待收录` 占位卡。只有容器显式写 `data-catalog-slot`
+   时才会插入；其它页面即使保留 `data-catalog` 属性也不会有任何视觉输出。
 
-   占位卡只在容器显式写 data-catalog-slot 时才插入。全站唯一的例外是
-   「未归类档案」：那里是世界观的本地文件集合，确实会有新文件归档进来。
-
-   用法：在真正装条目的容器上加 data-catalog：
-     <div class="archive-grid" data-catalog data-catalog-unit="类">
-       …真实条目…
-     </div>
-
-   可选属性：
-     data-catalog-kind="grid|list"   占位形态（默认 grid；list 是整行）
-     data-catalog-unit="类|条|项"     单位（保留给 aria-label / 将来使用）
-     data-catalog-note="…"           状态条右侧的一句补充说明
-     data-catalog-state="完整"        明确声明完整收录：不插占位、状态条转「完整」
-     data-catalog-slot               显式要求占位卡（仅用于未归类档案这类本地集合）
-     data-catalog-slot-desc="…"      占位卡里的说明
-   属性保留在 DOM 上，重复执行不会重复插入。
+   用法：
+     <div class="document-list__scroll" data-catalog data-catalog-kind="list"
+          data-catalog-unit="项" data-catalog-slot
+          data-catalog-slot-desc="本地文件尚未归类归档"></div>
    ========================================================================== */
 (function () {
     'use strict';
 
     var ATTR = 'data-catalog';
     var READY = 'data-catalog-ready';
-
-    function buildBar(container) {
-        var unit = container.getAttribute('data-catalog-unit') || '条';
-        var complete = container.getAttribute('data-catalog-state') === '完整';
-        var note = container.getAttribute('data-catalog-note') ||
-                   (complete ? '该分区已完整收录' : '检测到数据损坏 · 无法访问部分数据');
-        var stateLabel = complete ? '完整' : '本地缓存';
-
-        var bar = document.createElement('p');
-        bar.className = 'catalog-bar' + (complete ? ' is-complete' : '');
-        bar.setAttribute('data-catalog-bar', '');
-        bar.setAttribute('role', 'note');
-        bar.setAttribute('aria-label',
-            '目录状态：' + (complete ? '完整收录' : '本地缓存，未完整') +
-            '。' + note + '（单位：' + unit + '）');
-
-        var label = document.createElement('span');
-        label.className = 'catalog-bar__label';
-        label.appendChild(document.createTextNode('CATALOG'));
-        var sep = document.createElement('b');
-        sep.className = 'catalog-bar__sep';
-        sep.setAttribute('aria-hidden', 'true');
-        sep.textContent = '//';
-        label.appendChild(sep);
-        label.appendChild(document.createTextNode(stateLabel));
-
-        var tail = document.createElement('span');
-        tail.className = 'catalog-bar__tail';
-        tail.textContent = note;
-
-        bar.appendChild(label);
-        bar.appendChild(tail);
-        return bar;
-    }
 
     function buildSlot(container) {
         var kind = container.getAttribute('data-catalog-kind') || 'grid';
@@ -101,41 +54,14 @@
         return slot;
     }
 
-    /* 左栏名录（*.xxx-list__scroll）的状态条要放在滚动容器**外面**：
-       它固定在「名录 + 搜索」正下方，透明背景，列表滚动时不会变成一条实心黑带。
-       其它目录（网格 / 工具侧栏 / 事件列表）仍放在容器内部最前面。 */
-    function isScrollList(container) {
-        return /(?:^|\s)[a-z-]*list__scroll(?:\s|$)/.test(container.className || '');
-    }
-
-    function findBar(container, scrolled) {
-        var scope = scrolled ? container.parentNode : container;
-        return scope ? scope.querySelector(':scope > [data-catalog-bar]') : null;
-    }
-
-    function mountBar(bar, container, scrolled) {
-        if (scrolled) {
-            if (bar.parentNode !== container.parentNode || bar.nextElementSibling !== container) {
-                container.parentNode.insertBefore(bar, container);
-            }
-        } else if (container.firstElementChild !== bar) {
-            container.insertBefore(bar, container.firstElementChild);
-        }
-    }
-
     function decorate(container) {
         if (!container || !container.hasAttribute) return;
         if (!container.hasAttribute(ATTR)) return;
 
         var complete = container.getAttribute('data-catalog-state') === '完整';
-        var scrolled = isScrollList(container);
-
-        var bar = findBar(container, scrolled);
-        if (!bar) bar = buildBar(container);
-        mountBar(bar, container, scrolled);
-
-        var slot = container.querySelector(':scope > .catalog-slot');
         var wantSlot = !complete && container.hasAttribute('data-catalog-slot');
+        var slot = container.querySelector(':scope > .catalog-slot');
+
         if (!wantSlot) {
             if (slot) slot.remove();
         } else {
@@ -152,8 +78,7 @@
         for (var i = 0; i < list.length; i++) decorate(list[i]);
     }
 
-    /* 页面脚本可能整块重绘容器（人员 / 舰船 / 设施 / 文件等）：
-       观察容器子树，缺状态条 / 占位就补回去。 */
+    /* 页面脚本可能整块重绘容器（文件列表等）：缺占位就补回去。 */
     function watch() {
         if (!('MutationObserver' in window)) return;
         var list = document.querySelectorAll('[' + ATTR + ']');
@@ -161,19 +86,13 @@
             (function (container) {
                 if (container.__sssCatalogObserver) return;
                 var mo = new MutationObserver(function () {
-                    var scrolled = isScrollList(container);
-                    var bar = findBar(container, scrolled);
-                    var slot = container.querySelector(':scope > .catalog-slot');
                     var complete = container.getAttribute('data-catalog-state') === '完整';
                     var wantSlot = !complete && container.hasAttribute('data-catalog-slot');
-
-                    var barWrong = !bar || (scrolled
-                        ? bar.parentNode !== container.parentNode || bar.nextElementSibling !== container
-                        : container.firstElementChild !== bar);
+                    var slot = container.querySelector(':scope > .catalog-slot');
                     var slotWrong = wantSlot
                         ? (!slot || container.lastElementChild !== slot)
                         : !!slot;
-                    if (barWrong || slotWrong) decorate(container);
+                    if (slotWrong) decorate(container);
                 });
                 mo.observe(container, { childList: true });
                 container.__sssCatalogObserver = mo;
@@ -184,7 +103,6 @@
     function boot() {
         runAll();
         watch();
-        /* 脚本填卡可能在 DOMContentLoaded 之后的下一帧、或数据 fetch 回来之后 */
         window.setTimeout(runAll, 320);
         window.setTimeout(runAll, 1200);
     }
@@ -195,6 +113,5 @@
         boot();
     }
 
-    /* 站内同文档换页（spa.js）替换内容后由页面自行调用；也挂在 window 上方便调试。 */
     window.SSSCatalog = { refresh: boot, decorate: decorate };
 })();

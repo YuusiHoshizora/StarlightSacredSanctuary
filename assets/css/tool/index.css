@@ -749,24 +749,7 @@ button.tool-entry {
 }
 
 .tool-side > .page-eyebrow {
-    order: -1;
     margin: 0 0 14px;
-}
-
-/* 目录状态条在 250px 的窄栏里要折行，绝不能溢出到右栏去 */
-.tool-side > .catalog-bar {
-    flex-wrap: wrap;
-    gap: 4px 10px;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    letter-spacing: 0.18em;
-}
-
-.tool-side > .catalog-bar .catalog-bar__tail {
-    flex: 1 1 100%;
-    margin-left: 0;
-    text-align: left;
-    white-space: normal;
 }
 
 .tool-side > .catalog-slot {
