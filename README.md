@@ -57,10 +57,10 @@
 
 **© 2025–2026 余事星空（YuusiHoshizora）**
 
-**站内文字（事件文章、设定文字与页面文案）采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 授权。**
-除特别注明外，你可以在**署名**的前提下自由转载、节选、翻译，甚至用于商业用途，**不必另行询问**。
+**站内文字、视频、音频等内容（事件文章、设定文字、页面文案，以及站内的视频与音频）采用 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 授权。**
+除特别注明外，你可以在**署名**、并**以相同协议共享改编作品**的前提下自由转载、节选、翻译，甚至用于商业用途，**不必另行询问**。
 要求的署名是：作者 **余事星空（YuusiHoshizora）** + 原文链接；若做过修改，请一并注明。
-完整协议文本见 [LICENSE](LICENSE)；站点上有一份面向读者的版本，在「关于」页（[about/index.html](about/index.html)）。
+完整协议说明见 [LICENSE](LICENSE)；站点上有一份面向读者的版本，在「关于」页（[about/index.html](about/index.html)）。
 
 不在上述授权范围内的：
 

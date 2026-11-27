@@ -9,4 +9,5 @@
 - 获取途径：Iconify 的 `arcticons` 图标集（<https://iconify.design/>）
 - 修改：图标形状未修改；站点只在 CSS 中用 `mask` 取形状、以 `currentColor` 上色。
 
-这些图标按 CC BY-SA 4.0 单独授权，不属于本站文字 CC BY 4.0 的授权范围。
+这些图标按 CC BY-SA 4.0 单独授权，著作权归 Arcticons；本站针对文字、视频、音频等内容的
+CC BY-SA 4.0 授权不改变这些图标的归属。

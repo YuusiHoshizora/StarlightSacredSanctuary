@@ -30,7 +30,7 @@
 ├── .assetsignore              发布排除清单：决定哪些仓库文件不会变成站点资源
 ├── .gitignore                 Git 忽略清单
 ├── README.md                  面向读者的站点说明（GitHub 首页；公开）
-├── LICENSE                    授权全文（CC BY 4.0 + 第三方许可；公开）
+├── LICENSE                    授权说明与官方协议链接（CC BY-SA 4.0 + 第三方许可；公开）
 │
 ├── docs/                      仓库文档 —— 只给仓库看，不发布
 │   ├── README.md              文档索引（第一次进来先读这页）
