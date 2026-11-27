@@ -633,6 +633,10 @@ nav a[aria-current="page"]{
 
 .crumb a{
     opacity:1;                        /* 盖掉 nav a 的 .75 */
+    /* 面包屑是独立的小字：必须把顶栏 nav a 的 14px / 1.96px 字距收回来，
+       和 .crumb 的 12px / 2px 完全一致（v8 修的就是这里）。 */
+    font:inherit;
+    letter-spacing:inherit;
     color:var(--fg-3);
     text-decoration:none;
     transition:var(--ctl-transition);
@@ -643,11 +647,14 @@ nav a[aria-current="page"]{
     color:var(--ctl-fg-hover);
 }
 
-/* 当前位置：字体与其它层完全一致（同字号 / 同字距 / 同字族），
-   只用字重加粗作区分。颜色也只亮一档，不再抢标题。 */
+/* 当前位置：字体与其它层完全一致（同字号 / 同字距 / 同字族 / 同字重），
+   v8 起不再加粗 —— 加粗会改变字宽，切换页面时看起来间距和大小都不一样。
+   只用金色高亮标出当前目录。 */
 .crumb__here{
-    color:var(--fg-2);
-    font-weight:700;
+    color:var(--accent);
+    font-weight:400;
+    font-size:inherit;
+    letter-spacing:inherit;
 }
 
 /* 分隔符：金色只取很淡的一档，不抢标题 */
