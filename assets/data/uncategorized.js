@@ -45,8 +45,8 @@ window.SSS_UNCATEGORIZED = {
       "lines": 30,
       "date": "402-08-01",
       "source": "文件",
-      "clearance": "SXM",
-      "summary": "资料部对星能的记录",
+      "clearance": "SPM",
+      "summary": "星光圣域的等级划分",
       "notes": ""
     }
   ]
