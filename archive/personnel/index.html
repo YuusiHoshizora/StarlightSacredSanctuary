@@ -93,6 +93,7 @@
     <link rel="stylesheet" href="../../assets/css/global.css">
     <link rel="stylesheet" href="../../assets/css/catalog.css">
     <link rel="stylesheet" href="../../assets/css/archive.css">
+    <link rel="stylesheet" href="../../assets/css/archive/organization.css">
     <link rel="stylesheet" href="../../assets/css/archive/personnel.css">
     <script defer src="../../assets/js/background.js"></script>
     <script defer src="../../assets/js/cursor.js"></script>
@@ -105,7 +106,10 @@
          ⚠️ 外壳脚本，站内换页（spa.js）不会重跑它 —— 每页都必须引，否则经由同文档换页
          进「关于」页 / 进彩蛋页时，登记与卡片都不会发生。 -->
     <script defer src="../../assets/js/eggs.js"></script>
+    <!-- 人员名录：左栏选中 / 右栏档案，链接用 ?person=身份编号 定位 -->
     <script defer src="../../assets/data/personnel.js"></script>
+    <!-- 左栏名录搜索：按名称过滤（外观与交互照星图搜索） -->
+    <script defer src="../../assets/js/archive-list-search.js"></script>
     <script defer src="../../assets/js/personnel.js"></script>
     <!-- 滚动淡出：按滚动位置连续控制上下淡出，短内容不压暗 -->
     <script defer src="../../assets/js/archive-scroll.js"></script>
@@ -132,7 +136,7 @@
     <script>document.documentElement.classList.add('css-ready');</script>
 </head>
 
-<body data-archive>
+<body data-archive="split">
 
     <!-- 加载屏的容器：结构与逻辑由 assets/js/boot.js 生成，默认不显示 -->
     <div class="boot" id="boot"></div>
@@ -165,9 +169,11 @@
 
                     <main>
         <!-- ══ 人员档案 ══
-             首页是一块「授权等级名录」面板：四行等级自上而下由高到低，
-             每行即该等级的入口；等级页是左栏名录 + 右栏档案的两栏版式。 -->
-        <section class="archive-section">
+             版式照舰船档案 / 文件档案：左栏成员名录 + 右栏选中成员的档案。
+             首页列出全部成员，左栏按拉丁首字母分组；授权等级只在右侧档案的
+             基本信息里占一行（归属舰队下面）—— 它只决定能调阅哪些文件，
+             不是成员身份的高低。四个等级页保留给组织档案的人名深链。 -->
+        <section class="archive-section personnel-section">
             <nav class="crumb" aria-label="位置">
                 <a href="../">档案</a>
                 <span class="crumb__sep" aria-hidden="true">/</span>
@@ -182,7 +188,7 @@
                 <p class="archive-sub">Personnel Archives</p>
                 <p class="archive-lead">
                     星光圣域成员数据库 / 部分条目数据损坏，无法访问。<br>
-                    成员按授权等级分为四类，可通过考核逐级提升。
+                    授权等级只决定可调阅的档案范围。
                 </p>
             </header>
 
@@ -190,7 +196,7 @@
                  详见 assets/css/archive.css 的「档案页视口框」与 docs/MAINTENANCE.md。 -->
             <div class="archive-body">
 
-            <div class="personnel-tiers" data-personnel-index data-catalog data-catalog-unit="类" data-catalog-state="完整" data-catalog-note="成员权限分类均已建档">
+            <div class="personnel-layout" data-personnel data-class="all">
                 <noscript><p class="personnel-missing">人员档案需要启用 JavaScript。</p></noscript>
             </div>
 

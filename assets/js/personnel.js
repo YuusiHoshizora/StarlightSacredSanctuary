@@ -3,8 +3,9 @@
  * -----------------------------------------------------------------------------
  * 数据在 assets/data/personnel.js（window.SSS_PERSONNEL）。
  * 这个脚本只负责渲染：
- *   - 人员档案首页：[data-personnel-index] → 授权等级名录（单面板）+ 实时人数
- *   - 等级页：[data-personnel][data-class] → 左栏名录 + 右栏档案
+ *   - 人员档案首页：[data-personnel][data-class="all"] → 全员名录 + 右栏档案
+ *   - 等级页：[data-personnel][data-class="sxm" 等] → 该等级的名录 + 右栏档案
+ * 两处共用同一套「左栏名录 + 右栏档案」版式；授权等级写在档案基本信息里。
  * 点左栏只切右栏，不改页面滚动位置；# 用 pushState 改地址栏。
  * ========================================================================== */
 (function () {
@@ -37,78 +38,43 @@
         }).sort(byLatin);
     }
 
-    function countOf(key) {
-        return DATA.members.filter(function (m) {
-            return m.class === key;
-        }).length;
-    }
-
-    /* ── 人员档案首页：授权等级名录 ──
-       四个等级不是四张并列的卡片，而是同一块面板里的四行：
-       自上而下就是授权等级由高到低，人数、英文全名各占一列。
-       数据顺序（DATA.classes）即等级顺序，这里不改排。 */
-    var indexRoot = document.querySelector('[data-personnel-index]');
-    if (indexRoot) {
-        var rows = DATA.classes.map(function (c, i) {
-            var n = countOf(c.key);
-            var rank = (i + 1 < 10 ? '0' : '') + (i + 1);
-            return '                    <li class="personnel-tier">\n' +
-                '                        <a class="personnel-tier__link" href="' + esc(c.key) + '">\n' +
-                '                            <span class="personnel-tier__rank" aria-hidden="true">' + rank + '</span>\n' +
-                '                            <div class="personnel-tier__body">\n' +
-                '                                <div class="personnel-tier__head">\n' +
-                '                                    <span class="personnel-tier__code">' + esc(c.code) + '</span>\n' +
-                '                                    <h2 class="personnel-tier__name">' + esc(c.name) + '</h2>\n' +
-                '                                </div>\n' +
-                '                                <p class="personnel-tier__en">' + esc(c.en) + '</p>\n' +
-                '                                <p class="personnel-tier__desc">' + esc(c.desc) + '</p>\n' +
-                '                            </div>\n' +
-                '                            <div class="personnel-tier__side">\n' +
-                '                                <p class="personnel-tier__count"><b>' + n + '</b> 名成员</p>\n' +
-                '                                <p class="personnel-tier__go">查看名录 ›</p>\n' +
-                '                            </div>\n' +
-                '                        </a>\n' +
-                '                    </li>';
-        }).join('\n');
-
-        indexRoot.innerHTML = '                <p class="personnel-tiers__caption">\n' +
-            '                    <span class="personnel-tiers__label">授权等级</span>\n' +
-            '                    <span class="personnel-tiers__en">Clearance Tiers</span>\n' +
-            '                    <span class="personnel-tiers__hint">由高至低</span>\n' +
-            '                </p>\n' +
-            '                <ol class="personnel-tiers__list">\n' + rows + '\n                </ol>';
-        return;
-    }
-
-    /* ── 等级页：左栏名录 + 右栏档案 ── */
+    /* ── 人员名录：左栏名录 + 右栏档案 ──
+       首页（data-class="all"）与四个授权等级页共用同一套版式：
+       左栏按拉丁首字母分组，右栏显示选中成员的档案。
+       授权等级只是档案里的一行，不是成员身份，也不进名录分组。 */
     var root = document.querySelector('[data-personnel]');
     if (!root) return;
 
     var classKey = root.getAttribute('data-class');
-    var cls = DATA.classes.filter(function (c) {
+    var showAll = classKey === 'all';
+    var cls = showAll ? null : DATA.classes.filter(function (c) {
         return c.key === classKey;
     })[0];
-    if (!cls) return;
+    if (!showAll && !cls) return;
 
-    var members = membersOf(classKey);
+    var members = showAll ? DATA.members.slice().sort(byLatin) : membersOf(classKey);
     if (!members.length) {
         root.innerHTML = '<p class="personnel-missing">数据损坏，无法显示成员名录。</p>';
         return;
     }
 
+    function itemHtml(m) {
+        return '                <a class="personnel-list__item" href="#' + esc(m.anchor) + '" data-id="' + esc(m.anchor) + '">\n' +
+            '                    <span class="personnel-list__name">' + esc(m.name) + '</span>\n' +
+            '                    <span class="personnel-list__latin">' + esc(m.latin) + '</span>\n' +
+            '                </a>\n';
+    }
+
     function listHtml() {
         var out = '';
         var last = '';
-        members.forEach(function (m, i) {
+        members.forEach(function (m) {
             var initial = (m.latin.charAt(0) || '#').toUpperCase();
             if (initial !== last) {
                 last = initial;
                 out += '                <p class="personnel-list__group">' + esc(initial) + '</p>\n';
             }
-            out += '                <a class="personnel-list__item" href="#' + esc(m.anchor) + '" data-id="' + esc(m.anchor) + '">\n' +
-                '                    <span class="personnel-list__name">' + esc(m.name) + '</span>\n' +
-                '                    <span class="personnel-list__latin">' + esc(m.latin) + '</span>\n' +
-                '                </a>\n';
+            out += itemHtml(m);
         });
         return out;
     }
@@ -127,15 +93,27 @@
     }
 
     function profileHtml(m, active) {
+        var memberClass = DATA.classes.filter(function (c) {
+            return c.key === m.class;
+        })[0];
+
         var meta = [
             ['姓名', esc(m.name)],
             ['性别', val(m.gender)],
             ['出生日期', val(m.birth)],
             ['种族', val(m.race)],
             ['归属舰队', val(m.fleet)],
-            [m.residenceLabel || '居住地', val(m.residence)],
-            ['身份编号', m.identity ? esc(m.identity) : MISSING],
-        ].map(function (row) {
+        ];
+
+        /* 授权等级：紧跟在归属舰队下面；只表示可调阅的档案范围 */
+        if (memberClass) {
+            meta.push(['授权等级', '<span class="personnel-clearance">' + esc(memberClass.code) + '</span> · ' + esc(memberClass.name)]);
+        }
+
+        meta.push([m.residenceLabel || '居住地', val(m.residence)]);
+        meta.push(['身份编号', m.identity ? esc(m.identity) : MISSING]);
+
+        meta = meta.map(function (row) {
             return '                            <div class="org-meta__row">\n' +
                 '                                <dt>' + row[0] + '</dt>\n' +
                 '                                <dd>' + row[1] + '</dd>\n' +
