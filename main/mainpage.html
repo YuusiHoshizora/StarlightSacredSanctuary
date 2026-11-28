@@ -167,13 +167,8 @@
         <!-- 左侧栏：导航分类 -->
         <aside class="left-panel">
             <div class="nav-section-title">分类</div>
-            <nav class="vertical-nav">
-                <a href="#" data-filter="all" class="active">全部<span class="vertical-nav__count" aria-hidden="true"></span></a>
-                <a href="#" data-filter="重要通知">重要通知<span class="vertical-nav__count" aria-hidden="true"></span></a>
-                <a href="#" data-filter="本地日志">本地日志<span class="vertical-nav__count" aria-hidden="true"></span></a>
-                <a href="#" data-filter="观测报告">观测报告<span class="vertical-nav__count" aria-hidden="true"></span></a>
-                <a href="#" data-filter="技术文档">技术文档<span class="vertical-nav__count" aria-hidden="true"></span></a>
-                <a href="#" data-filter="航行手记">航行手记<span class="vertical-nav__count" aria-hidden="true"></span></a>
+            <nav class="vertical-nav" id="category-nav">
+                <!-- 分类不写死：由 assets/post/*.md 首行的标签自动生成（见页尾脚本） -->
             </nav>
         </aside>
 
@@ -691,18 +686,74 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
         }, SWITCH_OUT_MS);
     }
 
-    // ===== 分类条目计数（左侧读数的字号 / 颜色与档案页名录一致） =====
-    function updateCategoryCounts() {
+    // ===== 左侧分类：从文章首行标签自动生成（不再写死） =====
+    // 分类集合 = 当前所有卡片里出现过的 data-tag，按文章列表顺序排列；
+    // 新标签随文章异步加载出现时重建列表，其余情况只更新右侧读数。
+    var categoryKey = null;
+
+    function countCategories() {
         var cards = document.querySelectorAll('.blog-card');
         var counts = { all: cards.length };
+        var order = [];
         cards.forEach(function (card) {
             var tag = card.dataset.tag;
-            if (tag) counts[tag] = (counts[tag] || 0) + 1;
+            if (!tag) return;
+            if (!Object.prototype.hasOwnProperty.call(counts, tag)) {
+                counts[tag] = 0;
+                order.push(tag);
+            }
+            counts[tag]++;
         });
-        document.querySelectorAll('.vertical-nav a[data-filter]').forEach(function (a) {
-            var n = counts[a.dataset.filter] || 0;
-            var s = a.querySelector('.vertical-nav__count');
-            if (s) s.textContent = n ? String(n) : '';
+        return { order: order, counts: counts };
+    }
+
+    function buildCategoryLink(filter, label, count, active) {
+        var a = document.createElement('a');
+        a.href = '#';
+        a.dataset.filter = filter;
+        if (active) a.classList.add('active');
+        a.appendChild(document.createTextNode(label));
+
+        var span = document.createElement('span');
+        span.className = 'vertical-nav__count';
+        span.setAttribute('aria-hidden', 'true');
+        span.textContent = count ? String(count) : '';
+        a.appendChild(span);
+        return a;
+    }
+
+    function syncCategories() {
+        var nav = document.querySelector('.vertical-nav');
+        if (!nav) return;
+
+        var data = countCategories();
+        var key = data.order.join('\u0000');
+
+        if (key !== categoryKey) {
+            categoryKey = key;
+
+            // 重建时保留当前选中；选中的分类若已不存在就退回「全部」
+            var activeEl = nav.querySelector('a.active');
+            var active = activeEl ? activeEl.dataset.filter : 'all';
+            if (active !== 'all' && data.order.indexOf(active) === -1) active = 'all';
+
+            var frag = document.createDocumentFragment();
+            frag.appendChild(buildCategoryLink('all', '全部', data.counts.all, active === 'all'));
+            data.order.forEach(function (tag) {
+                frag.appendChild(buildCategoryLink(tag, tag, data.counts[tag], active === tag));
+            });
+            nav.innerHTML = '';
+            nav.appendChild(frag);
+
+            if (active !== latestFilter) applyFilter(active);
+            return;
+        }
+
+        // 分类集合没变：只刷新读数，不动 DOM（避免打断 hover / 焦点）
+        nav.querySelectorAll('a[data-filter]').forEach(function (a) {
+            var n = data.counts[a.dataset.filter] || 0;
+            var span = a.querySelector('.vertical-nav__count');
+            if (span) span.textContent = n ? String(n) : '';
         });
     }
 
@@ -878,7 +929,7 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                 if (titleEl) titleEl.textContent = filenameToTitle(postDir + filename);
 
                 listEl.appendChild(card);
-                updateCategoryCounts();
+                syncCategories();
 
                 // 异步填充摘要、标签、日期
                 var excerptEl = card.querySelector('.blog-excerpt');
@@ -895,7 +946,7 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                         }
                         var date = extractDate(text);
                         if (date && dateEl) dateEl.textContent = date;
-                        updateCategoryCounts();
+                        syncCategories();
                     })
                     .catch(function (err) {
                         console.warn('无法获取摘要:', filename, err);
@@ -906,6 +957,9 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
             listEl.innerHTML = '<div class="md-loading">无法加载文章列表（' + err.message + '）</div>';
         });
 })();
+
+    // 先放好「全部」这一项；卡片与标签陆续回来时再增量补充分类
+    syncCategories();
 
     // ===== Markdown 内容缓存 & 从文章自动提取简介 =====
     var mdCache = {};

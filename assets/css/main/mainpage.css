@@ -1303,9 +1303,11 @@ body[data-mainpage] .right-panel {
     min-height: 72px;
 }
 
-/* ── 左右栏：更薄的玻璃、更静的底 ── */
+/* ── 左右栏：左栏分类纯透明（不垫底、不模糊），右栏仍是薄玻璃 ── */
 .left-panel {
-    background: var(--surface-card);
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     border-right: 1px solid var(--line-1);
     padding-top: 32px;
 }
