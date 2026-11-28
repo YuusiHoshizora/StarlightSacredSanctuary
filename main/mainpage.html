@@ -277,6 +277,7 @@
     var CLOSE_HOLD_MS = reduceMotion ? 0 : 120;  // 返回时线在顶端停一下
     var DROP_MS     = reduceMotion ? 0 : 240;    // 线落回卡片
     var LINE_H      = 2;                         // 「线」的厚度（px）
+    var END_SLACK   = 60;                        // 每段收尾多留一点，保证过渡真的走完再切下一段
     var CLOSE_TOTAL_MS = FADE_MS + RETRACT_MS + CLOSE_HOLD_MS + DROP_MS + 120;
     var SWITCH_OUT_MS = reduceMotion ? 0 : 240;  // 分类切换：整列向左离开的时长（与 CSS 动画一致）
 
@@ -286,6 +287,7 @@
     var articleGen = 0;          // 快速打开 / 返回时作废旧 fetch / 旧定时器 / 旧裁剪循环
     var morphTimer = 0;
     var morphCard = null;
+    var morphPadTop = 0;         // 面板正常态的 padding-top（桌面 20 / 窄屏 16），压成线时要归零
     var clipRaf = 0;
 
     function centerContentRect() {
@@ -347,6 +349,7 @@
         articleView.style.transition = 'none';
         articleView.style.backgroundColor = '';
         articleView.style.borderRadius = '';
+        articleView.style.paddingTop = '';
     }
 
     /* 打开第一步：面板带着被点卡片的外壳上移并压成线 */
@@ -362,6 +365,7 @@
 
         resetPanel();
         morphCard = card;
+        morphPadTop = parseFloat(window.getComputedStyle(articleView).paddingTop) || 0;
 
         listView.classList.remove('hidden');
         listView.classList.add('is-morphing');
@@ -381,27 +385,38 @@
             setPanelRect(content);
             articleView.style.borderRadius = '0';
             articleView.style.backgroundColor = '';
+            articleView.style.paddingTop = '';
             articleView.classList.add('is-content-visible');
             listView.classList.add('hidden');
             return;
         }
 
-        /* 阶段 1：上移 + 压扁 */
+        /* 阶段 1：上移 + 压扁。padding-top 必须一起收到 0：
+           面板是 border-box，正常态的 20px 上内边距 + 2px 描边会把最小高度顶到 22px，
+           不收掉的话「一条线」其实是一条 22px 高的窄条，上下两条边永远并不上。 */
         articleView.style.transition =
             'top ' + LIFT_MS + 'ms ' + EASE_IN_OUT + ', ' +
             'left ' + LIFT_MS + 'ms ' + EASE_IN_OUT + ', ' +
             'width ' + LIFT_MS + 'ms ' + EASE_IN_OUT + ', ' +
             'height ' + LIFT_MS + 'ms ' + EASE_IN_OUT + ', ' +
+            'padding-top ' + LIFT_MS + 'ms ' + EASE_IN_OUT + ', ' +
             'border-radius 160ms ease, ' +
             'background-color ' + LIFT_MS + 'ms linear';
         articleView.style.backgroundColor = '';
         articleView.style.borderRadius = '1px';
+        articleView.style.paddingTop = '0px';
         setPanelRect(lineRect);
 
         morphTimer = window.setTimeout(function () {
             if (gen !== articleGen || !articleView.classList.contains('is-visible')) return;
 
-            /* 到顶：现在它是一条线 */
+            /* 到顶：把尺寸钉死在一条线（2px）上，再点亮。
+               顶边和底边走完各自的行程后在这一刻重合；两条边速度不同、但同一时刻到达。 */
+            articleView.style.transition = 'none';
+            articleView.style.top = content.top + 'px';
+            articleView.style.height = LINE_H + 'px';
+            articleView.style.paddingTop = '0px';
+            void articleView.offsetWidth;        // 立刻落定，别让被取消的 top 过渡停在半路
             articleView.style.transition = 'border-color 70ms ease, box-shadow 70ms ease';
             articleView.classList.add('is-line');
 
@@ -409,19 +424,21 @@
                 if (gen !== articleGen) return;
                 sweepOpen(gen, content);
             }, HOLD_MS);
-        }, LIFT_MS + 20);
+        }, LIFT_MS + END_SLACK);
     }
 
     /* 打开第二步：线向下铺开，列表被逐行盖掉 */
     function sweepOpen(gen, content) {
         articleView.style.transition =
             'height ' + SWEEP_MS + 'ms ' + EASE_OUT + ', ' +
+            'padding-top ' + SWEEP_MS + 'ms ' + EASE_OUT + ', ' +
             'border-radius ' + SWEEP_MS + 'ms ease, ' +
-            'border-color 150ms ease, ' +
-            'box-shadow 150ms ease';
+            'border-color 90ms ease, ' +
+            'box-shadow 90ms ease';
         articleView.classList.remove('is-line');     // 线的光淡成前缘的光
         articleView.classList.add('is-scanning');
         articleView.style.borderRadius = '0';
+        articleView.style.paddingTop = morphPadTop + 'px';
         articleView.style.height = content.height + 'px';
         startClipFollow(gen);
 
@@ -433,7 +450,7 @@
             articleView.classList.remove('is-scanning');
             articleView.classList.add('is-content-visible');
             articleView.style.transition = 'none';
-        }, SWEEP_MS + 30);
+        }, SWEEP_MS + END_SLACK);
     }
 
     /* 返回第一步：正文淡出 → 面板向上收成线，列表随裁剪线从下往上露出来 */
@@ -453,6 +470,7 @@
         }
 
         var card = morphCard;
+        var content = centerContentRect();
 
         morphTimer = window.setTimeout(function () {
             if (gen !== articleGen) return;
@@ -466,19 +484,26 @@
 
             articleView.style.transition =
                 'height ' + RETRACT_MS + 'ms ' + EASE_IN_OUT + ', ' +
+                'padding-top ' + RETRACT_MS + 'ms ' + EASE_IN_OUT + ', ' +
                 'border-radius ' + RETRACT_MS + 'ms ease, ' +
                 'background-color ' + RETRACT_MS + 'ms linear';
             articleView.style.backgroundColor = 'var(--surface-card)';   // 回到卡片外壳
             articleView.style.borderRadius = '1px';
+            articleView.style.paddingTop = '0px';
             articleView.style.height = LINE_H + 'px';
             startClipFollow(gen);
 
             morphTimer = window.setTimeout(function () {
                 if (gen !== articleGen) return;
 
-                /* 收到顶：又变回一条线 */
+                /* 收到顶：又变回一条线（同样把内边距 / 高度钉死，上下两边重合） */
                 stopClipFollow();
                 articleView.classList.remove('is-scanning');
+                articleView.style.transition = 'none';
+                articleView.style.top = content.top + 'px';
+                articleView.style.height = LINE_H + 'px';
+                articleView.style.paddingTop = '0px';
+                void articleView.offsetWidth;
                 articleView.style.transition = 'border-color 90ms ease, box-shadow 90ms ease';
                 articleView.classList.add('is-line');
 
@@ -486,7 +511,7 @@
                     if (gen !== articleGen) return;
                     dropToCard(gen, card);
                 }, CLOSE_HOLD_MS);
-            }, RETRACT_MS + 20);
+            }, RETRACT_MS + END_SLACK);
         }, FADE_MS);
     }
 
@@ -503,10 +528,12 @@
             'height ' + DROP_MS + 'ms ' + EASE_OUT + ', ' +
             'left ' + DROP_MS + 'ms ' + EASE_OUT + ', ' +
             'width ' + DROP_MS + 'ms ' + EASE_OUT + ', ' +
+            'padding-top ' + DROP_MS + 'ms ' + EASE_OUT + ', ' +
             'border-radius ' + DROP_MS + 'ms ease, ' +
             'border-color 160ms ease, ' +
             'box-shadow 160ms ease';
         setPanelRect(target);
+        articleView.style.paddingTop = morphPadTop + 'px';
         articleView.style.borderRadius = 'var(--ctl-panel-radius)';
 
         // 落下的前 120ms 还带着线的光，随后像余辉一样褪掉，正好接上卡片外壳
@@ -518,7 +545,7 @@
         morphTimer = window.setTimeout(function () {
             if (gen !== articleGen) return;
             finishClose(gen);
-        }, DROP_MS + 20);
+        }, DROP_MS + END_SLACK);
     }
 
     function finishClose(gen) {
@@ -529,6 +556,7 @@
         articleView.style.transition = 'none';
         articleView.style.backgroundColor = '';
         articleView.style.borderRadius = '';
+        articleView.style.paddingTop = '';
         listView.classList.remove('hidden');
         listView.classList.remove('is-morphing');
         if (morphCard) morphCard.classList.remove('is-morph-source');

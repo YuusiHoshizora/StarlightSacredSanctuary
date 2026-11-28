@@ -1043,11 +1043,14 @@ body[data-mainpage] .blog-card::before {
     transition: opacity 0.16s ease;
 }
 
-/* 面板本身就是被点卡片的外壳；把原卡片背景让出来，避免两层半透明叠在一起 */
+/* 面板本身就是被点卡片的外壳；把原卡片背景让出来，避免两层半透明叠在一起。
+   backdrop-filter 也必须一起撤掉：背景透明了、模糊还在，原位会留下一块模糊的矩形痕迹。 */
 body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source {
     background: transparent;
     border-color: transparent;
     box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     transition: none;
 }
 
