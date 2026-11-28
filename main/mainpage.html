@@ -267,6 +267,7 @@
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var FADE_MS  = reduceMotion ? 0 : 180;
     var MORPH_MS = reduceMotion ? 0 : 380;
+    var SWITCH_OUT_MS = reduceMotion ? 0 : 240;   // 分类切换：整列向左离开的时长（与 CSS 动画一致）
 
     var articleGen = 0;          // 快速打开 / 返回时作废旧 fetch / 旧定时器
     var morphTimer = 0;
@@ -456,29 +457,51 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
 });
 
     // ===== 分类筛选：整列卡片向左离开，新的一列从左边进来 =====
-    function applyFilter(filter) {        var list = document.getElementById('blog-list');
+    // 连点分类时以最后一次选择为准：退场 / 入场动画在跑的时候不重播，
+    // 只把 latestFilter 换掉，等当前这段动画收尾时再按最新筛选重新入场。
+    var filterTimer   = 0;
+    var enteringTimer = 0;
+    var latestFilter  = 'all';
+
+    function applyFilter(filter) {
+        var list = document.getElementById('blog-list');
         if (!list) return;
+
+        latestFilter = filter;
 
         function apply() {
             document.querySelectorAll('.blog-card').forEach(function (card) {
-                card.style.display = (filter === 'all' || card.dataset.tag === filter) ? '' : 'none';
+                card.style.display = (latestFilter === 'all' || card.dataset.tag === latestFilter) ? '' : 'none';
             });
         }
 
-        // 列表当前不可见（还在文章视图里）或正在切换：直接改显示，不播动画
-        if (listView.classList.contains('hidden') || list.classList.contains('switching')) {
+        // 列表当前不可见（还在文章视图里）：直接改显示，不播动画
+        if (listView.classList.contains('hidden')) {
             apply();
             return;
         }
 
+        // 正在向左离开：让这一趟动画跑完，入场时读 latestFilter（已是最新选择）
+        if (list.classList.contains('switching')) {
+            return;
+        }
+
+        // 正在从左边进来：不打断滑入，只把内容换成最新筛选
+        if (list.classList.contains('entering')) {
+            apply();
+            return;
+        }
+
+        window.clearTimeout(filterTimer);
+        window.clearTimeout(enteringTimer);
         list.classList.add('switching');                 // 向左离开
-        window.setTimeout(function () {
+        filterTimer = window.setTimeout(function () {
             apply();
             list.classList.remove('switching');
             void list.offsetWidth;                       // 强制回流，进入动画才会重新播放
             list.classList.add('entering');              // 从左边进来
-            window.setTimeout(function () { list.classList.remove('entering'); }, 420);
-        }, 240);
+            enteringTimer = window.setTimeout(function () { list.classList.remove('entering'); }, 420);
+        }, SWITCH_OUT_MS);
     }
 
     // ===== 分类条目计数（左侧读数的字号 / 颜色与档案页名录一致） =====

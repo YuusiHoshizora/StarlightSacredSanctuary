@@ -998,6 +998,16 @@ body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source > * {
     opacity: 0;
 }
 
+/* 卡片右上角的序号是 ::before 伪元素，不在 .blog-card > * 里，不会跟着正文淡出。
+   展开 / 收回时单独把它一起藏掉，否则会有一枚「01」浮在文章面板上。 */
+body[data-mainpage] .blog-card::before {
+    transition: opacity 0.16s ease;
+}
+
+body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source::before {
+    opacity: 0;
+}
+
 /* 展开的面板本身就是被点卡片的背景；把原卡片背景让出来，避免两层半透明叠在一起 */
 body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source {
     background: transparent;
