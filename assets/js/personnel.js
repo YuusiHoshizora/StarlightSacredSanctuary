@@ -3,7 +3,7 @@
  * -----------------------------------------------------------------------------
  * 数据在 assets/data/personnel.js（window.SSS_PERSONNEL）。
  * 这个脚本只负责渲染：
- *   - 人员档案首页：[data-personnel-index] → 四个等级卡片 + 实时人数
+ *   - 人员档案首页：[data-personnel-index] → 授权等级名录（单面板）+ 实时人数
  *   - 等级页：[data-personnel][data-class] → 左栏名录 + 右栏档案
  * 点左栏只切右栏，不改页面滚动位置；# 用 pushState 改地址栏。
  * ========================================================================== */
@@ -43,19 +43,40 @@
         }).length;
     }
 
-    /* ── 人员档案首页：四个等级卡片 ── */
+    /* ── 人员档案首页：授权等级名录 ──
+       四个等级不是四张并列的卡片，而是同一块面板里的四行：
+       自上而下就是授权等级由高到低，人数、英文全名各占一列。
+       数据顺序（DATA.classes）即等级顺序，这里不改排。 */
     var indexRoot = document.querySelector('[data-personnel-index]');
     if (indexRoot) {
-        indexRoot.innerHTML = DATA.classes.map(function (c) {
+        var rows = DATA.classes.map(function (c, i) {
             var n = countOf(c.key);
-            return '                <a class="personnel-card" href="' + esc(c.key) + '">\n' +
-                '                    <p class="personnel-card__code">' + esc(c.code) + '</p>\n' +
-                '                    <h2 class="personnel-card__name">' + esc(c.name) + '</h2>\n' +
-                '                    <p class="personnel-card__en">' + esc(c.en) + '</p>\n' +
-                '                    <p class="personnel-card__desc">' + esc(c.desc) + '</p>\n' +
-                '                    <p class="personnel-card__meta">' + n + ' 名成员 · 查看名录 ›</p>\n' +
-                '                </a>';
+            var rank = (i + 1 < 10 ? '0' : '') + (i + 1);
+            return '                    <li class="personnel-tier">\n' +
+                '                        <a class="personnel-tier__link" href="' + esc(c.key) + '">\n' +
+                '                            <span class="personnel-tier__rank" aria-hidden="true">' + rank + '</span>\n' +
+                '                            <div class="personnel-tier__body">\n' +
+                '                                <div class="personnel-tier__head">\n' +
+                '                                    <span class="personnel-tier__code">' + esc(c.code) + '</span>\n' +
+                '                                    <h2 class="personnel-tier__name">' + esc(c.name) + '</h2>\n' +
+                '                                </div>\n' +
+                '                                <p class="personnel-tier__en">' + esc(c.en) + '</p>\n' +
+                '                                <p class="personnel-tier__desc">' + esc(c.desc) + '</p>\n' +
+                '                            </div>\n' +
+                '                            <div class="personnel-tier__side">\n' +
+                '                                <p class="personnel-tier__count"><b>' + n + '</b> 名成员</p>\n' +
+                '                                <p class="personnel-tier__go">查看名录 ›</p>\n' +
+                '                            </div>\n' +
+                '                        </a>\n' +
+                '                    </li>';
         }).join('\n');
+
+        indexRoot.innerHTML = '                <p class="personnel-tiers__caption">\n' +
+            '                    <span class="personnel-tiers__label">授权等级</span>\n' +
+            '                    <span class="personnel-tiers__en">Clearance Tiers</span>\n' +
+            '                    <span class="personnel-tiers__hint">由高至低</span>\n' +
+            '                </p>\n' +
+            '                <ol class="personnel-tiers__list">\n' + rows + '\n                </ol>';
         return;
     }
 
