@@ -105,9 +105,9 @@
             ['归属舰队', val(m.fleet)],
         ];
 
-        /* 授权等级：紧跟在归属舰队下面；只表示可调阅的档案范围 */
+        /* 授权等级：紧跟在归属舰队下面；写正式全称「星光圣域XX成员」 */
         if (memberClass) {
-            meta.push(['授权等级', '<span class="personnel-clearance">' + esc(memberClass.code) + '</span> · ' + esc(memberClass.name)]);
+            meta.push(['授权等级', esc(memberClass.name)]);
         }
 
         meta.push([m.residenceLabel || '居住地', val(m.residence)]);

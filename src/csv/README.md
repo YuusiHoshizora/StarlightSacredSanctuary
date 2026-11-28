@@ -56,8 +56,8 @@ node src/scripts/data-csv.mjs export   # 反向：把当前 JS 导回 CSV（会�
 | `classes.csv` | 一个授权等级（SXM / SAM / SFM / SPM） |
 | `members.csv` | 一名成员 |
 
-`classes.csv`：`key`（`sxm` 等，等级页地址就是它）· `code`（`SXM`）· `name` ·
-`en` · `desc`
+`classes.csv`：`key`（`sxm` 等，等级页地址就是它）· `code`（`SXM`）·
+`name`（完整正式名，如「星光圣域管理成员」）· `en` · `desc`
 
 `members.csv`：
 

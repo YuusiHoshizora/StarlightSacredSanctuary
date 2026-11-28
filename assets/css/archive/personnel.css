@@ -212,12 +212,6 @@
     margin: 12px 0 6px;
 }
 
-/* 基本信息里的授权等级：代号按站内的等宽读数排，后面的中文分类名保持正文 */
-.personnel-clearance {
-    font-family: var(--font-mono);
-    letter-spacing: 0.12em;
-}
-
 /* 个人档案里数据损坏的字段：比正文再淡一档 */
 .personnel-missing,
 .org-meta .personnel-missing,

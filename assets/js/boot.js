@@ -43,7 +43,7 @@ var SSS_SITE_ROOT = (function () {
      · 加载屏左上 / 右上的读数直接用下面两个值
      · 页面里任何 [data-terminal="os|version|full|auth"] 都会被自动填上
    权限系统以后要重做时，改 auth（以及需要时加 authLabel）即可，不要散落到页面。
-   现在：AstraOS ver.7.0.4-5500430，权限 SXM（管理成员）。 */
+   现在：AstraOS ver.7.0.4-5500430，权限 SXM（星光圣域管理成员）。 */
 var SSS_TERMINAL = window.SSS_TERMINAL || {
     os: 'AstraOS',
     version: 'ver.7.0.4-5500430',

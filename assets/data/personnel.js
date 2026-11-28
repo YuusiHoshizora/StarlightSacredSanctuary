@@ -9,28 +9,28 @@ window.SSS_PERSONNEL = {
     {
       "key": "sxm",
       "code": "SXM",
-      "name": "管理成员",
+      "name": "星光圣域管理成员",
       "en": "SSS Administrative Member",
       "desc": "星光圣域的人员，拥有最高的授权等级。"
     },
     {
       "key": "sam",
       "code": "SAM",
-      "name": "高级成员",
+      "name": "星光圣域高级成员",
       "en": "SSS Advanced Member",
       "desc": "星光圣域的人员，拥有较高的授权等级。"
     },
     {
       "key": "sfm",
       "code": "SFM",
-      "name": "正式成员",
+      "name": "星光圣域正式成员",
       "en": "SSS Formal Member",
       "desc": "星光圣域的人员。"
     },
     {
       "key": "spm",
       "code": "SPM",
-      "name": "预备成员",
+      "name": "星光圣域预备成员",
       "en": "SSS Preparatory Member",
       "desc": "近期加入星光圣域的人员。"
     }
