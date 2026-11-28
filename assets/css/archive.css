@@ -467,8 +467,9 @@ body[data-archive="split"] .archive-empty {
     color: var(--fg-4);
 }
 
-/* 切换右栏内容 / 空白态时来一下很短的淡入 + 横向滑入，避免硬切。
-   方向照星图的信息栏 / 星系介绍：从右侧（正 X）滑进来，不用上下位移。 */
+/* 切换右栏内容 / 空白态：旧内容先在原位淡出，离场结束后新内容再从右侧淡入。
+   两层不同时显示 —— 旧层不再覆盖在新层上做交叉淡化（那样内容会重合）。
+   离场等待由 assets/js/archive-swap.js 控制，两处时长必须一致（OUT_MS = 140ms）。 */
 @keyframes archive-swap-in {
     from {
         opacity: 0;
@@ -480,44 +481,45 @@ body[data-archive="split"] .archive-empty {
     }
 }
 
+@keyframes archive-swap-out {
+    from {
+        opacity: 1;
+        transform: none;
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-4px);
+    }
+}
+
 body[data-archive="split"] .personnel-profile.is-active,
 body[data-archive="split"] .facility-profile.is-active,
 body[data-archive="split"] .vessel-profile.is-active,
+body[data-archive="split"] .biology-profile.is-active,
+body[data-archive="split"] .document-profile.is-active,
 body[data-archive="split"] .archive-empty:not([hidden]) {
-    animation: archive-swap-in 0.22s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation: archive-swap-in 0.18s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+    body[data-archive="split"] .personnel-profile.is-leaving,
+    body[data-archive="split"] .facility-profile.is-leaving,
+    body[data-archive="split"] .vessel-profile.is-leaving,
+    body[data-archive="split"] .biology-profile.is-leaving,
+    body[data-archive="split"] .document-profile.is-leaving {
+        pointer-events: none;
+        animation: archive-swap-out 0.14s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     body[data-archive="split"] .personnel-profile.is-active,
     body[data-archive="split"] .facility-profile.is-active,
     body[data-archive="split"] .vessel-profile.is-active,
+    body[data-archive="split"] .biology-profile.is-active,
+    body[data-archive="split"] .document-profile.is-active,
     body[data-archive="split"] .archive-empty:not([hidden]) {
         animation: none;
-    }
-}
-
-/* 离场：旧档案浮在新内容 / 空白态上面，向左淡出；新内容同时从右侧淡入。
-   旧档案在 .is-leaving 期间仍带 .is-active，190ms 后由页面脚本摘掉。 */
-@keyframes archive-swap-out {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(-8px);
-    }
-}
-
-@media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
-    body[data-archive="split"] .personnel-profile.is-leaving,
-    body[data-archive="split"] .facility-profile.is-leaving,
-    body[data-archive="split"] .vessel-profile.is-leaving {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        pointer-events: none;
-        animation: archive-swap-out 0.18s cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
     }
 }
 

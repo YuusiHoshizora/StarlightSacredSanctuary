@@ -144,8 +144,9 @@ font-family: ui-monospace, "Cascadia Mono", Consolas, "Sarasa Mono", monospace;
 - **默认不选任何条目**：没有深链时列表不预选第一项，右栏显示 `.archive-empty`
   占位面板（读数 **NO / INFO**）；点条目 / 搜索回车 / 深链才打开档案；
 - 点左栏或右栏的空白处、页面最左 / 最右的留白可取消选择；再点一次已高亮的条目
-  也会取消选择（开关语义）；切换 / 取消选择时新内容用 220ms 淡入 + 从右侧 8px
-  横向滑入，旧档案同时向左 180ms 淡出（交叉淡化，桌面 ≥901px），不做上下位移；
+  也会取消选择（开关语义）；切换 / 取消选择时旧内容先在原位 140ms 淡出，
+  离场结束后新内容再用 180ms 淡入 + 从右侧 8px 横向滑入（严格串行、不交叉淡化，
+  桌面 ≥901px），不做上下位移；
 - **v4 移除滚动淡出**：`assets/js/archive-scroll.js` 仍保留接口，但 CSS 不再消费
   `--fade-top` / `--fade-bottom`；以后不要重新加 mask；
 - 结构、滚动区变量与踩点见 [MAINTENANCE.md](MAINTENANCE.md) 的「档案页的视口框」。

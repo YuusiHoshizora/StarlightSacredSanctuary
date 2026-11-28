@@ -231,45 +231,29 @@
         byId[p.id] = p;
     });
 
+    /* 右栏切换：旧档案先离场，再让新档案进场（共用 archive-swap.js） */
+    var swap = window.SSSArchiveSwap
+        ? window.SSSArchiveSwap.create({ profiles: profiles, empty: empty })
+        : null;
+
+    function showProfile(profile) {
+        if (swap) {
+            swap.show(profile);
+            return;
+        }
+        profiles.forEach(function (p) {
+            p.classList.toggle('is-active', p === profile);
+        });
+        if (empty) empty.hidden = !!profile;
+    }
+
     /* 首次渲染（含带 #舰船代号 直接进来）由浏览器自己定位，不在这里滚页面 */
     var initialising = true;
 
     function activate(id) {
         var profile = (id && byId[id]) || null;
 
-        /* 当前稳定选中的档案；正在做离场动画的不算 */
-        var currentProfile = null;
-        profiles.forEach(function (p) {
-            if (p.classList.contains('is-active') && !p.classList.contains('is-leaving')) {
-                currentProfile = p;
-            }
-        });
-
-        /* 上一轮还没结束的离场层直接收掉，避免叠两层 */
-        profiles.forEach(function (p) {
-            if (p.classList.contains('is-leaving')) {
-                p.classList.remove('is-active', 'is-leaving');
-            }
-        });
-
-        var wide = window.matchMedia && window.matchMedia('(min-width: 901px)').matches;
-        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        var animating = !!currentProfile && currentProfile !== profile && wide && !still;
-
-        if (animating) {
-            currentProfile.classList.add('is-leaving');
-            window.setTimeout(function () {
-                /* 期间又切回这一条的话，is-leaving 已经被清掉，不能误摘 is-active */
-                if (currentProfile.classList.contains('is-leaving')) {
-                    currentProfile.classList.remove('is-active', 'is-leaving');
-                }
-            }, 190);
-        }
-
-        profiles.forEach(function (p) {
-            if (p === profile) p.classList.add('is-active');
-            else if (p !== currentProfile || !animating) p.classList.remove('is-active');
-        });
+        showProfile(profile);
 
         var current = null;
         items.forEach(function (a) {
@@ -279,8 +263,6 @@
             else a.removeAttribute('aria-current');
             if (on) current = a;
         });
-
-        if (empty) empty.hidden = !!profile;
 
         /* 只滚左栏自己的滚动条，页面保持原位 */
         if (list && current) {

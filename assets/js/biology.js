@@ -36,6 +36,22 @@
     var byId = Object.create(null);
     profiles.forEach(function (p) { byId[p.id] = p; });
 
+    /* 右栏切换：旧档案先离场，再让新档案进场（共用 archive-swap.js） */
+    var swap = window.SSSArchiveSwap
+        ? window.SSSArchiveSwap.create({ profiles: profiles, empty: empty })
+        : null;
+
+    function showProfile(profile) {
+        if (swap) {
+            swap.show(profile);
+            return;
+        }
+        profiles.forEach(function (p) {
+            p.classList.toggle('is-active', p === profile);
+        });
+        if (empty) empty.hidden = !!profile;
+    }
+
     function refresh() {
         if (window.__sssArchiveScroll && window.__sssArchiveScroll.refresh) {
             window.__sssArchiveScroll.refresh();
@@ -45,9 +61,7 @@
     function activate(id) {
         var profile = id ? byId[id] || null : null;
 
-        profiles.forEach(function (p) {
-            p.classList.toggle('is-active', p === profile);
-        });
+        showProfile(profile);
 
         var current = null;
         items.forEach(function (a) {
@@ -57,8 +71,6 @@
             else a.removeAttribute('aria-current');
             if (on) current = a;
         });
-
-        if (empty) empty.hidden = !!profile;
 
         /* 只滚左栏自己的滚动条，页面保持原位 */
         if (list && current) {

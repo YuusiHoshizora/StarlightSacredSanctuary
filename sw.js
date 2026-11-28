@@ -27,7 +27,7 @@
  *  不会出现"改动没生效"的假象。部署到真实域名后自动启用上面的缓存策略。
  * ========================================================================== */
 
-const CACHE_VERSION = 'v5.85+90c74c64ee';
+const CACHE_VERSION = 'v5.85+efb921fd0f';
 const CACHE_NAME = 'starlight-cache-' + CACHE_VERSION;
 
 /* 字体专用缓存：**不随 CACHE_VERSION 清掉**（跨版本保留）。
@@ -132,6 +132,7 @@ const PRECACHE_URLS = [
     '/assets/data/vessel.js',
     '/assets/js/archive-scroll.js',
     '/assets/js/archive-list-search.js',
+    '/assets/js/archive-swap.js',
     '/assets/js/biology.js',
     '/assets/js/document.js',
     '/assets/js/org-member.js',
