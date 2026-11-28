@@ -929,7 +929,10 @@ body[data-mainpage] .blog-list {
 }
 
 /* 文章视图：一块淡白面板，返回按钮固定，正文在面板里滚 */
-/* 文章面板：从点击卡的矩形展开；内容在展开完成后再淡入 */
+/* 文章面板（2026-11 重做）：
+   点卡片 → 面板带着卡片外壳上移、纵向压扁成顶端的一条线 → 线向下铺开，把列表逐行盖掉
+   → 正文淡入。返回时整套倒放：正文淡出 → 面板上收成线 → 线落回卡片并展开。
+   每段的时长 / 缓动由 mainpage.html 按阶段写在行内，这里只定义各阶段的端点外观。 */
 body[data-mainpage] .article-view {
     position: absolute;
     display: none;
@@ -940,18 +943,62 @@ body[data-mainpage] .article-view {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--line-1);
     border-radius: var(--ctl-panel-radius);
-
-    transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-                top 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-                height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-                border-radius 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body[data-mainpage] .article-view.is-visible {
     display: flex;
 }
 
+/* 「线」：面板被压到 2px 时亮成一道金色扫描线（铺开前 / 收回后各出现一次） */
+body[data-mainpage] .article-view.is-line {
+    border-color: rgba(var(--accent-rgb), 0.85);
+    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.55),
+                0 0 30px rgba(var(--accent-rgb), 0.22);
+}
+
+/* 铺开 / 上收时的前缘：贴住面板底边的一道光，随底边一起走 */
+body[data-mainpage] .article-view::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 34px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    background: linear-gradient(to top,
+        rgba(var(--accent-rgb), 0.3) 0,
+        rgba(var(--accent-rgb), 0.1) 2px,
+        rgba(var(--accent-rgb), 0) 34px);
+}
+
+body[data-mainpage] .article-view.is-scanning::before {
+    opacity: 1;
+}
+
+/* 铺开 / 上收时，被扫过的区域留下等距的横线：像这条线一路复制自己铺下来。
+   只是一层很淡的临时纹理，扫完 / 收完就随 is-scanning 一起淡掉。 */
+body[data-mainpage] .article-view::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(var(--accent-rgb), 0.05) 0,
+        rgba(var(--accent-rgb), 0.05) 1px,
+        transparent 1px,
+        transparent 16px);
+}
+
+body[data-mainpage] .article-view.is-scanning::after {
+    opacity: 1;
+}
+
+/* 正文 / 返回按钮：铺满之后再淡入，收起之前先淡出 */
 body[data-mainpage] .article-view .back-btn,
 body[data-mainpage] .article-view #article-content {
     opacity: 0;
@@ -976,8 +1023,8 @@ body[data-mainpage] #article-content {
     padding-bottom: 24px;
 }
 
-/* 打开 / 关闭时：中栏文字与其它卡片先淡出，只留下被点卡片的背景 */
-body[data-mainpage] .blog-header,
+/* 打开 / 关闭时只处理被点的卡片：它的正文与序号淡出、外壳交给文章面板；
+   其它卡片保持原样，等着被向下铺开的面板逐行盖掉。 */
 body[data-mainpage] .blog-card > * {
     transition: opacity 0.16s ease;
 }
@@ -986,29 +1033,17 @@ body[data-mainpage] .blog-list-view.is-morphing {
     pointer-events: none;
 }
 
-body[data-mainpage] .blog-list-view.is-morphing .blog-header {
-    opacity: 0;
-}
-
-body[data-mainpage] .blog-list-view.is-morphing .blog-card:not(.is-morph-source) {
-    opacity: 0;
-}
-
-body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source > * {
-    opacity: 0;
-}
-
-/* 卡片右上角的序号是 ::before 伪元素，不在 .blog-card > * 里，不会跟着正文淡出。
-   展开 / 收回时单独把它一起藏掉，否则会有一枚「01」浮在文章面板上。 */
-body[data-mainpage] .blog-card::before {
-    transition: opacity 0.16s ease;
-}
-
+body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source > *,
 body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source::before {
     opacity: 0;
 }
 
-/* 展开的面板本身就是被点卡片的背景；把原卡片背景让出来，避免两层半透明叠在一起 */
+/* 卡片右上角的序号是 ::before 伪元素，不在 .blog-card > * 里，所以这条要单列 */
+body[data-mainpage] .blog-card::before {
+    transition: opacity 0.16s ease;
+}
+
+/* 面板本身就是被点卡片的外壳；把原卡片背景让出来，避免两层半透明叠在一起 */
 body[data-mainpage] .blog-list-view.is-morphing .blog-card.is-morph-source {
     background: transparent;
     border-color: transparent;
