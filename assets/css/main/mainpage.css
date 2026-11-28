@@ -998,29 +998,140 @@ body[data-mainpage] .article-view.is-scanning::after {
     opacity: 1;
 }
 
-/* 正文 / 返回按钮：铺满之后再淡入，收起之前先淡出 */
-body[data-mainpage] .article-view .back-btn,
-body[data-mainpage] .article-view #article-content {
+/* 文章头部：标题 + 元信息在左，返回按钮并列在右上；分割线以下才是滚动区 */
+body[data-mainpage] .article-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line-1);
     opacity: 0;
     transition: opacity 0.18s ease;
 }
 
-body[data-mainpage] .article-view.is-content-visible .back-btn,
-body[data-mainpage] .article-view.is-content-visible #article-content {
-    opacity: 1;
+body[data-mainpage] .article-head__main {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
-body[data-mainpage] .article-view .back-btn {
+body[data-mainpage] .article-title {
+    margin: 0;
+    font-size: clamp(20px, 2.4vw, 27px);
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: var(--track-h2);
+    color: var(--fg-1);
+    overflow-wrap: anywhere;
+}
+
+body[data-mainpage] .article-head .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-mono);
+    color: var(--fg-4);
+    text-transform: uppercase;
+}
+
+body[data-mainpage] .article-head .article-meta span:last-child {
+    color: var(--signal-dim);
+}
+
+body[data-mainpage] .article-head .back-btn {
     flex: 0 0 auto;
     align-self: flex-start;
+    margin: 3px 0 0;
 }
 
-body[data-mainpage] #article-content {
+/* 分割线以下的滚动区：固定高度、内部滚；正文用等宽字体，tab 按 4 个空格算 */
+body[data-mainpage] .article-body-wrap {
+    position: relative;
     flex: 1 1 auto;
     min-height: 0;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+body[data-mainpage] .article-body {
+    position: absolute;
+    inset: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    padding-top: 16px;
+    padding-right: 20px;
     padding-bottom: 24px;
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+
+body[data-mainpage] .article-body .markdown-body,
+body[data-mainpage] .article-body .markdown-body * {
+    font-family: var(--font-mono);
+}
+
+/* 自定义滚动条：贴在文章面板右侧、只覆盖分割线以下；细线 + 金色滑块 */
+body[data-mainpage] .article-scrollbar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: -18px;
+    width: 14px;
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    cursor: var(--cur-pointer);
+}
+
+body[data-mainpage] .article-view.is-content-visible .article-scrollbar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body[data-mainpage] .article-scrollbar.is-idle {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+body[data-mainpage] .article-scrollbar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-0.5px);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+body[data-mainpage] .article-scrollbar__thumb {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: rgba(var(--accent-rgb), 0.42);
+    box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.22);
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+    will-change: transform;
+}
+
+body[data-mainpage] .article-scrollbar:hover .article-scrollbar__thumb,
+body[data-mainpage] .article-scrollbar.is-dragging .article-scrollbar__thumb {
+    background: rgba(var(--accent-rgb), 0.8);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.45);
+}
+
+/* 正文 / 返回按钮：铺满之后再淡入，收起之前先淡出 */
+body[data-mainpage] .article-view.is-content-visible .article-head,
+body[data-mainpage] .article-view.is-content-visible .article-body-wrap {
+    opacity: 1;
 }
 
 /* 打开 / 关闭时只处理被点的卡片：它的正文与序号淡出、外壳交给文章面板；
@@ -1163,6 +1274,15 @@ body[data-mainpage] .right-panel {
         padding: 16px 16px 0;
     }
 
+    body[data-mainpage] .article-scrollbar {
+        right: -12px;
+        width: 12px;
+    }
+
+    body[data-mainpage] .article-head {
+        gap: 12px;
+    }
+
     body[data-mainpage] .blog-card {
         padding: 20px 20px;
     }
@@ -1176,8 +1296,10 @@ body[data-mainpage] .right-panel {
     body[data-mainpage] .blog-header,
     body[data-mainpage] .blog-card,
     body[data-mainpage] .blog-card > *,
-    body[data-mainpage] .article-view .back-btn,
-    body[data-mainpage] .article-view #article-content {
+    body[data-mainpage] .article-head,
+    body[data-mainpage] .article-body-wrap,
+    body[data-mainpage] .article-scrollbar,
+    body[data-mainpage] .article-scrollbar__thumb {
         transition-duration: 0.001s !important;
     }
 

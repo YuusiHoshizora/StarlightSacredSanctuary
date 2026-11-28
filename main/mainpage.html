@@ -195,13 +195,23 @@
 
             <!-- 文章视图（Markdown 渲染后展示） -->
             <div class="article-view" id="article-view">
-                <button class="back-btn" id="back-btn" type="button">
-                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9.5 3L5 8l4.5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    返回列表
-                </button>
-                <div id="article-content"></div>
+                <!-- 分割线以上：返回按钮与标题并列，不参与滚动 -->
+                <div class="article-head">
+                    <div class="article-head__main" id="article-head-main"></div>
+                    <button class="back-btn" id="back-btn" type="button">
+                        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.5 3L5 8l4.5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        返回列表
+                    </button>
+                </div>
+                <!-- 分割线以下：唯一的滚动区，自定义滚动条也只覆盖这里 -->
+                <div class="article-body-wrap">
+                    <div class="article-body" id="article-body"></div>
+                    <div class="article-scrollbar" id="article-scrollbar" aria-hidden="true">
+                        <div class="article-scrollbar__thumb" id="article-scrollbar-thumb"></div>
+                    </div>
+                </div>
             </div>
 
         </main>
@@ -254,7 +264,10 @@
     // ===== 视图切换 =====
     const listView    = document.getElementById('blog-list-view');
     const articleView = document.getElementById('article-view');
-    const articleContent = document.getElementById('article-content');
+    const articleHeadMain = document.getElementById('article-head-main');
+    const articleBody = document.getElementById('article-body');
+    const articleScrollbar = document.getElementById('article-scrollbar');
+    const articleScrollThumb = document.getElementById('article-scrollbar-thumb');
     const backBtn     = document.getElementById('back-btn');
     const centerView  = document.querySelector('.center-panel');
 
@@ -373,7 +386,7 @@
         setPanelRect(initial);
         articleView.style.borderRadius = 'var(--ctl-panel-radius)';
         articleView.style.backgroundColor = 'var(--surface-card)';   // 起手时和卡片同色
-        articleContent.scrollTop = 0;
+        articleBody.scrollTop = 0;
         void articleView.offsetWidth;
 
         if (reduceMotion) {
@@ -383,6 +396,8 @@
             articleView.style.paddingTop = '';
             articleView.classList.add('is-content-visible');
             listView.classList.add('hidden');
+            fitArticleTitle();
+            updateArticleScrollbar();
             return;
         }
 
@@ -445,6 +460,8 @@
             articleView.classList.remove('is-scanning');
             articleView.classList.add('is-content-visible');
             articleView.style.transition = 'none';
+            fitArticleTitle();
+            updateArticleScrollbar();
         }, SWEEP_MS + END_SLACK);
     }
 
@@ -556,8 +573,23 @@
         listView.classList.remove('is-morphing');
         if (morphCard) morphCard.classList.remove('is-morph-source');
         morphCard = null;
-        articleContent.innerHTML = '';
+        articleHeadMain.innerHTML = '';
+        articleBody.innerHTML = '';
+        articleScrollbar.classList.add('is-idle');
+        articleScrollThumb.style.height = '0px';
         articleView.style.transition = '';
+    }
+
+    /* 文章头部：标题 / 日期 / 分类；标题过长时先缩字号，缩到底再换行 */
+    function renderArticleHead(title, date, tag) {
+        articleHeadMain.innerHTML =
+            '<h1 class="article-title">' + escapeHtml(title) + '</h1>' +
+            '<div class="article-meta">' +
+                '<span>' + escapeHtml(date) + '</span>' +
+                '<span>·</span>' +
+                '<span>' + escapeHtml(tag) + '</span>' +
+            '</div>';
+        fitArticleTitle();
     }
 
     /**
@@ -592,26 +624,141 @@
         // 树形结构靠行首缩进表达层级，Markdown 默认会把续行的缩进吃掉，这里补回来
         mdContent = preserveLineIndent(mdContent);
 
-        // 渲染文章头部 + Markdown 内容
-        articleContent.innerHTML =
-            '<div class="article-header">' +
-                '<h1>' + escapeHtml(title) + '</h1>' +
-                '<div class="article-meta">' +
-                    '<span>' + escapeHtml(date) + '</span>' +
-                    '<span>·</span>' +
-                    '<span>' + escapeHtml(tag) + '</span>' +
-                '</div>' +
-            '</div>' +
-            '<div class="markdown-body">' + marked.parse(mdContent) + '</div>';
+        // 渲染文章头部 + Markdown 内容：头部固定，只有下面的正文滚动
+        renderArticleHead(title, date, tag);
+        articleBody.innerHTML = '<div class="markdown-body">' + marked.parse(mdContent) + '</div>';
 
         // 让所有 Markdown 渲染出的链接在新标签页打开
-        articleContent.querySelectorAll('.markdown-body a').forEach(function(link) {
+        articleBody.querySelectorAll('.markdown-body a').forEach(function(link) {
             link.setAttribute('target', '_blank');
             link.setAttribute('rel', 'noopener noreferrer');
         });
 
-        articleContent.scrollTop = 0;
+        articleBody.scrollTop = 0;
+        fitArticleTitle();
+        updateArticleScrollbar();
+
+        // 字体晚到 / 尺寸变化后重新量一次标题与滚动条
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(function () {
+                if (!articleView.classList.contains('is-visible')) return;
+                fitArticleTitle();
+                updateArticleScrollbar();
+            });
+        }
     }
+
+    // ===== 文章标题自适应：先缩字号，缩到下限还放不下就换行 =====
+    function fitArticleTitle() {
+        var h1 = articleHeadMain.querySelector('.article-title');
+        if (!h1) return;
+
+        h1.style.fontSize = '';
+        h1.style.whiteSpace = 'nowrap';
+
+        var base = parseFloat(window.getComputedStyle(h1).fontSize) || 27;
+        var avail = h1.clientWidth;
+        if (!avail) return;
+
+        var size = base;
+        while (size > 17 && h1.scrollWidth > avail + 0.5) {
+            size -= 1;
+            h1.style.fontSize = size + 'px';
+        }
+
+        if (h1.scrollWidth > avail + 0.5) {
+            h1.style.whiteSpace = '';        // 到最小字号还放不下 → 换行
+        }
+    }
+
+    // ===== 正文自定义滚动条：位置 / 拖动 / 轨道点击 / 尺寸变化 =====
+    function updateArticleScrollbar() {
+        if (!articleBody || !articleScrollbar || !articleScrollThumb) return;
+
+        var max = articleBody.scrollHeight - articleBody.clientHeight;
+        if (max <= 1) {
+            articleScrollbar.classList.add('is-idle');
+            articleScrollThumb.style.height = '0px';
+            return;
+        }
+
+        articleScrollbar.classList.remove('is-idle');
+
+        var trackH = articleScrollbar.clientHeight;
+        if (!trackH) return;
+
+        var thumbH = Math.max(26, Math.round(trackH * articleBody.clientHeight / articleBody.scrollHeight));
+        thumbH = Math.min(thumbH, trackH);
+        articleScrollThumb.style.height = thumbH + 'px';
+
+        var y = (trackH - thumbH) * (articleBody.scrollTop / max);
+        articleScrollThumb.style.transform = 'translateY(' + y.toFixed(1) + 'px)';
+    }
+
+    articleBody.addEventListener('scroll', updateArticleScrollbar);
+
+    articleScrollThumb.addEventListener('pointerdown', function (e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        e.preventDefault();
+
+        var max = articleBody.scrollHeight - articleBody.clientHeight;
+        var trackH = articleScrollbar.clientHeight;
+        var thumbH = articleScrollThumb.offsetHeight;
+        var range = trackH - thumbH;
+        if (max <= 0 || range <= 0) return;
+
+        var startY = e.clientY;
+        var startTop = articleBody.scrollTop;
+        var scale = max / range;
+
+        articleScrollbar.classList.add('is-dragging');
+
+        function onMove(ev) {
+            var top = startTop + (ev.clientY - startY) * scale;
+            articleBody.scrollTop = Math.max(0, Math.min(max, top));
+        }
+        function onUp() {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.removeEventListener('pointercancel', onUp);
+            articleScrollbar.classList.remove('is-dragging');
+        }
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+    });
+
+    articleScrollbar.addEventListener('pointerdown', function (e) {
+        if (e.target === articleScrollThumb) return;
+        e.preventDefault();
+
+        var max = articleBody.scrollHeight - articleBody.clientHeight;
+        var rect = articleScrollbar.getBoundingClientRect();
+        var thumbH = articleScrollThumb.offsetHeight;
+        var range = rect.height - thumbH;
+        if (max <= 0 || range <= 0) return;
+
+        var ratio = (e.clientY - rect.top - thumbH / 2) / range;
+        articleBody.scrollTop = Math.max(0, Math.min(1, ratio)) * max;
+    });
+
+    articleScrollbar.addEventListener('wheel', function (e) {
+        articleBody.scrollTop += e.deltaY;
+        e.preventDefault();
+    }, { passive: false });
+
+    // 窗口尺寸变化：重算标题字号与滚动条
+    var articleResizeRaf = 0;
+    window.addEventListener('resize', function () {
+        if (!articleView.classList.contains('is-visible') ||
+            !articleView.classList.contains('is-content-visible')) return;
+        if (articleResizeRaf) return;
+        articleResizeRaf = window.requestAnimationFrame(function () {
+            articleResizeRaf = 0;
+            fitArticleTitle();
+            updateArticleScrollbar();
+        });
+    });
 
     backBtn.addEventListener('click', closeArticle);
 
@@ -1059,7 +1206,9 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
 
         if (mdSrc) {
             var gen = ++articleGen;
-            articleContent.innerHTML = '<div class="md-loading">正在加载……</div>';
+            renderArticleHead(title, date, tag);
+            articleBody.innerHTML = '<div class="md-loading">正在加载……</div>';
+            updateArticleScrollbar();
             startMorph(card, gen);
 
             fetchMdCached(mdSrc)
@@ -1074,12 +1223,14 @@ document.querySelector('.vertical-nav').addEventListener('click', function(e) {
                     if (mdInline) {
                         renderArticle(mdInline, title, date, tag);
                     } else {
-                        articleContent.innerHTML =
+                        articleBody.innerHTML =
                             '<div class="md-loading">无法加载文章内容（' + err.message + '）</div>';
+                        updateArticleScrollbar();
                     }
                 });
         } else if (mdInline) {
-            articleContent.innerHTML = '';
+            renderArticleHead(title, date, tag);
+            articleBody.innerHTML = '';
             startMorph(card, ++articleGen);
             renderArticle(mdInline, title, date, tag);
         }
